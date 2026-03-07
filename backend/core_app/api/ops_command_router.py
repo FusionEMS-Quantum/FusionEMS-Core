@@ -355,3 +355,78 @@ async def fleet_audit(
     return svc.repo("fleet_audit_events").list(
         tenant_id=current.tenant_id, limit=limit
     )
+
+
+# ── Deployment Run Visibility (Zero-Error Onboarding) ─────────────────────────
+
+@router.get("/deployment-runs")
+async def list_deployment_runs(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+    limit: int = 50,
+    state: str = "",
+):
+    """
+    Founder visibility into all agency deployment/provisioning runs.
+    Shows the zero-error deployment state machine status for every signup.
+    """
+    from sqlalchemy import text as sa_text
+
+    where = "WHERE 1=1"
+    params: dict = {"limit": limit}
+    if state:
+        where += " AND current_state = :state"
+        params["state"] = state
+
+    rows = db.execute(
+        sa_text(
+            f"SELECT id, external_event_id, agency_id, current_state, "
+            f"failure_reason, retry_count, metadata_blob, created_at, updated_at "
+            f"FROM deployment_runs "
+            f"{where} "
+            f"ORDER BY created_at DESC LIMIT :limit"
+        ),
+        params,
+    ).mappings().all()
+
+    return [dict(r) for r in rows]
+
+
+@router.get("/deployment-runs/{run_id}/steps")
+async def get_deployment_steps(
+    run_id: str,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """
+    Full step-by-step audit trail for a single deployment run.
+    Every provisioning action is recorded here.
+    """
+    from sqlalchemy import text as sa_text
+
+    run = db.execute(
+        sa_text(
+            "SELECT id, external_event_id, agency_id, current_state, "
+            "failure_reason, retry_count, metadata_blob, created_at, updated_at "
+            "FROM deployment_runs WHERE id = :run_id"
+        ),
+        {"run_id": run_id},
+    ).mappings().first()
+
+    if not run:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Deployment run not found")
+
+    steps = db.execute(
+        sa_text(
+            "SELECT id, step_name, status, result_blob, error_message, "
+            "created_at FROM deployment_steps "
+            "WHERE run_id = :run_id ORDER BY created_at ASC"
+        ),
+        {"run_id": run_id},
+    ).mappings().all()
+
+    return {
+        "run": dict(run),
+        "steps": [dict(s) for s in steps],
+    }

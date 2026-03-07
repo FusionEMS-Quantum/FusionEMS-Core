@@ -88,6 +88,87 @@ interface OpsCommand {
   computed_at: string;
 }
 
+const DEPLOY_STATE_COLOR: Record<string, string> = {
+  LIVE: '#4caf50', DEPLOYMENT_READY: '#29b6f6', ENTITLEMENTS_ASSIGNED: '#29b6f6',
+  SUBSCRIPTION_LINKED: '#29b6f6', ADMIN_RECORD_CREATED: '#29b6f6',
+  AGENCY_RECORD_CREATED: '#ffc107', PAYMENT_CONFIRMED: '#ffc107',
+  WEBHOOK_VERIFIED: '#ffc107', CHECKOUT_CREATED: '#78909c',
+  RETRY_PENDING: '#ff6b1a', DEPLOYMENT_FAILED: '#ef5350',
+};
+
+function DeploymentRunsPanel() {
+  const [runs, setRuns] = useState<Array<Record<string, unknown>>>([]);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [steps, setSteps] = useState<Array<Record<string, unknown>>>([]);
+
+  useEffect(() => {
+    fetch(`${API}/api/v1/ops/deployment-runs?limit=20`, { headers: { Authorization: getToken() } })
+      .then(r => r.ok ? r.json() : []).then(setRuns).catch(() => {});
+  }, []);
+
+  const loadSteps = async (runId: string) => {
+    if (expanded === runId) { setExpanded(null); return; }
+    const r = await fetch(`${API}/api/v1/ops/deployment-runs/${runId}/steps`, { headers: { Authorization: getToken() } });
+    if (r.ok) { const j = await r.json(); setSteps(j.steps ?? []); }
+    setExpanded(runId);
+  };
+
+  if (runs.length === 0) return null;
+
+  const failed = runs.filter(r => r.current_state === 'DEPLOYMENT_FAILED').length;
+  const live = runs.filter(r => r.current_state === 'LIVE').length;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)]">Agency Deployment Runs</div>
+        <div className="flex gap-2">
+          <span className="text-[10px] text-green-400">{live} live</span>
+          {failed > 0 && <span className="text-[10px] text-red-400">{failed} failed</span>}
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {runs.slice(0, 10).map((run) => {
+          const id = String(run.id);
+          const state = String(run.current_state);
+          const color = DEPLOY_STATE_COLOR[state] ?? '#78909c';
+          const meta = (run.metadata_blob as Record<string, unknown>) ?? {};
+          return (
+            <div key={id} className="rounded-xl border border-[rgba(255,255,255,0.07)] overflow-hidden">
+              <button onClick={() => loadSteps(id)}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-[rgba(255,255,255,0.03)] transition-colors">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] text-white">{String(meta.agency_name ?? run.external_event_id ?? id).slice(0, 40)}</div>
+                  <div className="text-[10px] text-[rgba(255,255,255,0.35)]">{String(meta.application_id ?? '').slice(0, 20)}</div>
+                </div>
+                <div className="text-[10px] font-bold" style={{ color }}>{state.replace(/_/g, ' ')}</div>
+                {run.retry_count as number > 0 && <div className="text-[9px] text-orange-400">retry {String(run.retry_count)}</div>}
+                <span className="text-[rgba(255,255,255,0.2)] text-xs">{expanded === id ? '▲' : '▼'}</span>
+              </button>
+              {expanded === id && steps.length > 0 && (
+                <div className="px-4 pb-3 border-t border-[rgba(255,255,255,0.05)] space-y-1 pt-2">
+                  {run.failure_reason && (
+                    <div className="text-[11px] text-red-400 mb-2">⚠ {String(run.failure_reason)}</div>
+                  )}
+                  {steps.map((step, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[10px]">
+                      <span style={{ color: step.status === 'SUCCESS' ? '#4caf50' : step.status === 'FAILED' ? '#ef5350' : '#ffc107' }}>
+                        {step.status === 'SUCCESS' ? '✓' : step.status === 'FAILED' ? '✗' : '●'}
+                      </span>
+                      <span className="text-[rgba(255,255,255,0.7)]">{String(step.step_name).replace(/_/g, ' ')}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function OpsCommandPage() {
   const [data, setData] = useState<OpsCommand | null>(null);
   const [loading, setLoading] = useState(true);
@@ -365,6 +446,9 @@ export default function OpsCommandPage() {
               ))}
             </div>
           </div>
+
+          {/* ── Deployment Runs Monitor ── */}
+          <DeploymentRunsPanel />
         </>
       )}
     </div>
