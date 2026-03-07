@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -21,7 +21,7 @@ from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import EventPublisher
 
 
-class CrewStaffingState(str, Enum):
+class CrewStaffingState(StrEnum):
     CREW_AVAILABLE = "CREW_AVAILABLE"
     CREW_ASSIGNED = "CREW_ASSIGNED"
     CREW_UNAVAILABLE = "CREW_UNAVAILABLE"

@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency, get_current_user
-from core_app.epcr.chart_model import ChartStatus, QAStatus, ValidationStatus
+from core_app.epcr.chart_model import ChartStatus, QAStatus
 from core_app.epcr.completeness_engine import CompletenessEngine
 from core_app.epcr.nemsis_exporter import NEMSISExporter
 from core_app.epcr.sync_engine import SyncEngine
@@ -429,7 +429,7 @@ async def add_signature(
     corr_id = getattr(request.state, "correlation_id", None)
     svc = _svc(db)
 
-    sig_rec = await svc.create(
+    await svc.create(
         table="epcr_chart_signatures",
         tenant_id=current.tenant_id,
         actor_user_id=current.user_id,
@@ -775,7 +775,7 @@ async def generate_handoff(
     meds = chart_data.get("medications", [])
     procs = chart_data.get("procedures", [])
     dispatch = chart_data.get("dispatch", {})
-    disposition = chart_data.get("disposition", {})
+    chart_data.get("disposition", {})
 
     now = datetime.now(UTC).isoformat()
     corr_id = getattr(request.state, "correlation_id", None)

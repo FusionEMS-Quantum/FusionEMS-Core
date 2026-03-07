@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -111,7 +111,7 @@ class AIOrchestrationService:
 
         run.provider_response = provider_response
         run.state = AIWorkflowState.COMPLETED.value
-        run.completed_at = datetime.now(timezone.utc)
+        run.completed_at = datetime.now(UTC)
         run.confidence_level = explanation.confidence.value
         run.explanation_summary = (
             f"{explanation.why_it_matters}\n\n{explanation.what_is_wrong}"
@@ -160,7 +160,7 @@ class AIOrchestrationService:
         run.state = AIWorkflowState.FALLBACK_USED.value
         run.fallback_used = True
         run.error_message = error_message
-        run.completed_at = datetime.now(timezone.utc)
+        run.completed_at = datetime.now(UTC)
 
         failure = AIWorkflowFailure(
             tenant_id=self._user.tenant_id,
@@ -196,7 +196,7 @@ class AIOrchestrationService:
         run = self._get_run(workflow_id)
         run.state = AIWorkflowState.FAILED.value
         run.error_message = error_message
-        run.completed_at = datetime.now(timezone.utc)
+        run.completed_at = datetime.now(UTC)
 
         failure = AIWorkflowFailure(
             tenant_id=self._user.tenant_id,

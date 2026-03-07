@@ -1,9 +1,10 @@
+from typing import Any
+
 import httpx
-from typing import Any, Optional
 
 METAR_URL = "https://aviationweather.gov/api/data/metar"
 
-async def fetch_metar(icao: str) -> Optional[dict[str, Any]]:
+async def fetch_metar(icao: str) -> dict[str, Any] | None:
     """
     Fetch raw METAR data from aviationweather.gov for a given ICAO code.
     Returns a dictionary with raw text and parsed fields if available, or None.
@@ -16,14 +17,14 @@ async def fetch_metar(icao: str) -> Optional[dict[str, Any]]:
             )
             if resp.status_code != 200:
                 return None
-            
+
             data = resp.json()
             if not data or not isinstance(data, list):
                 return None
-            
+
             # aviationweather.gov returns a list of metar objects
             metar = data[0]
-            
+
             return {
                 "raw_text": metar.get("rawOb", ""),
                 "station_id": metar.get("icaoId"),

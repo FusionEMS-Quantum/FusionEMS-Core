@@ -2,17 +2,20 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from core_app.models.governance import (
-    AuthenticationEvent, AuthenticationEventType,
-    UserSession, SupportAccessGrant, PhiaAccessAudit,
-    ProtectedActionApproval, ProtectedActionStatus,
-    DataExportRequest, TenantPolicy
-)
-from core_app.models.user import User
 from core_app.core.errors import AppError
+from core_app.models.governance import (
+    AuthenticationEvent,
+    AuthenticationEventType,
+    DataExportRequest,
+    PhiaAccessAudit,
+    ProtectedActionApproval,
+    ProtectedActionStatus,
+    SupportAccessGrant,
+)
+
 
 class GovernanceService:
     def __init__(self, db: Session) -> None:
@@ -112,7 +115,7 @@ class GovernanceService:
         approval = self.db.get(ProtectedActionApproval, approval_id)
         if not approval:
             raise AppError("GOVERNANCE_APPROVAL_NOT_FOUND", "Approval request not found", 404)
-        
+
         approval.status = ProtectedActionStatus.APPROVED
         approval.approved_by_user_id = approver_user_id
         approval.reason = reason
@@ -169,12 +172,12 @@ class GovernanceService:
             AuthenticationEvent.created_at >= datetime.now(UTC) - timedelta(hours=24)
         ).count()
         score -= min(failed_count * 5, 30)
-        
+
         # Deduct for unapproved risky actions
         pending = self.db.query(ProtectedActionApproval).filter(
             ProtectedActionApproval.tenant_id == tenant_id,
             ProtectedActionApproval.status == ProtectedActionStatus.PENDING
         ).count()
         score -= min(pending * 10, 40)
-        
+
         return max(score, 0)

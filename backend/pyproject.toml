@@ -53,7 +53,10 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "alembic/versions/*.py" = ["E501", "UP", "I001", "SIM"]
-"tests/*.py" = ["E501"]
+"tests/*.py" = ["E501", "E402"]
+"core_app/models/__init__.py" = ["F401"]
+"core_app/main.py" = ["E402"]
+"core_app/epcr/validation_engine.py" = ["SIM102"]
 
 [tool.mypy]
 python_version = "3.11"

@@ -83,8 +83,8 @@ _BUILTIN_PACKS = {
 }
 
 
-def _repo(db: Session) -> DominationRepository:
-    return DominationRepository(db)
+def _repo(db: Session, table: str) -> DominationRepository:
+    return DominationRepository(db, table=table)
 
 
 # ---------------------------------------------------------------------------
@@ -94,9 +94,8 @@ def _repo(db: Session) -> DominationRepository:
 
 @router.get("/packs")
 def list_packs(db: Session = Depends(get_db), tenant_id: str = Query(...)):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    stored = repo.list("compliance_packs", tid)
+    stored = _repo(db, "compliance_packs").list(tenant_id=tid)
     active_keys = {r["data"].get("pack_key") for r in stored if r["data"].get("active")}
     result = []
     for key, pack in _BUILTIN_PACKS.items():
@@ -108,41 +107,40 @@ def list_packs(db: Session = Depends(get_db), tenant_id: str = Query(...)):
 def activate_pack(
     payload: dict[str, Any], db: Session = Depends(get_db), tenant_id: str = Query(...)
 ):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
     pack_key = payload.get("pack_key")
     if pack_key not in _BUILTIN_PACKS:
         raise HTTPException(status_code=404, detail=f"Pack '{pack_key}' not found")
     pack_data = _BUILTIN_PACKS[pack_key]
-    stored = repo.list("compliance_packs", tid)
+    packs_repo = _repo(db, "compliance_packs")
+    stored = packs_repo.list(tenant_id=tid)
     existing = next((r for r in stored if r["data"].get("pack_key") == pack_key), None)
     if existing:
-        repo.update(
-            "compliance_packs",
-            tid,
-            existing["id"],
-            {
+        packs_repo.update(
+            tenant_id=tid,
+            record_id=existing["id"],
+            expected_version=existing.get("version", 0),
+            patch={"data": {
                 **existing["data"],
                 "active": True,
                 "activated_at": datetime.now(UTC).isoformat(),
-            },
+            }},
         )
         return {"pack_key": pack_key, "status": "activated", "id": str(existing["id"])}
-    row = repo.create(
-        "compliance_packs",
-        tid,
-        {
+    row = packs_repo.create(
+        tenant_id=tid,
+        data={
             **pack_data,
             "active": True,
             "activated_at": datetime.now(UTC).isoformat(),
             "unit_profile": payload.get("unit_profile", "PARAMEDIC"),
         },
     )
+    templates_repo = _repo(db, "compliance_check_templates")
     for item_id in pack_data["check_templates"]:
-        repo.create(
-            "compliance_check_templates",
-            tid,
-            {
+        templates_repo.create(
+            tenant_id=tid,
+            data={
                 "pack_key": pack_key,
                 "check_id": item_id,
                 "label": item_id.replace("_", " ").title(),
@@ -161,12 +159,10 @@ def activate_pack(
 def create_inspection(
     payload: dict[str, Any], db: Session = Depends(get_db), tenant_id: str = Query(...)
 ):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    row = repo.create(
-        "compliance_inspections",
-        tid,
-        {
+    row = _repo(db, "compliance_inspections").create(
+        tenant_id=tid,
+        data={
             **payload,
             "status": "in_progress",
             "started_at": datetime.now(UTC).isoformat(),
@@ -182,9 +178,10 @@ def submit_inspection(
     db: Session = Depends(get_db),
     tenant_id: str = Query(...),
 ):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    rows = repo.list("compliance_inspections", tid)
+    inspections_repo = _repo(db, "compliance_inspections")
+    findings_repo = _repo(db, "compliance_findings")
+    rows = inspections_repo.list(tenant_id=tid)
     inspection = next((r for r in rows if str(r["id"]) == inspection_id), None)
     if not inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
@@ -199,10 +196,9 @@ def submit_inspection(
         or responses.get("EXPIRATION_SWEEP") == "fail"
     ):
         hard_fail = True
-        f = repo.create(
-            "compliance_findings",
-            tid,
-            {
+        f = findings_repo.create(
+            tenant_id=tid,
+            data={
                 "inspection_id": inspection_id,
                 "rule_id": "NO_EXPIRED_MEDS_FLUIDS",
                 "severity": "hard_fail",
@@ -220,10 +216,9 @@ def submit_inspection(
 
     for item_id in _MANDATORY_ITEMS:
         if responses.get(item_id) is False:
-            f = repo.create(
-                "compliance_findings",
-                tid,
-                {
+            f = findings_repo.create(
+                tenant_id=tid,
+                data={
                     "inspection_id": inspection_id,
                     "rule_id": "MANDATORY_PRESENCE_10",
                     "check_id": item_id,
@@ -238,10 +233,9 @@ def submit_inspection(
 
     narc_seal = responses.get("NARC_SEAL_INTACT")
     if narc_seal is False:
-        w = repo.create(
-            "compliance_findings",
-            tid,
-            {
+        w = findings_repo.create(
+            tenant_id=tid,
+            data={
                 "inspection_id": inspection_id,
                 "rule_id": "NARC_SEAL_INTACT",
                 "severity": "warning",
@@ -258,11 +252,11 @@ def submit_inspection(
     else:
         result_status = "pass"
 
-    repo.update(
-        "compliance_inspections",
-        tid,
-        uuid.UUID(inspection_id),
-        {
+    inspections_repo.update(
+        tenant_id=tid,
+        record_id=uuid.UUID(inspection_id),
+        expected_version=inspection.get("version", 0),
+        patch={"data": {
             **inspection["data"],
             "status": "complete",
             "result_status": result_status,
@@ -271,7 +265,7 @@ def submit_inspection(
             "warning_count": len(warnings),
             "submitted_at": datetime.now(UTC).isoformat(),
             "responses": responses,
-        },
+        }},
     )
 
     return {
@@ -285,9 +279,8 @@ def submit_inspection(
 
 @router.get("/inspections")
 def list_inspections(db: Session = Depends(get_db), tenant_id: str = Query(...)):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    rows = repo.list("compliance_inspections", tid)
+    rows = _repo(db, "compliance_inspections").list(tenant_id=tid)
     return [{"id": str(r["id"]), "data": r["data"]} for r in rows]
 
 
@@ -295,9 +288,8 @@ def list_inspections(db: Session = Depends(get_db), tenant_id: str = Query(...))
 def get_inspection(
     inspection_id: str, db: Session = Depends(get_db), tenant_id: str = Query(...)
 ):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    rows = repo.list("compliance_inspections", tid)
+    rows = _repo(db, "compliance_inspections").list(tenant_id=tid)
     inspection = next((r for r in rows if str(r["id"]) == inspection_id), None)
     if not inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
@@ -308,9 +300,8 @@ def get_inspection(
 def get_inspection_findings(
     inspection_id: str, db: Session = Depends(get_db), tenant_id: str = Query(...)
 ):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    rows = repo.list("compliance_findings", tid)
+    rows = _repo(db, "compliance_findings").list(tenant_id=tid)
     findings = [r for r in rows if r["data"].get("inspection_id") == inspection_id]
     return [{"id": str(r["id"]), "data": r["data"]} for r in findings]
 
@@ -322,9 +313,8 @@ def get_inspection_findings(
 
 @router.get("/reports/fleet-score")
 def fleet_score(db: Session = Depends(get_db), tenant_id: str = Query(...)):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    rows = repo.list("compliance_inspections", tid)
+    rows = _repo(db, "compliance_inspections").list(tenant_id=tid)
     completed = [r for r in rows if r["data"].get("status") == "complete"]
     if not completed:
         return {"fleet_score": None, "inspections_scored": 0}
@@ -339,9 +329,8 @@ def fleet_score(db: Session = Depends(get_db), tenant_id: str = Query(...)):
 
 @router.get("/reports/inspection-ready")
 def inspection_ready(db: Session = Depends(get_db), tenant_id: str = Query(...)):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    inspections = repo.list("compliance_inspections", tid)
+    inspections = _repo(db, "compliance_inspections").list(tenant_id=tid)
     recent_by_unit: dict[str, dict] = {}
     for r in inspections:
         uid = r["data"].get("unit_id", "unknown")
@@ -385,8 +374,8 @@ _WIZARD_STEPS = [
 def wizard_step(
     payload: dict[str, Any], db: Session = Depends(get_db), tenant_id: str = Query(...)
 ):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
+    wizard_repo = _repo(db, "kitlink_wizard_state")
     step = payload.get("step")
     if step not in _WIZARD_STEPS:
         raise HTTPException(
@@ -394,7 +383,7 @@ def wizard_step(
             detail=f"Invalid step '{step}'. Valid steps: {_WIZARD_STEPS}",
         )
 
-    rows = repo.list("kitlink_wizard_state", tid)
+    rows = wizard_repo.list(tenant_id=tid)
     existing = rows[0] if rows else None
 
     if existing:
@@ -402,26 +391,25 @@ def wizard_step(
         if step not in steps_completed:
             steps_completed.append(step)
         go_live_complete = all(s in steps_completed for s in _WIZARD_STEPS)
-        repo.update(
-            "kitlink_wizard_state",
-            tid,
-            existing["id"],
-            {
+        wizard_repo.update(
+            tenant_id=tid,
+            record_id=existing["id"],
+            expected_version=existing.get("version", 0),
+            patch={"data": {
                 **existing["data"],
                 "steps_completed": steps_completed,
                 "go_live_complete": go_live_complete,
                 "last_step": step,
                 "last_updated": datetime.now(UTC).isoformat(),
-            },
+            }},
         )
         state_id = str(existing["id"])
     else:
         steps_completed = [step]
         go_live_complete = len(_WIZARD_STEPS) == 1
-        row = repo.create(
-            "kitlink_wizard_state",
-            tid,
-            {
+        row = wizard_repo.create(
+            tenant_id=tid,
+            data={
                 "steps_completed": steps_completed,
                 "go_live_complete": go_live_complete,
                 "last_step": step,
@@ -446,9 +434,8 @@ def wizard_step(
 
 @router.get("/wizard/state")
 def wizard_state(db: Session = Depends(get_db), tenant_id: str = Query(...)):
-    repo = _repo(db)
     tid = uuid.UUID(tenant_id)
-    rows = repo.list("kitlink_wizard_state", tid)
+    rows = _repo(db, "kitlink_wizard_state").list(tenant_id=tid)
     if not rows:
         return {
             "started": False,

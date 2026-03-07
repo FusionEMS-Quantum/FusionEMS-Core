@@ -222,7 +222,6 @@ TENANT_TABLES: set[str] = {
     "compliance_rules",
     "compliance_reports",
     "tenant_compliance_config",
-    "hems_mission_events",
     "rep_signatures",
     "patient_statements",
     "appeal_drafts",

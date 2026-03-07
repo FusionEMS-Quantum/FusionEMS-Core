@@ -48,7 +48,7 @@ async def signup(
     system_tenant = settings.system_tenant_id
     try:
         tenant_uuid = uuid.UUID(system_tenant) if system_tenant else uuid.uuid4()
-    except Exception as e:
+    except Exception:
         tenant_uuid = uuid.uuid4()
     svc = DominationService(db, get_event_publisher())
     application = await svc.create(
@@ -119,7 +119,7 @@ async def signup(
         }
     ]
 
-    base_url = settings.api_base_url.rstrip("/")
+    base_url = str(settings.api_base_url).rstrip("/")
     session = stripe_lib.checkout.Session.create(
         mode="subscription",
         line_items=line_items,
@@ -153,7 +153,7 @@ async def stripe_webhook(
         )
     except StripeNotConfigured as e:
         raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_signature")
 
     event_id = event.get("id")
@@ -168,7 +168,7 @@ async def stripe_webhook(
             if settings_system_tenant
             else uuid.uuid4()
         )
-    except Exception as e:
+    except Exception:
         system_uuid = uuid.uuid4()
 
     idempotency_tenant = system_uuid
@@ -292,7 +292,7 @@ async def _handle_tenant_billing_event(
         pi_id = pi_obj.get("id")
         try:
             tenant_uuid = uuid.UUID(str(tenant_id))
-        except Exception as e:
+        except Exception:
             tenant_uuid = uuid.uuid4()
         publisher = get_event_publisher()
         await emit_payment_confirmed(

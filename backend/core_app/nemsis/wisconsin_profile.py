@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass
@@ -137,7 +136,7 @@ class WisconsinProfile:
 
         return result
 
-    def _get_field(self, record: dict, path: str) -> Optional[str]:
+    def _get_field(self, record: dict, path: str) -> str | None:
         parts = path.split(".")
         current = record
         for part in parts:
@@ -149,37 +148,37 @@ class WisconsinProfile:
                 return None
         return str(current) if current is not None else None
 
-    def _check_etimes_06(self, record: dict) -> Optional[str]:
+    def _check_etimes_06(self, record: dict) -> str | None:
         val = self._get_field(record, "eTimes.06")
         if not val:
             return "Unit Arrived on Scene date/time is missing"
         return None
 
-    def _check_etimes_07(self, record: dict) -> Optional[str]:
+    def _check_etimes_07(self, record: dict) -> str | None:
         val = self._get_field(record, "eTimes.07")
         if not val:
             return "Arrived at Patient date/time is missing"
         return None
 
-    def _check_eresponse_13(self, record: dict) -> Optional[str]:
+    def _check_eresponse_13(self, record: dict) -> str | None:
         val = self._get_field(record, "eResponse.13")
         if not val:
             return "Unit Transport and Equipment Capability is missing"
         return None
 
-    def _check_eresponse_23(self, record: dict) -> Optional[str]:
+    def _check_eresponse_23(self, record: dict) -> str | None:
         val = self._get_field(record, "eResponse.23")
         if not val:
             return "Response Mode to Scene is missing"
         return None
 
-    def _check_esituation_11(self, record: dict) -> Optional[str]:
+    def _check_esituation_11(self, record: dict) -> str | None:
         val = self._get_field(record, "eSituation.11")
         if not val:
             return "Provider Primary Impression is missing"
         return None
 
-    def _check_epatient_13(self, record: dict) -> Optional[str]:
+    def _check_epatient_13(self, record: dict) -> str | None:
         val = self._get_field(record, "ePatient.13")
         if not val:
             return "Patient Gender is missing"
@@ -187,7 +186,7 @@ class WisconsinProfile:
             return f"Patient Gender code '{val}' is not in WI-accepted code set"
         return None
 
-    def _check_edisposition_12(self, record: dict) -> Optional[str]:
+    def _check_edisposition_12(self, record: dict) -> str | None:
         val = self._get_field(record, "eDisposition.12")
         if not val:
             return "Incident/Patient Disposition is missing"
@@ -195,13 +194,13 @@ class WisconsinProfile:
             return f"Disposition code '{val}' is not in WI-accepted code set"
         return None
 
-    def _check_escene_09(self, record: dict) -> Optional[str]:
+    def _check_escene_09(self, record: dict) -> str | None:
         val = self._get_field(record, "eScene.09")
         if not val:
             return "Incident Location Type is missing"
         return None
 
-    def _check_software_info(self, record: dict) -> Optional[str]:
+    def _check_software_info(self, record: dict) -> str | None:
         val = self._get_field(record, "eRecord.SoftwareApplicationGroup")
         if not val:
             return "Software application group info missing for WARDS submission"

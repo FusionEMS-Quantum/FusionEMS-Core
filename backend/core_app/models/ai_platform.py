@@ -5,30 +5,30 @@ Governance, Human Override, Domain Copilots, Explainability.
 All models are tenant-scoped via TenantScopedMixin with UUID primary keys
 following the established FusionEMS-Core pattern.
 """
+# pylint: disable=not-callable,unsubscriptable-object
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core_app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 from core_app.models.tenant import TenantScopedMixin
 
-
 # ── Enumerations ─────────────────────────────────────────────────────────────
 
-class AIRiskTier(str, Enum):
+class AIRiskTier(StrEnum):
     LOW_RISK = "LOW_RISK"
     MODERATE_RISK = "MODERATE_RISK"
     HIGH_RISK = "HIGH_RISK"
     RESTRICTED = "RESTRICTED"
 
 
-class AIWorkflowState(str, Enum):
+class AIWorkflowState(StrEnum):
     QUEUED = "QUEUED"
     CONTEXT_READY = "CONTEXT_READY"
     RUNNING = "RUNNING"
@@ -39,7 +39,7 @@ class AIWorkflowState(str, Enum):
     DISCARDED = "DISCARDED"
 
 
-class AIGovernanceState(str, Enum):
+class AIGovernanceState(StrEnum):
     ALLOWED = "ALLOWED"
     LIMITED = "LIMITED"
     HUMAN_REVIEW_REQUIRED = "HUMAN_REVIEW_REQUIRED"
@@ -47,7 +47,7 @@ class AIGovernanceState(str, Enum):
     DISABLED = "DISABLED"
 
 
-class AIOverrideState(str, Enum):
+class AIOverrideState(StrEnum):
     AI_ACTIVE = "AI_ACTIVE"
     HUMAN_TAKEOVER = "HUMAN_TAKEOVER"
     REVIEW_PENDING = "REVIEW_PENDING"
@@ -57,13 +57,13 @@ class AIOverrideState(str, Enum):
     AI_DISABLED_FOR_RECORD = "AI_DISABLED_FOR_RECORD"
 
 
-class AIConfidenceLevel(str, Enum):
+class AIConfidenceLevel(StrEnum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
 
-class AIExplanationSeverity(str, Enum):
+class AIExplanationSeverity(StrEnum):
     BLOCKING = "BLOCKING"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -71,20 +71,20 @@ class AIExplanationSeverity(str, Enum):
     INFORMATIONAL = "INFORMATIONAL"
 
 
-class AIExplanationSource(str, Enum):
+class AIExplanationSource(StrEnum):
     AI_REVIEW = "AI_REVIEW"
     RULE_PLUS_AI = "RULE_PLUS_AI"
     PROVIDER_RESPONSE = "PROVIDER_RESPONSE"
     HUMAN_NOTE = "HUMAN_NOTE"
 
 
-class AIHumanReviewRequirement(str, Enum):
+class AIHumanReviewRequirement(StrEnum):
     REQUIRED = "REQUIRED"
     RECOMMENDED = "RECOMMENDED"
     SAFE_TO_AUTO_PROCESS = "SAFE_TO_AUTO_PROCESS"
 
 
-class AIPolicyEnforcement(str, Enum):
+class AIPolicyEnforcement(StrEnum):
     BLOCK = "BLOCK"
     FLAG = "FLAG"
     LOG_ONLY = "LOG_ONLY"
@@ -114,13 +114,13 @@ class AIUseCase(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    versions: Mapped[list["AIUseCaseVersion"]] = relationship(
+    versions: Mapped[list[AIUseCaseVersion]] = relationship(
         back_populates="use_case", cascade="all, delete-orphan"
     )
-    workflows: Mapped[list["AIWorkflowRun"]] = relationship(
+    workflows: Mapped[list[AIWorkflowRun]] = relationship(
         back_populates="use_case", cascade="all, delete-orphan"
     )
-    model_binding: Mapped["AIModelBinding | None"] = relationship(
+    model_binding: Mapped[AIModelBinding | None] = relationship(
         back_populates="use_case", uselist=False, cascade="all, delete-orphan"
     )
 
@@ -136,7 +136,7 @@ class AIUseCaseVersion(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMi
     change_reason: Mapped[str] = mapped_column(Text, nullable=False)
     snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
-    use_case: Mapped["AIUseCase"] = relationship(back_populates="versions")
+    use_case: Mapped[AIUseCase] = relationship(back_populates="versions")
 
 
 class AIModelBinding(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin):
@@ -151,7 +151,7 @@ class AIModelBinding(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixi
     temperature: Mapped[float | None] = mapped_column(nullable=True)
     timeout_seconds: Mapped[int] = mapped_column(nullable=False, default=30)
 
-    use_case: Mapped["AIUseCase"] = relationship(back_populates="model_binding")
+    use_case: Mapped[AIUseCase] = relationship(back_populates="model_binding")
 
 
 class AIPromptTemplate(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin):
@@ -211,23 +211,23 @@ class AIWorkflowRun(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin
         DateTime(timezone=True), nullable=True
     )
 
-    use_case: Mapped["AIUseCase"] = relationship(back_populates="workflows")
-    override_events: Mapped[list["AIHumanOverrideEvent"]] = relationship(
+    use_case: Mapped[AIUseCase] = relationship(back_populates="workflows")
+    override_events: Mapped[list[AIHumanOverrideEvent]] = relationship(
         back_populates="workflow", cascade="all, delete-orphan"
     )
-    context_snapshots: Mapped[list["AIContextSnapshot"]] = relationship(
+    context_snapshots: Mapped[list[AIContextSnapshot]] = relationship(
         back_populates="workflow", cascade="all, delete-orphan"
     )
-    failure_records: Mapped[list["AIWorkflowFailure"]] = relationship(
+    failure_records: Mapped[list[AIWorkflowFailure]] = relationship(
         back_populates="workflow", cascade="all, delete-orphan"
     )
-    fallback_decisions: Mapped[list["AIFallbackDecision"]] = relationship(
+    fallback_decisions: Mapped[list[AIFallbackDecision]] = relationship(
         back_populates="workflow", cascade="all, delete-orphan"
     )
-    explanation_records: Mapped[list["AIExplanationRecord"]] = relationship(
+    explanation_records: Mapped[list[AIExplanationRecord]] = relationship(
         back_populates="workflow", cascade="all, delete-orphan"
     )
-    review_items: Mapped[list["AIReviewItem"]] = relationship(
+    review_items: Mapped[list[AIReviewItem]] = relationship(
         back_populates="workflow", cascade="all, delete-orphan"
     )
 
@@ -245,7 +245,7 @@ class AIContextSnapshot(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    workflow: Mapped["AIWorkflowRun"] = relationship(back_populates="context_snapshots")
+    workflow: Mapped[AIWorkflowRun] = relationship(back_populates="context_snapshots")
 
 
 class AIWorkflowFailure(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
@@ -262,7 +262,7 @@ class AIWorkflowFailure(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    workflow: Mapped["AIWorkflowRun"] = relationship(back_populates="failure_records")
+    workflow: Mapped[AIWorkflowRun] = relationship(back_populates="failure_records")
 
 
 class AIFallbackDecision(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
@@ -278,7 +278,7 @@ class AIFallbackDecision(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    workflow: Mapped["AIWorkflowRun"] = relationship(back_populates="fallback_decisions")
+    workflow: Mapped[AIWorkflowRun] = relationship(back_populates="fallback_decisions")
 
 
 # ── PART 5: AI SAFETY + GOVERNANCE ────────────────────────────────────────────
@@ -370,7 +370,7 @@ class AIExplanationRecord(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    workflow: Mapped["AIWorkflowRun"] = relationship(back_populates="explanation_records")
+    workflow: Mapped[AIWorkflowRun] = relationship(back_populates="explanation_records")
 
 
 class AIConfidenceRecord(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
@@ -416,7 +416,7 @@ class AIHumanOverrideEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    workflow: Mapped["AIWorkflowRun"] = relationship(back_populates="override_events")
+    workflow: Mapped[AIWorkflowRun] = relationship(back_populates="override_events")
 
 
 class AIReviewItem(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin):
@@ -437,11 +437,11 @@ class AIReviewItem(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin)
         DateTime(timezone=True), nullable=True
     )
 
-    workflow: Mapped["AIWorkflowRun"] = relationship(back_populates="review_items")
-    approval_events: Mapped[list["AIApprovalEvent"]] = relationship(
+    workflow: Mapped[AIWorkflowRun] = relationship(back_populates="review_items")
+    approval_events: Mapped[list[AIApprovalEvent]] = relationship(
         back_populates="review_item", cascade="all, delete-orphan"
     )
-    rejection_events: Mapped[list["AIRejectionEvent"]] = relationship(
+    rejection_events: Mapped[list[AIRejectionEvent]] = relationship(
         back_populates="review_item", cascade="all, delete-orphan"
     )
 
@@ -458,7 +458,7 @@ class AIApprovalEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    review_item: Mapped["AIReviewItem"] = relationship(back_populates="approval_events")
+    review_item: Mapped[AIReviewItem] = relationship(back_populates="approval_events")
 
 
 class AIRejectionEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
@@ -474,7 +474,7 @@ class AIRejectionEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    review_item: Mapped["AIReviewItem"] = relationship(back_populates="rejection_events")
+    review_item: Mapped[AIReviewItem] = relationship(back_populates="rejection_events")
 
 
 class AIResumeEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
@@ -504,13 +504,13 @@ class AIDomainCopilot(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMix
     explanation_rules: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     data_scope_controls: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
-    policies: Mapped[list["AIDomainPolicy"]] = relationship(
+    policies: Mapped[list[AIDomainPolicy]] = relationship(
         back_populates="copilot", cascade="all, delete-orphan"
     )
-    action_boundaries: Mapped[list["AICopilotActionBoundary"]] = relationship(
+    action_boundaries: Mapped[list[AICopilotActionBoundary]] = relationship(
         back_populates="copilot", cascade="all, delete-orphan"
     )
-    audit_events: Mapped[list["AICopilotAuditEvent"]] = relationship(
+    audit_events: Mapped[list[AICopilotAuditEvent]] = relationship(
         back_populates="copilot", cascade="all, delete-orphan"
     )
 
@@ -528,7 +528,7 @@ class AIDomainPolicy(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixi
     )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    copilot: Mapped["AIDomainCopilot"] = relationship(back_populates="policies")
+    copilot: Mapped[AIDomainCopilot] = relationship(back_populates="policies")
 
 
 class AICopilotActionBoundary(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin):
@@ -541,7 +541,7 @@ class AICopilotActionBoundary(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, Time
     is_allowed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     requires_human_review: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    copilot: Mapped["AIDomainCopilot"] = relationship(back_populates="action_boundaries")
+    copilot: Mapped[AIDomainCopilot] = relationship(back_populates="action_boundaries")
 
 
 class AICopilotAuditEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
@@ -558,4 +558,82 @@ class AICopilotAuditEvent(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    copilot: Mapped["AIDomainCopilot"] = relationship(back_populates="audit_events")
+    copilot: Mapped[AIDomainCopilot] = relationship(back_populates="audit_events")
+
+
+# ── AI QUEUE ITEM (Directive Part 4 — explicit queue object) ──────────────────
+
+class AIQueueItem(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
+    __tablename__ = "ai_queue_items"
+
+    workflow_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ai_workflow_runs.id"), nullable=False, index=True
+    )
+    use_case_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ai_use_cases.id"), nullable=False, index=True
+    )
+    queue_name: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="default"
+    )
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="PENDING"
+    )
+    max_retries: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    scheduled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    picked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+# ── AI USER-FACING SUMMARY (Directive Part 6 — explicit summary object) ──────
+
+class AIUserFacingSummary(Base, UUIDPrimaryKeyMixin, TenantScopedMixin):
+    __tablename__ = "ai_user_facing_summaries"
+
+    workflow_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ai_workflow_runs.id"), nullable=False, index=True
+    )
+    what_happened: Mapped[str] = mapped_column(Text, nullable=False)
+    why_it_matters: Mapped[str] = mapped_column(Text, nullable=False)
+    do_this_next: Mapped[str] = mapped_column(Text, nullable=False)
+    confidence: Mapped[str] = mapped_column(String(10), nullable=False)
+    domain: Mapped[str] = mapped_column(String(100), nullable=False)
+    is_simple_mode: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+# ── AI TENANT SETTINGS (Directive Part 5 — tenant-level AI config) ───────────
+
+class AITenantSettings(Base, UUIDPrimaryKeyMixin, TenantScopedMixin, TimestampMixin):
+    __tablename__ = "ai_tenant_settings"
+
+    ai_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    default_risk_tier: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=AIRiskTier.MODERATE_RISK.value
+    )
+    auto_approve_low_risk: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    require_human_review_high_risk: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    max_concurrent_workflows: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
+    global_confidence_threshold: Mapped[str] = mapped_column(
+        String(10), nullable=False, default=AIConfidenceLevel.MEDIUM.value
+    )
+    allowed_domains: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default=lambda: {"billing": True, "clinical": True, "dispatch": True, "readiness": True, "support": True, "founder": True}
+    )
+    environment_ai_toggle: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

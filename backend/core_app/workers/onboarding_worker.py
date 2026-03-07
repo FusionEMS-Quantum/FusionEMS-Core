@@ -321,8 +321,9 @@ def _run_deployment(
 # ── DB helpers (raw SQL for Lambda-safe synchronous execution) ────────────────
 
 def _get_or_create_run(db: Any, stripe_event_id: str, meta: dict) -> dict:
-    from sqlalchemy import text as sa_text
     import uuid as _uuid
+
+    from sqlalchemy import text as sa_text
 
     existing = db.execute(
         sa_text(
@@ -355,8 +356,9 @@ def _get_or_create_run(db: Any, stripe_event_id: str, meta: dict) -> dict:
 
 
 def _step(db: Any, run_id: str, step_name: str, status: str, result: dict) -> None:
-    from sqlalchemy import text as sa_text
     import uuid as _uuid
+
+    from sqlalchemy import text as sa_text
 
     db.execute(
         sa_text(

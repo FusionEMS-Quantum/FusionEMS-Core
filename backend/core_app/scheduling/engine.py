@@ -39,7 +39,7 @@ class SchedulingEngine:
 
     def list_expiring_credentials(self, within_days: int = 30) -> list[dict[str, Any]]:
         cutoff = self._now() + dt.timedelta(days=within_days)
-        creds = self.repo_credentials.list(self.tenant_id, limit=500)
+        creds = self.repo_credentials.list(tenant_id=self.tenant_id, limit=500)
         expiring: list[dict[str, Any]] = []
         for c in creds:
             expires = c["data"].get("expires_at")
@@ -57,14 +57,14 @@ class SchedulingEngine:
         self, crew_member_id: uuid.UUID, role: str, at: dt.datetime | None = None
     ) -> tuple[bool, list[str]]:
         at = at or self._now()
-        reqs = self.repo_requirements.list(self.tenant_id, limit=500)
+        reqs = self.repo_requirements.list(tenant_id=self.tenant_id, limit=500)
         required = [r["data"] for r in reqs if r["data"].get("role") == role]
         required_codes = set()
         for r in required:
             for code in r.get("required_codes") or []:
                 required_codes.add(code)
 
-        creds = self.repo_credentials.list(self.tenant_id, limit=500)
+        creds = self.repo_credentials.list(tenant_id=self.tenant_id, limit=500)
         active_codes = set()
         missing: list[str] = []
         for c in creds:
@@ -96,12 +96,12 @@ class SchedulingEngine:
         end = start + dt.timedelta(hours=hours)
 
         # Choose active ruleset (latest by created_at)
-        rulesets = self.repo_coverage.list(self.tenant_id, limit=50)
+        rulesets = self.repo_coverage.list(tenant_id=self.tenant_id, limit=50)
         rulesets_sorted = sorted(rulesets, key=lambda r: r.get("created_at") or "", reverse=True)
         active_ruleset = rulesets_sorted[0]["data"] if rulesets_sorted else {"minimums": []}
 
         # Shift instances in window
-        instances = self.repo_shift_instances.list(self.tenant_id, limit=2000)
+        instances = self.repo_shift_instances.list(tenant_id=self.tenant_id, limit=2000)
         window_instances = []
         for inst in instances:
             d = inst["data"]
@@ -115,7 +115,7 @@ class SchedulingEngine:
             window_instances.append(inst)
 
         # Build assignment counts per shift_instance_id per role
-        assignments = self.repo_assignments.list(self.tenant_id, limit=5000)
+        assignments = self.repo_assignments.list(tenant_id=self.tenant_id, limit=5000)
         counts: dict[str, dict[str, int]] = {}
         for a in assignments:
             d = a["data"]

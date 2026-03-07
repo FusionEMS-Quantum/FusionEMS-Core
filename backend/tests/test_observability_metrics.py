@@ -1,15 +1,11 @@
 """Tests for Prometheus metrics instruments."""
 from core_app.observability.metrics import (
     ACTIVE_INCIDENTS,
-    AI_REQUEST_DURATION,
-    AI_REQUESTS_TOTAL,
     APP_ERRORS_TOTAL,
     DB_PROBE_LATENCY,
     HTTP_REQUEST_DURATION,
     HTTP_REQUESTS_TOTAL,
     PLATFORM_HEALTH_SCORE,
-    RATE_LIMIT_REJECTIONS,
-    REDIS_PROBE_LATENCY,
 )
 
 

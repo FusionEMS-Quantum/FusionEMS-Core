@@ -1,12 +1,11 @@
-from enum import Enum
-from typing import Optional
+# pylint: disable=unsubscriptable-object
 from datetime import datetime
 
-from sqlalchemy import String, ForeignKey, Integer, Float, Boolean, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
-from core_app.db.base import Base, UUIDPrimaryKeyMixin, TimestampMixin
+from core_app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 
 class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -30,7 +29,7 @@ class Module(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)  # e.g., "STATE_DEBT_SETOFF"
     description: Mapped[str] = mapped_column(Text, nullable=True)
-    product_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("products.id"), nullable=True)
+    product_id: Mapped[UUID | None] = mapped_column(ForeignKey("products.id"), nullable=True)
 
 
 class Price(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -41,16 +40,16 @@ class Price(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "prices"
 
     product_id: Mapped[UUID] = mapped_column(ForeignKey("products.id"), nullable=False)
-    module_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("modules.id"), nullable=True)
-    
+    module_id: Mapped[UUID | None] = mapped_column(ForeignKey("modules.id"), nullable=True)
+
     amount_cents: Mapped[int] = mapped_column(Integer, nullable=False)  # Base recurring
     currency: Mapped[str] = mapped_column(String(3), default="usd", nullable=False)
     interval: Mapped[str] = mapped_column(String(16), default="month", nullable=False)  # month, year
-    
+
     # Metered usage components
-    per_unit_amount_cents: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # e.g. per call
+    per_unit_amount_cents: Mapped[int | None] = mapped_column(Integer, nullable=True) # e.g. per call
     usage_type: Mapped[str] = mapped_column(String(16), default="licensed", nullable=False) # licensed, metered
-    
+
     stripe_price_id: Mapped[str] = mapped_column(String(128), unique=True, nullable=True)
     active: Mapped[bool] = mapped_column(default=True, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
@@ -66,11 +65,11 @@ class SubscriptionPlan(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenants.id"), unique=True, nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="active", nullable=False)
-    
-    stripe_subscription_id: Mapped[Optional[str]] = mapped_column(String(128), unique=True, nullable=True)
+
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(128), unique=True, nullable=True)
     current_period_start: Mapped[datetime] = mapped_column(nullable=True)
     current_period_end: Mapped[datetime] = mapped_column(nullable=True)
-    
+
     cancel_at_period_end: Mapped[bool] = mapped_column(default=False, nullable=False)
 
 
@@ -83,8 +82,8 @@ class SubscriptionItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     plan_id: Mapped[UUID] = mapped_column(ForeignKey("subscription_plans.id"), nullable=False)
     price_id: Mapped[UUID] = mapped_column(ForeignKey("prices.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(default=1, nullable=False)
-    
-    stripe_subscription_item_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+
+    stripe_subscription_item_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
 
 class ContractOverride(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -95,10 +94,10 @@ class ContractOverride(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenants.id"), nullable=False)
     price_id: Mapped[UUID] = mapped_column(ForeignKey("prices.id"), nullable=False)
-    
+
     override_amount_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     reason: Mapped[str] = mapped_column(String(255), nullable=True)
-    valid_until: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    valid_until: Mapped[datetime | None] = mapped_column(nullable=True)
 
 
 class UsageMeter(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -117,7 +116,7 @@ class UsageMeter(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     reported_to_stripe: Mapped[bool] = mapped_column(default=False, nullable=False)
-    stripe_usage_record_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    stripe_usage_record_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
 
 class BillingInvoiceMirror(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -129,19 +128,19 @@ class BillingInvoiceMirror(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenants.id"), nullable=False, index=True)
     stripe_invoice_id: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
-    stripe_subscription_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     status: Mapped[str] = mapped_column(String(32), nullable=False)  # draft, open, paid, void, uncollectible
     amount_due_cents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     amount_paid_cents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="usd", nullable=False)
 
-    period_start: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    period_end: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    paid_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    period_start: Mapped[datetime | None] = mapped_column(nullable=True)
+    period_end: Mapped[datetime | None] = mapped_column(nullable=True)
+    paid_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     line_items_json: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
-    hosted_invoice_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    hosted_invoice_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class PriceChangeAudit(Base, UUIDPrimaryKeyMixin, TimestampMixin):

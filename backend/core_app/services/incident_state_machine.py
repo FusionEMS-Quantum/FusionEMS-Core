@@ -7,15 +7,15 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
 
-class IncidentState(str, Enum):
+class IncidentState(StrEnum):
     DETECTED = "DETECTED"
     ACKNOWLEDGED = "ACKNOWLEDGED"
     INVESTIGATING = "INVESTIGATING"
@@ -24,7 +24,7 @@ class IncidentState(str, Enum):
     POSTMORTEM = "POSTMORTEM"
 
 
-class IncidentSeverity(str, Enum):
+class IncidentSeverity(StrEnum):
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -59,8 +59,8 @@ class Incident(BaseModel):
     source: str = ""
     description: str = ""
     assigned_to: str | None = None
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     resolved_at: str | None = None
     timeline: list[IncidentEvent] = Field(default_factory=list)
 
@@ -98,7 +98,7 @@ class IncidentService:
             source=source,
             description=description,
         )
-        incident.timeline.append(
+        incident.timeline.append(  # pylint: disable=no-member
             IncidentEvent(
                 timestamp=incident.created_at,
                 from_state=IncidentState.DETECTED,
@@ -133,7 +133,7 @@ class IncidentService:
             raise IncidentTransitionError(incident.state, target_state)
 
         from_state = incident.state
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
 
         incident.state = target_state
         incident.updated_at = now

@@ -123,7 +123,7 @@ async def validate_case(
         "risk_flags": result["risk_flags"],
         "created_task_ids": [t["id"] for t in created_tasks],
     }
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{current.tenant_id}.billing.case.validated",
         tenant_id=current.tenant_id,
         entity_type="billing_case",
@@ -243,11 +243,11 @@ async def submit_officeally(
                 correlation_id=getattr(request.state, "correlation_id", None),
             )
 
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{current.tenant_id}.billing.edi.837.created",
         tenant_id=current.tenant_id,
         entity_type="edi_artifact",
-        record_id=uuid.UUID(str(edi_row["id"])),
+        entity_id=uuid.UUID(str(edi_row["id"])),
         event_type="EDI_837_CREATED",
         payload={
             "billing_case_id": str(case_id),
@@ -278,7 +278,7 @@ async def import_era(
         x12 = base64.b64decode(body.x12_base64.encode("utf-8")).decode(
             "utf-8", errors="replace"
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_base64")
 
     parsed = parse_835(x12)
@@ -313,7 +313,7 @@ async def import_era(
             correlation_id=getattr(request.state, "correlation_id", None),
         )
 
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{current.tenant_id}.billing.era.imported",
         tenant_id=current.tenant_id,
         entity_type="era",
@@ -389,7 +389,7 @@ async def generate_appeal(
         correlation_id=getattr(request.state, "correlation_id", None),
     )
 
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{current.tenant_id}.billing.appeal.generated",
         tenant_id=current.tenant_id,
         entity_type="appeal",
@@ -472,11 +472,11 @@ async def create_payment_link(
             correlation_id=getattr(request.state, "correlation_id", None),
         )
 
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{current.tenant_id}.billing.payment_link.created",
         tenant_id=current.tenant_id,
         entity_type="patient_payment_link",
-        record_id=uuid.UUID(str(link_row["id"])),
+        entity_id=uuid.UUID(str(link_row["id"])),
         event_type="PAYMENT_LINK_CREATED",
         payload={"payment_link_id": link_row["id"], "stripe_session_id": sess["id"]},
         correlation_id=getattr(request.state, "correlation_id", None),

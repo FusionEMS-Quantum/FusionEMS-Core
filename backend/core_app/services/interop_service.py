@@ -6,7 +6,6 @@ and external data provenance tracking. It does NOT assume any direct hospital
 integration exists — it builds readiness first.
 """
 import uuid
-from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.orm import Session

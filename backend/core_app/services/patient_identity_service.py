@@ -196,7 +196,7 @@ class PatientIdentityService:
         candidate = result.scalar_one_or_none()
         if not candidate:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Duplicate candidate not found",
             )
         candidate.resolution = payload.resolution
@@ -226,7 +226,7 @@ class PatientIdentityService:
     ) -> MergeRequestResponse:
         if payload.source_patient_id == payload.target_patient_id:
             raise AppError(
-                code=ErrorCodes.VALIDATION_ERROR,
+                code=ErrorCodes.VALIDATION_ERROR, status_code=400,
                 message="Source and target patients must differ",
             )
         merge_req = PatientMergeRequest(
@@ -285,12 +285,12 @@ class PatientIdentityService:
         merge_req = result.scalar_one_or_none()
         if not merge_req:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Merge request not found",
             )
         if merge_req.status != MergeRequestStatus.PENDING_REVIEW:
             raise AppError(
-                code=ErrorCodes.VALIDATION_ERROR,
+                code=ErrorCodes.VALIDATION_ERROR, status_code=400,
                 message="Merge request is not in PENDING_REVIEW state",
             )
         new_status = (
@@ -384,7 +384,7 @@ class PatientIdentityService:
         flag = result.scalar_one_or_none()
         if not flag:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Relationship flag not found",
             )
         flag.is_active = False

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
-
+from typing import Any
 
 NERIS_ENTITY_SCHEMA_VERSION = "1.0"
 NERIS_INCIDENT_SCHEMA_VERSION = "1.0"
@@ -12,7 +11,7 @@ NERIS_INCIDENT_SCHEMA_VERSION = "1.0"
 class NERISFieldMapping:
     source_field: str
     target_field: str
-    transform: Optional[str] = None
+    transform: str | None = None
     required: bool = False
 
 

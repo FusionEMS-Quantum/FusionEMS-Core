@@ -552,12 +552,12 @@ async def validate_field(
     if value is not None and schema_elem["type"] == "integer":
         try:
             int(value)
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             errors.append(f"{element_id} must be an integer")
     if value is not None and schema_elem["type"] == "decimal":
         try:
             float(value)
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError):
             errors.append(f"{element_id} must be a decimal number")
     return {
         "valid": not errors,
@@ -624,7 +624,7 @@ async def validate_data_types(
         if t == "integer" and value is not None:
             try:
                 int(value)
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError):
                 errors.append(
                     {
                         "element": elem_id,
@@ -635,7 +635,7 @@ async def validate_data_types(
         elif t == "decimal" and value is not None:
             try:
                 float(value)
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError):
                 errors.append(
                     {
                         "element": elem_id,
@@ -1418,7 +1418,7 @@ async def medication_dosage_validator(
             try:
                 if float(dosage) <= 0:
                     errors.append({"index": i, "error": "Dosage must be positive"})
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError):
                 errors.append({"index": i, "error": "Dosage must be numeric"})
     return {
         "valid": not errors,

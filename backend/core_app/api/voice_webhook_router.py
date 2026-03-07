@@ -41,7 +41,7 @@ MAX_STMT_RETRIES = 1
 
 def _audio(prompt: str) -> str:
     settings = get_settings()
-    base = settings.ivr_audio_base_url.rstrip("/")
+    base = str(settings.ivr_audio_base_url).rstrip("/")
     return f"{base}/{prompt}"
 
 
@@ -313,7 +313,7 @@ async def telnyx_voice_webhook(
 
     try:
         payload = json.loads(raw_body)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_json")
 
     data = payload.get("data", {})
@@ -439,7 +439,7 @@ async def _handle_gather(
     try:
         call_state_bytes = base64.b64decode(raw_client_state + "==")
         call_state = call_state_bytes.decode("utf-8")
-    except Exception as e:
+    except Exception:
         call_state = raw_client_state
 
     call_record = _get_call(db, call_control_id)

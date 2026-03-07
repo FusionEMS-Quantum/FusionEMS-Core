@@ -9,21 +9,20 @@ AI isolation rule: all AI output is advisory. Failures in this module
 must never block billing workflows. Every prediction includes confidence
 and a deterministic fallback.
 """
+# pylint: disable=not-callable
 from __future__ import annotations
 
 import logging
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, UTC
-from typing import Any, Optional
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import func, case
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from core_app.models.billing import (
-    AppealReview,
     Claim,
-    ClaimAuditEvent,
     ClaimIssue,
     ClaimState,
     PatientBalanceState,
@@ -125,7 +124,7 @@ class BillingAIService:
         # Check for unresolved issues
         issue_count = self.db.query(func.count(ClaimIssue.id)).filter(
             ClaimIssue.claim_id == claim.id,
-            ClaimIssue.resolved == False,
+            not ClaimIssue.resolved,
         ).scalar() or 0
 
         if issue_count > 0:

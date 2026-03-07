@@ -1,3 +1,4 @@
+# pylint: disable=unsubscriptable-object
 import uuid
 from datetime import datetime
 

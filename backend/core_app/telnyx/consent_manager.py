@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +12,11 @@ class ConsentRecord:
     phone_number: str
     consent_type: str
     granted: bool
-    granted_at: Optional[str] = None
-    revoked_at: Optional[str] = None
+    granted_at: str | None = None
+    revoked_at: str | None = None
     channel: str = "sms"
     source: str = "web_form"
-    ip_address: Optional[str] = None
+    ip_address: str | None = None
 
 
 class TelnyxConsentManager:
@@ -42,13 +41,13 @@ class TelnyxConsentManager:
         consent_type: str = "transactional",
         channel: str = "sms",
         source: str = "web_form",
-        ip_address: Optional[str] = None,
+        ip_address: str | None = None,
     ) -> ConsentRecord:
         record = ConsentRecord(
             phone_number=phone_number,
             consent_type=consent_type,
             granted=True,
-            granted_at=datetime.now(timezone.utc).isoformat(),
+            granted_at=datetime.now(UTC).isoformat(),
             channel=channel,
             source=source,
             ip_address=ip_address,
@@ -77,7 +76,7 @@ class TelnyxConsentManager:
             "channel": channel,
             "message_id": message_id,
             "content_type": content_type,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         if self._db:
             self._db.log_communication(entry)

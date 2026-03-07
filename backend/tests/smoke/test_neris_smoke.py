@@ -6,8 +6,26 @@ from unittest.mock import patch
 
 import pytest
 
+
+def _db_reachable() -> bool:
+    """Return True only if we can actually connect to the DATABASE_URL."""
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        return False
+    try:
+        from sqlalchemy import create_engine, text
+
+        engine = create_engine(url, pool_pre_ping=True)
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        engine.dispose()
+        return True
+    except Exception:
+        return False
+
+
 SKIP_IF_NO_DB = pytest.mark.skipif(
-    not os.environ.get("DATABASE_URL"), reason="DATABASE_URL not set — skipping smoke tests"
+    not _db_reachable(), reason="DATABASE_URL not reachable — skipping smoke tests"
 )
 
 

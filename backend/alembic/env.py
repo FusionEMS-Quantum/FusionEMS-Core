@@ -5,10 +5,10 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
 
+import core_app.models  # noqa: F401 — ensure all ORM models register with metadata
 from alembic import context
 from core_app.core.config import get_settings
 from core_app.db.base import Base
-import core_app.models  # noqa: F401 — ensure all ORM models register with metadata
 
 config = context.config
 

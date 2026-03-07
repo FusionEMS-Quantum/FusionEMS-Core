@@ -4,8 +4,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ NERIS_EXPORT_QUEUE_URL = os.environ.get("NERIS_EXPORT_QUEUE_URL", "")
 
 
 class NERISPublishQueue:
-    def __init__(self, sqs_client=None, queue_url: Optional[str] = None):
+    def __init__(self, sqs_client=None, queue_url: str | None = None):
         self._queue_url = queue_url or NERIS_EXPORT_QUEUE_URL
         self._sqs = sqs_client
 
@@ -65,7 +64,7 @@ class NERISPublishQueue:
             "tenant_id": tenant_id,
             "department_id": department_id,
             "payload": payload,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
         }
 
         if not self._queue_url:

@@ -8,10 +8,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # ── Claim Schemas ─────────────────────────────────────────────────────────────
 
@@ -28,13 +27,12 @@ class ClaimSummary(BaseModel):
     patient_paid_cents: int
     remaining_collectible_balance_cents: int
     aging_days: int
-    primary_payer_name: Optional[str] = None
+    primary_payer_name: str | None = None
     is_valid: bool
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClaimIssueOut(BaseModel):
@@ -48,22 +46,20 @@ class ClaimIssueOut(BaseModel):
     resolved: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClaimAuditEventOut(BaseModel):
     id: uuid.UUID
     claim_id: uuid.UUID
-    user_id: Optional[uuid.UUID] = None
+    user_id: uuid.UUID | None = None
     event_type: str
-    old_value: Optional[str] = None
-    new_value: Optional[str] = None
+    old_value: str | None = None
+    new_value: str | None = None
     metadata_blob: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Pre-Submission Rules ──────────────────────────────────────────────────────
@@ -152,8 +148,7 @@ class PaymentLinkEventOut(BaseModel):
     sent_via: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Office Ally / EDI Schemas ─────────────────────────────────────────────────
@@ -192,12 +187,11 @@ class ArAgingReportOut(BaseModel):
 class ProductOut(BaseModel):
     id: uuid.UUID
     name: str
-    description: Optional[str] = None
-    stripe_product_id: Optional[str] = None
+    description: str | None = None
+    stripe_product_id: str | None = None
     active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PriceOut(BaseModel):
@@ -206,15 +200,14 @@ class PriceOut(BaseModel):
     amount_cents: int
     currency: str
     interval: str
-    per_unit_amount_cents: Optional[int] = None
+    per_unit_amount_cents: int | None = None
     usage_type: str
-    stripe_price_id: Optional[str] = None
+    stripe_price_id: str | None = None
     active: bool
     version: int
     effective_from: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UsageMeterOut(BaseModel):
@@ -227,8 +220,7 @@ class UsageMeterOut(BaseModel):
     quantity: int
     reported_to_stripe: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BillingInvoiceMirrorOut(BaseModel):
@@ -239,12 +231,11 @@ class BillingInvoiceMirrorOut(BaseModel):
     amount_due_cents: int
     amount_paid_cents: int
     currency: str
-    period_start: Optional[datetime] = None
-    period_end: Optional[datetime] = None
-    paid_at: Optional[datetime] = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
+    paid_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Agency Policy Schemas ─────────────────────────────────────────────────────
@@ -262,8 +253,7 @@ class AgencyBillingPolicyOut(BaseModel):
     days_until_collections: int
     grace_period_days: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AgencyPaymentPlanPolicyOut(BaseModel):
@@ -276,8 +266,7 @@ class AgencyPaymentPlanPolicyOut(BaseModel):
     allow_custom_schedules: bool
     grace_period_days: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AgencyWriteoffPolicyOut(BaseModel):
@@ -289,8 +278,7 @@ class AgencyWriteoffPolicyOut(BaseModel):
     writeoff_aging_days: int
     bad_debt_category: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AgencyDebtSetoffPolicyOut(BaseModel):
@@ -304,13 +292,12 @@ class AgencyDebtSetoffPolicyOut(BaseModel):
     max_submissions_per_batch: int
     require_human_review: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Debt Setoff Schemas ───────────────────────────────────────────────────────
 
-class DebtSetoffBatchOut(BaseModel):
+class DebtSetoffExportBatchOut(BaseModel):
     id: uuid.UUID
     enrollment_id: uuid.UUID
     tenant_id: uuid.UUID
@@ -318,14 +305,13 @@ class DebtSetoffBatchOut(BaseModel):
     record_count: int
     total_amount_cents: int
     status: str
-    submitted_at: Optional[datetime] = None
-    response_received_at: Optional[datetime] = None
+    submitted_at: datetime | None = None
+    response_received_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class StateDebtSetoffRulePackOut(BaseModel):
+class DebtSetoffRulePackOut(BaseModel):
     id: uuid.UUID
     state_profile_id: uuid.UUID
     notice_required_days: int
@@ -335,10 +321,9 @@ class StateDebtSetoffRulePackOut(BaseModel):
     eligible_refund_types: list[str]
     submission_format: str
     required_fields: list[str]
-    statute_reference: Optional[str] = None
+    statute_reference: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Batch Resubmit / Command Center ──────────────────────────────────────────

@@ -1,35 +1,432 @@
 'use client';
+
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { QuantumEmptyState } from '@/components/ui';
+
+const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+
+interface TenantPolicy {
+  id: string;
+  tenant_id: string;
+  key: string;
+  value: Record<string, unknown>;
+  is_active: boolean;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface PolicyVersion {
+  id: string;
+  version_number: number;
+  changed_by_user_id: string;
+  change_reason: string | null;
+  value_snapshot: Record<string, unknown>;
+  created_at: string;
+}
+
+function authHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : '';
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+}
+
+function StatusBadge({ active }: { active: boolean }) {
+  return (
+    <span className={`px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-semibold border ${active ? 'border-green/40 text-green bg-green/10' : 'border-red-500/40 text-red-400 bg-red-500/10'}`}>
+      {active ? 'Active' : 'Inactive'}
+    </span>
+  );
+}
 
 export default function PolicySandboxPage() {
+  const [policies, setPolicies] = useState<TenantPolicy[]>([]);
+  const [selected, setSelected] = useState<TenantPolicy | null>(null);
+  const [versions, setVersions] = useState<PolicyVersion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  // Create / edit form
+  const [mode, setMode] = useState<'list' | 'create' | 'edit'>('list');
+  const [formKey, setFormKey] = useState('');
+  const [formValue, setFormValue] = useState('{}');
+  const [formReason, setFormReason] = useState('');
+  const [formValueError, setFormValueError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Approval form
+  const [showApprovalPanel, setShowApprovalPanel] = useState(false);
+  const [approvalProposed, setApprovalProposed] = useState('{}');
+  const [requestingApproval, setRequestingApproval] = useState(false);
+  const [rollbackVersion, setRollbackVersion] = useState<number | null>(null);
+  const [rollingBack, setRollingBack] = useState(false);
+
+  const showToast = (msg: string, ok: boolean) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const loadPolicies = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/api/v1/policies`, { headers: authHeaders() });
+      if (res.ok) setPolicies(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadVersions = async (policyId: string) => {
+    setVersionsLoading(true);
+    try {
+      const res = await fetch(`${API}/api/v1/policies/${policyId}/versions`, { headers: authHeaders() });
+      if (res.ok) setVersions(await res.json());
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
+
+  useEffect(() => { loadPolicies(); }, []);
+
+  const selectPolicy = (p: TenantPolicy) => {
+    setSelected(p);
+    setMode('list');
+    loadVersions(p.id);
+  };
+
+  const validateJson = (raw: string): Record<string, unknown> | null => {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+
+  const openCreate = () => {
+    setSelected(null);
+    setFormKey('');
+    setFormValue('{}');
+    setFormReason('');
+    setFormValueError(null);
+    setMode('create');
+  };
+
+  const openEdit = () => {
+    if (!selected) return;
+    setFormKey(selected.key);
+    setFormValue(JSON.stringify(selected.value, null, 2));
+    setFormReason('');
+    setFormValueError(null);
+    setMode('edit');
+  };
+
+  const savePolicy = async () => {
+    const parsed = validateJson(formValue);
+    if (!parsed) { setFormValueError('Invalid JSON'); return; }
+    setFormValueError(null);
+    setSaving(true);
+    try {
+      let res: Response;
+      if (mode === 'create') {
+        res = await fetch(`${API}/api/v1/policies`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ key: formKey, value: parsed, change_reason: formReason || null }),
+        });
+      } else {
+        res = await fetch(`${API}/api/v1/policies/${selected!.id}`, {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ value: parsed, change_reason: formReason || null }),
+        });
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? `HTTP ${res.status}`);
+      }
+      const saved: TenantPolicy = await res.json();
+      if (mode === 'create') {
+        setPolicies(prev => [saved, ...prev]);
+      } else {
+        setPolicies(prev => prev.map(p => p.id === saved.id ? saved : p));
+      }
+      setSelected(saved);
+      setMode('list');
+      await loadVersions(saved.id);
+      showToast(`Policy "${saved.key}" saved (v${saved.version}).`, true);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Save failed', false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deactivatePolicy = async () => {
+    if (!selected) return;
+    try {
+      const res = await fetch(`${API}/api/v1/policies/${selected.id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await loadPolicies();
+      setSelected(null);
+      setVersions([]);
+      showToast('Policy deactivated.', true);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Deactivate failed', false);
+    }
+  };
+
+  const rollback = async () => {
+    if (!selected || rollbackVersion === null) return;
+    setRollingBack(true);
+    try {
+      const res = await fetch(`${API}/api/v1/policies/${selected.id}/rollback/${rollbackVersion}`, {
+        method: 'POST',
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const updated: TenantPolicy = await res.json();
+      setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
+      setSelected(updated);
+      await loadVersions(updated.id);
+      setRollbackVersion(null);
+      showToast(`Rolled back to version ${rollbackVersion}.`, true);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Rollback failed', false);
+    } finally {
+      setRollingBack(false);
+    }
+  };
+
+  const requestApproval = async () => {
+    if (!selected) return;
+    const parsed = validateJson(approvalProposed);
+    if (!parsed) { showToast('Invalid JSON in proposed value', false); return; }
+    setRequestingApproval(true);
+    try {
+      const res = await fetch(`${API}/api/v1/policies/${selected.id}/approvals`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ proposed_value: parsed }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setShowApprovalPanel(false);
+      showToast('Approval request submitted.', true);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Request failed', false);
+    } finally {
+      setRequestingApproval(false);
+    }
+  };
+
   return (
     <div className="p-5 min-h-screen">
-      <div className="hud-rail pb-3 mb-6">
-        <div className="micro-caps mb-1">Security</div>
-        <h1 className="text-h2 font-bold text-text-primary">Policy Sandbox</h1>
-        <p className="text-body text-text-muted mt-1">Test OPA access control policies in an isolated sandbox environment.</p>
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className={`fixed top-4 right-4 z-50 px-4 py-3 border text-sm font-semibold max-w-sm ${toast.ok ? 'border-green text-green bg-green/10' : 'border-red-500 text-red-400 bg-red-500/10'}`}
+            style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="hud-rail pb-3 mb-6 flex items-end justify-between">
+        <div>
+          <div className="micro-caps mb-1 text-text-muted">Security</div>
+          <h1 className="text-h2 font-bold text-text-primary">Policy Sandbox</h1>
+          <p className="text-body text-text-muted mt-1">
+            Manage tenant policies with versioning and two-person approval workflow.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={openCreate}
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest bg-orange text-bg-page hover:bg-orange-bright transition-colors">
+            + New Policy
+          </button>
+          <Link href="/founder/security"
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors">
+            ← Security
+          </Link>
+        </div>
       </div>
-      <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 shadow-elevation-1">
-        <QuantumEmptyState
-          title="Not Yet Configured"
-          description="This module is scheduled for an upcoming release. Contact your account manager for early access."
-          icon={
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="6" y="10" width="36" height="28" rx="2" />
-              <path d="M6 18h36M16 10V6M32 10V6" />
-              <circle cx="24" cy="30" r="4" />
-            </svg>
-          }
-          action={
-            <Link
-              href="/founder"
-              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-orange hover:text-orange-bright transition-colors duration-fast"
-            >
-              &larr; Back to Command Center
-            </Link>
-          }
-        />
+
+      <div className="grid grid-cols-12 gap-4">
+        {/* Policy list */}
+        <div className="col-span-4">
+          <div className="text-micro uppercase tracking-widest text-text-muted mb-2">Policies ({policies.length})</div>
+          {loading ? (
+            <div className="text-text-muted text-sm py-8 text-center">Loading…</div>
+          ) : policies.length === 0 ? (
+            <div className="text-text-muted text-sm py-8 text-center border border-border-DEFAULT p-4">No policies yet.</div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {policies.map(p => (
+                <motion.button key={p.id} whileHover={{ scale: 1.01 }}
+                  onClick={() => selectPolicy(p)}
+                  className={`w-full text-left p-3 border transition-colors ${selected?.id === p.id ? 'border-orange bg-orange/10' : 'border-border-DEFAULT hover:border-white/20 bg-bg-panel'}`}
+                  style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-text-primary font-mono">{p.key}</span>
+                    <StatusBadge active={p.is_active} />
+                  </div>
+                  <div className="text-micro text-text-muted">v{p.version} · {new Date(p.updated_at).toLocaleDateString()}</div>
+                </motion.button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Detail / Editor panel */}
+        <div className="col-span-8">
+          {mode === 'list' && !selected && (
+            <div className="bg-bg-panel border border-border-DEFAULT p-8 text-center text-text-muted text-sm"
+              style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+              Select a policy or create a new one.
+            </div>
+          )}
+
+          {/* Create / Edit form */}
+          {(mode === 'create' || mode === 'edit') && (
+            <div className="bg-bg-panel border border-border-DEFAULT p-4"
+              style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+              <div className="text-micro uppercase tracking-widest text-orange mb-4">
+                {mode === 'create' ? 'New Policy' : `Edit — ${selected?.key}`}
+              </div>
+              {mode === 'create' && (
+                <div className="mb-3">
+                  <label className="text-micro text-text-muted block mb-1">Policy Key</label>
+                  <input value={formKey} onChange={e => setFormKey(e.target.value)} placeholder="e.g. mfa.required"
+                    className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-orange" />
+                </div>
+              )}
+              <div className="mb-3">
+                <label className="text-micro text-text-muted block mb-1">Value (JSON)</label>
+                <textarea rows={8} value={formValue} onChange={e => setFormValue(e.target.value)}
+                  className={`w-full bg-bg-page border px-3 py-2 text-xs font-mono text-text-primary focus:outline-none resize-none ${formValueError ? 'border-red-500' : 'border-border-DEFAULT focus:border-orange'}`} />
+                {formValueError && <p className="text-micro text-red-400 mt-1">{formValueError}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="text-micro text-text-muted block mb-1">Change Reason (optional)</label>
+                <input value={formReason} onChange={e => setFormReason(e.target.value)} placeholder="Summarize the change…"
+                  className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-orange" />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={savePolicy} disabled={saving || !formKey.trim()}
+                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-orange text-bg-page hover:bg-orange-bright transition-colors disabled:opacity-50">
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
+                <button onClick={() => setMode('list')}
+                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Policy detail */}
+          {mode === 'list' && selected && (
+            <div className="space-y-4">
+              {/* Current value */}
+              <div className="bg-bg-panel border border-border-DEFAULT p-4"
+                style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-xs font-bold text-text-primary font-mono">{selected.key}</span>
+                    <span className="ml-2"><StatusBadge active={selected.is_active} /></span>
+                    <span className="ml-2 text-micro text-text-muted">v{selected.version}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={openEdit}
+                      className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-secondary hover:text-text-primary hover:border-orange transition-colors">
+                      Edit
+                    </button>
+                    <button onClick={() => setShowApprovalPanel(p => !p)}
+                      className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-orange/40 text-orange hover:bg-orange/10 transition-colors">
+                      Request Approval
+                    </button>
+                    {selected.is_active && (
+                      <button onClick={deactivatePolicy}
+                        className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors">
+                        Deactivate
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <pre className="bg-bg-page text-xs font-mono text-text-secondary p-3 rounded overflow-auto max-h-48">
+                  {JSON.stringify(selected.value, null, 2)}
+                </pre>
+              </div>
+
+              {/* Approval request */}
+              <AnimatePresence>
+                {showApprovalPanel && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="bg-bg-panel border border-orange/30 p-4 overflow-hidden"
+                    style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+                    <div className="text-micro uppercase tracking-widest text-orange mb-3">
+                      Request Approval (2-person rule enforced)
+                    </div>
+                    <label className="text-micro text-text-muted block mb-1">Proposed Value (JSON)</label>
+                    <textarea rows={6} value={approvalProposed} onChange={e => setApprovalProposed(e.target.value)}
+                      className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-orange resize-none mb-3" />
+                    <div className="flex gap-2">
+                      <button onClick={requestApproval} disabled={requestingApproval}
+                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-orange text-bg-page hover:bg-orange-bright transition-colors disabled:opacity-50">
+                        {requestingApproval ? 'Requesting…' : 'Submit for Approval'}
+                      </button>
+                      <button onClick={() => setShowApprovalPanel(false)}
+                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors">
+                        Cancel
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Version history */}
+              <div className="bg-bg-panel border border-border-DEFAULT"
+                style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                  <span className="text-micro uppercase tracking-widest text-text-muted">Version History</span>
+                  {rollbackVersion !== null && (
+                    <button onClick={rollback} disabled={rollingBack}
+                      className="px-3 py-1 text-micro font-semibold uppercase tracking-widest bg-orange/20 text-orange border border-orange/40 hover:bg-orange/30 transition-colors disabled:opacity-50">
+                      {rollingBack ? 'Rolling back…' : `Rollback to v${rollbackVersion}`}
+                    </button>
+                  )}
+                </div>
+                {versionsLoading ? (
+                  <div className="px-4 py-6 text-center text-text-muted text-sm">Loading versions…</div>
+                ) : versions.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-text-muted text-sm">No version history yet.</div>
+                ) : (
+                  versions.map((v, i) => (
+                    <motion.div key={v.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+                      className="flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                      <span className="text-xs font-bold font-mono text-orange w-8">v{v.version_number}</span>
+                      <div className="flex-1">
+                        <div className="text-xs text-text-primary">{v.change_reason ?? 'No reason provided'}</div>
+                        <div className="text-micro text-text-muted font-mono">
+                          {v.changed_by_user_id.slice(0, 8)}… · {new Date(v.created_at).toLocaleString()}
+                        </div>
+                      </div>
+                      <button onClick={() => setRollbackVersion(v.version_number === rollbackVersion ? null : v.version_number)}
+                        className={`text-micro font-semibold uppercase tracking-widest transition-colors px-2 py-1 border ${rollbackVersion === v.version_number ? 'border-orange text-orange bg-orange/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'}`}>
+                        {rollbackVersion === v.version_number ? 'Selected' : 'Select'}
+                      </button>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

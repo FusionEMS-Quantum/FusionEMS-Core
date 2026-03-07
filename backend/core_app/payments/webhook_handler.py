@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 import os
 import time
-from typing import Any, Optional
 
 import stripe
 
@@ -25,7 +23,7 @@ class StripeWebhookHandler:
         self,
         payload: bytes,
         sig_header: str,
-        endpoint_secret: Optional[str] = None,
+        endpoint_secret: str | None = None,
     ) -> dict:
         secret = endpoint_secret or os.environ.get("STRIPE_WEBHOOK_SECRET", "")
         if not secret:
@@ -103,14 +101,14 @@ class StripeWebhookHandler:
         sub_id = sub["id"]
         customer_id = sub.get("customer")
         logger.info(f"Subscription {sub_id} created for customer {customer_id}. Triggering provisioning.")
-        
+
         # PROVISIONING LOGIC (Phase 1 Stub)
         # 1. Check if tenant already provisioned.
         # 2. If not, trigger:
         #    - 1-800 Number purchase (Telnyx)
         #    - Agency Record creation (if new)
         #    - Send Welcome Email
-        
+
         try:
              # Placeholder for:
              # self.provisioning_service.provision_new_subscription(sub_id)

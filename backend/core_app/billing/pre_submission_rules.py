@@ -12,9 +12,8 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, UTC
-from enum import Enum
-from typing import Any, Optional
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +22,7 @@ from core_app.models.billing import Claim, ClaimIssue, ClaimState
 logger = logging.getLogger(__name__)
 
 
-class RuleSeverity(str, Enum):
+class RuleSeverity(StrEnum):
     BLOCKING = "BLOCKING"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -68,10 +67,15 @@ class PreSubmissionRulesEngine:
         results.append(self._check_icd10_codes(claim))
         results.append(self._check_service_lines(claim))
         results.append(self._check_mileage(claim))
+        results.append(self._check_mileage_reasonableness(claim))
+        results.append(self._check_trip_origin_destination(claim))
         results.append(self._check_signatures(claim))
         results.append(self._check_state_for_submission(claim))
         results.append(self._check_duplicate_submission(claim))
         results.append(self._check_timely_filing(claim))
+        results.append(self._check_medical_necessity(claim))
+        results.append(self._check_required_documents(claim))
+        results.append(self._check_prior_auth_status(claim))
 
         blocking = [r for r in results if not r.passed and r.severity == RuleSeverity.BLOCKING]
         warnings = [r for r in results if not r.passed and r.severity != RuleSeverity.BLOCKING]
@@ -213,6 +217,92 @@ class PreSubmissionRulesEngine:
                 what_to_do_next="Verify timely filing deadline with the payer and submit immediately if eligible.",
             )
         return RuleResult(rule_id="TIMELY_FILING", severity=RuleSeverity.HIGH, passed=True)
+
+    def _check_mileage_reasonableness(self, claim: Claim) -> RuleResult:
+        """CMS requires mileage to be reasonable for the transport type."""
+        mileage = getattr(claim, "loaded_mileage", None)
+        if mileage is not None and mileage > 200:
+            return RuleResult(
+                rule_id="MILEAGE_REASONABLENESS",
+                severity=RuleSeverity.HIGH,
+                passed=False,
+                what_is_wrong=f"Loaded mileage of {mileage} miles exceeds 200-mile reasonableness threshold.",
+                why_it_matters="CMS flags unusually high mileage for medical review. Payers may deny or audit.",
+                what_to_do_next="Verify loaded mileage is correct. If >200mi, attach documentation justifying transport distance.",
+            )
+        return RuleResult(rule_id="MILEAGE_REASONABLENESS", severity=RuleSeverity.HIGH, passed=True)
+
+    def _check_trip_origin_destination(self, claim: Claim) -> RuleResult:
+        """CMS requires pickup and dropoff addresses on ambulance claims."""
+        origin = getattr(claim, "pickup_address", None)
+        destination = getattr(claim, "dropoff_address", None)
+        if not origin or not destination:
+            missing = []
+            if not origin:
+                missing.append("pickup/origin")
+            if not destination:
+                missing.append("dropoff/destination")
+            return RuleResult(
+                rule_id="TRIP_ORIGIN_DESTINATION",
+                severity=RuleSeverity.BLOCKING,
+                passed=False,
+                what_is_wrong=f"Missing transport address: {', '.join(missing)}.",
+                why_it_matters="837 ambulance claims require pickup and dropoff addresses in Loop 2310E/2310F.",
+                what_to_do_next="Enter pickup and dropoff addresses from the ePCR trip record.",
+            )
+        return RuleResult(rule_id="TRIP_ORIGIN_DESTINATION", severity=RuleSeverity.BLOCKING, passed=True)
+
+    def _check_medical_necessity(self, claim: Claim) -> RuleResult:
+        """CMS requires medical necessity support indicators for ambulance transport."""
+        errors = claim.validation_errors or []
+        has_necessity_issue = any("medical necessity" in str(e).lower() or "necessity" in str(e).lower() for e in errors)
+        narrative = getattr(claim, "medical_necessity_narrative", None)
+        if has_necessity_issue or not narrative:
+            return RuleResult(
+                rule_id="MEDICAL_NECESSITY",
+                severity=RuleSeverity.HIGH,
+                passed=False,
+                what_is_wrong="Medical necessity indicators are missing or insufficient.",
+                why_it_matters="CMS requires documented medical necessity for ambulance transport reimbursement.",
+                what_to_do_next="Complete the medical necessity narrative in the ePCR clinical section.",
+            )
+        return RuleResult(rule_id="MEDICAL_NECESSITY", severity=RuleSeverity.HIGH, passed=True)
+
+    def _check_required_documents(self, claim: Claim) -> RuleResult:
+        """Verify all required supporting documents are present."""
+        errors = claim.validation_errors or []
+        missing_docs = any("document" in str(e).lower() or "attachment" in str(e).lower() for e in errors)
+        if missing_docs:
+            return RuleResult(
+                rule_id="REQUIRED_DOCUMENTS",
+                severity=RuleSeverity.HIGH,
+                passed=False,
+                what_is_wrong="Required supporting documents are missing.",
+                why_it_matters="Claims submitted without required attachments face denial or processing delays.",
+                what_to_do_next="Attach all required documents (PCS, ABN, signed orders) before submission.",
+            )
+        return RuleResult(rule_id="REQUIRED_DOCUMENTS", severity=RuleSeverity.HIGH, passed=True)
+
+    def _check_prior_auth_status(self, claim: Claim) -> RuleResult:
+        """
+        Repetitive scheduled non-emergent transports require prior authorization.
+        CMS mandates prior auth for these transport types.
+        """
+        transport_type = getattr(claim, "transport_type", None)
+        is_repetitive = transport_type and "repetitive" in str(transport_type).lower()
+        is_scheduled = transport_type and "scheduled" in str(transport_type).lower()
+        if is_repetitive or is_scheduled:
+            prior_auth = getattr(claim, "prior_auth_number", None)
+            if not prior_auth:
+                return RuleResult(
+                    rule_id="PRIOR_AUTH_STATUS",
+                    severity=RuleSeverity.BLOCKING,
+                    passed=False,
+                    what_is_wrong="Repetitive/scheduled non-emergent transport missing prior authorization.",
+                    why_it_matters="CMS requires prior auth for repetitive scheduled non-emergent ambulance transports.",
+                    what_to_do_next="Obtain and enter the prior authorization number before submission.",
+                )
+        return RuleResult(rule_id="PRIOR_AUTH_STATUS", severity=RuleSeverity.BLOCKING, passed=True)
 
     # ── Persistence ───────────────────────────────────────────────────────────
 

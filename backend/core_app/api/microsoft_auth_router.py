@@ -45,7 +45,7 @@ def _sign_state(nonce: str) -> str:
     s = get_settings()
     payload = f"{nonce}|{int(__import__('time').time())}"
     sig = hmac.new(
-        s.jwt_secret_key.encode(), payload.encode(), hashlib.sha256
+        str(s.jwt_secret_key).encode(), payload.encode(), hashlib.sha256
     ).hexdigest()
     return f"{payload}|{sig}"
 
@@ -64,7 +64,7 @@ def _verify_state(state: str) -> bool:
         return False
     expected_payload = f"{nonce}|{ts_str}"
     expected_sig = hmac.new(
-        s.jwt_secret_key.encode(), expected_payload.encode(), hashlib.sha256
+        str(s.jwt_secret_key).encode(), expected_payload.encode(), hashlib.sha256
     ).hexdigest()
     return hmac.compare_digest(sig, expected_sig)
 

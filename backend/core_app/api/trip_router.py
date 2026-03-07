@@ -461,7 +461,7 @@ async def import_postings(
             amount_cents = int(
                 float(amount_str.replace(",", "").replace("$", "")) * 100
             )
-        except Exception as e:
+        except Exception:
             amount_cents = 0
         if not debt_id_str or amount_cents <= 0:
             unmatched += 1
@@ -529,7 +529,7 @@ async def import_postings(
 
                     logging.error(f"Error: {e}")
             applied += 1
-        except Exception as e:
+        except Exception:
             unmatched += 1
     posting = await svc.create(
         table="trip_postings",

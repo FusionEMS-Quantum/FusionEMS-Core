@@ -1,9 +1,11 @@
 from datetime import datetime
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from core_app.db.session import get_db_session
+
 # Add dependency injection for auth here...
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])

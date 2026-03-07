@@ -292,7 +292,7 @@ async def resend_checkout(
             base_amount_cents = 100000
 
         module_amount_cents = len(selected_modules) * 5000
-        base_url = settings.api_base_url.rstrip("/")
+        base_url = str(settings.api_base_url).rstrip("/")
 
         session = stripe_lib.checkout.Session.create(
             mode="subscription",

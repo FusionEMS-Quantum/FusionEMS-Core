@@ -12,10 +12,11 @@ from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency
 from core_app.core.config import get_settings
+
+# from core_app.services.ai_narrative_service import AiNarrativeService # TODO: distinct service
+from core_app.services.ai_assistant_service import AIAssistantService  # Use existing service
 from core_app.telnyx.client import TelnyxApiError, send_sms
 from core_app.telnyx.signature import verify_telnyx_webhook
-# from core_app.services.ai_narrative_service import AiNarrativeService # TODO: distinct service
-from core_app.services.ai_assistant_service import AIAssistantService # Use existing service
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +179,7 @@ async def telnyx_sms_webhook(
 
     try:
         payload = json.loads(raw_body)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_json")
 
     data = payload.get("data", {})
@@ -243,7 +244,7 @@ async def telnyx_sms_webhook(
                 patient_phone=from_number,
                 message_body=body_text
             )
-            
+
             if reply:
                 _send_reply(
                     api_key=settings.telnyx_api_key,

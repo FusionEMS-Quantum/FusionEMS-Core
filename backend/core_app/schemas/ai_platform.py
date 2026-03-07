@@ -14,7 +14,6 @@ from core_app.models.ai_platform import (
     AIRiskTier,
 )
 
-
 # ── AI USE-CASE REGISTRY ─────────────────────────────────────────────────────
 
 class AIUseCaseCreate(BaseModel):
@@ -234,6 +233,8 @@ class AICommandCenterMetrics(BaseModel):
     risk_tier_breakdown: dict[str, int]
     recent_reviews: list[AIReviewQueueEntry]
     top_actions: list[AIGovernanceAction]
+    high_risk_recommendations: list[AIHighRiskRecommendation]
+    tenant_ai_enabled: bool
 
 
 class AIReviewQueueEntry(BaseModel):
@@ -253,6 +254,94 @@ class AIGovernanceAction(BaseModel):
     description: str
     severity: str
     target_id: uuid.UUID | None = None
+
+
+# ── AI QUEUE ITEM ─────────────────────────────────────────────────────────────
+
+class AIQueueItemResponse(BaseModel):
+    id: uuid.UUID
+    workflow_id: uuid.UUID
+    use_case_id: uuid.UUID
+    queue_name: str
+    priority: int
+    payload: dict
+    status: str
+    max_retries: int
+    retry_count: int
+    scheduled_at: datetime | None = None
+    picked_at: datetime | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── AI USER-FACING SUMMARY ────────────────────────────────────────────────────
+
+class AIUserFacingSummaryCreate(BaseModel):
+    what_happened: str
+    why_it_matters: str
+    do_this_next: str
+    confidence: AIConfidenceLevel
+    domain: str = Field(..., max_length=100)
+    is_simple_mode: bool = True
+
+
+class AIUserFacingSummaryResponse(BaseModel):
+    id: uuid.UUID
+    workflow_id: uuid.UUID
+    what_happened: str
+    why_it_matters: str
+    do_this_next: str
+    confidence: str
+    domain: str
+    is_simple_mode: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── TENANT AI SETTINGS ────────────────────────────────────────────────────────
+
+class AITenantSettingsUpdate(BaseModel):
+    ai_enabled: bool | None = None
+    default_risk_tier: AIRiskTier | None = None
+    auto_approve_low_risk: bool | None = None
+    require_human_review_high_risk: bool | None = None
+    max_concurrent_workflows: int | None = None
+    global_confidence_threshold: AIConfidenceLevel | None = None
+    allowed_domains: dict | None = None
+    environment_ai_toggle: bool | None = None
+
+
+class AITenantSettingsResponse(BaseModel):
+    id: uuid.UUID
+    ai_enabled: bool
+    default_risk_tier: str
+    auto_approve_low_risk: bool
+    require_human_review_high_risk: bool
+    max_concurrent_workflows: int
+    global_confidence_threshold: str
+    allowed_domains: dict
+    environment_ai_toggle: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── HIGH-RISK RECOMMENDATIONS ─────────────────────────────────────────────────
+
+class AIHighRiskRecommendation(BaseModel):
+    workflow_id: uuid.UUID
+    use_case_name: str
+    domain: str
+    risk_tier: str
+    confidence: str | None = None
+    explanation_summary: str | None = None
+    override_state: str
+    created_at: datetime
 
 
 # Rebuild forward references

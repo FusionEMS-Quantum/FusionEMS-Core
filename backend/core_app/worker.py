@@ -112,12 +112,12 @@ async def _dlq_processing_loop(stop: asyncio.Event) -> None:
 
             with get_db_session_ctx() as db:
                 svc = DominationService(db, get_event_publisher())
-                from core_app.api.lob_webhook_router import handle_lob_event
-                from core_app.api.stripe_webhook_router import handle_stripe_event
+                from core_app.api.lob_webhook_router import lob_webhook
+                from core_app.api.stripe_webhook_router import stripe_webhook
 
                 dlq_handlers = {
-                    "lob": handle_lob_event,
-                    "stripe": handle_stripe_event,
+                    "lob": lob_webhook,
+                    "stripe": stripe_webhook,
                 }
                 processed = await process_dlq_batch(
                     handlers=dlq_handlers, svc=svc, tenant_id=__import__("uuid").UUID(int=0)

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -27,7 +27,7 @@ from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import EventPublisher
 
 
-class DispatchState(str, Enum):
+class DispatchState(StrEnum):
     NEW_REQUEST = "NEW_REQUEST"
     TRIAGED = "TRIAGED"
     READY_FOR_ASSIGNMENT = "READY_FOR_ASSIGNMENT"
@@ -576,7 +576,7 @@ class DispatchEngine:
         missions = self.svc.repo("active_missions").list(
             tenant_id=self.tenant_id, limit=200
         )
-        timeline = self.svc.repo("dispatch_timeline_events").list(
+        self.svc.repo("dispatch_timeline_events").list(
             tenant_id=self.tenant_id, limit=500
         )
         pages = self.svc.repo("crew_paging_alerts").list(

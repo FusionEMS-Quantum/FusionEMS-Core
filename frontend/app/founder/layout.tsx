@@ -12,6 +12,7 @@ const NAV_DOMAINS = [
     color: 'var(--q-orange)',
     links: [
       { href: '/founder', label: 'Overview' },
+      { href: '/founder/quantum', label: 'Quantum Taxes' },
       { href: '/founder/executive/daily-brief', label: 'Daily AI Brief' },
       { href: '/founder/executive/risk-monitor', label: 'Risk Monitor' },
       { href: '/founder/executive/events-feed', label: 'Events Feed' },
@@ -56,10 +57,11 @@ const NAV_DOMAINS = [
   },
   {
     id: 'compliance',
-    label: '5 · Compliance',
+    label: '5 · Compliance & Data',
     icon: '◈',
     color: 'var(--q-yellow)',
     links: [
+      { href: '/founder/datasets', label: 'God Mode Datasets' },
       { href: '/founder/compliance/nemsis', label: 'NEMSIS Manager' },
       { href: '/founder/compliance/export-status', label: 'Export Status' },
       { href: '/founder/compliance/certification', label: 'Certification Monitor' },
@@ -174,6 +176,21 @@ const NAV_DOMAINS = [
     links: [
       { href: '/founder/pricing/studio', label: 'Pricing Studio' },
       { href: '/founder/revenue/stripe', label: 'Stripe Dashboard' },
+    ],
+  },
+  {
+    id: 'platform-admin',
+    label: '14 · Platform Admin',
+    icon: '◈',
+    color: 'var(--color-status-info)',
+    links: [
+      { href: '/founder/platform', label: 'Platform Command Center' },
+      { href: '/founder/platform/agencies', label: 'Agency Lifecycle' },
+      { href: '/founder/platform/implementations', label: 'Implementations' },
+      { href: '/founder/platform/feature-flags', label: 'Feature Flags' },
+      { href: '/founder/platform/releases', label: 'Releases & Environments' },
+      { href: '/founder/platform/configuration', label: 'System Configuration' },
+      { href: '/founder/platform/ai-diagnosis', label: 'AI Platform Diagnosis' },
     ],
   },
 ];

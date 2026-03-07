@@ -113,7 +113,7 @@ class ValidationEngine:
     Callers must treat VALIDATION_BLOCKED as a hard lock gate.
     """
 
-    def validate_chart(self, chart: "Chart") -> tuple[ValidationStatus, list[ClinicalValidationIssue]]:
+    def validate_chart(self, chart: Chart) -> tuple[ValidationStatus, list[ClinicalValidationIssue]]:
         issues: list[ClinicalValidationIssue] = []
         issues.extend(self._check_required_sections(chart))
         issues.extend(self._check_patient_demographics(chart))
@@ -137,7 +137,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Required section presence
     # ─────────────────────────────────────────────────────────
-    def _check_required_sections(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_required_sections(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         if not chart.vitals:
             issues.append(_blocking("REQUIRED_VITALS", "At least one vital set is required before locking.", "vitals"))
@@ -150,7 +150,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Patient demographics
     # ─────────────────────────────────────────────────────────
-    def _check_patient_demographics(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_patient_demographics(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         p = chart.patient
         if not p.last_name and not p.first_name:
@@ -162,7 +162,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Dispatch timestamps
     # ─────────────────────────────────────────────────────────
-    def _check_dispatch_timestamps(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_dispatch_timestamps(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         d = chart.dispatch
         if not d.psap_call_time and not d.unit_notified_time:
@@ -196,7 +196,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Vitals plausibility
     # ─────────────────────────────────────────────────────────
-    def _check_vitals(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_vitals(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         for idx, v in enumerate(chart.vitals):
             base = f"vitals[{idx}]"
@@ -260,7 +260,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Medications
     # ─────────────────────────────────────────────────────────
-    def _check_medications(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_medications(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         for idx, m in enumerate(chart.medications):
             base = f"medications[{idx}]"
@@ -299,7 +299,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Procedures
     # ─────────────────────────────────────────────────────────
-    def _check_procedures(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_procedures(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         for idx, p in enumerate(chart.procedures):
             base = f"procedures[{idx}]"
@@ -316,7 +316,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Disposition / destination
     # ─────────────────────────────────────────────────────────
-    def _check_disposition(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_disposition(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         d = chart.disposition
         if not d.patient_disposition_code and not d.transport_disposition:
@@ -328,7 +328,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Signatures
     # ─────────────────────────────────────────────────────────
-    def _check_signatures(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_signatures(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         if not chart.signatures:
             issues.append(_warning("SIGNATURE_MISSING", "No signatures captured. At minimum, a crew member signature is recommended.", "signatures"))
@@ -343,7 +343,7 @@ class ValidationEngine:
     # ─────────────────────────────────────────────────────────
     # Timeline integrity (vitals and meds relative to dispatch)
     # ─────────────────────────────────────────────────────────
-    def _check_timeline_integrity(self, chart: "Chart") -> list[ClinicalValidationIssue]:
+    def _check_timeline_integrity(self, chart: Chart) -> list[ClinicalValidationIssue]:
         issues: list[ClinicalValidationIssue] = []
         dispatch_ts = _parse_dt(chart.dispatch.psap_call_time or chart.dispatch.unit_notified_time)
         if not dispatch_ts:
@@ -358,7 +358,7 @@ class ValidationEngine:
             if vts and vts < dispatch_ts:
                 issues.append(_warning(
                     "TIMELINE_VITALS_BEFORE_DISPATCH",
-                    f"Vital set {idx + 1} recorded ({v.recorded_at}) before dispatch time ({dispatch_anchor}). Verify if pre-call.", 
+                    f"Vital set {idx + 1} recorded ({v.recorded_at}) before dispatch time ({dispatch_anchor}). Verify if pre-call.",
                     f"vitals[{idx}].recorded_at",
                 ))
 

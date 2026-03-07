@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import (
@@ -24,9 +24,13 @@ from core_app.schemas.ai_platform import (
     AIProtectedActionResponse,
     AIReviewActionRequest,
     AIReviewItemResponse,
+    AITenantSettingsResponse,
+    AITenantSettingsUpdate,
     AIUseCaseCreate,
     AIUseCaseResponse,
     AIUseCaseUpdate,
+    AIUserFacingSummaryCreate,
+    AIUserFacingSummaryResponse,
     AIWorkflowRunResponse,
     AIWorkflowStartRequest,
 )
@@ -36,6 +40,7 @@ from core_app.services.ai_platform.governance_service import AIGovernanceService
 from core_app.services.ai_platform.orchestration_service import AIOrchestrationService
 from core_app.services.ai_platform.override_service import AIOverrideService
 from core_app.services.ai_platform.registry_service import AIRegistryService
+from core_app.services.ai_platform.seed_service import AISeedService
 
 router = APIRouter(prefix="/api/v1/ai-platform", tags=["ai-platform"])
 
@@ -48,7 +53,7 @@ def list_use_cases(
     domain: str | None = Query(None),
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(get_current_user),
-) -> list:
+) -> list[AIUseCaseResponse]:
     svc = AIRegistryService(db, user)
     return svc.list_use_cases(domain=domain)
 
@@ -145,7 +150,7 @@ def get_explanations(
     workflow_id: uuid.UUID,
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(get_current_user),
-) -> list:
+) -> list[AIExplanationResponse]:
     svc = AIOrchestrationService(db, user)
     return svc.get_explanations(workflow_id)
 
@@ -182,7 +187,7 @@ def resume_ai(
 def list_reviews(
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(require_role("founder", "agency_admin")),
-) -> list:
+) -> list[AIReviewItemResponse]:
     svc = AIOverrideService(db, user)
     return svc.list_review_queue()
 
@@ -221,7 +226,7 @@ def list_guardrail_rules(
     domain: str | None = Query(None),
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(get_current_user),
-) -> list:
+) -> list[AIGuardrailRuleResponse]:
     svc = AIGovernanceService(db, user)
     return svc.list_guardrail_rules(domain=domain)
 
@@ -231,7 +236,7 @@ def list_protected_actions(
     domain: str | None = Query(None),
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(get_current_user),
-) -> list:
+) -> list[AIProtectedActionResponse]:
     svc = AIGovernanceService(db, user)
     return svc.list_protected_actions(domain=domain)
 
@@ -244,7 +249,7 @@ def list_prompt_templates(
     domain: str | None = Query(None),
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(get_current_user),
-) -> list:
+) -> list[AIPromptTemplateResponse]:
     svc = AIRegistryService(db, user)
     return svc.list_prompt_templates(domain=domain)
 
@@ -254,7 +259,7 @@ def create_prompt_template(
     payload: AIPromptTemplateCreate,
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(require_role("founder", "agency_admin")),
-) -> dict:
+) -> AIPromptTemplateResponse:
     svc = AIRegistryService(db, user)
     return svc.create_prompt_template(payload)
 
@@ -265,7 +270,7 @@ def update_prompt_template(
     payload: AIPromptTemplateUpdate,
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(require_role("founder", "agency_admin")),
-) -> dict:
+) -> AIPromptTemplateResponse:
     svc = AIRegistryService(db, user)
     return svc.update_prompt_template(template_id, payload)
 
@@ -278,7 +283,7 @@ def list_copilots(
     domain: str | None = Query(None),
     db: Session = Depends(db_session_dependency),
     user: CurrentUser = Depends(get_current_user),
-) -> list:
+) -> list[AIDomainCopilotResponse]:
     svc = AIRegistryService(db, user)
     return svc.list_copilots(domain=domain)
 
@@ -293,3 +298,76 @@ def get_command_center_metrics(
 ) -> AICommandCenterMetrics:
     svc = AICommandCenterService(db, user)
     return svc.get_metrics()
+
+
+# ── TENANT AI SETTINGS ────────────────────────────────────────────────────────
+
+
+@router.get("/settings", response_model=AITenantSettingsResponse)
+def get_tenant_settings(
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(require_role("founder", "agency_admin")),
+) -> AITenantSettingsResponse:
+    svc = AICommandCenterService(db, user)
+    settings = svc.get_tenant_settings()
+    if not settings:
+        # Auto-create defaults on first access
+        seed = AISeedService(db, str(user.tenant_id))
+        settings = seed.ensure_tenant_settings()
+    return settings
+
+
+@router.patch("/settings", response_model=AITenantSettingsResponse)
+def update_tenant_settings(
+    payload: AITenantSettingsUpdate,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(require_role("founder", "agency_admin")),
+) -> AITenantSettingsResponse:
+    svc = AICommandCenterService(db, user)
+    return svc.update_tenant_settings(payload)
+
+
+# ── USER-FACING SUMMARY (Simple Mode) ────────────────────────────────────────
+
+
+@router.post(
+    "/workflows/{workflow_id}/summary",
+    response_model=AIUserFacingSummaryResponse,
+    status_code=201,
+)
+def create_user_facing_summary(
+    workflow_id: uuid.UUID,
+    payload: AIUserFacingSummaryCreate,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> AIUserFacingSummaryResponse:
+    svc = AICommandCenterService(db, user)
+    return svc.create_user_facing_summary(workflow_id, payload)
+
+
+@router.get(
+    "/workflows/{workflow_id}/summary",
+    response_model=AIUserFacingSummaryResponse,
+)
+def get_user_facing_summary(
+    workflow_id: uuid.UUID,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> AIUserFacingSummaryResponse:
+    svc = AICommandCenterService(db, user)
+    summary = svc.get_user_facing_summary(workflow_id)
+    if not summary:
+        raise HTTPException(status_code=404, detail="No user-facing summary found for this workflow.")
+    return summary
+
+
+# ── SEED DOMAIN COPILOTS ─────────────────────────────────────────────────────
+
+
+@router.post("/seed", status_code=200)
+def seed_ai_platform(
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(require_role("founder")),
+) -> dict:
+    svc = AISeedService(db, str(user.tenant_id))
+    return svc.seed_all()

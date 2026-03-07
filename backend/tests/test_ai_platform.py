@@ -6,7 +6,7 @@ matching the synchronous Session interface consumed by all AI services.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -24,7 +24,6 @@ from core_app.models.ai_platform import (
     AIHumanReviewRequirement,
     AIOverrideState,
     AIPolicyEnforcement,
-    AIPromptTemplate,
     AIProtectedAction,
     AIReviewItem,
     AIRiskTier,
@@ -38,11 +37,8 @@ from core_app.schemas.ai_platform import (
     AIExplanationInput,
     AIUseCaseCreate,
     AIUseCaseUpdate,
-    AIPromptTemplateCreate,
-    AIPromptTemplateUpdate,
 )
 from core_app.schemas.auth import CurrentUser
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -58,7 +54,7 @@ class FakeQuery:
     def __init__(self, items: list[Any]) -> None:
         self._items = list(items)
 
-    def filter(self, *_args: Any, **_kwargs: Any) -> "FakeQuery":
+    def filter(self, *_args: Any, **_kwargs: Any) -> FakeQuery:
         """Apply filter predicates via SQLAlchemy BinaryExpression evaluation.
 
         For simple equality comparisons we can pull left/right from the
@@ -71,16 +67,16 @@ class FakeQuery:
         """
         return FakeQuery(self._items)
 
-    def order_by(self, *_args: Any) -> "FakeQuery":
+    def order_by(self, *_args: Any) -> FakeQuery:
         return self
 
-    def limit(self, n: int) -> "FakeQuery":
+    def limit(self, n: int) -> FakeQuery:
         return FakeQuery(self._items[:n])
 
-    def group_by(self, *_args: Any) -> "FakeQuery":
+    def group_by(self, *_args: Any) -> FakeQuery:
         return self
 
-    def join(self, *_args: Any, **_kwargs: Any) -> "FakeQuery":
+    def join(self, *_args: Any, **_kwargs: Any) -> FakeQuery:
         return self
 
     def count(self) -> int:
@@ -163,9 +159,9 @@ def _make_use_case(
         owner="Dr. Test",
         allowed_data_scope={},
         human_override_behavior="pause_and_review",
-        last_review_date=datetime.now(timezone.utc),
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        last_review_date=datetime.now(UTC),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -183,6 +179,7 @@ def _make_workflow(
         id=uuid.uuid4(),
         tenant_id=tenant_id,
         use_case_id=use_case_id or uuid.uuid4(),
+        use_case=None,
         correlation_id=f"test-{uuid.uuid4().hex[:8]}",
         state=state,
         governance_state=governance_state,
@@ -195,8 +192,8 @@ def _make_workflow(
         explanation_summary=None,
         next_step=None,
         completed_at=None,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -217,8 +214,8 @@ def _make_review_item(
         assigned_to=None,
         status=status,
         resolved_at=None,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -554,7 +551,7 @@ class TestOrchestrationService:
             human_review="SAFE_TO_AUTO_PROCESS",
             confidence="HIGH",
             simple_mode_summary=None,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
         db.seed(wf, exp)
 
@@ -590,8 +587,8 @@ class TestGovernanceService:
             enforcement=enforcement,
             is_active=is_active,
             conditions={},
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
 
     def test_evaluate_guardrails_block_escalates(self) -> None:
@@ -628,8 +625,8 @@ class TestGovernanceService:
             risk_tier="RESTRICTED",
             description="Medication dispensing requires human",
             requires_human=True,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         db.seed(pa)
 
@@ -649,8 +646,8 @@ class TestGovernanceService:
             risk_tier="RESTRICTED",
             description="Cannot delete records",
             requires_human=True,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         db.seed(pa)
 
@@ -682,8 +679,8 @@ class TestGovernanceService:
             risk_tier="HIGH_RISK",
             description="Requires approval",
             requires_human=True,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         db.seed(pa)
 

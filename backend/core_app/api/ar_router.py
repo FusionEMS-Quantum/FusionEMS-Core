@@ -408,6 +408,7 @@ async def payment_webhook(
             or payload.get("payment_intent_id"),
             "posted_at": datetime.now(UTC).isoformat(),
         },
+        correlation_id=None,
     )
     return {"status": "posted", "payment_id": str(payment["id"])}
 
@@ -598,7 +599,7 @@ async def import_vendor_status(
     try:
         reader = csv.DictReader(io.StringIO(body.decode("utf-8", errors="replace")))
         rows = list(reader)
-    except Exception as e:
+    except Exception:
         rows = []
     parsed = {"rows": rows, "row_count": len(rows)}
     record = await svc.create(

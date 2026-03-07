@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from xml.etree.ElementTree import Element, SubElement, tostring
-
 
 NEMSIS_NS = "http://www.nemsis.org"
 XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"

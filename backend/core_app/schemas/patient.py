@@ -14,6 +14,9 @@ class PatientBasePayload(BaseModel):
     age_years: int | None = Field(default=None, ge=0, le=130)
     gender: PatientGender = PatientGender.UNKNOWN
     external_identifier: str | None = Field(default=None, max_length=64)
+    deceased_indicator: bool = False
+    language_preference: str | None = Field(default=None, max_length=16)
+    interpreter_required: bool = False
 
     @model_validator(mode="after")
     def validate_age_or_date_of_birth(self) -> "PatientBasePayload":
@@ -43,6 +46,10 @@ class PatientResponse(BaseModel):
     age_years: int | None
     gender: PatientGender
     external_identifier: str | None
+    identity_state: str | None = None
+    deceased_indicator: bool = False
+    language_preference: str | None = None
+    interpreter_required: bool = False
     version: int
     created_at: datetime
     updated_at: datetime

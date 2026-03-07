@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +16,13 @@ class ReconciliationEntry:
     status_stripe: str
     status_local: str
     match: bool
-    discrepancy: Optional[str] = None
+    discrepancy: str | None = None
 
 
 @dataclass
 class ReconciliationReport:
     run_id: str = ""
-    run_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    run_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     total_checked: int = 0
     matched: int = 0
     mismatched: int = 0
@@ -63,8 +62,8 @@ class StripeReconciliation:
     def reconcile_invoices(
         self,
         tenant_id: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> ReconciliationReport:
         import uuid
         report = ReconciliationReport(run_id=str(uuid.uuid4()))

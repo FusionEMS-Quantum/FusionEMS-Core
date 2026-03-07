@@ -61,6 +61,7 @@ class EDIService:
         x12_segments: list[str] = []
         validated = True
         all_validation_errors: list[str] = []
+        batch_correlation_id = str(uuid.uuid4())
 
         for claim_id_str in claim_ids:
             try:
@@ -133,7 +134,7 @@ class EDIService:
                 "validated": validated,
                 "validation_errors": all_validation_errors,
             },
-            correlation_id=None,
+            correlation_id=batch_correlation_id,
         )
         batch_id = str(batch_record["id"])
 
@@ -149,7 +150,7 @@ class EDIService:
                 "sha256": sha256,
                 "status": "generated",
             },
-            correlation_id=None,
+            correlation_id=batch_correlation_id,
         )
 
         return {
@@ -400,7 +401,7 @@ class EDIService:
                 "denial_count": len(base_result.get("denials", [])),
                 "parsed_at": _utcnow(),
             },
-            correlation_id=None,
+            correlation_id=str(uuid.uuid4()),
         )
 
         return enriched

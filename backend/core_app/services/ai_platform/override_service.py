@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Sequence
+from collections.abc import Sequence
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -125,7 +125,7 @@ class AIOverrideService:
     def approve_review(self, review_item_id: uuid.UUID, notes: str | None = None) -> AIReviewItem:
         item = self._get_review_item(review_item_id)
         item.status = AIOverrideState.APPROVED.value
-        item.resolved_at = datetime.now(timezone.utc)
+        item.resolved_at = datetime.now(UTC)
 
         evt = AIApprovalEvent(
             tenant_id=self._user.tenant_id,
@@ -152,7 +152,7 @@ class AIOverrideService:
     ) -> AIReviewItem:
         item = self._get_review_item(review_item_id)
         item.status = AIOverrideState.REJECTED.value
-        item.resolved_at = datetime.now(timezone.utc)
+        item.resolved_at = datetime.now(UTC)
 
         if regenerate_requested:
             item.status = AIOverrideState.REGENERATE_REQUESTED.value

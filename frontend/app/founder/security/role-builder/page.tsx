@@ -1,35 +1,239 @@
 'use client';
+
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { QuantumEmptyState } from '@/components/ui';
+
+const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+
+interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  is_system: boolean;
+}
+
+interface RoleAssignment {
+  id: string;
+  user_id: string;
+  role_id: string;
+  role_name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+function authHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : '';
+  return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+}
+
+function Badge({ label, active }: { label: string; active: boolean }) {
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 text-micro font-semibold uppercase tracking-widest border ${active ? 'border-green text-green bg-green/10' : 'border-red-500/40 text-red-400 bg-red-500/10'}`}>
+      {active ? 'Active' : 'Revoked'}
+    </span>
+  );
+}
+
+function RoleCard({ role, selected, onClick }: { role: Role; selected: boolean; onClick: () => void }) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.01 }}
+      onClick={onClick}
+      className={`w-full text-left p-3 border transition-colors ${selected ? 'border-orange bg-orange/10' : 'border-border-DEFAULT hover:border-white/20 bg-bg-panel'}`}
+      style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs font-bold text-text-primary">{role.name}</span>
+        {role.is_system && (
+          <span className="px-1.5 py-0.5 text-[10px] bg-orange/20 text-orange border border-orange/30 uppercase tracking-widest">System</span>
+        )}
+      </div>
+      {role.description && <p className="text-micro text-text-muted">{role.description}</p>}
+    </motion.button>
+  );
+}
 
 export default function RoleBuilderPage() {
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [assignments, setAssignments] = useState<RoleAssignment[]>([]);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [revoking, setRevoking] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  // Assign form
+  const [assignUserId, setAssignUserId] = useState('');
+  const [assigning, setAssigning] = useState(false);
+
+  const showToast = (msg: string, ok: boolean) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API}/api/v1/roles`, { headers: authHeaders() }).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API}/api/v1/roles/assignments`, { headers: authHeaders() }).then(r => r.ok ? r.json() : []).catch(() => []),
+    ]).then(([rolesData, assignData]) => {
+      setRoles(rolesData);
+      setAssignments(assignData);
+      setLoading(false);
+    });
+  }, []);
+
+  const assignRole = async () => {
+    if (!selectedRole || !assignUserId.trim()) return;
+    setAssigning(true);
+    try {
+      const res = await fetch(`${API}/api/v1/roles/assignments`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ user_id: assignUserId.trim(), role_id: selectedRole.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail ?? `HTTP ${res.status}`);
+      }
+      const newAssign: RoleAssignment = await res.json();
+      setAssignments(prev => [newAssign, ...prev]);
+      setAssignUserId('');
+      showToast(`Role "${selectedRole.name}" assigned.`, true);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Assignment failed', false);
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const revokeAssignment = async (id: string) => {
+    setRevoking(id);
+    try {
+      const res = await fetch(`${API}/api/v1/roles/assignments/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setAssignments(prev => prev.filter(a => a.id !== id));
+      showToast('Role assignment revoked.', true);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Revoke failed', false);
+    } finally {
+      setRevoking(null);
+    }
+  };
+
+  const filteredAssignments = selectedRole
+    ? assignments.filter(a => a.role_id === selectedRole.id)
+    : assignments;
+
   return (
     <div className="p-5 min-h-screen">
-      <div className="hud-rail pb-3 mb-6">
-        <div className="micro-caps mb-1">Security</div>
-        <h1 className="text-h2 font-bold text-text-primary">Role Builder</h1>
-        <p className="text-body text-text-muted mt-1">Create and manage custom roles with granular permission assignments.</p>
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className={`fixed top-4 right-4 z-50 px-4 py-3 border text-sm font-semibold ${toast.ok ? 'border-green text-green bg-green/10' : 'border-red-500 text-red-400 bg-red-500/10'}`}
+            style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="hud-rail pb-3 mb-6 flex items-end justify-between">
+        <div>
+          <div className="micro-caps mb-1 text-text-muted">Security</div>
+          <h1 className="text-h2 font-bold text-text-primary">Role Builder</h1>
+          <p className="text-body text-text-muted mt-1">Manage role assignments with full audit trail.</p>
+        </div>
+        <Link href="/founder/security"
+          className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors">
+          ← Security
+        </Link>
       </div>
-      <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 shadow-elevation-1">
-        <QuantumEmptyState
-          title="Not Yet Configured"
-          description="This module is scheduled for an upcoming release. Contact your account manager for early access."
-          icon={
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="6" y="10" width="36" height="28" rx="2" />
-              <path d="M6 18h36M16 10V6M32 10V6" />
-              <circle cx="24" cy="30" r="4" />
-            </svg>
-          }
-          action={
-            <Link
-              href="/founder"
-              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-orange hover:text-orange-bright transition-colors duration-fast"
-            >
-              &larr; Back to Command Center
-            </Link>
-          }
-        />
+
+      {error && <div className="mb-4 px-4 py-3 border border-red-500/40 text-red-400 text-sm">{error}</div>}
+
+      <div className="grid grid-cols-12 gap-4">
+        {/* Role list */}
+        <div className="col-span-4">
+          <div className="text-micro uppercase tracking-widest text-text-muted mb-2">Roles ({roles.length})</div>
+          {loading ? (
+            <div className="text-text-muted text-sm py-8 text-center">Loading…</div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <motion.button
+                onClick={() => setSelectedRole(null)}
+                className={`w-full text-left p-2.5 text-xs font-semibold uppercase tracking-widest border transition-colors ${!selectedRole ? 'border-orange text-orange bg-orange/10' : 'border-border-DEFAULT text-text-muted hover:border-white/20'}`}>
+                All Roles
+              </motion.button>
+              {roles.map(r => (
+                <RoleCard key={r.id} role={r} selected={selectedRole?.id === r.id} onClick={() => setSelectedRole(r)} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Assignments panel */}
+        <div className="col-span-8">
+          <div className="text-micro uppercase tracking-widest text-text-muted mb-2">
+            {selectedRole ? `Assignments — ${selectedRole.name}` : 'All Assignments'}
+            <span className="ml-2 text-orange">({filteredAssignments.length})</span>
+          </div>
+
+          {/* Assign form */}
+          {selectedRole && (
+            <div className="flex gap-2 mb-4 bg-bg-panel border border-border-DEFAULT p-3"
+              style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+              <input
+                value={assignUserId} onChange={e => setAssignUserId(e.target.value)}
+                placeholder="User UUID…"
+                className="flex-1 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-orange font-mono" />
+              <button onClick={assignRole} disabled={assigning || !assignUserId.trim()}
+                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-orange text-bg-page hover:bg-orange-bright transition-colors disabled:opacity-50">
+                {assigning ? 'Assigning…' : 'Assign'}
+              </button>
+            </div>
+          )}
+
+          <div className="bg-bg-panel border border-border-DEFAULT"
+            style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+            {/* Headers */}
+            <div className="grid grid-cols-12 gap-2 px-4 py-2 border-b border-white/10 bg-white/[0.02]">
+              <span className="col-span-4 text-micro uppercase tracking-widest text-text-muted">User ID</span>
+              <span className="col-span-3 text-micro uppercase tracking-widest text-text-muted">Role</span>
+              <span className="col-span-2 text-micro uppercase tracking-widest text-text-muted">Status</span>
+              <span className="col-span-2 text-micro uppercase tracking-widest text-text-muted">Created</span>
+              <span className="col-span-1" />
+            </div>
+
+            {filteredAssignments.length === 0 && !loading && (
+              <div className="px-4 py-10 text-center text-text-muted text-sm">No role assignments found.</div>
+            )}
+
+            {filteredAssignments.map((a, i) => (
+              <motion.div key={a.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 items-center hover:bg-white/[0.02]">
+                <span className="col-span-4 text-micro font-mono text-text-secondary truncate">{a.user_id.slice(0, 8)}…</span>
+                <span className="col-span-3 text-xs font-semibold text-text-primary truncate">{a.role_name}</span>
+                <span className="col-span-2"><Badge label="" active={a.is_active} /></span>
+                <span className="col-span-2 text-micro text-text-muted font-mono">
+                  {new Date(a.created_at).toLocaleDateString()}
+                </span>
+                <div className="col-span-1 flex justify-end">
+                  {a.is_active && (
+                    <button onClick={() => revokeAssignment(a.id)} disabled={revoking === a.id}
+                      className="text-micro text-red-400 hover:text-red-300 transition-colors disabled:opacity-40 font-semibold">
+                      {revoking === a.id ? '…' : 'Revoke'}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

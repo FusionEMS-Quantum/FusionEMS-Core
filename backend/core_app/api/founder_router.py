@@ -200,7 +200,7 @@ async def webhook_health(
                 and r.get("data", {}).get("status") == "dead"
             ]
             health[source] = "error" if dead_items else "ok"
-        except Exception as e:
+        except Exception:
             health[source] = "unknown"
 
     return {"health": health, "as_of": datetime.now(UTC).isoformat()}

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -28,7 +28,7 @@ from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import EventPublisher
 
 
-class PagingState(str, Enum):
+class PagingState(StrEnum):
     ALERT_CREATED = "ALERT_CREATED"
     TARGETS_RESOLVED = "TARGETS_RESOLVED"
     PUSH_SENT = "PUSH_SENT"
@@ -42,7 +42,7 @@ class PagingState(str, Enum):
     CLOSED = "CLOSED"
 
 
-class CrewResponse(str, Enum):
+class CrewResponse(StrEnum):
     ACKNOWLEDGE = "ACKNOWLEDGE"
     ACCEPT = "ACCEPT"
     DECLINE = "DECLINE"

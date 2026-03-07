@@ -159,7 +159,7 @@ async def validate_raw_xml(
 ):
     body = await request.body()
     validation = validate_nemsis_xml(body)
-    
+
     # Format for the frontend UI
     issues = []
     for err in validation.get("errors", []):
@@ -180,7 +180,7 @@ async def validate_raw_xml(
             "ui_section": "XML Upload",
             "suggested_fix": warn.get("message", "Check XML schema")
         })
-        
+
     return {
         "valid": validation["valid"],
         "issues": issues,
@@ -195,7 +195,7 @@ async def simulate_wisconsin(
     db: Session = Depends(db_session_dependency)
 ):
     svc = DominationService(db, get_event_publisher())
-    
+
     # Generate 5 mock payloads
     jobs = []
     for i in range(5):
@@ -218,5 +218,5 @@ async def simulate_wisconsin(
             correlation_id=getattr(request.state, "correlation_id", None)
         )
         jobs.append(res)
-        
+
     return {"status": "success", "jobs": jobs}

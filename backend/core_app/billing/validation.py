@@ -21,14 +21,14 @@ class BillingValidator:
         self.repo_tasks = DominationRepository(db, table="missing_document_tasks")
 
     def validate_case(self, case_id: uuid.UUID) -> dict[str, Any]:
-        case = self.repo_cases.get(self.tenant_id, case_id)
+        case = self.repo_cases.get(tenant_id=self.tenant_id, record_id=case_id)
         if not case:
             raise ValueError("billing_case_not_found")
         data = case["data"]
         required_docs = data.get("required_docs") or ["facesheet", "pcs", "signature"]
         attached_doc_ids = set(data.get("attached_document_ids") or [])
         # infer attachments from documents table as well
-        docs = self.repo_docs.list(self.tenant_id, limit=2000)
+        docs = self.repo_docs.list(tenant_id=self.tenant_id, limit=2000)
         for d in docs:
             dd = d["data"]
             if dd.get("owner_entity_type") == "billing_case" and dd.get("owner_entity_id") == str(

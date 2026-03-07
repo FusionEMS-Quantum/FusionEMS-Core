@@ -94,8 +94,9 @@ async def register_rep(
             )
             send_sms(
                 cfg=cfg,
-                to=payload.phone,
-                body=f"Your FusionEMS authorization code: {otp_code}. Expires in {OTP_EXPIRY_MINUTES} min.",
+                from_number=settings.telnyx_from_number,
+                to_number=payload.phone,
+                text=f"Your FusionEMS authorization code: {otp_code}. Expires in {OTP_EXPIRY_MINUTES} min.",
             )
             sent = True
         except TelnyxNotConfigured as e:

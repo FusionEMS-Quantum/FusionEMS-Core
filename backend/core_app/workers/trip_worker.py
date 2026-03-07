@@ -5,6 +5,7 @@ Handles background jobs enqueued by trip_router:
   trip.export.generate_xml     — generate XML export and upload to S3
   trip.posting.apply_payments  — parse posting file and update debt statuses
 """
+# pylint: disable=not-callable
 
 from __future__ import annotations
 

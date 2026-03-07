@@ -135,6 +135,7 @@ export default function GovernanceCommandPage() {
   const [summary, setSummary] = useState<ComplianceSummary | null>(null);
   const [timeline, setTimeline] = useState<AuditTimelineEvent[]>([]);
   const [actions, setActions] = useState<NextAction[]>([]);
+  const [interopScore, setInteropScore] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -144,7 +145,8 @@ export default function GovernanceCommandPage() {
 
     Promise.all([
       fetch(`${API}/api/v1/governance/summary`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([summaryData]) => {
+      fetch(`${API}/api/v1/governance/interop-readiness`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([summaryData, interopData]) => {
       if (summaryData) {
         setSummary(summaryData);
 
@@ -171,6 +173,9 @@ export default function GovernanceCommandPage() {
         if (summaryData.recent_exports_7d > 0) t.push({ time: '7d', actor: 'System', action: `${summaryData.recent_exports_7d} data exports`, level: 'BLUE' });
         setTimeline(t);
       }
+      if (interopData) {
+        setInteropScore(interopData.score as number);
+      }
       setLoading(false);
     });
   }, []);
@@ -180,7 +185,6 @@ export default function GovernanceCommandPage() {
     : summary.health_score >= 50 ? STATUS_COLOR.YELLOW
     : STATUS_COLOR.RED;
 
-  const interopScore = 65; // placeholder until interop readiness endpoint is wired
   const policyCompleteness = summary ? Math.min(summary.health_score + 10, 100) : 0;
 
   return (

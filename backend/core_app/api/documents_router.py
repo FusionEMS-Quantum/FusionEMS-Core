@@ -92,7 +92,7 @@ async def process(
     ocr = TextractOcrService(db, tenant_id=current.tenant_id, bucket=bucket)
     extraction = ocr.start_job(document_id=str(body.document_id), s3_key=s3_key)
 
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{current.tenant_id}.documents.ocr.started",
         tenant_id=current.tenant_id,
         entity_type="document",

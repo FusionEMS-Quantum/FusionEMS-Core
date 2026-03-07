@@ -10,6 +10,48 @@ from sqlalchemy.orm import Session
 from core_app.db.session import get_db_session as get_db
 from core_app.repositories.domination_repository import DominationRepository
 
+
+class _MultiRepo:
+    """Backward-compatible multi-table repository shim.
+
+    Wraps the keyword-only DominationRepository API, providing the legacy
+    positional (table, tenant_id, ...) calling convention used throughout
+    this module.
+    """
+
+    def __init__(self, db: Session) -> None:
+        self._db = db
+
+    def _inst(self, table: str) -> DominationRepository:
+        return DominationRepository(self._db, table=table)
+
+    def create(
+        self, table: str, tenant_id: uuid.UUID, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        return self._inst(table).create(tenant_id=tenant_id, data=data)
+
+    def list(
+        self, table: str, tenant_id: uuid.UUID, limit: int = 500
+    ) -> list[dict[str, Any]]:
+        return self._inst(table).list(tenant_id=tenant_id, limit=limit)
+
+    def update(
+        self,
+        table: str,
+        tenant_id: uuid.UUID,
+        record_id: uuid.UUID,
+        data: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        existing = self._inst(table).get(tenant_id=tenant_id, record_id=record_id)
+        version = existing.get("version", 0) if existing else 0
+        return self._inst(table).update(
+            tenant_id=tenant_id,
+            record_id=record_id,
+            expected_version=version,
+            patch=data,
+        )
+
+
 router = APIRouter(prefix="/api/v1/kitlink", tags=["kitlink"])
 
 _STARTER_TEMPLATES: dict[str, dict] = {
@@ -261,8 +303,8 @@ _STARTER_TEMPLATES: dict[str, dict] = {
 }
 
 
-def _repo(db: Session = Depends(get_db)) -> DominationRepository:
-    return DominationRepository(db)
+def _repo(db: Session = Depends(get_db)) -> _MultiRepo:
+    return _MultiRepo(db)
 
 
 def _tid(tenant_id: str | None = Query(None)) -> uuid.UUID:

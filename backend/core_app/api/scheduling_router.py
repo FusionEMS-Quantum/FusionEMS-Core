@@ -145,7 +145,7 @@ async def coverage_dashboard(
     result = engine.coverage_dashboard(hours=hours)
     # Publish a snapshot event (lightweight)
     pub = get_event_publisher()
-    pub.publish(
+    pub.publish_sync(
         topic=f"tenant.{current.tenant_id}.scheduling.coverage.snapshot",
         tenant_id=current.tenant_id,
         entity_type="scheduling",
@@ -220,7 +220,7 @@ async def run_escalations(
         tenant_id=current.tenant_id,
         within_hours=int(payload.get("within_hours", 4)),
     )
-    get_event_publisher().publish(
+    get_event_publisher().publish_sync(
         topic=f"tenant.{current.tenant_id}.scheduling.escalations.run",
         tenant_id=current.tenant_id,
         entity_type="scheduling",

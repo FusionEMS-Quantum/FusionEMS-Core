@@ -86,7 +86,7 @@ async def lob_webhook(
     # ── 2. Parse body ─────────────────────────────────────────────────────────
     try:
         payload: dict[str, Any] = json.loads(raw_body)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_json")
 
     event_id: str = payload.get("id") or str(uuid.uuid4())

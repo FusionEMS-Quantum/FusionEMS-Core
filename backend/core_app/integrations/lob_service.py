@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import logging
 import os
 import re
 import uuid
-import base64
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 
@@ -64,7 +64,7 @@ def _redact_pii(text: str) -> str:
 
 
 class LobService:
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         self._api_key = api_key
 
     def _key(self) -> str:
@@ -76,7 +76,7 @@ class LobService:
         from_address: dict,
         template_id: str,
         merge_variables: dict,
-        idempotency_key: Optional[str] = None,
+        idempotency_key: str | None = None,
     ) -> dict:
         safe_vars = {k: _redact_pii(str(v)) if isinstance(v, str) else v for k, v in merge_variables.items()}
 
@@ -239,7 +239,7 @@ def verify_lob_webhook_signature(
     except (TypeError, ValueError):
         return False
 
-    now_ts = int(datetime.now(timezone.utc).timestamp())
+    now_ts = int(datetime.now(UTC).timestamp())
     if abs(now_ts - ts) > tolerance_seconds:
         return False
 

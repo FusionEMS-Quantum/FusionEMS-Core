@@ -538,7 +538,7 @@ async def security_vulnerabilities(
             + findings["low"]
         )
         findings["status"] = "clean" if total == 0 else "issues_found"
-    except Exception as e:
+    except Exception:
         logger.warning("security_hub_unavailable", exc_info=True)
     findings["last_scan"] = _now_iso()
     return findings
@@ -577,7 +577,7 @@ async def iam_drift(
         result["policies_checked"] = total_checked
         result["drift_detected"] = noncompliant > 0
         result["status"] = "compliant" if noncompliant == 0 else "drift_detected"
-    except Exception as e:
+    except Exception:
         logger.warning("config_service_unavailable", exc_info=True)
     return result
 

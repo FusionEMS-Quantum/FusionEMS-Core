@@ -38,7 +38,6 @@ class TextractOcrService:
         repo = DominationRepository(self.db, table="document_extractions")
         rec = repo.create(
             tenant_id=self.tenant_id,
-            actor_user_id=None,
             data={
                 "document_id": document_id,
                 "job_id": job_id,
@@ -83,9 +82,8 @@ class TextractOcrService:
         updated = ex_repo.update(
             tenant_id=self.tenant_id,
             record_id=extraction_id,
-            actor_user_id=None,
             expected_version=extraction["version"],
-            data_patch=patch,
+            patch=patch,
         )
 
         if status == "SUCCEEDED":
@@ -97,8 +95,7 @@ class TextractOcrService:
                     doc_repo.update(
                         tenant_id=self.tenant_id,
                         record_id=doc_id,
-                        actor_user_id=None,
                         expected_version=doc["version"],
-                        data_patch={"doc_type": doc_type, "ocr_status": "succeeded"},
+                        patch={"doc_type": doc_type, "ocr_status": "succeeded"},
                     )
         return updated

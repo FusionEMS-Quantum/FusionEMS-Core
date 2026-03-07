@@ -38,7 +38,7 @@ async def send_fax(
         data=payload,
         correlation_id=getattr(request.state, "correlation_id", None),
     )
-    get_event_publisher().publish(
+    get_event_publisher().publish_sync(
         topic=f"tenant.{current.tenant_id}.fax.job.created",
         tenant_id=current.tenant_id,
         entity_type="fax_job",
@@ -66,7 +66,7 @@ async def inbound_fax(
 
     try:
         tenant_id = uuid.UUID(str(tenant_id_raw))
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_tenant_id")
 
     if not tenant_id:
@@ -142,7 +142,7 @@ async def inbound_fax(
         correlation_id=getattr(request.state, "correlation_id", None),
     )
 
-    publisher.publish(
+    publisher.publish_sync(
         topic=f"tenant.{tenant_id}.documents.fax.received",
         tenant_id=tenant_id,
         entity_type="document",
@@ -195,7 +195,7 @@ async def trigger_fax_match(
         },
         correlation_id=getattr(request.state, "correlation_id", None),
     )
-    get_event_publisher().publish(
+    get_event_publisher().publish_sync(
         topic=f"tenant.{current.tenant_id}.fax.match.trigger",
         tenant_id=current.tenant_id,
         entity_type="fax_job",
@@ -254,7 +254,7 @@ async def attach_fax_to_claim(
         },
         correlation_id=getattr(request.state, "correlation_id", None),
     )
-    get_event_publisher().publish(
+    get_event_publisher().publish_sync(
         topic=f"tenant.{current.tenant_id}.claims.fax.attached",
         tenant_id=current.tenant_id,
         entity_type="claim",

@@ -20,11 +20,11 @@ AI RULES:
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class IssueSeverity(str, Enum):
+class IssueSeverity(StrEnum):
     BLOCKING = "BLOCKING"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -32,7 +32,7 @@ class IssueSeverity(str, Enum):
     INFORMATIONAL = "INFORMATIONAL"
 
 
-class IssueSource(str, Enum):
+class IssueSource(StrEnum):
     RULE = "RULE"
     AI_REVIEW = "AI_REVIEW"
     DISPATCH_EVENT = "DISPATCH_EVENT"
@@ -41,13 +41,13 @@ class IssueSource(str, Enum):
     HUMAN_NOTE = "HUMAN_NOTE"
 
 
-class HumanReview(str, Enum):
+class HumanReview(StrEnum):
     REQUIRED = "REQUIRED"
     RECOMMENDED = "RECOMMENDED"
     SAFE_TO_AUTO_PROCESS = "SAFE_TO_AUTO_PROCESS"
 
 
-class AIConfidence(str, Enum):
+class AIConfidence(StrEnum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"

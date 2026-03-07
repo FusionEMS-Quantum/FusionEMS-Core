@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Use execute to avoid string-enum restrictions
-    
+
     op.create_table(
         'roles',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),

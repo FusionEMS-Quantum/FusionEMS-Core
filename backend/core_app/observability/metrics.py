@@ -5,7 +5,7 @@ error classification, and infrastructure health.
 """
 from __future__ import annotations
 
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 # --- HTTP Request Metrics ---
 HTTP_REQUESTS_TOTAL = Counter(

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
-from typing import Optional
 from dataclasses import dataclass, field
+from pathlib import Path
 
 XSD_BASE = Path(__file__).resolve().parent.parent.parent / "compliance" / "nemsis" / "v3.5.1"
 
@@ -25,7 +23,7 @@ class XSDValidationResult:
 
 
 class NEMSISXSDValidator:
-    def __init__(self, xsd_dir: Optional[str] = None):
+    def __init__(self, xsd_dir: str | None = None):
         self._xsd_dir = Path(xsd_dir) if xsd_dir else XSD_BASE
         self._ems_schema = None
         self._dem_schema = None
@@ -42,7 +40,7 @@ class NEMSISXSDValidator:
         except Exception:
             return None
 
-    def _find_xsd(self, pattern: str) -> Optional[Path]:
+    def _find_xsd(self, pattern: str) -> Path | None:
         for p in self._xsd_dir.rglob(pattern):
             return p
         return None

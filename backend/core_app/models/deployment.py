@@ -1,15 +1,14 @@
-from enum import Enum
-from typing import Optional
 from datetime import datetime
+from enum import StrEnum
 
-from sqlalchemy import String, ForeignKey, Integer
+from sqlalchemy import Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core_app.db.base import Base, UUIDPrimaryKeyMixin, TimestampMixin
+from core_app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 
-class DeploymentState(str, Enum):
+class DeploymentState(StrEnum):
     """
     ZERO-ERROR DEPLOYMENT STATE MACHINE
     Defined in ZERO_ERROR_DIRECTIVE.md
@@ -40,18 +39,18 @@ class DeploymentRun(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     # External Event ID (e.g., Stripe Checkout Session ID)
     external_event_id: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
-    
+
     # Agency Reference
-    agency_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("tenants.id"), nullable=True)
+    agency_id: Mapped[UUID | None] = mapped_column(ForeignKey("tenants.id"), nullable=True)
 
     # Current State
     current_state: Mapped[DeploymentState] = mapped_column(String(64), nullable=False, default=DeploymentState.CHECKOUT_CREATED)
-    
+
     # Audit Trail
     steps: Mapped[list["DeploymentStep"]] = relationship(back_populates="run", cascade="all, delete-orphan")
-    failure_reason: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    failure_reason: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    
+
     # Metadata
     metadata_blob: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
 
@@ -68,10 +67,10 @@ class DeploymentStep(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     step_name: Mapped[str] = mapped_column(String(128), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)  # SUCCESS, FAILED, PENDING
-    
+
     # Detailed log
     result_blob: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
-    error_message: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(String(1024), nullable=True)
 
 
 class WebhookEventLog(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -85,10 +84,10 @@ class WebhookEventLog(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     event_id: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     event_type: Mapped[str] = mapped_column(String(128), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    
+
     processed: Mapped[bool] = mapped_column(default=False, nullable=False)
-    processed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    processing_error: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    processed_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    processing_error: Mapped[str | None] = mapped_column(String(1024), nullable=True)
 
 
 class ProvisioningAttempt(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -100,8 +99,8 @@ class ProvisioningAttempt(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     deployment_run_id: Mapped[UUID] = mapped_column(ForeignKey("deployment_runs.id"), nullable=False)
     resource_type: Mapped[str] = mapped_column(String(64), nullable=False)  # PHONE_NUMBER, SUBSCRIPTION, USER
-    external_resource_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    
+    external_resource_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     request_payload: Mapped[dict] = mapped_column(JSONB, nullable=True)
     response_payload: Mapped[dict] = mapped_column(JSONB, nullable=True)
@@ -115,7 +114,7 @@ class RetrySchedule(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     deployment_run_id: Mapped[UUID] = mapped_column(ForeignKey("deployment_runs.id"), nullable=False)
     step_name: Mapped[str] = mapped_column(String(128), nullable=False)
-    
+
     next_retry_at: Mapped[datetime] = mapped_column(nullable=False)
     attempt_number: Mapped[int] = mapped_column(Integer, nullable=False)
     max_attempts: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
@@ -128,13 +127,16 @@ class FailureAudit(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     """
     __tablename__ = "failure_audits"
 
-    deployment_run_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("deployment_runs.id"), nullable=True)
+    deployment_run_id: Mapped[UUID | None] = mapped_column(ForeignKey("deployment_runs.id"), nullable=True)
     severity: Mapped[str] = mapped_column(String(32), nullable=False)  # BLOCKING, HIGH, MEDIUM
     source: Mapped[str] = mapped_column(String(64), nullable=False)
-    
+
     what_is_wrong: Mapped[str] = mapped_column(String(1024), nullable=False)
     why_it_matters: Mapped[str] = mapped_column(String(1024), nullable=False)
     what_to_do_next: Mapped[str] = mapped_column(String(1024), nullable=False)
-    
+    business_context: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    human_review_status: Mapped[str] = mapped_column(String(32), default="PENDING", nullable=False)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+
     resolved: Mapped[bool] = mapped_column(default=False, nullable=False)
-    resolved_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(nullable=True)

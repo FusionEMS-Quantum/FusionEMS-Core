@@ -1,0 +1,154 @@
+'use client';
+import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { listSupportTickets } from '@/services/api';
+
+interface Ticket {
+  id: string;
+  subject: string;
+  description: string;
+  state: string;
+  severity: string;
+  category: string;
+  reporter_user_id: string;
+  assigned_user_id: string | null;
+  sla_response_target: string | null;
+  sla_resolution_target: string | null;
+  sla_response_met: boolean | null;
+  sla_resolution_met: boolean | null;
+  created_at: string;
+}
+
+const SEVERITY_BADGE: Record<string, string> = {
+  CRITICAL: 'bg-red-500/20 text-red-400 border-red-500/40',
+  HIGH: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
+  MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
+  LOW: 'bg-green-500/20 text-green-400 border-green-500/40',
+};
+
+const STATE_BADGE: Record<string, string> = {
+  NEW: 'text-blue-400',
+  TRIAGED: 'text-cyan-400',
+  ASSIGNED: 'text-purple-400',
+  IN_PROGRESS: 'text-yellow-400',
+  WAITING_ON_CUSTOMER: 'text-orange-400',
+  WAITING_ON_VENDOR: 'text-orange-300',
+  ESCALATED: 'text-red-400',
+  RESOLVED: 'text-green-400',
+  CLOSED: 'text-text-muted',
+  REOPENED: 'text-red-300',
+};
+
+export default function SupportOpsPage() {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [severityFilter, setSeverityFilter] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await listSupportTickets(statusFilter || undefined, severityFilter || undefined);
+      setTickets(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load tickets');
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, severityFilter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (error) {
+    return (
+      <div className="p-5">
+        <div className="bg-red-500/10 border border-red-500/30 p-4 text-red-400 text-sm">{error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-5 space-y-6">
+      <div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">SUCCESS · SUPPORT</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Support Operations</h1>
+        <p className="text-xs text-text-muted mt-0.5">Ticket queue · SLA tracking · escalations · resolution</p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-text-muted">Status:</span>
+          {['', 'NEW', 'TRIAGED', 'ASSIGNED', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'].map((s) => (
+            <button key={s} onClick={() => setStatusFilter(s)}
+              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              {s || 'ALL'}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-text-muted">Severity:</span>
+          {['', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map((s) => (
+            <button key={s} onClick={() => setSeverityFilter(s)}
+              className={`text-micro px-2 py-1 border ${severityFilter === s ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              {s || 'ALL'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2 animate-pulse">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-14 bg-bg-panel rounded" />
+          ))}
+        </div>
+      ) : tickets.length === 0 ? (
+        <div className="bg-bg-panel border border-border-DEFAULT p-8 text-center text-text-muted text-sm">
+          No tickets found.
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-2 text-micro font-bold text-text-muted px-4 py-2 border-b border-border-DEFAULT">
+            <div className="col-span-4">Subject</div>
+            <div className="col-span-2">State</div>
+            <div className="col-span-1">Sev</div>
+            <div className="col-span-2">Category</div>
+            <div className="col-span-1">SLA Resp</div>
+            <div className="col-span-2">Created</div>
+          </div>
+
+          {tickets.map((t, i) => (
+            <motion.div key={t.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+              className="grid grid-cols-12 gap-2 bg-bg-panel border border-border-DEFAULT px-4 py-3 hover:border-white/[0.18] transition-colors items-center text-xs">
+              <div className="col-span-4">
+                <div className="text-text-primary font-bold truncate">{t.subject}</div>
+                <div className="text-text-muted truncate">{t.description.slice(0, 60)}{t.description.length > 60 ? '…' : ''}</div>
+              </div>
+              <div className={`col-span-2 font-bold ${STATE_BADGE[t.state] || 'text-text-muted'}`}>{t.state}</div>
+              <div className="col-span-1">
+                <span className={`px-1.5 py-0.5 border text-micro font-bold ${SEVERITY_BADGE[t.severity] || ''}`}>{t.severity}</span>
+              </div>
+              <div className="col-span-2 text-text-muted">{t.category}</div>
+              <div className="col-span-1">
+                {t.sla_response_met === null ? (
+                  <span className="text-text-muted">—</span>
+                ) : t.sla_response_met ? (
+                  <span className="text-green-400 font-bold">✓</span>
+                ) : (
+                  <span className="text-red-400 font-bold">✗</span>
+                )}
+              </div>
+              <div className="col-span-2 text-text-muted">{new Date(t.created_at).toLocaleString()}</div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <Link href="/founder/success-command" className="text-xs text-orange-dim hover:text-orange">← Back to Success Command Center</Link>
+    </div>
+  );
+}

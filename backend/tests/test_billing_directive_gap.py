@@ -7,25 +7,20 @@ Tests for billing directive gap closure:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, UTC
-from unittest.mock import MagicMock, patch
-
-import pytest
+from datetime import datetime
+from unittest.mock import MagicMock
 
 from core_app.billing.pre_submission_rules import (
     PreSubmissionRulesEngine,
-    PreSubmissionVerdict,
-    RuleResult,
     RuleSeverity,
 )
-from core_app.models.billing import Claim, ClaimIssue, ClaimState, PatientBalanceState
+from core_app.models.billing import Claim, ClaimState, PatientBalanceState
 from core_app.services.billing_ai_service import (
+    AppealStrategy,
     BillingAIService,
     BillingHealthScore,
     DenialPrediction,
-    AppealStrategy,
 )
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -47,6 +42,9 @@ def _mock_claim(**overrides) -> MagicMock:
     claim.validation_errors = overrides.get("validation_errors", [])
     claim.aging_days = overrides.get("aging_days", 10)
     claim.is_valid = overrides.get("is_valid", True)
+    claim.pickup_address = overrides.get("pickup_address", "123 Main St")
+    claim.dropoff_address = overrides.get("dropoff_address", "456 Hospital Ave")
+    claim.medical_necessity_narrative = overrides.get("medical_necessity_narrative", "Patient required ambulance transport due to medical condition.")
     return claim
 
 
@@ -99,7 +97,7 @@ class TestPreSubmissionRulesEngine:
 
         assert verdict.submittable is True
         assert verdict.blocking_count == 0
-        assert len(verdict.results) == 9  # 9 rules
+        assert len(verdict.results) == 14  # 14 rules (9 original + 5 CMS)
         assert all(r.passed for r in verdict.results)
 
     def test_missing_patient_blocks(self):
@@ -446,9 +444,9 @@ class TestBillingSchemas:
 
     def test_agency_policy_schemas(self):
         from core_app.schemas.billing import (
+            AgencyDebtSetoffPolicyOut,
             AgencyPaymentPlanPolicyOut,
             AgencyWriteoffPolicyOut,
-            AgencyDebtSetoffPolicyOut,
         )
 
         pp = AgencyPaymentPlanPolicyOut(
@@ -488,9 +486,9 @@ class TestBillingSchemas:
         assert ds.require_human_review is True
 
     def test_debt_setoff_batch_out(self):
-        from core_app.schemas.billing import DebtSetoffBatchOut
+        from core_app.schemas.billing import DebtSetoffExportBatchOut
 
-        b = DebtSetoffBatchOut(
+        b = DebtSetoffExportBatchOut(
             id=uuid.uuid4(),
             enrollment_id=uuid.uuid4(),
             tenant_id=uuid.uuid4(),
@@ -502,9 +500,9 @@ class TestBillingSchemas:
         assert b.record_count == 50
 
     def test_state_debt_setoff_rule_pack_out(self):
-        from core_app.schemas.billing import StateDebtSetoffRulePackOut
+        from core_app.schemas.billing import DebtSetoffRulePackOut
 
-        rp = StateDebtSetoffRulePackOut(
+        rp = DebtSetoffRulePackOut(
             id=uuid.uuid4(),
             state_profile_id=uuid.uuid4(),
             notice_required_days=30,

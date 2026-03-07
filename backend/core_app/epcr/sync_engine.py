@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from core_app.epcr.chart_model import Chart, ChartStatus, SyncStatus
+from core_app.epcr.chart_model import Chart, SyncStatus
 
 
 class SyncConflictPolicy(StrEnum):
@@ -206,7 +206,7 @@ class SyncService(SyncEngine):
             # Log failure
             # chart.sync_status = SyncStatus.SYNC_ERROR
 
-        duration = (datetime.now(UTC) - start_time).total_seconds() * 1000
+        (datetime.now(UTC) - start_time).total_seconds() * 1000
 
         # Log attempt
         # attempt = ClinicalSyncAttempt(

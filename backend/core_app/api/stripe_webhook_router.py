@@ -54,7 +54,7 @@ async def stripe_webhook(
     settings = get_settings()
     webhook_secret = settings.stripe_webhook_secret
 
-    if not webhook_secret or webhook_secret.startswith("REPLACE"):
+    if not webhook_secret or str(webhook_secret).startswith("REPLACE"):
         logger.error(
             "stripe_webhook_secret_not_configured correlation_id=%s", correlation_id
         )

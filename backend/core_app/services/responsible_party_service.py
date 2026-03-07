@@ -107,7 +107,7 @@ class ResponsiblePartyService:
         party = result.scalar_one_or_none()
         if not party:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Responsible party not found",
             )
         return ResponsiblePartyResponse.model_validate(party)
@@ -129,12 +129,12 @@ class ResponsiblePartyService:
         party = result.scalar_one_or_none()
         if not party:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Responsible party not found",
             )
         if party.version != payload.version:
             raise AppError(
-                code=ErrorCodes.CONFLICT,
+                code=ErrorCodes.CONFLICT, status_code=409,
                 message="Version conflict",
             )
         for field in (
@@ -233,7 +233,7 @@ class ResponsiblePartyService:
         link = result.scalar_one_or_none()
         if not link:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Responsibility link not found",
             )
         prev_state = link.responsibility_state.value

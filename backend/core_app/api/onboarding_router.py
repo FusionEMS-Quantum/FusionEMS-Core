@@ -499,7 +499,7 @@ async def checkout_start(
                 detail="No billable line items for this plan configuration",
             )
 
-        base_url = settings.api_base_url.rstrip("/")
+        base_url = str(settings.api_base_url).rstrip("/")
         session = stripe_lib.checkout.Session.create(
             mode="subscription",
             line_items=line_items,

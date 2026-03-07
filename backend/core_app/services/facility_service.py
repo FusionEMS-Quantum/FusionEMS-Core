@@ -129,7 +129,7 @@ class FacilityService:
         )
         if facility.version != payload.version:
             raise AppError(
-                code=ErrorCodes.CONFLICT, message="Version conflict"
+                code=ErrorCodes.CONFLICT, status_code=409, message="Version conflict"
             )
         for field in (
             "name", "facility_type", "npi",
@@ -382,7 +382,7 @@ class FacilityService:
         flag = result.scalar_one_or_none()
         if not flag:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Friction flag not found",
             )
         flag.is_active = False
@@ -414,7 +414,7 @@ class FacilityService:
         facility = result.scalar_one_or_none()
         if not facility:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Facility not found",
             )
         return facility

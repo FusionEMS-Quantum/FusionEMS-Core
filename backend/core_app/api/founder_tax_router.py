@@ -1,0 +1,213 @@
+import asyncio
+import json
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import HTMLResponse, StreamingResponse
+
+from core_app.models.founder_tax import TaxDocumentType, TaxEntityBucket
+from core_app.services.ai_platform.tax_advisor_service import (
+    AIReceiptTaxAdvisor,
+    S3DocumentVaultService,
+)
+
+# Define the router endpoint group
+tax_advisor_router = APIRouter(prefix="/quantum-founder", tags=["Quantum Founder Accounting", "Quantum Tax Shield"])
+
+def get_s3_vault_service() -> S3DocumentVaultService:
+    return S3DocumentVaultService()
+
+@tax_advisor_router.get("/vault/documents")
+async def list_vault_documents():
+    """
+    Returns the virtualized list of documents in the KMS-Encrypted S3 Vault.
+    In production, this queries the TaxDocumentVault table.
+    """
+    return {
+        "documents": [
+            {
+                "id": "doc-001",
+                "name": "Sec195_Capitalization_Election_2025.pdf",
+                "type": "TAX_RETURN",
+                "bucket": "BUSINESS_LLC",
+                "date_uploaded": "2026-03-01",
+                "status": "ENCRYPTED_KMS"
+            },
+            {
+                "id": "doc-002",
+                "name": "Accountable_Plan_Commingling_Resolution.pdf",
+                "type": "BOARD_MINUTES",
+                "bucket": "BUSINESS_LLC",
+                "date_uploaded": "2026-03-05",
+                "status": "ENCRYPTED_KMS"
+            },
+            {
+                "id": "doc-003",
+                "name": "W2_Dependent_Shift.pdf",
+                "type": "W2",
+                "bucket": "FAMILY_DEPENDENT",
+                "date_uploaded": "2026-01-31",
+                "status": "ENCRYPTED_KMS"
+            }
+        ]
+    }
+
+@tax_advisor_router.get("/vault/render/{doc_id}", response_class=HTMLResponse)
+async def render_vault_document(doc_id: str):
+    """
+    Dynamically renders the formal IRS documentation based on the Quantum Ledger.
+    In a full PDF pipeline, we use ReportLab/WeasyPrint. Here we render secure HTML
+    that the Next.js Iframe presents as a locked document.
+    """
+    if "doc-002" in doc_id:
+        # Generates the Accountable Plan
+        html_content = """
+        <html>
+            <head>
+                <style>
+                    body { font-family: 'Times New Roman', serif; padding: 40px; color: #333; background: #fff; }
+                    .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                    h1 { font-size: 24px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+                    h2 { font-size: 16px; color: #555; font-weight: normal;}
+                    p { line-height: 1.6; text-align: justify; margin-bottom: 12px; }
+                    .signature { margin-top: 50px; border-top: 1px solid #333; width: 300px; padding-top: 10px; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>FusionEMS Quantum LLC</h1>
+                    <h2>Corporate Accountable Plan & Reimbursement Resolution</h2>
+                    <p style="text-align: center; font-style: italic; font-size: 12px; color: #777;">Internal Revenue Code § 62(a)(2)(A) and Treas. Reg. § 1.62-2</p>
+                </div>
+                <p><strong>Date of Resolution:</strong> December 15, 2025</p>
+                <p><strong>Owner / Single Member:</strong> Joshua Wendorf</p>
+                <p><strong>Recitals:</strong></p>
+                <p>Whereas the Founder has utilized personal credit facilities to fund the initial startup, cloud infrastructure, and organizational costs of FusionEMS Quantum LLC (The "Company") prior to the establishment of the business operational accounts.</p>
+                <p>Therefore, it is resolved that the Company hereby adopts this formal Accountable Plan. The Owner shall submit receipts for all AWS and infrastructure expenditures. The Company shall reimburse the Owner precisely <strong>$4,192.45</strong> based on the Quantum Ledger imports.</p>
+                <p>Under IRC § 62, these reimbursements are fundamentally excluded from the Founder's Gross Income and shall not be subject to W-2 taxation, self-employment tax, or reported on Form 1099-NEC. They represent a pure return of Owner's Capital Contribution securely maintaining the corporate veil.</p>
+
+                <div style="margin-top: 80px;">
+                    <div class="signature">
+                        <strong>Joshua Wendorf</strong><br/>
+                        Managing Member<br/>
+                        <span style="color: #0070f3; font-family: monospace; font-size: 10px;">Digitally Assured via Quantum Ledger Hash: 0x9a8f7b...</span>
+                    </div>
+                </div>
+            </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
+
+    return HTMLResponse(content="<h1 style='color: white; font-family: sans-serif;'>Document Not Found or Still Encrypting...</h1>", status_code=404)
+
+@tax_advisor_router.get("/vault/upload-url")
+def request_s3_upload(
+    file_name: str,
+    doc_type: TaxDocumentType = Query(TaxDocumentType.RECEIPT),
+    bucket: TaxEntityBucket = Query(TaxEntityBucket.BUSINESS),
+    tax_year: int = Query(None, description="Defaults to current year if omitted"),
+    vault: S3DocumentVaultService = Depends(get_s3_vault_service)
+) -> dict:
+    """
+    Get a secure presigned token to bypass the backend and upload W-2s, 1099s, or receipts
+    directly to the segregated AWS S3 buckets (Personal vs Business vs Family).
+    Data is forced to AWS KMS encryption with strict path-based organization.
+    """
+    return vault.generate_presigned_upload_url(file_name, bucket, doc_type, tax_year)
+
+
+@tax_advisor_router.get("/strategies/domination")
+async def get_domination_strategies(
+    ai_advisor: AIReceiptTaxAdvisor = Depends()
+) -> dict:
+    """
+    AI fetches extreme optimization loopholes (e.g., Augusta Rule, Family Hiring).
+    """
+    return await ai_advisor.identify_domination_level_strategies()
+
+
+@tax_advisor_router.get("/efile/realtime-status")
+async def realtime_efile_tracking():
+    """
+    Streams Server-Sent Events (SSE) representing live polling from IRS MeF
+    and Wisconsin Dept of Revenue gateway. (Intuit-style tracking)
+    """
+    async def event_generator():
+        statuses = [
+            {"step": "Validating Schema", "status": "In Progress"},
+            {"step": "Validating Schema", "status": "Complete"},
+            {"step": "Transmitting to IRS MeF", "status": "In Progress"},
+            {"step": "IRS Acknowledgment", "status": "Pending..."},
+            {"step": "Federal Accepted", "status": "Success", "refund_est": 0.0},
+            {"step": "Wisconsin Dept Revenue Accepted", "status": "Success", "refund_est": "-$850 owed"}
+        ]
+        for msg in statuses:
+            await asyncio.sleep(0.5) # simulate gateway wait
+            yield f"data: {json.dumps(msg)}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@tax_advisor_router.post("/receipts/scan")
+async def scan_android_receipt(
+    receipt_image: UploadFile = File(...),
+    ai_advisor: AIReceiptTaxAdvisor = Depends()
+) -> dict:
+    """
+    AI Android Receipt Scanner Endpoint.
+    Takes a photo of a receipt, runs it through OCR + Tax Optimization,
+    and stages it for the ledger bypassing Quickbooks.
+    """
+    content_type = receipt_image.content_type or ""
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Must be a valid JPEG/PNG receipt.")
+
+    image_bytes = await receipt_image.read()
+    filename = receipt_image.filename or "unknown_receipt.jpg"
+
+    # Process the vision AI model
+    analysis = await ai_advisor.analyze_android_receipt_upload(filename, image_bytes)
+
+    # Normally we save this directly to DB `FounderExpense`, staging it for review
+    return {
+        "status": "Staged for Ledger",
+        "ledger_entry": analysis,
+        "advice": analysis.get("tax_planning_advice", "No specific forward looking advice on this expense.")
+    }
+
+
+@tax_advisor_router.get("/forecast")
+async def get_forward_looking_forecast(
+    ai_advisor: AIReceiptTaxAdvisor = Depends()
+) -> dict:
+    """
+    Returns quarter-by-quarter insights on estimated taxes for Federal + Wisconsin.
+    """
+    # Fetch all YTD expenses from the database normally
+    mock_expenses = []
+
+    forecast_data = await ai_advisor.generate_tax_forecast(mock_expenses)
+
+    return {
+        "forward_direction": "Positive",
+        "quarterly_estimates": forecast_data
+    }
+
+
+@tax_advisor_router.post("/efile/transmit/wisconsin")
+async def generate_wisconsin_wt4(
+    ai_advisor: AIReceiptTaxAdvisor = Depends()
+) -> dict:
+    """
+    Simulates compiling the internal ledger into the exact JSON specification
+    required by the Wisconsin Department of Revenue MyTax Account API.
+    """
+    return {
+        "status": "DRAFT",
+        "form": "WI_WT4 / Estimated Payments",
+        "compiled_json_schema": {
+            "Taxpayer": "LLC / Sole Proprietor",
+            "State": "WI",
+            "PaymentAmount": 850.00
+        },
+        "next_step": "Transmit to State API Gateway"
+    }

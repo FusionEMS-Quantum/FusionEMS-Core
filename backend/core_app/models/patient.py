@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import date
 
-from sqlalchemy import CheckConstraint, Date, Enum, ForeignKey, Index, String
+from sqlalchemy import Boolean, CheckConstraint, Date, Enum, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -50,6 +50,21 @@ class Patient(
         default=PatientGender.UNKNOWN,
     )
     external_identifier: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+    # ── Identity enrichment (directive Part 3) ─────────────────────────────
+    identity_state: Mapped[str | None] = mapped_column(
+        String(32), nullable=True, default="PROFILE_CREATED",
+        comment="PatientIdentityState enum value",
+    )
+    deceased_indicator: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false",
+    )
+    language_preference: Mapped[str | None] = mapped_column(
+        String(16), nullable=True, comment="ISO 639-1 primary language code",
+    )
+    interpreter_required: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false",
+    )
 
     def __repr__(self) -> str:
         return (

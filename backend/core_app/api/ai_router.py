@@ -55,6 +55,6 @@ def chat(
             },
         )
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
     return {"response": content, "meta": meta}

@@ -54,3 +54,25 @@ class RelationshipCommandSummary(BaseModel):
     facility_contact_gaps: int
     frequent_utilizer_count: int
     top_actions: list[RelationshipAction]
+
+
+class RelationshipIssue(BaseModel):
+    """Structured AI relationship issue — directive Part 9 format."""
+
+    issue: str
+    severity: str  # BLOCKING | HIGH | MEDIUM | LOW | INFORMATIONAL
+    source: str  # RULE | AI_REVIEW | PATIENT_EVENT | FACILITY_EVENT | BILLING_EVENT | HUMAN_NOTE
+    what_is_wrong: str
+    why_it_matters: str
+    what_you_should_do: str
+    relationship_context: str
+    human_review: str  # REQUIRED | RECOMMENDED | SAFE_TO_AUTO_PROCESS
+    confidence: str  # HIGH | MEDIUM | LOW
+    category: str | None = None
+    entity_id: str | None = None
+
+
+class RelationshipIssueList(BaseModel):
+    issues: list[RelationshipIssue]
+    generated_at: str
+    tenant_id: str

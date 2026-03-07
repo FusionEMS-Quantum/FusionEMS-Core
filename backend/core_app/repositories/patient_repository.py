@@ -1,3 +1,4 @@
+# pylint: disable=not-callable
 import uuid
 
 from sqlalchemy import func, select

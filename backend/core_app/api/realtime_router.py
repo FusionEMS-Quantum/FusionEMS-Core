@@ -87,7 +87,7 @@ async def realtime_sse(
                     raw = message.get("data")
                     try:
                         payload = json.loads(raw) if isinstance(raw, str) else raw
-                    except Exception as e:
+                    except Exception:
                         payload = {"eventType": "raw", "data": raw}
                     yield _sse(payload)
 
@@ -159,7 +159,7 @@ async def realtime_ws(websocket: WebSocket) -> None:
             data = await websocket.receive_text()
             try:
                 obj = json.loads(data)
-            except Exception as e:
+            except Exception:
                 continue
             if obj.get("type") == "subscribe":
                 req_patterns = obj.get("patterns") or []

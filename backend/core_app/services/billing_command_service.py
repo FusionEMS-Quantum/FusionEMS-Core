@@ -1,8 +1,10 @@
-from typing import List, Dict, Any, Optional
+# pylint: disable=not-callable
 import uuid
-from datetime import datetime, UTC
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case, desc
 
 from core_app.models.billing import (
     AppealReview,
@@ -10,12 +12,11 @@ from core_app.models.billing import (
     ClaimAuditEvent,
     ClaimIssue,
     ClaimState,
-    PatientBalanceState,
     PaymentLinkEvent,
 )
-from core_app.models.pricing import Price, SubscriptionPlan, SubscriptionItem, Product
+from core_app.models.pricing import Price, SubscriptionItem, SubscriptionPlan
 from core_app.models.tenant import Tenant
-from core_app.models.agency import AgencyBillingPolicy
+
 
 class BillingCommandService:
     """
@@ -25,7 +26,7 @@ class BillingCommandService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_dashboard_metrics(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_dashboard_metrics(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         result = self.db.query(
             func.count(Claim.id).label("total_claims"),
             func.sum(case((Claim.status == ClaimState.PAID, 1), else_=0)).label("paid_claims"),
@@ -37,7 +38,7 @@ class BillingCommandService:
         total = result.total_claims or 0
         paid = result.paid_claims or 0
         denied = result.denied_claims or 0
-        
+
         return {
             "total_claims": total,
             "paid_claims": paid,
@@ -49,14 +50,14 @@ class BillingCommandService:
             "as_of": datetime.now(UTC).isoformat()
         }
 
-    def get_denial_heatmap(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_denial_heatmap(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         issues = self.db.query(
             ClaimIssue.what_is_wrong,
             func.count(ClaimIssue.id).label("count")
         ).join(Claim, ClaimIssue.claim_id == Claim.id).filter(
             Claim.tenant_id == tenant_id,
             Claim.status == ClaimState.DENIED,
-            ClaimIssue.resolved == False
+            not ClaimIssue.resolved
         ).group_by(ClaimIssue.what_is_wrong).order_by(func.count(ClaimIssue.id).desc()).all()
 
         total_denials = sum(iss.count for iss in issues) if issues else 0
@@ -68,7 +69,7 @@ class BillingCommandService:
             "top_reason": heatmap[0]["reason_code"] if heatmap else None
         }
 
-    def get_payer_performance(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_payer_performance(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         results = self.db.query(
             Claim.primary_payer_name,
             func.count(Claim.id).label("total_claims"),
@@ -95,19 +96,19 @@ class BillingCommandService:
 
         return {"payers": payers}
 
-    def get_executive_summary(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_executive_summary(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         # Include MRR and total revenue
         # Here we connect SaaS and Claims
         total_claims = self.db.query(func.count(Claim.id)).filter(Claim.tenant_id == tenant_id).scalar() or 0
         claim_rev = self.db.query(func.sum(Claim.insurance_paid_cents)).filter(
-            Claim.tenant_id == tenant_id, 
+            Claim.tenant_id == tenant_id,
             Claim.status == ClaimState.PAID
         ).scalar() or 0
 
         # Current subscription sum - assuming it's monthly
         # Mocking MRR from SubscriptionPlan / Price logic for now since exact items query needs joins
         mrr_cents = 0 # Future: actual sum across SubscriptionItems
-        
+
         return {
             "total_claims": total_claims,
             "total_revenue_cents": claim_rev,
@@ -115,14 +116,14 @@ class BillingCommandService:
             "arr_cents": mrr_cents * 12
         }
 
-    def get_revenue_leakage(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_revenue_leakage(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         # Revenue leakage = unresolved denials, missing secondary, open patient balances that are aging
         leakage_items = []
         # Find unappealed denials
         unappealed = self.db.query(Claim).filter(
             Claim.tenant_id == tenant_id,
             Claim.status == ClaimState.DENIED,
-            Claim.appeal_status == None
+            Claim.appeal_status is None
         ).limit(50).all()
 
         total_leakage_cents = 0
@@ -135,14 +136,14 @@ class BillingCommandService:
                 "denial_reason": "Unappealed Denial",
                 "leakage_type": "unappealed_denial"
             })
-            
+
         return {
             "total_leakage_cents": total_leakage_cents,
             "leakage_items": leakage_items,
             "item_count": len(leakage_items)
         }
 
-    def get_billing_kpis(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_billing_kpis(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         metrics = self.get_dashboard_metrics(tenant_id)
         return {
             "total_claims": metrics["total_claims"],
@@ -153,7 +154,7 @@ class BillingCommandService:
             "as_of": metrics["as_of"],
         }
 
-    def get_billing_health(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_billing_health(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         metrics = self.get_dashboard_metrics(tenant_id)
         clean_rate = metrics["clean_claim_rate_pct"]
         score = min(100, clean_rate)
@@ -170,14 +171,14 @@ class BillingCommandService:
             "as_of": metrics["as_of"],
         }
 
-    def get_ar_concentration_risk(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_ar_concentration_risk(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         open_claims = self.db.query(Claim).filter(
             Claim.tenant_id == tenant_id,
             Claim.status.in_(
                 [ClaimState.READY_FOR_SUBMISSION, ClaimState.SUBMITTED, ClaimState.DENIED]
             ),
         ).all()
-        payer_ar: Dict[str, int] = {}
+        payer_ar: dict[str, int] = {}
         total_ar = 0
         for claim in open_claims:
             payer = claim.primary_payer_name or "UNKNOWN"
@@ -192,7 +193,7 @@ class BillingCommandService:
         concentration.sort(key=lambda x: x["ar_cents"], reverse=True)
         return {"concentration": concentration, "total_ar_cents": total_ar}
 
-    def get_claim_throughput(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_claim_throughput(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         rows = self.db.query(
             func.date(Claim.created_at).label("created_day"),
             func.count(Claim.id).label("count"),
@@ -207,7 +208,7 @@ class BillingCommandService:
         avg_daily = round(sum(x["count"] for x in throughput) / max(len(throughput), 1), 1)
         return {"throughput_by_day": throughput, "avg_daily": avg_daily}
 
-    def get_claim_lifecycle(self, tenant_id: uuid.UUID, claim_id: uuid.UUID) -> Optional[Dict[str, Any]]:
+    def get_claim_lifecycle(self, tenant_id: uuid.UUID, claim_id: uuid.UUID) -> dict[str, Any] | None:
         claim = self.db.query(Claim).filter(
             Claim.tenant_id == tenant_id, Claim.id == claim_id
         ).first()
@@ -241,7 +242,7 @@ class BillingCommandService:
             ],
         }
 
-    def get_appeal_success(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_appeal_success(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         results = self.db.query(
             AppealReview.status,
             func.count(AppealReview.id).label("count"),
@@ -261,7 +262,7 @@ class BillingCommandService:
             "success_rate_pct": round(successful / total * 100, 2) if total > 0 else 0,
         }
 
-    def get_fraud_anomaly(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_fraud_anomaly(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         rows = self.db.query(
             Claim.patient_id,
             func.count(Claim.id).label("claim_count"),
@@ -279,14 +280,14 @@ class BillingCommandService:
         ]
         return {"anomalies": anomalies, "total_anomalies": len(anomalies)}
 
-    def get_duplicate_detection(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_duplicate_detection(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         claims = self.db.query(
             Claim.id,
             Claim.patient_id,
             Claim.incident_id,
         ).filter(Claim.tenant_id == tenant_id).all()
 
-        seen: Dict[str, list] = {}
+        seen: dict[str, list] = {}
         for c in claims:
             key = f"{c.patient_id}_{c.incident_id}"
             if key not in seen:
@@ -300,7 +301,7 @@ class BillingCommandService:
         ]
         return {"duplicates": duplicates, "total_duplicate_groups": len(duplicates)}
 
-    def get_stripe_reconciliation(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_stripe_reconciliation(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         plans = self.db.query(SubscriptionPlan).filter(
             SubscriptionPlan.tenant_id == tenant_id
         ).all()
@@ -327,7 +328,7 @@ class BillingCommandService:
             "as_of": datetime.now(UTC).isoformat(),
         }
 
-    def get_churn_risk(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_churn_risk(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         at_risk_plans = self.db.query(SubscriptionPlan).filter(
             SubscriptionPlan.tenant_id == tenant_id,
             SubscriptionPlan.status.in_(["past_due", "canceled", "paused"]),
@@ -357,7 +358,7 @@ class BillingCommandService:
         claim_id: uuid.UUID,
         denial_reason: str,
         supporting_context: str = "",
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         claim = self.db.query(Claim).filter(
             Claim.tenant_id == tenant_id, Claim.id == claim_id
         ).first()
@@ -391,7 +392,7 @@ class BillingCommandService:
             "created_at": review.created_at.isoformat(),
         }
 
-    def get_billing_alerts(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_billing_alerts(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         alerts = []
         denied_count = self.db.query(func.count(Claim.id)).filter(
             Claim.tenant_id == tenant_id,
@@ -415,7 +416,7 @@ class BillingCommandService:
             "as_of": datetime.now(UTC).isoformat(),
         }
 
-    def get_payer_mix(self, tenant_id: uuid.UUID) -> Dict[str, Any]:
+    def get_payer_mix(self, tenant_id: uuid.UUID) -> dict[str, Any]:
         rows = self.db.query(
             Claim.primary_payer_name,
             func.count(Claim.id).label("count"),
@@ -432,7 +433,7 @@ class BillingCommandService:
         ]
         return {"payer_mix": payer_mix, "total_claims": total}
 
-    def get_tenant_billing_ranking(self) -> Dict[str, Any]:
+    def get_tenant_billing_ranking(self) -> dict[str, Any]:
         rows = self.db.query(
             Tenant.id,
             Tenant.name,
@@ -462,10 +463,10 @@ class BillingCommandService:
     def batch_resubmit_claims(
         self,
         tenant_id: uuid.UUID,
-        claim_ids: List[uuid.UUID],
+        claim_ids: list[uuid.UUID],
         resubmit_reason: str,
         actor_user_id: uuid.UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         results = []
         for claim_id in claim_ids:
             claim = self.db.query(Claim).filter(
@@ -495,9 +496,9 @@ class BillingCommandService:
         tenant_id: uuid.UUID,
         claim_id: uuid.UUID,
         payer_id: str,
-        modifiers: List[str],
+        modifiers: list[str],
         actor_user_id: uuid.UUID,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payer_denied = self.db.query(func.count(Claim.id)).filter(
             Claim.tenant_id == tenant_id,
             Claim.primary_payer_id == payer_id,

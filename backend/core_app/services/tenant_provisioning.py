@@ -101,6 +101,7 @@ async def provision_tenant(
             table="tenants",
             tenant_id=tenant_id,
             actor_user_id=None,
+            correlation_id=None,
             data={
                 "id": str(tenant_id),
                 "name": tenant_name,

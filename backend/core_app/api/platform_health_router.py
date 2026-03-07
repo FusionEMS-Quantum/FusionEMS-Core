@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import redis.asyncio as aioredis
@@ -109,7 +109,7 @@ async def get_platform_health(
     return {
         "score": score,
         "status": _overall_status(score),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "services": services,
         "integrations": integrations,
         "queues": [],

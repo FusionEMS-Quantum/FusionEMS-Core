@@ -19,7 +19,7 @@ def check_policy(input_doc: dict[str, Any]) -> bool:
     settings = get_settings()
     if not settings.opa_url:
         return True  # fallback to app RBAC if OPA not configured
-    url = settings.opa_url.rstrip("/") + "/" + settings.opa_policy_path.lstrip("/")
+    url = str(settings.opa_url).rstrip("/") + "/" + str(settings.opa_policy_path).lstrip("/")
     try:
         resp = requests.post(url, json={"input": input_doc}, timeout=5)
         resp.raise_for_status()

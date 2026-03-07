@@ -13,6 +13,7 @@ from core_app.schemas.auth import CurrentUser
 from core_app.services.cognito_jwt import CognitoAuthError, verify_cognito_jwt
 from core_app.services.opa import OpaError, check_policy, opa_enabled
 
+
 class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
     async def __call__(self, request: Request) -> str | None:
         authorization = request.headers.get("Authorization")
@@ -21,10 +22,10 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
             parts = authorization.split()
             if len(parts) == 2:
                 scheme, param = parts
-        
+
         if not authorization or scheme.lower() != "bearer":
             param = request.query_params.get("token")
-            
+
         if not param and self.auto_error:
             from fastapi import HTTPException, status
             raise HTTPException(
@@ -53,7 +54,7 @@ def get_current_user(
 
     user_repo = UserRepository(db)
 
-    if settings.auth_mode.lower() == "cognito":
+    if str(settings.auth_mode).lower() == "cognito":
         try:
             claims = verify_cognito_jwt(token)
         except CognitoAuthError as exc:

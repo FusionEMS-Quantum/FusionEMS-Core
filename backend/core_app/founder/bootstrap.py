@@ -4,10 +4,8 @@ import hashlib
 import logging
 import os
 import secrets
-import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +51,7 @@ class FounderBootstrapService:
     def bootstrap_founder(
         self,
         email: str,
-        user_pool_id: Optional[str] = None,
+        user_pool_id: str | None = None,
     ) -> FounderBootstrapResult:
         result = FounderBootstrapResult(success=False, founder_email=email)
         pool_id = user_pool_id or os.environ.get("COGNITO_USER_POOL_ID", "")
@@ -137,7 +135,7 @@ class FounderBootstrapService:
             "founder_email": email,
             "temporary_password": temp_password,
             "break_glass_token": break_glass_token,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "mfa_required": True,
             "notes": "Temporary password must be changed on first login. MFA enrollment required.",
         })

@@ -49,8 +49,44 @@ _index_cache_ts: float = 0
 _INDEX_TTL = 600
 
 
-def _repo(db: Session) -> DominationRepository:
-    return DominationRepository(db)
+class _MultiRepo:
+    """Adapter: provides old positional (table, tenant_id, ...) API over the
+    new keyword-only DominationRepository without changing every call site."""
+
+    def __init__(self, db: Session) -> None:
+        self._db = db
+        self._cache: dict[str, DominationRepository] = {}
+
+    def _r(self, table: str) -> DominationRepository:
+        if table not in self._cache:
+            self._cache[table] = DominationRepository(self._db, table=table)
+        return self._cache[table]
+
+    def list(self, table: str, tenant_id: uuid.UUID, limit: int = 500) -> list:
+        return self._r(table).list(tenant_id=tenant_id, limit=limit)
+
+    def create(self, table: str, tenant_id: uuid.UUID, data: dict) -> dict:
+        return self._r(table).create(tenant_id=tenant_id, data=data)
+
+    def update(
+        self,
+        table: str,
+        tenant_id: uuid.UUID,
+        record_id: uuid.UUID,
+        data: dict,
+    ) -> dict | None:
+        existing = self._r(table).get(tenant_id=tenant_id, record_id=record_id)
+        version = existing.get("version", 0) if existing else 0
+        return self._r(table).update(
+            tenant_id=tenant_id,
+            record_id=record_id,
+            expected_version=version,
+            patch={"data": data},
+        )
+
+
+def _repo(db: Session) -> _MultiRepo:
+    return _MultiRepo(db)
 
 
 def _ssm_key(pack_id: str) -> str:
@@ -67,13 +103,13 @@ def _load_pack_index() -> dict:
             "Value"
         ]
         s3_key = ssm_val.replace(f"s3://{BUCKET}/", "")
-    except Exception as e:
+    except Exception:
         s3_key = _PACK_S3_KEYS["pack_index_v1"]
     try:
         obj = _s3_client().get_object(Bucket=BUCKET, Key=s3_key)
         _index_cache = json.loads(obj["Body"].read())
         _index_cache_ts = now
-    except Exception as e:
+    except Exception:
         _index_cache = {"packs": [], "recommended_sets": []}
     return _index_cache
 

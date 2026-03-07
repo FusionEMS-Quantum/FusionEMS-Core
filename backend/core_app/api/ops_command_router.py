@@ -237,7 +237,7 @@ async def ingest_telemetry(
     faults = detector.analyze_obd_reading(uuid.UUID(unit_id), obd_payload)
 
     alerts_created = []
-    for fault in faults.get("faults") or []:
+    for fault in faults:
         if fault.get("severity") in ("critical", "warning"):
             alert = await svc.create(
                 table="fleet_alerts",
@@ -260,7 +260,7 @@ async def ingest_telemetry(
 
     return {
         "telemetry_event_id": str(event["id"]),
-        "faults_detected": len(faults.get("faults") or []),
+        "faults_detected": len(faults),
         "alerts_created": alerts_created,
         "unit_id": unit_id,
     }

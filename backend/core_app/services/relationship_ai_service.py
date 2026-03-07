@@ -4,6 +4,7 @@ AI acts as an experienced relationship and account-history assistant.
 AI may detect duplicates, summarize history, and prioritize issues.
 AI may NOT silently merge, rewrite identity, or infer financial responsibility.
 """
+# pylint: disable=not-callable  # SQLAlchemy func.count() is a known pylint false positive
 from __future__ import annotations
 
 import logging

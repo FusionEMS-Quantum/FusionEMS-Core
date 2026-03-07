@@ -215,7 +215,7 @@ class RelationshipHistoryService:
         flag = result.scalar_one_or_none()
         if not flag:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Patient warning flag not found",
             )
         flag.is_active = False
@@ -286,7 +286,7 @@ class RelationshipHistoryService:
         flag = result.scalar_one_or_none()
         if not flag:
             raise AppError(
-                code=ErrorCodes.NOT_FOUND,
+                code=ErrorCodes.NOT_FOUND, status_code=404,
                 message="Facility warning flag not found",
             )
         flag.is_active = False

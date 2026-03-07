@@ -1,18 +1,18 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, SQLModel
 
 
-class AlertSeverity(str, Enum):
+class AlertSeverity(StrEnum):
     BLOCKING = "BLOCKING"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
     INFORMATIONAL = "INFORMATIONAL"
 
-class AlertSource(str, Enum):
+class AlertSource(StrEnum):
     METRIC_RUN = "METRIC_RUN"
     AI_REVIEW = "AI_REVIEW"
     BILLING_EVENT = "BILLING_EVENT"

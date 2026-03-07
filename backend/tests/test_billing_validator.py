@@ -10,7 +10,7 @@ class FakeRepo:
         self._item = item
         self._items = items or []
 
-    def get(self, tenant_id, id_):
+    def get(self, tenant_id=None, id_=None, record_id=None):
         return self._item
 
     def list(self, tenant_id, limit=100):

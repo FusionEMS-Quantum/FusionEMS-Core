@@ -14,8 +14,6 @@ Boundary enforcement:
 import logging
 import re
 import uuid
-from datetime import UTC, datetime
-from typing import Optional
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -70,8 +68,8 @@ class BillingCommunicationService:
         patient_id: str,
         to_phone: str,
         message: str,
-        dedup_key: Optional[str] = None,
-        correlation_id: Optional[str] = None,
+        dedup_key: str | None = None,
+        correlation_id: str | None = None,
     ) -> dict:
         """
         Send a billing SMS via Telnyx. STRICTLY BILLING ONLY.
@@ -86,6 +84,11 @@ class BillingCommunicationService:
         dedup_key = dedup_key or f"sms:{tenant_id}:{patient_id}:{hash(message) & 0xFFFF}"
 
         self._assert_billing_content(message)
+
+        # ── Contact preference enforcement ────────────────────────────────────
+        pref_check = await self._check_contact_preference(tenant_id, patient_id, "sms")
+        if pref_check is not None:
+            return pref_check
 
         # ── Opt-out check ────────────────────────────────────────────────────
         if await self._is_opted_out(tenant_id, to_phone):
@@ -134,7 +137,7 @@ class BillingCommunicationService:
         api_key = self._settings.telnyx_api_key
         from_number = self._settings.telnyx_from_number
 
-        if not api_key or api_key.startswith("REPLACE"):
+        if not api_key or str(api_key).startswith("REPLACE"):
             logger.warning(
                 "billing_sms_telnyx_not_configured tenant=%s log_id=%s",
                 tenant_id, log_id,
@@ -146,7 +149,7 @@ class BillingCommunicationService:
             return {"status": "NOT_CONFIGURED", "log_id": log_id}
 
         try:
-            from core_app.telnyx.client import send_sms, TelnyxApiError
+            from core_app.telnyx.client import send_sms
 
             result = send_sms(
                 api_key=api_key,
@@ -195,7 +198,7 @@ class BillingCommunicationService:
         claim_id: str,
         recipient: dict,
         template_id: str = "STATEMENT_V1",
-        correlation_id: Optional[str] = None,
+        correlation_id: str | None = None,
     ) -> dict:
         """
         Trigger a physical mailed statement via LOB.
@@ -254,7 +257,7 @@ class BillingCommunicationService:
 
         # ── Send via LOB ──────────────────────────────────────────────────────
         lob_api_key = self._settings.lob_api_key
-        if not lob_api_key or lob_api_key.startswith("REPLACE"):
+        if not lob_api_key or str(lob_api_key).startswith("REPLACE"):
             logger.warning(
                 "mail_fulfillment_lob_not_configured tenant=%s record_id=%s",
                 tenant_id, record_id,
@@ -336,6 +339,60 @@ class BillingCommunicationService:
 
     # ── Opt-out management ────────────────────────────────────────────────────
 
+    async def _check_contact_preference(
+        self,
+        tenant_id: str,
+        patient_id: str,
+        channel: str,
+    ) -> dict | None:
+        """Check patient contact preference before sending.
+
+        Returns a rejection dict if the patient's preference blocks the channel,
+        or None if the channel is allowed.
+        """
+        row = self.db.execute(
+            text(
+                "SELECT sms_allowed, call_allowed, email_allowed, "
+                "       mail_required, contact_restricted "
+                "FROM contact_preferences "
+                "WHERE tenant_id = :tid AND patient_id = :pid LIMIT 1"
+            ),
+            {"tid": tenant_id, "pid": patient_id},
+        ).mappings().first()
+
+        if row is None:
+            # No preference record → allow (conservative default)
+            return None
+
+        if row["contact_restricted"]:
+            logger.info(
+                "billing_comms_contact_restricted tenant=%s patient=%s channel=%s",
+                tenant_id, patient_id, channel,
+            )
+            return {"status": "CONTACT_RESTRICTED", "patient_id": patient_id}
+
+        if channel == "sms" and not row["sms_allowed"]:
+            logger.info(
+                "billing_comms_sms_blocked tenant=%s patient=%s",
+                tenant_id, patient_id,
+            )
+            return {"status": "SMS_NOT_ALLOWED", "patient_id": patient_id}
+
+        if channel == "call" and not row["call_allowed"]:
+            return {"status": "CALL_NOT_ALLOWED", "patient_id": patient_id}
+
+        if channel == "email" and not row["email_allowed"]:
+            return {"status": "EMAIL_NOT_ALLOWED", "patient_id": patient_id}
+
+        if channel == "sms" and row["mail_required"]:
+            logger.info(
+                "billing_comms_mail_required tenant=%s patient=%s (sms blocked)",
+                tenant_id, patient_id,
+            )
+            return {"status": "MAIL_REQUIRED", "patient_id": patient_id}
+
+        return None
+
     async def _is_opted_out(self, tenant_id: str, phone: str) -> bool:
         """Check if a phone number has opted out of billing SMS for this tenant."""
         result = self.db.execute(
@@ -375,7 +432,7 @@ class BillingCommunicationService:
     async def get_sms_log(
         self,
         tenant_id: str,
-        patient_id: Optional[str] = None,
+        patient_id: str | None = None,
         limit: int = 100,
     ) -> list[dict]:
         """Return billing SMS audit log for a tenant."""

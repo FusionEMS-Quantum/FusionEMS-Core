@@ -14,6 +14,7 @@ from core_app.db.session import async_engine
 from core_app.middleware.audit_logging import AuditLoggingMiddleware
 from core_app.middleware.phi_lock import PHILockMiddleware
 from core_app.middleware.rate_limiter import TenantRateLimitMiddleware
+from core_app.middleware.security_headers import SecurityHeadersMiddleware
 from core_app.middleware.tenant_context import TenantContextMiddleware
 from core_app.observability.otel import configure_otel
 
@@ -35,21 +36,26 @@ from core_app.api.cad_calls_router import router as cad_calls_router  # noqa: E4
 from core_app.api.cad_units_router import router as cad_units_router  # noqa: E402
 from core_app.api.cases_router import router as cases_router  # noqa: E402
 from core_app.api.claim_packet_router import router as claim_packet_router  # noqa: E402
+from core_app.api.clinical_workflow_router import router as clinical_workflow_router  # noqa: E402
 from core_app.api.cms_gate_router import router as cms_gate_router  # noqa: E402
 from core_app.api.compliance_pack_index_router import (  # noqa: E402
     router as compliance_pack_index_router,
 )
+from core_app.api.contact_preference_router import router as contact_preference_router  # noqa: E402
+from core_app.api.crewlink_paging_router import router as crewlink_paging_router  # noqa: E402
 from core_app.api.crewlink_router import router as crewlink_router  # noqa: E402
+from core_app.api.customer_success_router import router as customer_success_router  # noqa: E402
+from core_app.api.dataset_router import router as dataset_router  # noqa: E402
+from core_app.api.dispatch_router import router as dispatch_router  # noqa: E402
 from core_app.api.doc_kit_router import router as doc_kit_router  # noqa: E402
 from core_app.api.documents_router import router as documents_router  # noqa: E402
 from core_app.api.epcr_capture_router import router as epcr_capture_router  # noqa: E402
 from core_app.api.epcr_customization_router import router as epcr_customization_router  # noqa: E402
 from core_app.api.epcr_router import router as epcr_router  # noqa: E402
-from core_app.api.clinical_workflow_router import router as clinical_workflow_router  # noqa: E402
-from core_app.api.founder_clinical_router import router as founder_clinical_router  # noqa: E402
 from core_app.api.events_router import router as events_router  # noqa: E402
 from core_app.api.export_status_router import router as export_status_router  # noqa: E402
 from core_app.api.exports_router import router as exports_router  # noqa: E402
+from core_app.api.facility_router import router as facility_router  # noqa: E402
 from core_app.api.fax_router import router as fax_router  # noqa: E402
 from core_app.api.fax_webhook_router import router as fax_webhook_router  # noqa: E402
 from core_app.api.fhir_router import router as fhir_router  # noqa: E402
@@ -59,10 +65,18 @@ from core_app.api.fire_statements_router import router as fire_statements_router
 from core_app.api.fleet_intelligence_router import router as fleet_intelligence_router  # noqa: E402
 from core_app.api.fleet_router import router as fleet_router  # noqa: E402
 from core_app.api.founder_agents_router import router as founder_agents_router  # noqa: E402
+from core_app.api.founder_clinical_router import router as founder_clinical_router  # noqa: E402
 from core_app.api.founder_copilot_router import router as founder_copilot_router  # noqa: E402
 from core_app.api.founder_documents_router import router as founder_documents_router  # noqa: E402
 from core_app.api.founder_graph_router import router as founder_graph_router  # noqa: E402
+from core_app.api.founder_ops_command_router import (
+    router as founder_ops_command_router,  # noqa: E402
+)
 from core_app.api.founder_router import router as founder_router  # noqa: E402
+from core_app.api.founder_success_command_router import (
+    router as founder_success_command_router,  # noqa: E402
+)
+from core_app.api.founder_tax_router import tax_advisor_router  # noqa: E402
 from core_app.api.governance_router import router as governance_router  # noqa: E402
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
@@ -81,67 +95,79 @@ from core_app.api.mobile_ops_router import router as mobile_ops_router  # noqa: 
 from core_app.api.nemsis_compliance_studio_router import (  # noqa: E402
     router as nemsis_compliance_studio_router,
 )
+from core_app.api.nemsis_copilot_router import router as nemsis_copilot_router  # noqa: E402
 from core_app.api.nemsis_manager_router import router as nemsis_manager_router  # noqa: E402
 from core_app.api.nemsis_pack_router import router as nemsis_pack_router  # noqa: E402
 from core_app.api.nemsis_router import router as nemsis_router  # noqa: E402
 from core_app.api.nemsis_submissions_router import router as nemsis_submissions_router  # noqa: E402
-from core_app.api.platform_health_router import router as platform_health_router  # noqa: E402
-from core_app.api.platform_incidents_router import router as platform_incidents_router  # noqa: E402
-from core_app.api.tech_copilot_router import router as tech_copilot_router  # noqa: E402
 from core_app.api.neris_copilot_router import router as neris_copilot_router  # noqa: E402
-from core_app.api.nemsis_copilot_router import router as nemsis_copilot_router  # noqa: E402
 from core_app.api.neris_incident_router import router as neris_incident_router  # noqa: E402
 from core_app.api.neris_pack_router import router as neris_wi_pack_router  # noqa: E402
 from core_app.api.neris_router import router as neris_router  # noqa: E402
 from core_app.api.neris_tenant_router import router as neris_tenant_router  # noqa: E402
 from core_app.api.onboarding_router import router as onboarding_router  # noqa: E402
-from core_app.api.patient_router import router as patient_router  # noqa: E402
-from core_app.api.patient_identity_router import (  # noqa: E402
-    router as patient_identity_router,
+from core_app.api.ops_command_router import router as ops_command_router  # noqa: E402
+from core_app.api.patient_identity_router import (
     dup_router as identity_dup_router,
+)
+from core_app.api.patient_identity_router import (
     merge_router as identity_merge_router,
 )
-from core_app.api.responsible_party_router import (  # noqa: E402
-    router as responsible_party_router,
-    link_router as responsible_party_link_router,
+from core_app.api.patient_identity_router import (  # noqa: E402
+    router as patient_identity_router,
 )
-from core_app.api.facility_router import router as facility_router  # noqa: E402
-from core_app.api.relationship_history_router import (  # noqa: E402
-    patient_router as rel_history_patient_router,
-    facility_router as rel_history_facility_router,
-    general_router as rel_history_general_router,
-)
-from core_app.api.contact_preference_router import router as contact_preference_router  # noqa: E402
-from core_app.api.relationship_command_router import router as relationship_command_router  # noqa: E402
+from core_app.api.patient_router import router as patient_router  # noqa: E402
 from core_app.api.payments_router import router as payments_router  # noqa: E402
+from core_app.api.platform_core_router import router as platform_core_router  # noqa: E402
+from core_app.api.platform_health_router import router as platform_health_router  # noqa: E402
+from core_app.api.platform_incidents_router import router as platform_incidents_router  # noqa: E402
+from core_app.api.policy_router import router as policy_router  # noqa: E402
 from core_app.api.pricebook_router import router as pricebook_router  # noqa: E402
 from core_app.api.pricing_router import router as pricing_router  # noqa: E402
 from core_app.api.public_pricing_router import router as public_pricing_router  # noqa: E402
+from core_app.api.quantum_csv_router import quantum_csv_router  # noqa: E402
 from core_app.api.realtime_router import router as realtime_router  # noqa: E402
+from core_app.api.relationship_command_router import (
+    router as relationship_command_router,  # noqa: E402
+)
+from core_app.api.relationship_history_router import (
+    facility_router as rel_history_facility_router,
+)
+from core_app.api.relationship_history_router import (
+    general_router as rel_history_general_router,
+)
+from core_app.api.relationship_history_router import (  # noqa: E402
+    patient_router as rel_history_patient_router,
+)
+from core_app.api.responsible_party_router import (
+    link_router as responsible_party_link_router,
+)
+from core_app.api.responsible_party_router import (  # noqa: E402
+    router as responsible_party_router,
+)
 from core_app.api.roi_funnel_router import router as roi_funnel_router  # noqa: E402
 from core_app.api.roi_router import router as roi_router  # noqa: E402
+from core_app.api.role_management_router import router as role_management_router  # noqa: E402
 from core_app.api.scheduling_router import router as scheduling_router  # noqa: E402
 from core_app.api.signatures_router import router as signatures_router  # noqa: E402
 from core_app.api.sms_webhook_router import router as sms_webhook_router  # noqa: E402
+from core_app.api.staffing_router import router as staffing_router  # noqa: E402
 from core_app.api.statements_router import router as statements_router  # noqa: E402
 from core_app.api.stripe_webhook_router import router as stripe_webhook_router  # noqa: E402
 from core_app.api.support_router import router as support_router  # noqa: E402
+from core_app.api.sync_router import router as sync_router  # noqa: E402
 from core_app.api.system_health_router import router as system_health_router  # noqa: E402
 from core_app.api.systems_router import router as systems_router  # noqa: E402
+from core_app.api.tech_copilot_router import router as tech_copilot_router  # noqa: E402
 from core_app.api.template_router import router as template_router  # noqa: E402
 from core_app.api.tracking_router import router as tracking_router  # noqa: E402
 from core_app.api.transportlink_router import router as transportlink_router  # noqa: E402
-from core_app.api.dispatch_router import router as dispatch_router  # noqa: E402
-from core_app.api.crewlink_paging_router import router as crewlink_paging_router  # noqa: E402
-from core_app.api.staffing_router import router as staffing_router  # noqa: E402
-from core_app.api.ops_command_router import router as ops_command_router  # noqa: E402
 from core_app.api.trip_router import router as trip_router  # noqa: E402
 from core_app.api.visibility_router import router as visibility_router  # noqa: E402
 from core_app.api.vital_router import router as vital_router  # noqa: E402
 from core_app.api.voice_advanced_router import router as voice_advanced_router  # noqa: E402
 from core_app.api.voice_webhook_router import router as voice_webhook_router  # noqa: E402
 from core_app.api.weather_router import router as weather_router  # noqa: E402
-from core_app.api.sync_router import router as sync_router  # noqa: E402
 from core_app.billing.edi_router import router as edi_router  # noqa: E402
 
 app = FastAPI(title=settings.app_name)
@@ -175,6 +201,7 @@ app.add_middleware(AuditLoggingMiddleware)
 app.add_middleware(PHILockMiddleware)
 app.add_middleware(TenantContextMiddleware)
 app.add_middleware(TenantRateLimitMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.exception_handler(AppError)
@@ -188,6 +215,8 @@ app.include_router(accreditation_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(governance_router, prefix="/api/v1")
+app.include_router(policy_router, prefix="/api/v1")
+app.include_router(role_management_router, prefix="/api/v1")
 app.include_router(fhir_router, prefix="/api/v1")
 app.include_router(interop_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
@@ -239,6 +268,7 @@ app.include_router(founder_copilot_router)
 app.include_router(founder_documents_router)
 app.include_router(founder_graph_router)
 app.include_router(founder_router)
+app.include_router(founder_ops_command_router)
 app.include_router(hems_router)
 app.include_router(icd10_router)
 app.include_router(imports_router)
@@ -300,6 +330,16 @@ app.include_router(rel_history_facility_router)
 app.include_router(rel_history_general_router)
 app.include_router(contact_preference_router)
 app.include_router(relationship_command_router)
+
+# --- Customer Success Platform routers (self-prefixed) ---
+app.include_router(customer_success_router)
+app.include_router(founder_success_command_router)
+
+# --- Platform Core Directive routers (self-prefixed) ---
+app.include_router(platform_core_router)
+app.include_router(tax_advisor_router, prefix="/api")
+app.include_router(quantum_csv_router, prefix="/api")
+app.include_router(dataset_router)
 
 
 @app.get("/health")

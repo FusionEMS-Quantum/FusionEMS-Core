@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Optional
+from datetime import UTC, datetime
+from enum import StrEnum
 
 
-class TransportMode(str, Enum):
+class TransportMode(StrEnum):
     GROUND_ALS = "ground_als"
     GROUND_BLS = "ground_bls"
     GROUND_CCT = "ground_cct"
@@ -19,7 +18,7 @@ class TransportMode(str, Enum):
     FIRE_EMS = "fire_ems"
 
 
-class ServiceLevel(str, Enum):
+class ServiceLevel(StrEnum):
     BLS_EMERGENCY = "A0427"
     BLS_NON_EMERGENCY = "A0428"
     ALS_EMERGENCY = "A0429"
@@ -74,7 +73,7 @@ class TransportBillingRecord:
     signature_on_file: bool = False
     phi_partition: str = "clinical"
     audit_trail: list[dict] = field(default_factory=list)
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def compute_total(self) -> float:
         mileage_total = round(self.loaded_miles * self.mileage_rate, 2)
@@ -118,7 +117,7 @@ class TransportBillingRecord:
 
     def add_audit_entry(self, action: str, actor: str, detail: str = "") -> None:
         self.audit_trail.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "action": action,
             "actor": actor,
             "detail": detail,
@@ -138,7 +137,7 @@ class TransportBillingEngine:
         loaded_miles: float,
         base_rate: float,
         mileage_rate: float,
-        icd10_codes: Optional[list[str]] = None,
+        icd10_codes: list[str] | None = None,
         actor: str = "system",
     ) -> TransportBillingRecord:
         service_level = HCPCS_MAP.get(transport_mode, ServiceLevel.ALS_EMERGENCY)

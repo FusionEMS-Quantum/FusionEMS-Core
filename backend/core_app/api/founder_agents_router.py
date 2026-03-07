@@ -1,11 +1,12 @@
 import asyncio
 import json
 import logging
-from typing import Dict, Any, List
+import random
+from typing import Any
 
 from fastapi import APIRouter, Depends
-from starlette.responses import StreamingResponse
 from pydantic import BaseModel
+from starlette.responses import StreamingResponse
 
 from .dependencies import get_current_user
 
@@ -13,10 +14,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/founder/agents", tags=["Founder Agents"])
 
-import random
-
 # Global Command Queue and Current Command State tracking
-COMMAND_QUEUE: List[str] = []
+COMMAND_QUEUE: list[str] = []
 
 COMMAND_PHASES = [
     "RE-ALLOCATING SUBNETS",
@@ -28,7 +27,7 @@ COMMAND_PHASES = [
 ]
 
 # Base Mock Agents configuration
-AGENTS: List[Dict[str, Any]] = [
+AGENTS: list[dict[str, Any]] = [
     {
         "id": "agent-vanguard-01",
         "name": "Sentinel Vanguard",
@@ -91,7 +90,7 @@ class CommandPayload(BaseModel):
 @router.post("/command")
 async def execute_agent_command(
     payload: CommandPayload,
-    current_user: Dict = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
 ):
     command = payload.command
     logger.info(f"Subagent System Override command queued: {command}")
@@ -117,8 +116,8 @@ async def multi_agent_generator():
 
                 # Execute simulated phases for all agents
                 for phase in COMMAND_PHASES:
-                    for agent_idx, agent in enumerate(AGENTS):
-                        for sub_idx, sub in enumerate(agent["subnets"]):
+                    for _agent_idx, agent in enumerate(AGENTS):
+                        for sub_idx, _sub in enumerate(agent["subnets"]):
                             # Simulate high load during command
                             cpu_burst = f"{random.randint(80, 100)}%"
                             mem_burst = f"{random.randint(40, 200)} GB"
@@ -201,7 +200,7 @@ async def multi_agent_generator():
 
 
 @router.get("/stream")
-async def agents_stream(current_user: Dict = Depends(get_current_user)):
+async def agents_stream(current_user: dict = Depends(get_current_user)):
     """
     Streams subagent live execution telemetry back to the Domination UI.
     Requires CustomOAuth2PasswordBearer fetching token from Query params.

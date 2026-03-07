@@ -2,18 +2,17 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Any, List, Optional
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency, get_current_user
-from core_app.schemas.auth import CurrentUser
-from core_app.epcr.sync_engine import SyncEngine
-from core_app.models.incident import Incident, IncidentStatus
 from core_app.models.fatigue import FatigueLog
+from core_app.models.incident import Incident, IncidentStatus
+from core_app.schemas.auth import CurrentUser
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class SyncChange(BaseModel):
     data: dict
 
 class SyncPacket(BaseModel):
-    last_pulled_at: Optional[int]
+    last_pulled_at: int | None
     changes: dict[str, Any] # e.g. {"trips": {"created": [], "updated": []}}
 
 @router.post("/api/v1/sync/push")
@@ -38,7 +37,7 @@ async def sync_push(
     Offline-First Sync Endpoint.
     """
     logger.info(f"Sync Push from user {current.id}")
-    
+
     # 1. Process Trips (Incidents)
     trips_created = packet.changes.get("trips", {}).get("created", [])
     for trip_data in trips_created:
@@ -61,10 +60,10 @@ async def sync_push(
             db.add(new_incident)
             # Trigger Real-time Event (AppSync Stub)
             # event_publisher.publish("incident.created", new_incident)
-            
+
         except Exception as e:
             logger.error(f"Failed to sync incident {trip_data.get('id')}: {e}")
-            # Continue processing others? or Fail? 
+            # Continue processing others? or Fail?
             # Offline sync should probably be partial success allowed or strict. Strict for now.
             raise HTTPException(status_code=400, detail=f"Sync failed for incident: {e}")
 

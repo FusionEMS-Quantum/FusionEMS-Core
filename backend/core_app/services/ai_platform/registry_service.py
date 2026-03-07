@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Sequence
+from collections.abc import Sequence
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -104,7 +104,7 @@ class AIRegistryService:
         if payload.owner is not None:
             uc.owner = payload.owner
 
-        uc.last_review_date = datetime.now(timezone.utc)
+        uc.last_review_date = datetime.now(UTC)
         self._audit(uc.id, "UPDATED", {"change_reason": payload.change_reason})
         self._db.commit()
         self._db.refresh(uc)
@@ -181,7 +181,7 @@ class AIRegistryService:
 
     # ── Domain Copilots ─────────────────────────────────────────────────────
 
-    def list_copilots(self, domain: str | None = None) -> list:
+    def list_copilots(self, domain: str | None = None) -> list[AIDomainCopilot]:
         """Return domain copilots, optionally filtered by domain."""
         q = self._db.query(AIDomainCopilot).filter(
             AIDomainCopilot.tenant_id == self._user.tenant_id,

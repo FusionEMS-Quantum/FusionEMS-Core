@@ -1,8 +1,10 @@
 import uuid
 from typing import Any
+
 from sqlalchemy.orm import Session
 
 from core_app.services.governance_service import GovernanceService
+
 
 class ComplianceAssistant:
     def __init__(self, db: Session):
@@ -16,7 +18,7 @@ class ComplianceAssistant:
         """
         # In a real build, this would call a LLM.
         # Here we provide deterministic logic for key patterns mentioned in directive.
-        
+
         if issue_type == "FAILED_LOGIN_SPIKE":
             return {
                 "ISSUE": "Multiple failed login attempts detected",
@@ -29,7 +31,7 @@ class ComplianceAssistant:
                 "HUMAN_REVIEW": "REQUIRED",
                 "CONFIDENCE": "HIGH"
             }
-            
+
         if issue_type == "UNAUDITED_PHI_EXPORT":
             return {
                 "ISSUE": "Sensitive PHI Export without clear clinical reason",

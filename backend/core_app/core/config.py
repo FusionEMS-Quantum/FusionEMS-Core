@@ -144,7 +144,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":
-        env = self.environment.lower()
+        env = str(self.environment).lower()
         if env in ("production", "prod", "staging"):
             _REQUIRED: list[tuple[str, str]] = [
                 ("database_url", "DATABASE_URL"),
@@ -189,7 +189,7 @@ class Settings(BaseSettings):
                     "JWT_SECRET_KEY is set to a known insecure placeholder value. "
                     "Generate a cryptographically random key and inject it from Secrets Manager."
                 )
-            if self.auth_mode.lower() == "local":
+            if str(self.auth_mode).lower() == "local":
                 raise ValueError(
                     f"AUTH_MODE is 'local' in environment '{env}'. "
                     "Set AUTH_MODE=cognito for staging and production deployments."

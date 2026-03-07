@@ -141,7 +141,7 @@ async def telnyx_fax_webhook(
 
     try:
         payload = json.loads(raw_body)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="invalid_json")
 
     data = payload.get("data", {})

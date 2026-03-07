@@ -132,6 +132,7 @@ export default function FounderExecutivePage() {
   const [aging, setAging] = useState<{ buckets: Array<{ label: string; total_cents: number; count: number }> } | null>(null);
   const [incidentMode, setIncidentMode] = useState(false);
   const [complianceGauges, setComplianceGauges] = useState<Array<{ label: string; value: number; color: string }> | null>(null);
+  const [opsData, setOpsData] = useState<any>(null);
 
   useEffect(() => {
     fetch(`${API}/api/v1/founder/dashboard`).then((r) => r.json()).then(setMetrics).catch((e: unknown) => { console.warn("[fetch error]", e); });
@@ -139,6 +140,7 @@ export default function FounderExecutivePage() {
     fetch(`${API}/api/v1/founder/compliance/status`).then((r) => r.json()).then((d) => {
       if (d?.gauges) setComplianceGauges(d.gauges);
     }).catch((e: unknown) => { console.warn("[fetch error]", e); });
+    fetch(`${API}/api/v1/founder/ops/summary`).then((r) => r.json()).then(setOpsData).catch((e: unknown) => { console.warn("[fetch error]", e); });
   }, []);
 
   const mrr = metrics?.mrr_cents;
@@ -220,6 +222,101 @@ export default function FounderExecutivePage() {
             href="/founder/infra/ecs"
           />
         </div>
+      </div>
+
+      {/* MODULE 6 · Operations Intelligence (Live Ops Data) */}
+      <div>
+        <SectionHeader number="6" title="Operations Intelligence" sub="Deployment · Claims · Payments · CrewLink · Comms" />
+        {!opsData ? (
+          <QuantumEmptyState title="Loading ops data..." description="Connecting to founder operations API." icon="activity" />
+        ) : (
+          <div className="space-y-4">
+            {/* Top 3 Actions */}
+            {opsData.top_actions?.length > 0 && (
+              <div className="bg-bg-panel border border-brand-orange/[0.15] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange animate-pulse" />
+                  <span className="text-micro font-bold uppercase tracking-widest text-brand-orange">Top Actions — Right Now</span>
+                </div>
+                {opsData.top_actions.map((a: any, i: number) => (
+                  <ActionItemRow key={i} rank={i + 1} text={a.action} category={a.domain} urgency={a.severity === 'critical' ? 'high' : a.severity === 'high' ? 'high' : a.severity === 'medium' ? 'medium' : 'low'} />
+                ))}
+              </div>
+            )}
+
+            {/* Ops KPI Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <KpiCard
+                label="Failed Deployments"
+                value={String(opsData.deployment_issues?.failed_deployments ?? 0)}
+                sub="Blocking agencies"
+                trend={(opsData.deployment_issues?.failed_deployments ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.deployment_issues?.failed_deployments ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+              />
+              <KpiCard
+                label="Past-Due Subs"
+                value={String(opsData.payment_failures?.past_due_subscriptions ?? 0)}
+                sub="Revenue at risk"
+                trend={(opsData.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+              />
+              <KpiCard
+                label="Ready to Submit"
+                value={String(opsData.claims_pipeline?.ready_to_submit ?? 0)}
+                sub="Claims waiting"
+                trend={(opsData.claims_pipeline?.ready_to_submit ?? 0) > 0 ? 'up' : 'flat'}
+                color="var(--color-status-warning)"
+                href="/founder/revenue/billing-intelligence"
+              />
+              <KpiCard
+                label="Denied Claims"
+                value={String(opsData.claims_pipeline?.denied ?? 0)}
+                sub="Need appeal review"
+                trend={(opsData.claims_pipeline?.denied ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.claims_pipeline?.denied ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                href="/founder/revenue/billing-intelligence"
+              />
+              <KpiCard
+                label="Active Paging"
+                value={String(opsData.crewlink_health?.active_alerts ?? 0)}
+                sub="CrewLink alerts"
+                color="var(--color-status-info)"
+              />
+              <KpiCard
+                label="Comms Degraded"
+                value={String(opsData.comms_health?.degraded_channels ?? 0)}
+                sub={`of ${opsData.comms_health?.total_channels ?? 0} channels`}
+                trend={(opsData.comms_health?.degraded_channels ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.comms_health?.degraded_channels ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+              />
+            </div>
+
+            {/* Detailed Panels */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Claims Pipeline */}
+              <RiskCard label="Claims Pipeline" items={[
+                { text: `${opsData.claims_pipeline?.ready_to_submit ?? 0} ready to submit`, level: (opsData.claims_pipeline?.ready_to_submit ?? 0) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.claims_pipeline?.blocked_for_review ?? 0} blocked for review`, level: (opsData.claims_pipeline?.blocked_for_review ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.denied ?? 0} denied`, level: (opsData.claims_pipeline?.denied ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.appeals_drafted ?? 0} appeals drafted`, level: 'warn' },
+                { text: `${opsData.claims_pipeline?.blocking_issues ?? 0} blocking issues`, level: (opsData.claims_pipeline?.blocking_issues ?? 0) > 0 ? 'crit' : 'ok' },
+              ]} />
+              {/* Patient Balances */}
+              <RiskCard label="Patient Balances" items={[
+                { text: `${opsData.patient_balance_review?.open_balances ?? 0} open balances`, level: 'warn' },
+                { text: `${opsData.patient_balance_review?.autopay_pending ?? 0} autopay pending`, level: 'ok' },
+                { text: `${opsData.patient_balance_review?.collections_ready ?? 0} collections ready`, level: (opsData.patient_balance_review?.collections_ready ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `$${((opsData.patient_balance_review?.total_outstanding_cents ?? 0) / 100).toLocaleString()} outstanding`, level: (opsData.patient_balance_review?.total_outstanding_cents ?? 0) > 100000 ? 'crit' : 'warn' },
+              ]} />
+              {/* Profile Gaps */}
+              <RiskCard label="Agency Profile Gaps" items={[
+                { text: `${opsData.profile_gaps?.missing_tax_profile ?? 0} missing tax profile`, level: (opsData.profile_gaps?.missing_tax_profile ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_billing_policy ?? 0} missing billing policy`, level: (opsData.profile_gaps?.missing_billing_policy ?? 0) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_public_sector_profile ?? 0} missing public sector`, level: (opsData.profile_gaps?.missing_public_sector_profile ?? 0) > 0 ? 'warn' : 'ok' },
+              ]} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* MODULE 3 · Clean Claim Rate + MODULE 6 · Export Success Rate */}
@@ -381,6 +478,8 @@ export default function FounderExecutivePage() {
             { href: '/founder/pwa/crewlink', label: 'PWA & Mobile', color: 'var(--color-system-fleet)', mod: '9' },
             { href: '/founder/infra/ecs', label: 'Infrastructure', color: 'var(--color-text-muted)', mod: '10' },
             { href: '/founder/tools/calendar', label: 'Founder Tools', color: 'var(--q-orange)', mod: '11' },
+            { href: '/founder/success-command', label: 'Customer Success', color: 'var(--q-green)', mod: '12' },
+            { href: '/founder/ops/command', label: 'Ops Intelligence', color: 'var(--color-brand-red)', mod: '6B' },
           ].map((d) => (
             <Link
               key={d.href}
