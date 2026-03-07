@@ -14,10 +14,7 @@ from core_app.api.dependencies import (
 )
 from core_app.billing.ar_aging import compute_revenue_forecast
 from core_app.schemas.auth import CurrentUser
-from core_app.services.domination_service import DominationService
-from core_app.services.event_publisher import get_event_publisher
-
-router = APIRouter(prefix="/api/v1/billing-command", tags=["Billing Command Center"])
+from core_app.services.billing_command_service import BillingCommandService
 
 
 class DenialPredictionRequest(BaseModel):

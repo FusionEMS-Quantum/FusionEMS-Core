@@ -3,9 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
+
+from backend.core_app.epcr.chart_model import Chart, ChartStatus, SyncStatus
 
 
 class SyncConflictPolicy(StrEnum):
@@ -13,6 +16,28 @@ class SyncConflictPolicy(StrEnum):
     STATION_WINS = "station_wins"
     LAST_WRITE_WINS = "last_write_wins"
     MERGE = "merge"
+
+
+@dataclass
+class ClinicalSyncQueueItem:
+    item_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    tenant_id: str = ""
+    queued_at: str = ""
+    status: str = "queued"  # queued, processing, failed, completed
+    retry_count: int = 0
+    last_error: str = ""
+    payload_hash: str = ""
+
+
+@dataclass
+class ClinicalSyncAttempt:
+    attempt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    attempted_at: str = ""
+    success: bool = False
+    error_message: str = ""
+    duration_ms: int = 0
 
 
 class SyncEngine:
@@ -125,3 +150,79 @@ class SyncEngine:
             json.dumps(entry, sort_keys=True, default=str).encode()
         ).hexdigest()
         return entry
+
+
+class SyncService(SyncEngine):
+    def __init__(self, db_session=None):
+        super().__init__()
+        self.db = db_session
+        # In a real app, this queue would be in Redis or DB
+        self._memory_queue: list[ClinicalSyncQueueItem] = []
+
+    def queue_chart_for_sync(self, chart: Chart) -> ClinicalSyncQueueItem:
+        """
+        Add a chart to the sync queue.
+        This represents the backend receiving a "request to sync" or "offline bundle".
+        """
+        item = ClinicalSyncQueueItem(
+            chart_id=chart.chart_id,
+            tenant_id=chart.tenant_id,
+            queued_at=datetime.now(UTC).isoformat(),
+            status="queued",
+            payload_hash=self.compute_sync_hash(chart.to_dict()),
+        )
+        self._memory_queue.append(item)
+        chart.sync_status = SyncStatus.QUEUED_FOR_SYNC
+        return item
+
+    def process_sync_queue(self):
+        """
+        Process pending items in the queue.
+        This would be a background task.
+        """
+        for item in list(self._memory_queue):
+            if item.status == "queued":
+                self._process_item(item)
+
+    def _process_item(self, item: ClinicalSyncQueueItem):
+        """
+        Internal processing of a sync item.
+        """
+        item.status = "processing"
+        start_time = datetime.now(UTC)
+
+        try:
+            # logic to persist chart, check conflicts etc.
+            # simulated success
+            item.status = "completed"
+
+            # Update chart status if we had access to the chart object
+            # chart.sync_status = SyncStatus.FULLY_SYNCED
+
+        except Exception as e:
+            item.status = "failed"
+            item.last_error = str(e)
+            item.retry_count += 1
+            # Log failure
+            # chart.sync_status = SyncStatus.SYNC_ERROR
+
+        duration = (datetime.now(UTC) - start_time).total_seconds() * 1000
+
+        # Log attempt
+        # attempt = ClinicalSyncAttempt(
+        #     chart_id=item.chart_id,
+        #     attempted_at=datetime.now(UTC).isoformat(),
+        #     success=item.status == "completed",
+        #     error_message=item.last_error,
+        #     duration_ms=int(duration)
+        # )
+
+    def get_sync_status(self, chart_id: str) -> str:
+        """
+        Get the current sync status for a chart.
+        """
+        # Look in DB or memory queue
+        for item in self._memory_queue:
+            if item.chart_id == chart_id:
+                return item.status
+        return "unknown"

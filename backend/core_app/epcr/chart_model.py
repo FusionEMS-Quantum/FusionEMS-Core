@@ -17,11 +17,22 @@ class ChartMode(StrEnum):
 
 
 class ChartStatus(StrEnum):
-    DRAFT = "draft"
+    CHART_CREATED = "chart_created"
     IN_PROGRESS = "in_progress"
+    OFFLINE_PENDING_SYNC = "offline_pending_sync"
+    SYNC_IN_PROGRESS = "sync_in_progress"
+    SYNC_FAILED = "sync_failed"
+    SYNCED = "synced"
+    CLINICAL_REVIEW_REQUIRED = "clinical_review_required"
+    READY_FOR_LOCK = "ready_for_lock"
+    LOCKED = "locked"
+    AMENDMENT_REQUESTED = "amendment_requested"
+    AMENDED = "amended"
+    CLOSED = "closed"
+    # Legacy mappings if needed, can be deprecated
+    DRAFT = "draft"
     PENDING_QA = "pending_qa"
     SUBMITTED = "submitted"
-    LOCKED = "locked"
     EXPORTED = "exported"
     VOID = "void"
     CANCELLED = "cancelled"
@@ -29,9 +40,55 @@ class ChartStatus(StrEnum):
 
 class SyncStatus(StrEnum):
     LOCAL_ONLY = "local_only"
+    QUEUED_FOR_SYNC = "queued_for_sync"
+    SYNCING = "syncing"
+    SYNC_ERROR = "sync_error"
+    PARTIAL_SYNC = "partial_sync"
+    FULLY_SYNCED = "fully_synced"
+    CONFLICT_REVIEW_REQUIRED = "conflict_review_required"
+    # Legacy
     SYNCED = "synced"
     CONFLICT = "conflict"
     PENDING_SYNC = "pending_sync"
+
+
+class ValidationStatus(StrEnum):
+    VALIDATION_PENDING = "validation_pending"
+    VALIDATION_PASSED = "validation_passed"
+    VALIDATION_WARNING = "validation_warning"
+    VALIDATION_BLOCKED = "validation_blocked"
+    REVIEW_REQUIRED = "review_required"
+
+
+class QAStatus(StrEnum):
+    NOT_REVIEWED = "not_reviewed"
+    IN_REVIEW = "in_review"
+    NEEDS_CORRECTION = "needs_correction"
+    CORRECTION_SUBMITTED = "correction_submitted"
+    APPROVED = "approved"
+    ESCALATED = "escalated"
+    EDUCATION_FLAGGED = "education_flagged"
+    CLOSED = "closed"
+
+
+class NemsisStatus(StrEnum):
+    NOT_READY = "not_ready"
+    READY_FOR_EXPORT = "ready_for_export"
+    EXPORT_QUEUED = "export_queued"
+    EXPORTING = "exporting"
+    EXPORT_FAILED = "export_failed"
+    EXPORT_COMPLETE = "export_complete"
+    REJECTED_BY_RECEIVER = "rejected_by_receiver"
+    NEEDS_CORRECTION = "needs_correction"
+
+
+class HandoffStatus(StrEnum):
+    HANDOFF_NOT_PREPARED = "handoff_not_prepared"
+    HANDOFF_DRAFTED = "handoff_drafted"
+    HANDOFF_READY = "handoff_ready"
+    HANDOFF_SENT = "handoff_sent"
+    HANDOFF_FAILED = "handoff_failed"
+    HANDOFF_CONFIRMED = "handoff_confirmed"
 
 
 @dataclass
@@ -39,6 +96,8 @@ class PatientDemographics:
     first_name: str = ""
     last_name: str = ""
     dob: str = ""
+    age: int | None = None
+    age_units: str = ""  # Years, Months, Days
     gender: str = ""
     race: str = ""
     ssn_last4: str = ""
@@ -225,6 +284,155 @@ class ProvenanceRecord:
     bounding_box: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass
+class ClinicalSignature:
+    signature_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    signer_name: str = ""
+    signer_role: str = ""  # e.g., "Patient", "Crew", "Facility"
+    signature_type: str = ""  # e.g., "HIPAA", "Refusal", "Treatment"
+    timestamp: str = ""
+    data_points: str = ""  # Encoded signature data
+    is_valid: bool = False
+
+
+@dataclass
+class ClinicalTimelineEvent:
+    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    timestamp: str = ""
+    event_type: str = "" # VITAL, MED, PROC, STATUS_CHANGE, SYNC, LOCK
+    description: str = ""
+    actor_id: str = ""
+    source: str = "user" # user, device, system
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+@dataclass
+class ClinicalAttachment:
+    attachment_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    file_name: str = ""
+    file_type: str = "" # image/jpeg, application/pdf
+    file_size_bytes: int = 0
+    storage_path: str = ""
+    uploaded_at: str = ""
+    description: str = ""
+    tags: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ClinicalAmendmentRequest:
+    request_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    requested_by: str = ""
+    reason: str = ""
+    requested_at: str = ""
+    status: str = "pending"  # pending, approved, rejected
+    original_value: str = ""
+    proposed_value: str = ""
+    field_path: str = ""
+
+
+@dataclass
+class AINarrativeDraft:
+    draft_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    generated_at: str = ""
+    model_version: str = ""
+    narrative_text: str = ""
+    confidence_score: float = 0.0
+    contradictions_found: list[str] = field(default_factory=list)
+    missing_elements: list[str] = field(default_factory=list)
+    is_accepted: bool = False
+
+
+@dataclass
+class QAFlag:
+    flag_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    flag_type: str = ""  # PROTOCOL_DEVIATION, DOCUMENTATION_ERROR, CLINICAL_RISK
+    severity: str = "medium"
+    description: str = ""
+    flagged_by: str = ""  # "AI" or "Human"
+    resolved: bool = False
+
+
+@dataclass
+class QAReview:
+    review_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    reviewer_id: str = ""
+    started_at: str = ""
+    completed_at: str = ""
+    status: str = QAStatus.NOT_REVIEWED
+    flags: list[QAFlag] = field(default_factory=list)
+    notes: str = ""
+    decision: str = ""
+
+
+@dataclass
+class ClinicalValidationIssue:
+    issue_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    rule_id: str = ""
+    severity: str = "warning"  # blocking, warning
+    message: str = ""
+    field_path: str = ""
+
+
+@dataclass
+class NemsisValidationIssue:
+    issue_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    nemsis_element: str = ""
+    message: str = ""
+    severity: str = "error"
+
+
+@dataclass
+class ClinicalHandoffPacket:
+    packet_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    generated_at: str = ""
+    recipient_facility: str = ""
+    content_summary: str = ""
+    delivery_status: str = HandoffStatus.HANDOFF_NOT_PREPARED
+    delivery_method: str = ""  # fax, direct, email
+
+
+@dataclass
+class NemsisExportRecord:
+    record_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    export_format: str = "xml"
+    exported_at: str = ""
+    status: str = NemsisStatus.NOT_READY
+    validation_issues: list[NemsisValidationIssue] = field(default_factory=list)
+    xml_content: str = ""
+
+
+@dataclass
+class NemsisExportBatch:
+    batch_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str = ""
+    created_at: str = ""
+    records: list[NemsisExportRecord] = field(default_factory=list)
+    status: str = NemsisStatus.NOT_READY
+    submission_response: str = ""
+
+
+@dataclass
+class QAQueueItem:
+    item_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    chart_id: str = ""
+    patient_name: str = ""
+    run_date: str = ""
+    status: str = QAStatus.NOT_REVIEWED
+    assigned_reviewer: str = ""
+    priority: str = "medium"
+
+
+# Aliases
+ClinicalContradictionFlag = QAFlag
+
+
 def _build_dataclass(cls, raw: dict) -> object:
     kwargs = {}
     for f in dataclasses.fields(cls):
@@ -265,6 +473,13 @@ class Chart:
     narrative: str = ""
     attachments: list[dict[str, Any]] = field(default_factory=list)
     provenance: list[ProvenanceRecord] = field(default_factory=list)
+    signatures: list[ClinicalSignature] = field(default_factory=list)
+    qa_review: QAReview | None = None
+    validation_issues: list[ClinicalValidationIssue] = field(default_factory=list)
+    nemsis_issues: list[NemsisValidationIssue] = field(default_factory=list)
+    handoff_packet: ClinicalHandoffPacket | None = None
+    ai_draft: AINarrativeDraft | None = None
+    amendment_requests: list[ClinicalAmendmentRequest] = field(default_factory=list)
     completeness_score: float = 0.0
     completeness_issues: list[str] = field(default_factory=list)
 
@@ -329,6 +544,48 @@ class Chart:
             for pr in d.get("provenance", [])
             if isinstance(pr, dict)
         ]
+        c.signatures = [
+            _build_dataclass(ClinicalSignature, s)
+            for s in d.get("signatures", [])
+            if isinstance(s, dict)
+        ]
+        c.validation_issues = [
+            _build_dataclass(ClinicalValidationIssue, v)
+            for v in d.get("validation_issues", [])
+            if isinstance(v, dict)
+        ]
+        c.nemsis_issues = [
+            _build_dataclass(NemsisValidationIssue, n)
+            for n in d.get("nemsis_issues", [])
+            if isinstance(n, dict)
+        ]
+        c.amendment_requests = [
+            _build_dataclass(ClinicalAmendmentRequest, ar)
+            for ar in d.get("amendment_requests", [])
+            if isinstance(ar, dict)
+        ]
+
+        qa_d = d.get("qa_review")
+        if isinstance(qa_d, dict):
+            # QAReview has a list of flags which also needs parsing
+            flags = [
+                _build_dataclass(QAFlag, f) for f in qa_d.get("flags", []) if isinstance(f, dict)
+            ]
+            qa_d_copy = dict(qa_d)
+            qa_d_copy["flags"] = flags
+            c.qa_review = _build_dataclass(QAReview, qa_d_copy)
+        else:
+            c.qa_review = None
+
+        handoff_d = d.get("handoff_packet")
+        c.handoff_packet = (
+            _build_dataclass(ClinicalHandoffPacket, handoff_d)
+            if isinstance(handoff_d, dict)
+            else None
+        )
+
+        ai_d = d.get("ai_draft")
+        c.ai_draft = _build_dataclass(AINarrativeDraft, ai_d) if isinstance(ai_d, dict) else None
 
         acls_d = d.get("acls")
         c.acls = _build_dataclass(ACLSBlock, acls_d) if isinstance(acls_d, dict) else None
