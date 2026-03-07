@@ -110,6 +110,12 @@ TENANT_TABLES: set[str] = {
     "epcr_charts",
     "epcr_event_log",
     "epcr_ai_outputs",
+    "epcr_qa_reviews",
+    "epcr_amendments",
+    "epcr_handoff_packets",
+    "epcr_chart_signatures",
+    "epcr_sync_queue",
+    "epcr_validation_snapshots",
     "epcr_ocr_jobs",
     "epcr_capture_sessions",
     "epcr_workflow_templates",
@@ -328,6 +334,12 @@ _TABLE_TYPED_COLUMNS: dict[str, frozenset[str]] = {
             "case_id",
         }
     ),
+    "epcr_qa_reviews": frozenset({"chart_id", "status", "reviewer_id", "deleted_at"}),
+    "epcr_amendments": frozenset({"chart_id", "status", "requested_by", "deleted_at"}),
+    "epcr_handoff_packets": frozenset({"chart_id", "status", "recipient_facility", "deleted_at"}),
+    "epcr_chart_signatures": frozenset({"chart_id", "signer_role", "deleted_at"}),
+    "epcr_sync_queue": frozenset({"chart_id", "status", "retry_count", "deleted_at"}),
+    "epcr_validation_snapshots": frozenset({"chart_id", "validation_status", "has_blocking", "deleted_at"}),
     "nemsis_submission_results": frozenset(
         {
             "chart_id",

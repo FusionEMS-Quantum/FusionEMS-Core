@@ -42,6 +42,8 @@ from core_app.api.documents_router import router as documents_router  # noqa: E4
 from core_app.api.epcr_capture_router import router as epcr_capture_router  # noqa: E402
 from core_app.api.epcr_customization_router import router as epcr_customization_router  # noqa: E402
 from core_app.api.epcr_router import router as epcr_router  # noqa: E402
+from core_app.api.clinical_workflow_router import router as clinical_workflow_router  # noqa: E402
+from core_app.api.founder_clinical_router import router as founder_clinical_router  # noqa: E402
 from core_app.api.events_router import router as events_router  # noqa: E402
 from core_app.api.export_status_router import router as export_status_router  # noqa: E402
 from core_app.api.exports_router import router as exports_router  # noqa: E402
@@ -58,13 +60,13 @@ from core_app.api.founder_copilot_router import router as founder_copilot_router
 from core_app.api.founder_documents_router import router as founder_documents_router  # noqa: E402
 from core_app.api.founder_graph_router import router as founder_graph_router  # noqa: E402
 from core_app.api.founder_router import router as founder_router  # noqa: E402
-from core_app.api.gold_standard_router import router as gold_standard_router  # noqa: E402
 from core_app.api.governance_router import router as governance_router  # noqa: E402
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
 from core_app.api.icd10_router import router as icd10_router  # noqa: E402
 from core_app.api.imports_router import router as imports_router  # noqa: E402
 from core_app.api.incident_router import router as incident_router  # noqa: E402
+from core_app.api.interop_router import router as interop_router  # noqa: E402
 from core_app.api.kitlink_compliance_router import router as kitlink_compliance_router  # noqa: E402
 from core_app.api.kitlink_router import router as kitlink_router  # noqa: E402
 from core_app.api.lob_router import router as lob_router  # noqa: E402
@@ -190,6 +192,8 @@ app.include_router(edi_router)
 app.include_router(epcr_capture_router)
 app.include_router(epcr_customization_router)
 app.include_router(epcr_router)
+app.include_router(clinical_workflow_router)
+app.include_router(founder_clinical_router)
 app.include_router(events_router)
 app.include_router(export_status_router)
 app.include_router(exports_router)
