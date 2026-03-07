@@ -54,3 +54,43 @@ from .crewlink import (
     CrewPushDevice,
     CrewMissionAssignment
 )
+
+# Analytics Models
+from .analytics import (
+    KPIComputationRun,
+    KPIValueSnapshot,
+    KPITrendPoint,
+    HealthScoreFactor,
+    ExecutiveAlert,
+    ExecutiveSummarySnapshot,
+    OperationalMetricSnapshot,
+    ResponseTimeMetric,
+    QueuePerformanceMetric,
+    MissionTimingAggregate,
+    PagingPerformanceAggregate,
+    TelemetryUptimeAggregate,
+    FinancialMetricSnapshot,
+    ARAgingBucket,
+    DenialTrendAggregate,
+    PaymentLagAggregate,
+    SubscriptionRevenueAggregate,
+    CashAtRiskSnapshot,
+    ClinicalMetricSnapshot,
+    QAQueueAggregate,
+    ValidationFailureAggregate,
+    SyncFailureAggregate,
+    NemsisExportAggregate,
+    ClinicalRiskTrendPoint,
+    ReadinessMetricSnapshot,
+    CoverageGapAggregate,
+    CredentialRiskAggregate,
+    InventoryRiskAggregate,
+    FleetReadinessAggregate,
+    NarcoticsRiskAggregate,
+    ReportDefinition,
+    ReportRun,
+    ReportDelivery,
+    ReportArtifact,
+    ReportFilterSet,
+    ReportAuditEvent
+)

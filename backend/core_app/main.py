@@ -21,6 +21,7 @@ configure_logging("DEBUG" if settings.debug else "INFO")
 
 from core_app.api.accreditation_router import router as accreditation_router  # noqa: E402
 from core_app.api.ai_router import router as ai_router  # noqa: E402
+from core_app.api.analytics_router import router as analytics_router  # noqa: E402
 from core_app.api.ar_router import router as ar_router  # noqa: E402
 from core_app.api.audit_router import router as audit_router  # noqa: E402
 from core_app.api.auth_rep_router import router as auth_rep_router  # noqa: E402
@@ -57,6 +58,8 @@ from core_app.api.founder_copilot_router import router as founder_copilot_router
 from core_app.api.founder_documents_router import router as founder_documents_router  # noqa: E402
 from core_app.api.founder_graph_router import router as founder_graph_router  # noqa: E402
 from core_app.api.founder_router import router as founder_router  # noqa: E402
+from core_app.api.gold_standard_router import router as gold_standard_router  # noqa: E402
+from core_app.api.governance_router import router as governance_router  # noqa: E402
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
 from core_app.api.icd10_router import router as icd10_router  # noqa: E402
@@ -158,6 +161,7 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 app.include_router(accreditation_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(governance_router, prefix="/api/v1")
 app.include_router(fhir_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(incident_router, prefix="/api/v1")
@@ -172,6 +176,7 @@ app.include_router(vital_router, prefix="/api/v1")
 
 # --- Routers without prefix ---
 app.include_router(ai_router)
+app.include_router(analytics_router)
 app.include_router(ar_router)
 app.include_router(auth_rep_router)
 app.include_router(billing_command_router)
