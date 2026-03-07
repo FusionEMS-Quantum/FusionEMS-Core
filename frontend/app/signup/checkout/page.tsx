@@ -67,7 +67,7 @@ export default function CheckoutPage() {
 
   return (
     <div
-      className="rounded-sm border p-6 md:p-8"
+      className="chamfer-4 border p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Header */}
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
 
       {/* Plan Summary Card */}
       <div
-        className="rounded-sm border mb-7 overflow-hidden"
+        className="chamfer-4 border mb-7 overflow-hidden"
         style={{ borderColor: 'rgba(255,255,255,0.08)' }}
       >
         {/* Card header */}
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
       {status === 'fallback' && (
         <div className="flex flex-col items-center gap-4 py-6">
           <div
-            className="rounded-sm border px-4 py-3 text-sm w-full"
+            className="chamfer-4 border px-4 py-3 text-sm w-full"
             style={{
               backgroundColor: 'rgba(34,211,238,0.06)',
               borderColor: 'rgba(34,211,238,0.2)',
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
             href={checkoutUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors rounded-sm inline-block"
+            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4 inline-block"
           >
             Continue to Stripe Checkout →
           </a>
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
       {status === 'error' && (
         <div className="space-y-4">
           <div
-            className="rounded-sm border px-4 py-3 text-sm"
+            className="chamfer-4 border px-4 py-3 text-sm"
             style={{
               backgroundColor: 'rgba(255,59,59,0.08)',
               borderColor: 'rgba(255,59,59,0.3)',
@@ -257,7 +257,7 @@ export default function CheckoutPage() {
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="bg-orange text-text-inverse font-bold px-4 py-2 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors rounded-sm"
+              className="bg-orange text-text-inverse font-bold px-4 py-2 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4"
             >
               Retry
             </button>

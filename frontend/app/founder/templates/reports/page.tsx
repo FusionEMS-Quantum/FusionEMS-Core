@@ -10,8 +10,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -68,9 +68,9 @@ export default function ReportsPage() {
               MODULE 8 · TEMPLATES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-status-info)' }}>Report Foundry</h1>
-            <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Audit automation · clinical outcomes · denial intelligence</p>
+            <p className="text-xs text-text-muted mt-1">Audit automation · clinical outcomes · denial intelligence</p>
           </div>
-          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-status-info transition-colors font-mono">
+          <Link href="/founder" className="text-body text-text-muted hover:text-status-info transition-colors font-mono">
             ← Back to Founder OS
           </Link>
         </div>
@@ -85,10 +85,10 @@ export default function ReportsPage() {
                 <div key={t.id} className="p-3 bg-bg-input border border-border-DEFAULT chamfer-4 flex items-start justify-between hover:border-status-info/40 transition-colors cursor-pointer">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[12px] font-semibold text-[rgba(255,255,255,0.85)]">{t.name}</span>
+                      <span className="text-[12px] font-semibold text-text-primary">{t.name}</span>
                       <Badge label={t.freq} status="info" />
                     </div>
-                    <p className="text-body text-[rgba(255,255,255,0.4)]">{t.desc}</p>
+                    <p className="text-body text-text-muted">{t.desc}</p>
                   </div>
                   <button className="text-micro font-semibold px-3 py-1.5 chamfer-4" style={{ background: 'color-mix(in srgb, var(--color-status-info) 9%, transparent)', color: 'var(--color-status-info)', border: '1px solid color-mix(in srgb, var(--color-status-info) 19%, transparent)' }}>
                     Generate
@@ -104,17 +104,17 @@ export default function ReportsPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['ID', 'Name', 'Domain', 'Date', 'Status'].map(h => (
-                    <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">{h}</th>
+                    <th key={h} className="text-left py-2 pr-4 text-text-muted font-semibold uppercase tracking-wider text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {data.recent.map(r => (
-                  <tr key={r.id} className="border-b border-border-subtle hover:bg-[rgba(255,255,255,0.02)]">
+                  <tr key={r.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
                     <td className="py-2 pr-4 font-mono text-status-info">{r.id}</td>
-                    <td className="py-2 pr-4 text-[rgba(255,255,255,0.7)]">{r.name}</td>
-                    <td className="py-2 pr-4 text-[rgba(255,255,255,0.4)]">{r.type}</td>
-                    <td className="py-2 pr-4 text-[rgba(255,255,255,0.5)]">{r.date}</td>
+                    <td className="py-2 pr-4 text-text-primary">{r.name}</td>
+                    <td className="py-2 pr-4 text-text-muted">{r.type}</td>
+                    <td className="py-2 pr-4 text-text-secondary">{r.date}</td>
                     <td className="py-2 pr-4"><Badge label={r.status} status={r.statusKey as any} /></td>
                   </tr>
                 ))}
@@ -130,12 +130,12 @@ export default function ReportsPage() {
               {data.scheduled.map((s, i) => (
                 <div key={i} className="p-3 bg-bg-input border border-border-subtle chamfer-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-body font-semibold text-[rgba(255,255,255,0.85)]">{s.name}</span>
+                    <span className="text-body font-semibold text-text-primary">{s.name}</span>
                     <span className="text-micro font-mono text-status-warning">{s.time}</span>
                   </div>
-                  <div className="flex items-center gap-4 text-micro text-[rgba(255,255,255,0.4)]">
-                    <span>Target: <span className="text-[rgba(255,255,255,0.6)]">{s.targets}</span></span>
-                    <span>Format: <span className="text-[rgba(255,255,255,0.6)]">{s.format}</span></span>
+                  <div className="flex items-center gap-4 text-micro text-text-muted">
+                    <span>Target: <span className="text-text-secondary">{s.targets}</span></span>
+                    <span>Format: <span className="text-text-secondary">{s.format}</span></span>
                   </div>
                 </div>
               ))}
@@ -150,10 +150,10 @@ export default function ReportsPage() {
             <div className="space-y-2">
               {data.archive.map((a) => (
                 <div key={a.year} className="flex items-center justify-between p-2 pl-3 bg-bg-input border-l-2 border-l-border-subtle hover:border-l-status-info transition-colors cursor-pointer">
-                  <span className="text-[12px] font-mono text-[rgba(255,255,255,0.85)]">{a.year} Core Sync</span>
+                  <span className="text-[12px] font-mono text-text-primary">{a.year} Core Sync</span>
                   <div className="text-right">
-                    <div className="text-body text-[rgba(255,255,255,0.6)]">{a.count} artifacts</div>
-                    <div className="text-[9px] text-[rgba(255,255,255,0.3)]">{a.size}</div>
+                    <div className="text-body text-text-secondary">{a.count} artifacts</div>
+                    <div className="text-[9px] text-text-muted">{a.size}</div>
                   </div>
                 </div>
               ))}

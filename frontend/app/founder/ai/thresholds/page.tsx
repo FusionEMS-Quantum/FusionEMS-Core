@@ -56,7 +56,7 @@ export default function AiThresholdsPage() {
       </div>
 
       {error && (
-        <div className="bg-[rgba(255,45,45,0.08)] border border-[rgba(255,45,45,0.35)] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
+        <div className="bg-red-500/[0.08] border border-red-500/[0.35] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
           {error}
         </div>
       )}
@@ -66,7 +66,7 @@ export default function AiThresholdsPage() {
         <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-4">Confidence Policy by Risk Tier</div>
         <div className="space-y-2">
           {CONFIDENCE_THRESHOLDS.map((ct) => (
-            <div key={ct.tier} className="flex items-center gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+            <div key={ct.tier} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ background: ct.color }} />
               <span className="text-xs font-bold w-28 shrink-0" style={{ color: ct.color }}>{ct.label}</span>
               <span className="text-xs text-text-secondary">{ct.threshold}</span>

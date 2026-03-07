@@ -10,9 +10,9 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string; s
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
       className="bg-bg-panel border border-border-DEFAULT p-4"
       style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>{value}</div>
-      {sub && <div className="text-[11px] text-[rgba(255,255,255,0.35)] mt-1">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-1">{sub}</div>}
     </motion.div>
   );
 }
@@ -20,8 +20,8 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string; s
 function Slider({ label, min, max, value, onChange, unit }: { label: string; min: number; max: number; value: number; onChange: (v: number) => void; unit: string }) {
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-[11px]">
-        <span className="text-[rgba(255,255,255,0.5)]">{label}</span>
+      <div className="flex justify-between text-body">
+        <span className="text-text-secondary">{label}</span>
         <span className="font-semibold text-text-primary">{value.toLocaleString()}{unit}</span>
       </div>
       <input type="range" min={min} max={max} value={value} onChange={e => onChange(Number(e.target.value))}
@@ -110,7 +110,7 @@ export default function ROIFunnelPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">CATEGORY 8</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">CATEGORY 8</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">ROI + Self-Service Funnel</h1>
         <p className="text-xs text-text-muted mt-0.5">100-Feature Revenue Intelligence · Lead Scoring · Proposals · Subscription Activation</p>
       </div>
@@ -125,46 +125,46 @@ export default function ROIFunnelPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* ROI Calculator */}
         <div className="bg-bg-panel border border-[rgba(255,107,26,0.15)] p-5 space-y-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[rgba(255,107,26,0.7)]">Interactive ROI Calculator</div>
+          <div className="text-micro font-bold uppercase tracking-widest text-[rgba(255,107,26,0.7)]">Interactive ROI Calculator</div>
 
           <Slider label="Annual Call Volume" min={100} max={10000} value={callVolume} onChange={setCallVolume} unit=" calls" />
           <Slider label="Current Billing %" min={1} max={12} value={billingPct} onChange={setBillingPct} unit="%" />
           <Slider label="Projection Years" min={1} max={5} value={years} onChange={setYears} unit=" yr" />
 
           <div>
-            <div className="text-[10px] text-[rgba(255,255,255,0.4)] mb-2">Select Plan</div>
+            <div className="text-micro text-text-muted mb-2">Select Plan</div>
             <div className="grid grid-cols-3 gap-2">
               {PLANS.map(p => (
                 <button key={p.key} onClick={() => setSelectedPlan(p.key)}
-                  className="py-2 text-[11px] font-semibold border rounded-sm transition-colors"
+                  className="py-2 text-body font-semibold border chamfer-4 transition-colors"
                   style={{
                     borderColor: selectedPlan === p.key ? p.color : "rgba(255,255,255,0.1)",
                     color: selectedPlan === p.key ? p.color : "rgba(255,255,255,0.45)",
                     background: selectedPlan === p.key ? `${p.color}15` : "transparent",
                   }}>
-                  {p.label}<br /><span className="text-[10px] font-normal">${p.price}/mo</span>
+                  {p.label}<br /><span className="text-micro font-normal">${p.price}/mo</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="border border-border-subtle rounded-sm p-3 space-y-2 text-[11px]">
-            <div className="flex justify-between"><span className="text-[rgba(255,255,255,0.45)]">Est. {years}yr Revenue Uplift</span><span className="font-semibold text-status-active">${(est3yrRevenue * 0.08 / 100).toLocaleString()}</span></div>
-            <div className="flex justify-between"><span className="text-[rgba(255,255,255,0.45)]">Subscription Cost ({years}yr)</span><span className="font-semibold text-status-warning">${(subscriptionCost / 100).toLocaleString()}</span></div>
-            <div className="flex justify-between border-t border-border-subtle pt-2"><span className="text-[rgba(255,255,255,0.6)]">Estimated ROI</span><span className="text-xl font-black" style={{ color: roi >= 0 ? "var(--color-status-active)" : "var(--color-brand-red)" }}>{roi}%</span></div>
+          <div className="border border-border-subtle chamfer-4 p-3 space-y-2 text-body">
+            <div className="flex justify-between"><span className="text-text-muted">Est. {years}yr Revenue Uplift</span><span className="font-semibold text-status-active">${(est3yrRevenue * 0.08 / 100).toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="text-text-muted">Subscription Cost ({years}yr)</span><span className="font-semibold text-status-warning">${(subscriptionCost / 100).toLocaleString()}</span></div>
+            <div className="flex justify-between border-t border-border-subtle pt-2"><span className="text-text-secondary">Estimated ROI</span><span className="text-xl font-black" style={{ color: roi >= 0 ? "var(--color-status-active)" : "var(--color-brand-red)" }}>{roi}%</span></div>
           </div>
 
           <button onClick={handleCalculate} disabled={loading}
-            className="w-full h-9 text-xs font-bold uppercase tracking-wider bg-[rgba(255,107,26,0.2)] border border-[rgba(255,107,26,0.5)] text-orange rounded-sm hover:bg-[rgba(255,107,26,0.3)] transition-colors disabled:opacity-50">
+            className="w-full h-9 text-xs font-bold uppercase tracking-wider bg-[rgba(255,107,26,0.2)] border border-[rgba(255,107,26,0.5)] text-orange chamfer-4 hover:bg-[rgba(255,107,26,0.3)] transition-colors disabled:opacity-50">
             {loading ? "Calculating…" : "Calculate & Save Scenario"}
           </button>
 
           {roiResult && (
-            <div className="bg-[rgba(34,211,238,0.05)] border border-[rgba(34,211,238,0.2)] rounded-sm p-3 text-[11px] space-y-1">
-              <div className="text-[10px] font-bold text-system-billing uppercase tracking-wider mb-2">Scenario Result</div>
+            <div className="bg-[rgba(34,211,238,0.05)] border border-[rgba(34,211,238,0.2)] chamfer-4 p-3 text-body space-y-1">
+              <div className="text-micro font-bold text-system-billing uppercase tracking-wider mb-2">Scenario Result</div>
               {Object.entries(roiResult).slice(0, 8).map(([k, v]) => (
                 <div key={k} className="flex justify-between">
-                  <span className="text-[rgba(255,255,255,0.45)] capitalize">{k.replace(/_/g, " ")}</span>
+                  <span className="text-text-muted capitalize">{k.replace(/_/g, " ")}</span>
                   <span className="font-semibold text-text-primary">{typeof v === "number" ? v.toLocaleString() : String(v)}</span>
                 </div>
               ))}
@@ -175,7 +175,7 @@ export default function ROIFunnelPage() {
         {/* Conversion Funnel */}
         <div className="space-y-4">
           <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)" }}>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Conversion Funnel · {fmtN(funnelData.total_events)} Events</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Conversion Funnel · {fmtN(funnelData.total_events)} Events</div>
             <div className="space-y-1.5">
               {(funnelData.funnel?.length ? funnelData.funnel : stageOrder.map(s => ({ stage: s, count: 0 }))).map((stage, i) => {
                 const pct = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
@@ -183,12 +183,12 @@ export default function ROIFunnelPage() {
                 const c = colors[i % colors.length];
                 return (
                   <div key={stage.stage}>
-                    <div className="flex justify-between text-[11px] mb-0.5">
-                      <span className="capitalize text-[rgba(255,255,255,0.6)]">{stage.stage}</span>
+                    <div className="flex justify-between text-body mb-0.5">
+                      <span className="capitalize text-text-secondary">{stage.stage}</span>
                       <span className="font-semibold text-text-primary">{stage.count}</span>
                     </div>
-                    <div className="h-5 bg-[rgba(255,255,255,0.04)] rounded-sm overflow-hidden relative">
-                      <motion.div className="h-full rounded-sm flex items-center px-2" style={{ background: `${c}22`, borderLeft: `2px solid ${c}` }}
+                    <div className="h-5 bg-[rgba(255,255,255,0.04)] chamfer-4 overflow-hidden relative">
+                      <motion.div className="h-full chamfer-4 flex items-center px-2" style={{ background: `${c}22`, borderLeft: `2px solid ${c}` }}
                         initial={{ width: 0 }} animate={{ width: `${Math.max(pct, 2)}%` }} transition={{ duration: 0.8, delay: i * 0.1 }}>
                       </motion.div>
                     </div>
@@ -199,15 +199,15 @@ export default function ROIFunnelPage() {
           </div>
 
           <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Revenue Pipeline</div>
-            <div className="space-y-2 text-[11px]">
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Revenue Pipeline</div>
+            <div className="space-y-2 text-body">
               {[
                 { label: "Pending Pipeline", value: fmt$(pipeline.pending_pipeline_cents), color: "var(--color-status-warning)" },
                 { label: "Active MRR", value: fmt$(pipeline.active_mrr_cents), color: "var(--color-status-active)" },
                 { label: "Pipeline / MRR Ratio", value: pipeline.pipeline_to_mrr_ratio != null ? `${pipeline.pipeline_to_mrr_ratio}x` : "—", color: "var(--color-status-info)" },
               ].map(item => (
                 <div key={item.label} className="flex justify-between py-1.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                  <span className="text-[rgba(255,255,255,0.5)]">{item.label}</span>
+                  <span className="text-text-secondary">{item.label}</span>
                   <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
                 </div>
               ))}
@@ -217,10 +217,10 @@ export default function ROIFunnelPage() {
       </div>
 
       <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">100 Active Funnel Features</div>
+        <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">100 Active Funnel Features</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
           {FEATURES.map(f => (
-            <div key={f} className="flex items-center gap-1.5 text-[10px] text-[rgba(255,255,255,0.5)]">
+            <div key={f} className="flex items-center gap-1.5 text-micro text-text-secondary">
               <span className="w-1 h-1 rounded-full bg-status-warning flex-shrink-0" />
               <span className="truncate">{f}</span>
             </div>

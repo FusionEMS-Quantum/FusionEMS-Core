@@ -77,7 +77,7 @@ export default function AiPoliciesPage() {
       </div>
 
       {error && (
-        <div className="bg-[rgba(255,45,45,0.08)] border border-[rgba(255,45,45,0.35)] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
+        <div className="bg-red-500/[0.08] border border-red-500/[0.35] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
           {error}
         </div>
       )}

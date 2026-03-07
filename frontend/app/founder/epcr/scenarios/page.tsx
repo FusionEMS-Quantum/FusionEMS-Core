@@ -91,7 +91,7 @@ export default function ScenariosPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · TEST SCENARIOS
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Test Scenarios</h1>
@@ -108,17 +108,17 @@ export default function ScenariosPage() {
         />
         <button
           onClick={() => uploadRef.current?.click()}
-          className="bg-bg-panel border border-[rgba(34,211,238,0.3)] text-system-billing text-xs px-4 py-2 hover:bg-[rgba(34,211,238,0.08)] transition-colors"
+          className="bg-bg-panel border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 hover:bg-cyan-500/[0.08] transition-colors"
         >
           Upload Scenario File
         </button>
-        {uploadStatus && <span className="text-xs text-[rgba(255,255,255,0.5)]">{uploadStatus}</span>}
+        {uploadStatus && <span className="text-xs text-text-secondary">{uploadStatus}</span>}
       </div>
 
       {loading ? (
         <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
       ) : scenarios.length === 0 ? (
-        <div className="text-xs text-[rgba(255,255,255,0.3)]">No scenarios uploaded yet</div>
+        <div className="text-xs text-text-muted">No scenarios uploaded yet</div>
       ) : (
         <div className="space-y-3">
           {scenarios.map((scenario) => {
@@ -135,7 +135,7 @@ export default function ScenariosPage() {
                   <div>
                     <div className="text-sm font-bold text-text-primary">{d.name || 'Untitled Scenario'}</div>
                     {d.summary && (
-                      <div className="text-xs text-[rgba(255,255,255,0.45)] mt-0.5">{d.summary}</div>
+                      <div className="text-xs text-text-muted mt-0.5">{d.summary}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -155,7 +155,7 @@ export default function ScenariosPage() {
                 {d.sections && d.sections.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {d.sections.map((s: string, i: number) => (
-                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-[rgba(255,255,255,0.5)] px-2 py-0.5">
+                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-text-secondary px-2 py-0.5">
                         {s}
                       </span>
                     ))}
@@ -184,11 +184,11 @@ export default function ScenariosPage() {
                       >
                         {result.passed ? 'PASS' : 'FAIL'}
                       </span>
-                      <span className="text-xs text-[rgba(255,255,255,0.4)]">
+                      <span className="text-xs text-text-muted">
                         {result.issue_count} issue{result.issue_count !== 1 ? 's' : ''}
                       </span>
                       {result.message && (
-                        <span className="text-xs text-[rgba(255,255,255,0.35)]">{result.message}</span>
+                        <span className="text-xs text-text-muted">{result.message}</span>
                       )}
                     </div>
                   )}
@@ -200,7 +200,7 @@ export default function ScenariosPage() {
       )}
 
       <div className="pt-2">
-        <a href="/founder/epcr" className="text-xs text-[rgba(34,211,238,0.6)] hover:text-system-billing">
+        <a href="/founder/epcr" className="text-xs text-system-billing hover:text-system-billing">
           ← Back to ePCR
         </a>
       </div>

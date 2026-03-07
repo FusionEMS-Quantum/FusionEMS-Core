@@ -60,7 +60,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-[rgba(255,255,255,0.07)] overflow-hidden w-full">
+    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
       <div
         className="h-full rounded-full transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
@@ -171,10 +171,10 @@ export default function CrewLinkPage() {
                 {crewActivity.map((row, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
                     <td className="py-2.5 pr-4 text-text-primary font-medium">{row.name}</td>
-                    <td className="py-2.5 pr-4 text-[rgba(255,255,255,0.55)]">{row.unit}</td>
-                    <td className="py-2.5 pr-4 text-[rgba(255,255,255,0.55)]">{row.activity}</td>
+                    <td className="py-2.5 pr-4 text-text-secondary">{row.unit}</td>
+                    <td className="py-2.5 pr-4 text-text-secondary">{row.activity}</td>
                     <td className="py-2.5 pr-4"><Badge label={row.status} status={statusMap[row.status]} /></td>
-                    <td className="py-2.5 text-[rgba(255,255,255,0.55)]">{row.device}</td>
+                    <td className="py-2.5 text-text-secondary">{row.device}</td>
                   </tr>
                 ))}
               </tbody>
@@ -191,7 +191,7 @@ export default function CrewLinkPage() {
             <Panel key={i}>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-body font-bold text-text-primary uppercase tracking-widest">{cat.label}</span>
-                <span className="text-body text-[rgba(255,255,255,0.55)]">{cat.synced.toLocaleString()} {cat.unit}</span>
+                <span className="text-body text-text-secondary">{cat.synced.toLocaleString()} {cat.unit}</span>
               </div>
               <ProgressBar value={cat.synced} max={cat.max} color={cat.color} />
               <div className="text-micro text-text-muted mt-1.5">{Math.round((cat.synced / cat.max) * 100)}% synced</div>
@@ -206,10 +206,10 @@ export default function CrewLinkPage() {
         <Panel>
           <div className="space-y-3 mb-4">
             {notifications.map((n) => (
-              <div key={n.id} className="flex items-start gap-3 border-b border-[rgba(255,255,255,0.05)] pb-3 last:border-0 last:pb-0">
+              <div key={n.id} className="flex items-start gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
                 <span className="text-micro text-text-muted mt-0.5 w-10 shrink-0">{n.time}</span>
                 <Badge label={n.type} status={notifTypeMap[n.type]} />
-                <span className="text-xs text-[rgba(255,255,255,0.7)]">{n.text}</span>
+                <span className="text-xs text-text-primary">{n.text}</span>
               </div>
             ))}
           </div>
@@ -251,11 +251,11 @@ export default function CrewLinkPage() {
                 <ProgressBar value={d.battery} max={100} color={batteryColor(d.battery)} />
                 <div className="flex justify-between">
                   <span className="text-text-muted">OS</span>
-                  <span className="text-[rgba(255,255,255,0.7)]">{d.os}</span>
+                  <span className="text-text-primary">{d.os}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-muted">App</span>
-                  <span className="text-[rgba(255,255,255,0.7)]">{d.app}</span>
+                  <span className="text-text-primary">{d.app}</span>
                 </div>
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-text-muted">Status</span>

@@ -93,7 +93,7 @@ export default function AiReviewQueuePage() {
 
       {/* Error banner */}
       {error && (
-        <div className="bg-[rgba(255,45,45,0.08)] border border-[rgba(255,45,45,0.35)] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
+        <div className="bg-red-500/[0.08] border border-red-500/[0.35] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
           {error}
         </div>
       )}
@@ -108,7 +108,7 @@ export default function AiReviewQueuePage() {
       ) : items.length === 0 ? (
         <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-10 text-center">
           <div className="text-sm text-text-muted">No pending review items</div>
-          <p className="text-xs text-[rgba(255,255,255,0.3)] mt-1">All AI decisions have been reviewed.</p>
+          <p className="text-xs text-text-muted mt-1">All AI decisions have been reviewed.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -152,7 +152,7 @@ export default function AiReviewQueuePage() {
                     <button
                       onClick={() => handleApprove(item.id)}
                       disabled={actionLoading === item.id}
-                      className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[rgba(34,197,94,0.12)] disabled:opacity-50"
+                      className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-emerald-500/[0.12] disabled:opacity-50"
                       style={{ color: 'var(--color-status-active)', borderColor: 'rgba(34,197,94,0.35)' }}
                     >
                       Approve
@@ -160,7 +160,7 @@ export default function AiReviewQueuePage() {
                     <button
                       onClick={() => handleReject(item.id)}
                       disabled={actionLoading === item.id}
-                      className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[rgba(255,45,45,0.12)] disabled:opacity-50"
+                      className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-red-500/[0.12] disabled:opacity-50"
                       style={{ color: 'var(--color-brand-red)', borderColor: 'rgba(255,45,45,0.35)' }}
                     >
                       Reject

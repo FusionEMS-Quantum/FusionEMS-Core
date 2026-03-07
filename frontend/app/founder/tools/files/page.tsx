@@ -123,10 +123,10 @@ export default function FounderFilesPage() {
         <p className="text-body text-text-muted mt-0.5">Application permissions · Founder drive only · All calls proxied through backend</p>
       </div>
 
-      <div className="flex items-center gap-1 text-body text-[rgba(255,255,255,0.4)]">
+      <div className="flex items-center gap-1 text-body text-text-muted">
         {breadcrumbs.map((crumb, idx) => (
           <span key={idx} className="flex items-center gap-1">
-            {idx > 0 && <span className="text-[rgba(255,255,255,0.2)]">/</span>}
+            {idx > 0 && <span className="text-text-muted">/</span>}
             <button
               onClick={() => navigateBreadcrumb(crumb, idx)}
               className={`hover:text-text-primary transition-colors ${idx === breadcrumbs.length - 1 ? 'text-text-primary font-semibold' : ''}`}
@@ -145,31 +145,31 @@ export default function FounderFilesPage() {
           {loading ? (
             <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
           ) : items.length === 0 ? (
-            <div className="p-6 text-center text-xs text-[rgba(255,255,255,0.3)]">Empty folder</div>
+            <div className="p-6 text-center text-xs text-text-muted">Empty folder</div>
           ) : (
-            <div className="divide-y divide-[rgba(255,255,255,0.04)] max-h-[65vh] overflow-y-auto">
+            <div className="divide-y divide-white/[0.04] max-h-[65vh] overflow-y-auto">
               {items.map((item) => (
                 <motion.button
                   key={item.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   onClick={() => navigate(item)}
-                  className={`w-full text-left px-3 py-3 hover:bg-[rgba(255,255,255,0.03)] transition-colors ${previewItem?.id === item.id ? 'bg-[rgba(255,107,26,0.06)] border-l-2 border-orange' : ''}`}
+                  className={`w-full text-left px-3 py-3 hover:bg-white/[0.03] transition-colors ${previewItem?.id === item.id ? 'bg-brand-orange/[0.06] border-l-2 border-orange' : ''}`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-base leading-none">{fileIcon(item)}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-body text-[rgba(255,255,255,0.8)] truncate font-medium">{item.name}</div>
+                      <div className="text-body text-text-primary truncate font-medium">{item.name}</div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-micro text-[rgba(255,255,255,0.3)]">{formatDate(item.lastModifiedDateTime)}</span>
-                        {item.size != null && <span className="text-micro text-[rgba(255,255,255,0.25)]">{formatSize(item.size)}</span>}
-                        {item.folder && <span className="text-micro text-[rgba(255,255,255,0.25)]">{item.folder.childCount} items</span>}
+                        <span className="text-micro text-text-muted">{formatDate(item.lastModifiedDateTime)}</span>
+                        {item.size != null && <span className="text-micro text-text-muted">{formatSize(item.size)}</span>}
+                        {item.folder && <span className="text-micro text-text-muted">{item.folder.childCount} items</span>}
                       </div>
                     </div>
                     {!item.folder && (
                       <button
                         onClick={(e) => { e.stopPropagation(); downloadItem(item); }}
-                        className="text-micro text-[rgba(255,255,255,0.3)] hover:text-orange transition-colors px-1"
+                        className="text-micro text-text-muted hover:text-orange transition-colors px-1"
                         title="Download"
                       >
                         ↓
@@ -189,7 +189,7 @@ export default function FounderFilesPage() {
                 <div className="p-3 border-b border-border-subtle flex items-center justify-between">
                   <div>
                     <div className="text-body font-semibold text-text-primary truncate max-w-[300px]">{previewItem.name}</div>
-                    <div className="text-micro text-[rgba(255,255,255,0.35)]">
+                    <div className="text-micro text-text-muted">
                       {previewItem.file?.mimeType ?? ''} · {formatSize(previewItem.size)}
                     </div>
                   </div>
@@ -199,18 +199,18 @@ export default function FounderFilesPage() {
                         href={previewItem.webUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 text-micro font-semibold uppercase border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors"
+                        className="px-3 py-1.5 text-micro font-semibold uppercase border border-border-DEFAULT text-text-secondary hover:text-text-primary transition-colors"
                       >
                         Open
                       </a>
                     )}
                     <button
                       onClick={() => downloadItem(previewItem)}
-                      className="px-3 py-1.5 text-micro font-semibold uppercase border border-[rgba(255,107,26,0.3)] text-orange hover:bg-[rgba(255,107,26,0.1)] transition-colors"
+                      className="px-3 py-1.5 text-micro font-semibold uppercase border border-brand-orange/[0.3] text-orange hover:bg-brand-orange/[0.1] transition-colors"
                     >
                       Download
                     </button>
-                    <button onClick={() => setPreviewItem(null)} className="text-[rgba(255,255,255,0.3)] hover:text-text-primary px-2 transition-colors">
+                    <button onClick={() => setPreviewItem(null)} className="text-text-muted hover:text-text-primary px-2 transition-colors">
                       ✕
                     </button>
                   </div>
@@ -228,8 +228,8 @@ export default function FounderFilesPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-40 gap-3">
                       <div className="text-4xl">{fileIcon(previewItem)}</div>
-                      <div className="text-xs text-[rgba(255,255,255,0.5)]">{previewItem.name}</div>
-                      <div className="text-micro text-[rgba(255,255,255,0.3)]">Preview not available for this file type</div>
+                      <div className="text-xs text-text-secondary">{previewItem.name}</div>
+                      <div className="text-micro text-text-muted">Preview not available for this file type</div>
                       {previewItem.webUrl && (
                         <a href={previewItem.webUrl} target="_blank" rel="noopener noreferrer" className="text-body text-orange hover:underline">
                           Open in browser
@@ -242,9 +242,9 @@ export default function FounderFilesPage() {
             ) : (
               <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center h-full p-12">
                 <div className="text-center">
-                  <div className="text-[rgba(255,255,255,0.15)] text-4xl mb-3">📁</div>
-                  <div className="text-xs text-[rgba(255,255,255,0.3)]">Select a file to preview</div>
-                  <div className="text-micro text-[rgba(255,255,255,0.2)] mt-1">Word, Excel, PowerPoint open in Office Online</div>
+                  <div className="text-text-muted text-4xl mb-3">📁</div>
+                  <div className="text-xs text-text-muted">Select a file to preview</div>
+                  <div className="text-micro text-text-muted mt-1">Word, Excel, PowerPoint open in Office Online</div>
                 </div>
               </motion.div>
             )}

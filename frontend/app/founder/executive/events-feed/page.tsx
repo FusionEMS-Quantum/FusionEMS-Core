@@ -155,7 +155,7 @@ function EventRow({
   return (
     <tr
       onClick={handleClick}
-      className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition-colors"
+      className="border-b border-white/5 hover:bg-white/[0.03] cursor-pointer transition-colors"
     >
       {/* Unread dot */}
       <td className="pl-4 pr-2 py-3 w-5">
@@ -169,16 +169,16 @@ function EventRow({
 
       {/* Time */}
       <td
-        className="pr-4 py-3 whitespace-nowrap text-xs text-[rgba(255,255,255,0.5)]"
+        className="pr-4 py-3 whitespace-nowrap text-xs text-text-secondary"
         title={absoluteTime(event.created_at)}
       >
         {relativeTime(event.created_at)}
       </td>
 
       {/* Tenant */}
-      <td className="pr-4 py-3 text-xs text-[rgba(255,255,255,0.6)] max-w-[120px] truncate">
+      <td className="pr-4 py-3 text-xs text-text-secondary max-w-[120px] truncate">
         {event.tenant_name || event.tenant_id || (
-          <span className="text-[rgba(255,255,255,0.25)]">—</span>
+          <span className="text-text-muted">—</span>
         )}
       </td>
 
@@ -193,23 +193,23 @@ function EventRow({
       </td>
 
       {/* Entity */}
-      <td className="pr-4 py-3 text-xs text-[rgba(255,255,255,0.5)] max-w-[160px]">
+      <td className="pr-4 py-3 text-xs text-text-secondary max-w-[160px]">
         {event.entity_type ? (
           <span className="truncate block">
-            <span className="text-[rgba(255,255,255,0.7)]">
+            <span className="text-text-primary">
               {event.entity_type}
             </span>{' '}
-            <span className="text-[rgba(255,255,255,0.3)] font-mono">
+            <span className="text-text-muted font-mono">
               {event.entity_id ? event.entity_id.slice(0, 12) + '…' : ''}
             </span>
           </span>
         ) : (
-          <span className="text-[rgba(255,255,255,0.25)]">—</span>
+          <span className="text-text-muted">—</span>
         )}
       </td>
 
       {/* Summary */}
-      <td className="py-3 text-xs text-[rgba(255,255,255,0.6)] max-w-[280px] truncate pr-4">
+      <td className="py-3 text-xs text-text-secondary max-w-[280px] truncate pr-4">
         {event.summary}
       </td>
     </tr>
@@ -400,8 +400,8 @@ export default function EventsFeedPage() {
             onClick={() => setAutoRefresh((v) => !v)}
             className={`text-xs px-3 py-1.5 chamfer-4 border transition-colors ${
               autoRefresh
-                ? 'border-[rgba(76,175,80,0.4)] text-status-active bg-[rgba(76,175,80,0.08)]'
-                : 'border-border-DEFAULT text-[rgba(255,255,255,0.4)]'
+                ? 'border-green-500/[0.4] text-status-active bg-green-500/[0.08]'
+                : 'border-border-DEFAULT text-text-muted'
             }`}
           >
             {autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
@@ -409,7 +409,7 @@ export default function EventsFeedPage() {
           {/* Mark all read */}
           <button
             onClick={markAllRead}
-            className="text-xs px-3 py-1.5 chamfer-4 border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)] transition-colors"
+            className="text-xs px-3 py-1.5 chamfer-4 border border-border-DEFAULT text-text-secondary hover:text-text-primary hover:border-white/[0.2] transition-colors"
           >
             Mark all read
           </button>
@@ -428,8 +428,8 @@ export default function EventsFeedPage() {
                 onClick={() => setFilter(pill.value)}
                 className={`text-xs px-3 py-1 chamfer-4 border transition-colors font-mono ${
                   active
-                    ? 'border-[rgba(255,107,26,0.5)] text-orange bg-[rgba(255,107,26,0.1)]'
-                    : 'border-border-DEFAULT text-[rgba(255,255,255,0.4)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)]'
+                    ? 'border-brand-orange/[0.5] text-orange bg-brand-orange/[0.1]'
+                    : 'border-border-DEFAULT text-text-muted hover:text-text-primary hover:border-white/[0.2]'
                 }`}
               >
                 {pill.label}
@@ -439,7 +439,7 @@ export default function EventsFeedPage() {
         </div>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-1" />
+        <div className="w-px h-4 bg-white/10 mx-1" />
 
         {/* Date range */}
         <div className="flex gap-1.5">
@@ -451,8 +451,8 @@ export default function EventsFeedPage() {
                 onClick={() => setDateRange(opt.value)}
                 className={`text-xs px-3 py-1 chamfer-4 border transition-colors ${
                   active
-                    ? 'border-[rgba(34,211,238,0.4)] text-system-billing bg-[rgba(34,211,238,0.08)]'
-                    : 'border-border-DEFAULT text-[rgba(255,255,255,0.4)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)]'
+                    ? 'border-cyan-500/[0.4] text-system-billing bg-cyan-500/[0.08]'
+                    : 'border-border-DEFAULT text-text-muted hover:text-text-primary hover:border-white/[0.2]'
                 }`}
               >
                 {opt.label}
@@ -466,11 +466,11 @@ export default function EventsFeedPage() {
       <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-hidden flex-1">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <span className="text-sm text-[rgba(255,255,255,0.3)]">Loading events…</span>
+            <span className="text-sm text-text-muted">Loading events…</span>
           </div>
         ) : events.length === 0 ? (
           <div className="flex items-center justify-center py-16">
-            <span className="text-sm text-[rgba(255,255,255,0.25)]">No events</span>
+            <span className="text-sm text-text-muted">No events</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -478,19 +478,19 @@ export default function EventsFeedPage() {
               <thead>
                 <tr className="border-b border-border-DEFAULT">
                   <th className="w-5 pl-4 pr-2 py-2" />
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)] whitespace-nowrap">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-text-muted whitespace-nowrap">
                     Time
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-text-muted">
                     Tenant
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-text-muted">
                     Event Type
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-text-muted">
                     Entity
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-text-muted">
                     Summary
                   </th>
                 </tr>

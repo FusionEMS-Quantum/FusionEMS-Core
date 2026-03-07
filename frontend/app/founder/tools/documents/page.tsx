@@ -10,8 +10,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -91,14 +91,14 @@ export default function DocumentsVaultPage() {
           <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-text-primary" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
           Documents Vault
         </h1>
-        <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Contracts · BAAs · proposals · compliance certificates · legal</p>
+        <p className="text-xs text-text-muted mt-1">Contracts · BAAs · proposals · compliance certificates · legal</p>
       </motion.div>
 
       {/* MODULE 3 — Document Stats */}
@@ -111,7 +111,7 @@ export default function DocumentsVaultPage() {
             { label: 'Storage Used', value: '24 MB', status: 'ok' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-text-muted uppercase tracking-wider">{s.label}</span>
               <span className="text-2xl font-bold" style={{ color: s.value === '2' || s.value === '1' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.9)' }}>
                 {s.value}
               </span>
@@ -131,18 +131,18 @@ export default function DocumentsVaultPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search documents..."
-              className="flex-1 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+              className="flex-1 bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
             />
             <select
               value={catFilter}
               onChange={(e) => setCatFilter(e.target.value)}
-              className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+              className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
             >
               {['All', 'Contracts', 'BAA', 'Proposals', 'Certificates', 'Legal'].map((c) => (
                 <option key={c} value={c} className="bg-bg-panel">{c}</option>
               ))}
             </select>
-            <span className="text-body text-[rgba(255,255,255,0.4)] whitespace-nowrap">
+            <span className="text-body text-text-muted whitespace-nowrap">
               Showing {filtered.length} document{filtered.length !== 1 ? 's' : ''}
             </span>
           </div>
@@ -158,7 +158,7 @@ export default function DocumentsVaultPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Document', 'Category', 'Status', 'Date', 'Actions'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">
+                    <th key={h} className="text-left py-1.5 px-2 text-text-muted font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -166,11 +166,11 @@ export default function DocumentsVaultPage() {
               </thead>
               <tbody>
                 {filtered.map((doc, i) => (
-                  <tr key={i} className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="py-2 px-2 text-[rgba(255,255,255,0.8)] font-medium">{doc.name}</td>
-                    <td className="py-2 px-2 text-[rgba(255,255,255,0.45)]">{doc.category}</td>
+                  <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
+                    <td className="py-2 px-2 text-text-primary font-medium">{doc.name}</td>
+                    <td className="py-2 px-2 text-text-muted">{doc.category}</td>
                     <td className="py-2 px-2">{statusBadge(doc.status)}</td>
-                    <td className="py-2 px-2 font-mono text-[rgba(255,107,26,0.7)] text-body">{doc.date}</td>
+                    <td className="py-2 px-2 font-mono text-brand-orange text-body">{doc.date}</td>
                     <td className="py-2 px-2">
                       <div className="flex gap-2">
                         {doc.actions.map((a) => (
@@ -203,8 +203,8 @@ export default function DocumentsVaultPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
               <div>
-                <p className="text-xs font-semibold text-[rgba(255,255,255,0.85)]">Agency B Service Agreement</p>
-                <p className="text-micro text-[rgba(255,255,255,0.4)] mt-0.5">Sent Jan 22 · Waiting for client signature</p>
+                <p className="text-xs font-semibold text-text-primary">Agency B Service Agreement</p>
+                <p className="text-micro text-text-muted mt-0.5">Sent Jan 22 · Waiting for client signature</p>
               </div>
               <button
                 className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
@@ -215,8 +215,8 @@ export default function DocumentsVaultPage() {
             </div>
             <div className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
               <div>
-                <p className="text-xs font-semibold text-[rgba(255,255,255,0.85)]">Agency E Renewal Agreement</p>
-                <p className="text-micro text-[rgba(255,255,255,0.4)] mt-0.5">Draft · Not yet sent</p>
+                <p className="text-xs font-semibold text-text-primary">Agency E Renewal Agreement</p>
+                <p className="text-micro text-text-muted mt-0.5">Draft · Not yet sent</p>
               </div>
               <button
                 className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
@@ -240,7 +240,7 @@ export default function DocumentsVaultPage() {
                 className="flex items-center justify-between p-3 chamfer-4"
                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
-                <span className="text-xs text-[rgba(255,255,255,0.7)]">{t}</span>
+                <span className="text-xs text-text-primary">{t}</span>
                 <button
                   className="text-micro font-bold px-2 py-1 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110 ml-2 whitespace-nowrap"
                   style={{ background: 'rgba(255,107,26,0.12)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.25)' }}
@@ -254,7 +254,7 @@ export default function DocumentsVaultPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

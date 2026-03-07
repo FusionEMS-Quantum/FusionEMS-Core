@@ -10,8 +10,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -31,9 +31,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -50,7 +50,7 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
       <motion.div className="h-full rounded-full" style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
     </div>
   );
@@ -101,7 +101,7 @@ export default function ECSClusterHealth() {
               MODULE 10 · INFRASTRUCTURE
             </div>
             <h1 className="text-2xl font-bold uppercase tracking-widest text-text-primary">ECS Cluster Health</h1>
-            <p className="text-[12px] text-[rgba(255,255,255,0.4)] mt-1">
+            <p className="text-[12px] text-text-muted mt-1">
               Fargate cluster · task health · ALB metrics · auto scaling
             </p>
           </div>
@@ -141,7 +141,7 @@ export default function ECSClusterHealth() {
             <div className="overflow-x-auto">
               <table className="w-full text-body">
                 <thead>
-                  <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest border-b border-border-subtle">
+                  <tr className="text-text-muted uppercase tracking-widest border-b border-border-subtle">
                     <th className="text-left py-2 pr-4 font-semibold">Service</th>
                     <th className="text-right py-2 px-4 font-semibold">Tasks</th>
                     <th className="text-right py-2 px-4 font-semibold">CPU%</th>
@@ -152,8 +152,8 @@ export default function ECSClusterHealth() {
                 <tbody>
                   {SERVICES.map((s, i) => (
                     <tr key={s.name} className={`border-b border-border-subtle ${i % 2 === 0 ? 'bg-[rgba(255,255,255,0.01)]' : ''}`}>
-                      <td className="py-2.5 pr-4 font-semibold text-[rgba(255,255,255,0.8)]">{s.name}</td>
-                      <td className="py-2.5 px-4 text-right text-[rgba(255,255,255,0.6)]">{s.tasks}</td>
+                      <td className="py-2.5 pr-4 font-semibold text-text-primary">{s.name}</td>
+                      <td className="py-2.5 px-4 text-right text-text-secondary">{s.tasks}</td>
                       <td className="py-2.5 px-4 text-right" style={{ color: s.cpu > 60 ? 'var(--color-status-warning)' : 'var(--color-status-active)' }}>{s.cpu}%</td>
                       <td className="py-2.5 px-4 text-right" style={{ color: s.mem > 60 ? 'var(--color-status-warning)' : 'var(--color-status-active)' }}>{s.mem}%</td>
                       <td className="py-2.5 pl-4 text-right"><Badge label={s.status} status={s.status} /></td>
@@ -179,8 +179,8 @@ export default function ECSClusterHealth() {
                 { k: 'Scale-In Threshold',   v: '<30% CPU for 10 min' },
               ].map(({ k, v }) => (
                 <div key={k} className="flex justify-between items-center border-b border-border-subtle py-1.5">
-                  <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{k}</span>
-                  <span className="text-body font-semibold text-[rgba(255,255,255,0.8)]">{v}</span>
+                  <span className="text-body text-text-muted uppercase tracking-wider">{k}</span>
+                  <span className="text-body font-semibold text-text-primary">{v}</span>
                 </div>
               ))}
             </div>
@@ -204,15 +204,15 @@ export default function ECSClusterHealth() {
           <SectionHeader number="5" title="Health Check Status" sub="ALB target group health" />
           <Panel>
             <div className="space-y-2">
-              <div className="grid grid-cols-3 text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)] border-b border-border-subtle pb-2 mb-1">
+              <div className="grid grid-cols-3 text-micro font-semibold uppercase tracking-widest text-text-muted border-b border-border-subtle pb-2 mb-1">
                 <span>Endpoint</span>
                 <span className="text-center">Response Time</span>
                 <span className="text-right">Status</span>
               </div>
               {HEALTH_CHECKS.map((h) => (
                 <div key={h.endpoint} className="grid grid-cols-3 items-center py-1.5 border-b border-border-subtle">
-                  <span className="text-body font-semibold text-[rgba(255,255,255,0.75)]">{h.endpoint}</span>
-                  <span className="text-body text-[rgba(255,255,255,0.5)] text-center">{h.rt}</span>
+                  <span className="text-body font-semibold text-text-primary">{h.endpoint}</span>
+                  <span className="text-body text-text-secondary text-center">{h.rt}</span>
                   <span className="text-right"><Badge label={h.status} status={h.status} /></span>
                 </div>
               ))}
@@ -227,12 +227,12 @@ export default function ECSClusterHealth() {
             <div className="space-y-1.5">
               {LOGS.map((l, i) => (
                 <div key={i} className="flex items-start gap-3 py-1.5 border-b border-border-subtle last:border-0">
-                  <span className="text-micro text-[rgba(255,255,255,0.25)] whitespace-nowrap shrink-0">{l.ts}</span>
+                  <span className="text-micro text-text-muted whitespace-nowrap shrink-0">{l.ts}</span>
                   <span className="text-micro font-semibold text-system-cad whitespace-nowrap shrink-0 w-28">{l.svc}</span>
                   <span className="shrink-0">
                     <Badge label={l.level} status={l.level === 'WARN' ? 'warn' : 'info'} />
                   </span>
-                  <span className="text-body text-[rgba(255,255,255,0.6)]">{l.msg}</span>
+                  <span className="text-body text-text-secondary">{l.msg}</span>
                 </div>
               ))}
             </div>
@@ -243,12 +243,12 @@ export default function ECSClusterHealth() {
         <section>
           <SectionHeader number="7" title="Task History" sub="last 7 days" />
           <Panel>
-            <div className="text-body text-[rgba(255,255,255,0.4)] mb-4">Last 7 days — all tasks stable</div>
+            <div className="text-body text-text-muted mb-4">Last 7 days — all tasks stable</div>
             <div className="grid grid-cols-7 gap-2">
               {DAYS.map((day) => (
-                <div key={day} className="flex flex-col items-center gap-2 p-3 bg-[rgba(255,255,255,0.02)] border border-border-subtle"
+                <div key={day} className="flex flex-col items-center gap-2 p-3 bg-white/[0.02] border border-border-subtle"
                   style={{ clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)' }}>
-                  <span className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.35)]">{day}</span>
+                  <span className="text-micro uppercase tracking-widest text-text-muted">{day}</span>
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--color-status-active)', boxShadow: '0 0 6px color-mix(in srgb, var(--color-status-active) 53%, transparent)' }} />
                   <span className="text-micro font-bold" style={{ color: 'var(--q-green)' }}>8/8</span>
                 </div>

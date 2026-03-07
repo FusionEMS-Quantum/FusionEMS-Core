@@ -145,14 +145,14 @@ export default function FounderEmailPage() {
           {view !== 'compose' && (
             <button
               onClick={() => { setView('compose'); setSelected(null); }}
-              className="px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-[rgba(255,107,26,0.15)] border border-[rgba(255,107,26,0.3)] text-orange hover:bg-[rgba(255,107,26,0.25)] transition-colors"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-orange hover:bg-brand-orange/[0.25] transition-colors"
             >
               + Compose
             </button>
           )}
           <button
             onClick={() => load()}
-            className="px-3 py-2 text-xs font-semibold uppercase tracking-wider border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors"
+            className="px-3 py-2 text-xs font-semibold uppercase tracking-wider border border-border-DEFAULT text-text-secondary hover:text-text-primary transition-colors"
           >
             Refresh
           </button>
@@ -167,23 +167,23 @@ export default function FounderEmailPage() {
           {loading ? (
             <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
           ) : messages.length === 0 ? (
-            <div className="p-6 text-center text-xs text-[rgba(255,255,255,0.3)]">No messages</div>
+            <div className="p-6 text-center text-xs text-text-muted">No messages</div>
           ) : (
-            <div className="divide-y divide-[rgba(255,255,255,0.04)] max-h-[60vh] overflow-y-auto">
+            <div className="divide-y divide-white/[0.04] max-h-[60vh] overflow-y-auto">
               {messages.map((msg) => (
                 <button
                   key={msg.id}
                   onClick={() => openMessage(msg)}
-                  className={`w-full text-left px-3 py-3 hover:bg-[rgba(255,255,255,0.03)] transition-colors ${selected?.id === msg.id ? 'bg-[rgba(255,107,26,0.06)] border-l-2 border-orange' : ''}`}
+                  className={`w-full text-left px-3 py-3 hover:bg-white/[0.03] transition-colors ${selected?.id === msg.id ? 'bg-brand-orange/[0.06] border-l-2 border-orange' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-0.5">
-                    <span className={`text-body truncate ${msg.isRead ? 'text-[rgba(255,255,255,0.55)]' : 'text-text-primary font-semibold'}`}>
+                    <span className={`text-body truncate ${msg.isRead ? 'text-text-secondary' : 'text-text-primary font-semibold'}`}>
                       {msg.from?.emailAddress?.name || msg.from?.emailAddress?.address || 'Unknown'}
                     </span>
-                    <span className="text-micro text-[rgba(255,255,255,0.3)] whitespace-nowrap shrink-0">{formatDate(msg.receivedDateTime)}</span>
+                    <span className="text-micro text-text-muted whitespace-nowrap shrink-0">{formatDate(msg.receivedDateTime)}</span>
                   </div>
-                  <div className={`text-body truncate mb-0.5 ${msg.isRead ? 'text-[rgba(255,255,255,0.45)]' : 'text-[rgba(255,255,255,0.85)]'}`}>{msg.subject || '(no subject)'}</div>
-                  <div className="text-micro text-[rgba(255,255,255,0.28)] truncate">{msg.bodyPreview}</div>
+                  <div className={`text-body truncate mb-0.5 ${msg.isRead ? 'text-text-muted' : 'text-text-primary'}`}>{msg.subject || '(no subject)'}</div>
+                  <div className="text-micro text-text-muted truncate">{msg.bodyPreview}</div>
                   {msg.hasAttachments && <div className="text-micro text-status-warning mt-0.5">+ attachments</div>}
                 </button>
               ))}
@@ -202,10 +202,10 @@ export default function FounderEmailPage() {
                 <textarea className={`${inputCls} h-40 resize-none`} placeholder="Message body..." value={composeForm.body} onChange={(e) => setComposeForm((f) => ({ ...f, body: e.target.value }))} />
                 {sendError && <div className="text-xs text-red">{sendError}</div>}
                 <div className="flex gap-2">
-                  <button onClick={sendMail} disabled={sending} className="px-4 py-2 text-xs font-semibold uppercase bg-[rgba(255,107,26,0.2)] border border-[rgba(255,107,26,0.4)] text-orange hover:bg-[rgba(255,107,26,0.3)] disabled:opacity-40 transition-colors">
+                  <button onClick={sendMail} disabled={sending} className="px-4 py-2 text-xs font-semibold uppercase bg-brand-orange/[0.2] border border-brand-orange/[0.4] text-orange hover:bg-brand-orange/[0.3] disabled:opacity-40 transition-colors">
                     {sending ? 'Sending...' : 'Send'}
                   </button>
-                  <button onClick={() => setView('inbox')} className="px-4 py-2 text-xs font-semibold uppercase border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors">
+                  <button onClick={() => setView('inbox')} className="px-4 py-2 text-xs font-semibold uppercase border border-border-DEFAULT text-text-secondary hover:text-text-primary transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -220,9 +220,9 @@ export default function FounderEmailPage() {
                       {selected.hasAttachments && <Badge label="Attachments" color="var(--color-status-warning)" />}
                     </div>
                   </div>
-                  <div className="text-body text-[rgba(255,255,255,0.45)] space-y-0.5">
-                    <div><span className="text-[rgba(255,255,255,0.28)]">From: </span>{selected.from?.emailAddress?.name} &lt;{selected.from?.emailAddress?.address}&gt;</div>
-                    <div><span className="text-[rgba(255,255,255,0.28)]">Date: </span>{formatDate(selected.receivedDateTime)}</div>
+                  <div className="text-body text-text-muted space-y-0.5">
+                    <div><span className="text-text-muted">From: </span>{selected.from?.emailAddress?.name} &lt;{selected.from?.emailAddress?.address}&gt;</div>
+                    <div><span className="text-text-muted">Date: </span>{formatDate(selected.receivedDateTime)}</div>
                   </div>
                 </div>
                 <div className="flex-1 p-4 overflow-auto">
@@ -235,7 +235,7 @@ export default function FounderEmailPage() {
                       title="message-body"
                     />
                   ) : (
-                    <pre className="text-xs text-[rgba(255,255,255,0.7)] whitespace-pre-wrap">{selected.body?.content}</pre>
+                    <pre className="text-xs text-text-primary whitespace-pre-wrap">{selected.body?.content}</pre>
                   )}
                 </div>
                 {attachments.length > 0 && (
@@ -246,11 +246,11 @@ export default function FounderEmailPage() {
                         <button
                           key={att.id}
                           onClick={() => downloadAttachment(selected.id, att)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-body border border-border-DEFAULT text-[rgba(255,255,255,0.6)] hover:text-text-primary hover:border-[rgba(255,255,255,0.25)] transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-body border border-border-DEFAULT text-text-secondary hover:text-text-primary hover:border-white/[0.25] transition-colors"
                         >
                           <span>↓</span>
                           <span className="truncate max-w-[180px]">{att.name}</span>
-                          <span className="text-[9px] text-[rgba(255,255,255,0.3)]">({(att.size / 1024).toFixed(0)}KB)</span>
+                          <span className="text-[9px] text-text-muted">({(att.size / 1024).toFixed(0)}KB)</span>
                         </button>
                       ))}
                     </div>
@@ -266,10 +266,10 @@ export default function FounderEmailPage() {
                         onChange={(e) => setReplyBody(e.target.value)}
                       />
                       <div className="flex gap-2">
-                        <button onClick={sendReply} disabled={sending} className="px-4 py-1.5 text-xs font-semibold uppercase bg-[rgba(255,107,26,0.2)] border border-[rgba(255,107,26,0.4)] text-orange hover:bg-[rgba(255,107,26,0.3)] disabled:opacity-40 transition-colors">
+                        <button onClick={sendReply} disabled={sending} className="px-4 py-1.5 text-xs font-semibold uppercase bg-brand-orange/[0.2] border border-brand-orange/[0.4] text-orange hover:bg-brand-orange/[0.3] disabled:opacity-40 transition-colors">
                           {sending ? 'Sending...' : 'Reply'}
                         </button>
-                        <button onClick={() => setView('inbox')} className="px-4 py-1.5 text-xs font-semibold uppercase border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors">
+                        <button onClick={() => setView('inbox')} className="px-4 py-1.5 text-xs font-semibold uppercase border border-border-DEFAULT text-text-secondary hover:text-text-primary transition-colors">
                           Cancel
                         </button>
                       </div>
@@ -277,7 +277,7 @@ export default function FounderEmailPage() {
                   ) : (
                     <button
                       onClick={() => setView('reply')}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wider border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary hover:border-[rgba(255,255,255,0.25)] transition-colors"
+                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wider border border-border-DEFAULT text-text-secondary hover:text-text-primary hover:border-white/[0.25] transition-colors"
                     >
                       Reply
                     </button>
@@ -287,8 +287,8 @@ export default function FounderEmailPage() {
             ) : (
               <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center h-full p-12">
                 <div className="text-center">
-                  <div className="text-[rgba(255,255,255,0.15)] text-4xl mb-3">✉</div>
-                  <div className="text-xs text-[rgba(255,255,255,0.3)]">Select a message to read</div>
+                  <div className="text-text-muted text-4xl mb-3">✉</div>
+                  <div className="text-xs text-text-muted">Select a message to read</div>
                 </div>
               </motion.div>
             )}

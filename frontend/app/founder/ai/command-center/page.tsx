@@ -117,7 +117,7 @@ function RiskBar({ label, count, total, color }: { label: string; count: number;
   return (
     <div className="flex items-center gap-3">
       <div className="text-micro uppercase tracking-widest text-text-muted w-24 shrink-0">{label}</div>
-      <div className="flex-1 h-2 bg-[rgba(255,255,255,0.04)] rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
       </div>
       <div className="text-xs font-bold text-text-secondary w-8 text-right">{count}</div>
@@ -225,11 +225,11 @@ export default function AICommandCenterPage() {
             </Link>
           </div>
           {metrics.recent_reviews.length === 0 ? (
-            <div className="text-xs text-[rgba(255,255,255,0.4)] py-6 text-center">No pending reviews</div>
+            <div className="text-xs text-text-muted py-6 text-center">No pending reviews</div>
           ) : (
             <div className="space-y-2">
               {metrics.recent_reviews.map((item: ReviewEntry) => (
-                <div key={item.review_id} className="flex items-center justify-between gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+                <div key={item.review_id} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: priorityColor(item.priority) }} />
                     <span className="text-xs text-text-secondary truncate">{item.use_case_name} — {item.domain}</span>
@@ -247,11 +247,11 @@ export default function AICommandCenterPage() {
         <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
           <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-4">Top Governance Actions</div>
           {metrics.top_actions.length === 0 ? (
-            <div className="text-xs text-[rgba(255,255,255,0.4)] py-6 text-center">No governance actions</div>
+            <div className="text-xs text-text-muted py-6 text-center">No governance actions</div>
           ) : (
             <div className="space-y-2">
               {metrics.top_actions.map((ga: GovernanceAction, i: number) => (
-                <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+                <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-text-primary truncate">{ga.title}</div>
                     <div className="text-micro text-text-muted truncate">{ga.description}</div>

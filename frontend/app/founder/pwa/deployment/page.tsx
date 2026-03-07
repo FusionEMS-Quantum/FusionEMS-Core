@@ -60,7 +60,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-[rgba(255,255,255,0.07)] overflow-hidden w-full">
+    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
       <div
         className="h-full rounded-full transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
@@ -147,13 +147,13 @@ export default function DeploymentPage() {
                 {versionDist.map((row, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
                     <td className="py-3 pr-6 text-text-primary font-bold font-mono">{row.version}</td>
-                    <td className="py-3 pr-6 text-[rgba(255,255,255,0.7)]">{row.devices} devices</td>
+                    <td className="py-3 pr-6 text-text-primary">{row.devices} devices</td>
                     <td className="py-3 pr-6">
                       <div className="flex items-center gap-3">
                         <div className="w-24">
                           <ProgressBar value={parseFloat(row.pct)} max={100} color={badgeColors[row.status].color} />
                         </div>
-                        <span className="text-[rgba(255,255,255,0.55)]">{row.pct}</span>
+                        <span className="text-text-secondary">{row.pct}</span>
                       </div>
                     </td>
                     <td className="py-3"><Badge label={row.status === 'ok' ? 'Current' : row.status === 'warn' ? 'Outdated' : 'Legacy'} status={row.status} /></td>
@@ -171,7 +171,7 @@ export default function DeploymentPage() {
         <Panel>
           <div className="relative">
             {/* connector line */}
-            <div className="absolute left-[15px] top-4 bottom-4 w-px bg-[rgba(255,255,255,0.08)]" />
+            <div className="absolute left-[15px] top-4 bottom-4 w-px bg-white/[0.08]" />
             <div className="space-y-0">
               {pipeline.map((step, i) => (
                 <div key={i} className="flex items-start gap-4 py-3 border-b border-border-subtle last:border-0">
@@ -191,7 +191,7 @@ export default function DeploymentPage() {
                       <Badge label={step.status === 'ok' ? 'Passed' : step.status === 'warn' ? 'Warning' : 'Failed'} status={step.status} />
                     </div>
                     <div className="text-micro text-text-muted">{step.note}</div>
-                    <div className="text-micro text-[rgba(255,255,255,0.25)] font-mono mt-0.5">{step.ts}</div>
+                    <div className="text-micro text-text-muted font-mono mt-0.5">{step.ts}</div>
                   </div>
                 </div>
               ))}
@@ -217,8 +217,8 @@ export default function DeploymentPage() {
                 {deviceUpdates.map((d, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
                     <td className="py-2.5 pr-6 text-text-primary font-mono font-bold">{d.id}</td>
-                    <td className="py-2.5 pr-6 text-[rgba(255,255,255,0.7)] font-mono">{d.version}</td>
-                    <td className="py-2.5 pr-6 text-[rgba(255,255,255,0.55)]">{d.lastSeen}</td>
+                    <td className="py-2.5 pr-6 text-text-primary font-mono">{d.version}</td>
+                    <td className="py-2.5 pr-6 text-text-secondary">{d.lastSeen}</td>
                     <td className="py-2.5">
                       <Badge
                         label={d.updateStatus === 'ok' ? 'Up to date' : d.updateStatus === 'warn' ? 'Update available' : 'Needs update'}
@@ -239,7 +239,7 @@ export default function DeploymentPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {featureFlags.map((flag, i) => (
             <Panel key={i} className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[rgba(255,255,255,0.7)]">{flag.name}</span>
+              <span className="text-xs font-medium text-text-primary">{flag.name}</span>
               <Badge label={flag.enabled ? 'Enabled' : 'Disabled'} status={flag.enabled ? 'ok' : 'error'} />
             </Panel>
           ))}

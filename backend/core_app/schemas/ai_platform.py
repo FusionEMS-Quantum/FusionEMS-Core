@@ -9,11 +9,9 @@ from core_app.models.ai_platform import (
     AIConfidenceLevel,
     AIExplanationSeverity,
     AIExplanationSource,
-    AIGovernanceState,
     AIHumanReviewRequirement,
     AIOverrideState,
     AIRiskTier,
-    AIWorkflowState,
 )
 
 

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 const inputClass =
-  'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-text-primary placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-orange rounded-sm w-full';
+  'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-text-primary placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-orange chamfer-4 w-full';
 
 const MSA_SUMMARY = `MASTER SERVICE AGREEMENT — KEY TERMS SUMMARY
 
@@ -229,7 +229,7 @@ export default function LegalPage() {
   if (initLoading) {
     return (
       <div
-        className="rounded-sm border p-8 flex flex-col items-center justify-center gap-4"
+        className="chamfer-4 border p-8 flex flex-col items-center justify-center gap-4"
         style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)', minHeight: '300px' }}
       >
         <svg className="animate-spin h-8 w-8" viewBox="0 0 24 24" fill="none">
@@ -246,11 +246,11 @@ export default function LegalPage() {
   if (initError) {
     return (
       <div
-        className="rounded-sm border p-8"
+        className="chamfer-4 border p-8"
         style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
       >
         <div
-          className="rounded-sm border px-4 py-3 text-sm"
+          className="chamfer-4 border px-4 py-3 text-sm"
           style={{
             backgroundColor: 'rgba(255,59,59,0.08)',
             borderColor: 'rgba(255,59,59,0.3)',
@@ -272,7 +272,7 @@ export default function LegalPage() {
 
   return (
     <div
-      className="rounded-sm border p-6 md:p-8"
+      className="chamfer-4 border p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Header */}
@@ -291,7 +291,7 @@ export default function LegalPage() {
       {/* Packet status badge */}
       <div className="mb-5 flex items-center gap-2">
         <div
-          className="rounded-sm px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+          className="chamfer-4 px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
           style={{
             backgroundColor: 'rgba(34,211,238,0.1)',
             border: '1px solid rgba(34,211,238,0.25)',
@@ -316,7 +316,7 @@ export default function LegalPage() {
         </div>
         <div
           ref={msaRef}
-          className="rounded-sm border p-4 overflow-y-auto"
+          className="chamfer-4 border p-4 overflow-y-auto"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -338,7 +338,7 @@ export default function LegalPage() {
         </div>
         <div
           ref={baaRef}
-          className="rounded-sm border p-4 overflow-y-auto"
+          className="chamfer-4 border p-4 overflow-y-auto"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -352,7 +352,7 @@ export default function LegalPage() {
       {/* API Error Banner */}
       {apiError && (
         <div
-          className="mb-5 rounded-sm border px-4 py-3 text-sm"
+          className="mb-5 chamfer-4 border px-4 py-3 text-sm"
           style={{
             backgroundColor: 'rgba(255,59,59,0.08)',
             borderColor: 'rgba(255,59,59,0.3)',
@@ -366,7 +366,7 @@ export default function LegalPage() {
       <form onSubmit={handleSign} noValidate>
         {/* Checkboxes */}
         <div
-          className="rounded-sm border p-4 mb-5 space-y-3"
+          className="chamfer-4 border p-4 mb-5 space-y-3"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -402,7 +402,7 @@ export default function LegalPage() {
                   disabled={signing}
                 />
                 <div
-                  className="w-4 h-4 rounded-sm border flex items-center justify-center transition-colors"
+                  className="w-4 h-4 chamfer-4 border flex items-center justify-center transition-colors"
                   style={{
                     backgroundColor: item.checked ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.05)',
                     borderColor: item.checked ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.2)',
@@ -443,7 +443,7 @@ export default function LegalPage() {
           />
           {sigText && (
             <div
-              className="mt-2 px-3 py-2 rounded-sm border text-sm italic"
+              className="mt-2 px-3 py-2 chamfer-4 border text-sm italic"
               style={{
                 backgroundColor: 'rgba(255,107,26,0.04)',
                 borderColor: 'rgba(255,107,26,0.2)',
@@ -460,7 +460,7 @@ export default function LegalPage() {
         {/* Validation error */}
         {sigError && (
           <div
-            className="mb-4 rounded-sm border px-4 py-3 text-sm"
+            className="mb-4 chamfer-4 border px-4 py-3 text-sm"
             style={{
               backgroundColor: 'rgba(255,59,59,0.08)',
               borderColor: 'rgba(255,59,59,0.3)',
@@ -490,7 +490,7 @@ export default function LegalPage() {
           <button
             type="submit"
             disabled={signing}
-            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {signing ? (
               <span className="flex items-center gap-2">

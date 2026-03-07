@@ -20,8 +20,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/tech_copilot", tags=["Tech Assistant"])
 
-ANALYSIS_SYSTEM_PROMPT = """You are FusionEMS Tech Copilot — a sovereign-grade SRE assistant for a
-mission-critical EMS SaaS platform. Analyze the provided system health data and return ONLY valid JSON
+ANALYSIS_SYSTEM_PROMPT = """You are FusionEMS Tech Copilot — a sovereign-grade SRE assistant
+for a mission-critical EMS SaaS platform. Analyze the provided system health
+data and return ONLY valid JSON
 with exactly these fields:
 {
   "issue": "<concise issue title>",
@@ -72,7 +73,10 @@ def _heuristic_analysis(health_data: dict[str, Any] | None) -> dict[str, Any]:
             "source": red_services[0]["name"],
             "what_is_wrong": f"{names} {'is' if len(red_services) == 1 else 'are'} unreachable.",
             "why_it_matters": "Service outages block dispatch, billing, and patient records.",
-            "what_to_do_next": f"Investigate {red_services[0]['name']} connectivity and restart if needed.",
+            "what_to_do_next": (
+                f"Investigate {red_services[0]['name']} connectivity"
+                " and restart if needed."
+            ),
             "tech_context": f"Probe returned RED for: {names}",
             "human_review": "REQUIRED",
             "confidence": "HIGH",
@@ -87,7 +91,9 @@ def _heuristic_analysis(health_data: dict[str, Any] | None) -> dict[str, Any]:
             "what_is_wrong": f"{names} responding above 500ms threshold.",
             "why_it_matters": "High latency degrades real-time dispatch and crew communication.",
             "what_to_do_next": "Check connection pooling, query performance, and network routes.",
-            "tech_context": "Latencies: " + ", ".join(f"{s['name']}={s['latency_ms']}ms" for s in slow_services),
+            "tech_context": "Latencies: " + ", ".join(
+                f"{s['name']}={s['latency_ms']}ms" for s in slow_services
+            ),
             "human_review": "RECOMMENDED",
             "confidence": "HIGH",
         }
@@ -99,7 +105,10 @@ def _heuristic_analysis(health_data: dict[str, Any] | None) -> dict[str, Any]:
             "source": "PLATFORM AGGREGATE",
             "what_is_wrong": f"Platform health score is {score}%, below the 70% threshold.",
             "why_it_matters": "Degraded health increases risk of cascading failures.",
-            "what_to_do_next": "Review individual service statuses for gray or unconfigured services.",
+            "what_to_do_next": (
+                "Review individual service statuses"
+                " for gray or unconfigured services."
+            ),
             "tech_context": f"Score={score}, services={len(services)}",
             "human_review": "RECOMMENDED",
             "confidence": "HIGH",
@@ -148,7 +157,10 @@ async def analyze_issue(
             required = {"issue", "severity", "source", "what_is_wrong", "why_it_matters",
                         "what_to_do_next", "tech_context", "human_review", "confidence"}
             if required.issubset(result.keys()):
-                logger.info("Tech Copilot AI analysis completed", extra={"extra_fields": {"type": payload.type}})
+                logger.info(
+                    "Tech Copilot AI analysis completed",
+                    extra={"extra_fields": {"type": payload.type}},
+                )
                 return result
             logger.warning("AI response missing fields, falling back to heuristic")
         except Exception as exc:

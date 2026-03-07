@@ -60,7 +60,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-[rgba(255,255,255,0.07)] overflow-hidden w-full">
+    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
       <div
         className="h-full rounded-full transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
@@ -165,10 +165,10 @@ export default function SchedulingPage() {
                 {scheduleRows.map((row, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
                     <td className="py-2.5 pr-4 text-text-primary font-bold">{row.unit}</td>
-                    <td className="py-2.5 pr-4 text-[rgba(255,255,255,0.7)]">{row.lead}</td>
-                    <td className="py-2.5 pr-4 text-[rgba(255,255,255,0.55)]">{row.partner}</td>
-                    <td className="py-2.5 pr-4 text-[rgba(255,255,255,0.55)] font-mono">{row.start}</td>
-                    <td className="py-2.5 pr-4 text-[rgba(255,255,255,0.55)] font-mono">{row.end}</td>
+                    <td className="py-2.5 pr-4 text-text-primary">{row.lead}</td>
+                    <td className="py-2.5 pr-4 text-text-secondary">{row.partner}</td>
+                    <td className="py-2.5 pr-4 text-text-secondary font-mono">{row.start}</td>
+                    <td className="py-2.5 pr-4 text-text-secondary font-mono">{row.end}</td>
                     <td className="py-2.5"><Badge label={row.status} status={schedStatusMap[row.status]} /></td>
                   </tr>
                 ))}
@@ -203,7 +203,7 @@ export default function SchedulingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-xs font-bold text-text-primary mb-1">{shift.station}</div>
-                  <div className="text-body text-[rgba(255,255,255,0.55)] mb-1 font-mono">{shift.time}</div>
+                  <div className="text-body text-text-secondary mb-1 font-mono">{shift.time}</div>
                   <div className="flex items-center gap-2">
                     <span className="text-micro text-text-muted uppercase tracking-widest">Required:</span>
                     <Badge label={shift.cert} status="info" />
@@ -250,7 +250,7 @@ export default function SchedulingPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {appFeatures.map((feat, i) => (
             <Panel key={i} className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[rgba(255,255,255,0.7)]">{feat.name}</span>
+              <span className="text-xs font-medium text-text-primary">{feat.name}</span>
               <Badge label={feat.enabled ? 'Enabled' : 'Disabled'} status={feat.enabled ? 'ok' : 'error'} />
             </Panel>
           ))}

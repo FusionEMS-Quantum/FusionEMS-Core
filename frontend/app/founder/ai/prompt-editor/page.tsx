@@ -69,7 +69,7 @@ export default function PromptEditorPage() {
       </div>
 
       {error && (
-        <div className="bg-[rgba(255,45,45,0.08)] border border-[rgba(255,45,45,0.35)] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
+        <div className="bg-red-500/[0.08] border border-red-500/[0.35] p-3 chamfer-4 text-xs text-[var(--color-brand-red)]">
           {error}
         </div>
       )}
@@ -99,7 +99,7 @@ export default function PromptEditorPage() {
               value={editSystem}
               onChange={(e) => setEditSystem(e.target.value)}
               rows={8}
-              className="w-full bg-bg-void border border-border-DEFAULT p-3 text-xs text-text-primary font-mono resize-y chamfer-4 focus:border-[rgba(255,107,26,0.5)] focus:outline-none"
+              className="w-full bg-bg-void border border-border-DEFAULT p-3 text-xs text-text-primary font-mono resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
             />
           </div>
 
@@ -109,14 +109,14 @@ export default function PromptEditorPage() {
               value={editUser}
               onChange={(e) => setEditUser(e.target.value)}
               rows={6}
-              className="w-full bg-bg-void border border-border-DEFAULT p-3 text-xs text-text-primary font-mono resize-y chamfer-4 focus:border-[rgba(255,107,26,0.5)] focus:outline-none"
+              className="w-full bg-bg-void border border-border-DEFAULT p-3 text-xs text-text-primary font-mono resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
             />
           </div>
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="text-micro uppercase tracking-widest font-bold px-4 py-2 chamfer-4 border transition-colors hover:bg-[rgba(255,107,26,0.12)] disabled:opacity-50"
+            className="text-micro uppercase tracking-widest font-bold px-4 py-2 chamfer-4 border transition-colors hover:bg-brand-orange/[0.12] disabled:opacity-50"
             style={{ color: 'var(--color-brand-orange)', borderColor: 'rgba(255,107,26,0.35)' }}
           >
             {saving ? 'Saving...' : 'Save & Version'}
@@ -125,7 +125,7 @@ export default function PromptEditorPage() {
       ) : templates.length === 0 ? (
         <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-10 text-center">
           <div className="text-sm text-text-muted">No prompt templates configured</div>
-          <p className="text-xs text-[rgba(255,255,255,0.3)] mt-1">Create prompt templates via the API to manage them here.</p>
+          <p className="text-xs text-text-muted mt-1">Create prompt templates via the API to manage them here.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -136,7 +136,7 @@ export default function PromptEditorPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
               onClick={() => selectTemplate(tpl)}
-              className="w-full text-left bg-bg-panel border border-border-DEFAULT p-4 flex items-center justify-between gap-3 hover:border-[rgba(255,255,255,0.18)] transition-colors"
+              className="w-full text-left bg-bg-panel border border-border-DEFAULT p-4 flex items-center justify-between gap-3 hover:border-white/[0.18] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
             >
               <div className="min-w-0">

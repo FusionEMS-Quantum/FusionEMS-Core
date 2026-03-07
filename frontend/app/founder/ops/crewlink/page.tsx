@@ -23,7 +23,7 @@ const PAGING_FLOW = ['ALERT_CREATED','TARGETS_RESOLVED','PUSH_SENT','PUSH_DELIVE
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] chamfer-8 p-4 ${className}`}>
+    <div className={`bg-white/[0.03] border border-white/[0.08] chamfer-8 p-4 ${className}`}>
       {children}
     </div>
   );
@@ -129,11 +129,11 @@ export default function CrewLinkPagingPage() {
         <div>
           <Link href="/founder/ops" className="text-body text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">CrewLink Paging</h1>
-          <p className="text-sm text-[rgba(255,255,255,0.45)] mt-1">
+          <p className="text-sm text-text-muted mt-1">
             Android push paging · ACK/Accept/Decline · Escalation · Backup crew · Audit
           </p>
         </div>
-        <div className="px-3 py-2 chamfer-4-xl border border-[rgba(255,107,26,0.4)] bg-[rgba(255,107,26,0.1)]">
+        <div className="px-3 py-2 chamfer-4-xl border border-brand-orange/[0.4] bg-brand-orange/[0.1]">
           <div className="text-micro uppercase tracking-wider text-orange-400">Boundary Enforced</div>
           <div className="text-body text-white">Operations only · No billing content</div>
         </div>
@@ -141,19 +141,19 @@ export default function CrewLinkPagingPage() {
 
       {/* ── Paging Flow ── */}
       <Panel>
-        <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Paging State Flow</div>
+        <div className="text-micro uppercase tracking-widest text-text-muted mb-3">Paging State Flow</div>
         <div className="flex flex-wrap gap-1.5">
           {PAGING_FLOW.map((s, i) => (
             <span key={s} className="flex items-center gap-1">
               <StateBadge state={s} />
-              {i < PAGING_FLOW.length - 1 && <span className="text-[rgba(255,255,255,0.2)] text-xs">→</span>}
+              {i < PAGING_FLOW.length - 1 && <span className="text-text-muted text-xs">→</span>}
             </span>
           ))}
-          <span className="text-[rgba(255,255,255,0.2)] text-xs mx-1">or</span>
+          <span className="text-text-muted text-xs mx-1">or</span>
           <StateBadge state="DECLINED" />
-          <span className="text-[rgba(255,255,255,0.2)] text-xs">→</span>
+          <span className="text-text-muted text-xs">→</span>
           <StateBadge state="ESCALATED" />
-          <span className="text-[rgba(255,255,255,0.2)] text-xs">→</span>
+          <span className="text-text-muted text-xs">→</span>
           <StateBadge state="BACKUP_ALERT_SENT" />
         </div>
       </Panel>
@@ -168,34 +168,34 @@ export default function CrewLinkPagingPage() {
         ].map(item => (
           <div key={item.label} className="chamfer-4-xl p-4 border text-center" style={{ background: item.bg, borderColor: item.color + '44' }}>
             <div className="text-3xl font-black" style={{ color: item.color }}>{item.value}</div>
-            <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.5)] mt-1">{item.label}</div>
+            <div className="text-micro uppercase tracking-widest text-text-secondary mt-1">{item.label}</div>
           </div>
         ))}
       </div>
 
       {/* ── New Alert ── */}
       <Panel>
-        <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Send CrewLink Page</div>
+        <div className="text-micro uppercase tracking-widest text-text-muted mb-3">Send CrewLink Page</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
           <input value={newAlert.mission_id} onChange={e => setNewAlert(p => ({ ...p, mission_id: e.target.value }))}
             placeholder="Mission ID *"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-text-text-muted" />
           <input value={newAlert.mission_title} onChange={e => setNewAlert(p => ({ ...p, mission_title: e.target.value }))}
             placeholder="Mission title"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-text-text-muted" />
           <input value={newAlert.mission_address} onChange={e => setNewAlert(p => ({ ...p, mission_address: e.target.value }))}
             placeholder="Incident address *"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-text-text-muted" />
           <select value={newAlert.service_level} onChange={e => setNewAlert(p => ({ ...p, service_level: e.target.value }))}
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400">
+            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400">
             {['BLS','ALS','CCT','HEMS'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <input value={newAlert.chief_complaint} onChange={e => setNewAlert(p => ({ ...p, chief_complaint: e.target.value }))}
             placeholder="Chief complaint"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-text-text-muted" />
           <input value={newAlert.target_crew_ids} onChange={e => setNewAlert(p => ({ ...p, target_crew_ids: e.target.value }))}
             placeholder="Crew IDs (comma separated)"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-blue-400 placeholder-text-text-muted" />
         </div>
         <button onClick={createAlert} disabled={creating || !newAlert.mission_id || !newAlert.mission_address}
           className="px-6 py-2 bg-blue-700 text-white text-sm font-bold chamfer-8 hover:bg-blue-600 disabled:opacity-40 transition-colors">
@@ -206,7 +206,7 @@ export default function CrewLinkPagingPage() {
       {/* ── Filter ── */}
       <div className="flex items-center gap-2">
         {['active','all'].map(f => (
-          <button key={f} onClick={() => setFilterState(f)} className={`px-3 py-1.5 chamfer-8 text-body font-bold uppercase tracking-wide ${filterState === f ? 'bg-blue-700 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>
+          <button key={f} onClick={() => setFilterState(f)} className={`px-3 py-1.5 chamfer-8 text-body font-bold uppercase tracking-wide ${filterState === f ? 'bg-blue-700 text-white' : 'bg-white/[0.06] text-text-secondary'}`}>
             {f}
           </button>
         ))}
@@ -214,11 +214,11 @@ export default function CrewLinkPagingPage() {
 
       {/* ── Alert List ── */}
       <div className="space-y-2">
-        {loading && <div className="text-sm text-[rgba(255,255,255,0.4)] p-4">Loading alerts…</div>}
+        {loading && <div className="text-sm text-text-muted p-4">Loading alerts…</div>}
         {!loading && alerts.length === 0 && (
-          <div className="text-center py-10 chamfer-4-xl border border-[rgba(255,255,255,0.08)]">
+          <div className="text-center py-10 chamfer-4-xl border border-white/[0.08]">
             <div className="text-3xl mb-2">📟</div>
-            <div className="text-sm text-[rgba(255,255,255,0.45)]">No paging alerts. Use the form above to send a page.</div>
+            <div className="text-sm text-text-muted">No paging alerts. Use the form above to send a page.</div>
           </div>
         )}
         {alerts.map(alert => {
@@ -228,22 +228,22 @@ export default function CrewLinkPagingPage() {
           const isAccepted = d.state === 'ACCEPTED';
 
           return (
-            <div key={alert.id} className={`chamfer-4-xl border overflow-hidden ${isEscalated ? 'border-red-500/40' : isAccepted ? 'border-green-500/30' : 'border-[rgba(255,255,255,0.08)]'}`}>
+            <div key={alert.id} className={`chamfer-4-xl border overflow-hidden ${isEscalated ? 'border-red-500/40' : isAccepted ? 'border-green-500/30' : 'border-white/[0.08]'}`}>
               <button onClick={() => setSelected(isSelected ? null : alert)}
-                className="w-full flex items-center gap-4 p-4 text-left hover:bg-[rgba(255,255,255,0.03)] transition-colors">
+                className="w-full flex items-center gap-4 p-4 text-left hover:bg-white/[0.03] transition-colors">
                 <div className="flex-shrink-0 text-center w-16">
                   <StateBadge state={d.state} />
                   {d.is_backup && <div className="text-[9px] text-orange-400 mt-1 uppercase font-bold">BACKUP</div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-white">{d.mission_title || d.mission_id?.slice(0, 8)}</div>
-                  <div className="text-body text-[rgba(255,255,255,0.5)]">{d.mission_address}</div>
-                  {d.chief_complaint && <div className="text-body text-[rgba(255,255,255,0.4)]">{d.chief_complaint}</div>}
+                  <div className="text-body text-text-secondary">{d.mission_address}</div>
+                  {d.chief_complaint && <div className="text-body text-text-muted">{d.chief_complaint}</div>}
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-right">
-                    <div className="text-micro text-[rgba(255,255,255,0.4)]">{d.service_level} · {d.priority}</div>
-                    <div className="text-micro text-[rgba(255,255,255,0.3)]">{d.target_crew_ids?.length ?? 0} crew paged</div>
+                    <div className="text-micro text-text-muted">{d.service_level} · {d.priority}</div>
+                    <div className="text-micro text-text-muted">{d.target_crew_ids?.length ?? 0} crew paged</div>
                   </div>
                   {isEscalated && !isSelected && (
                     <button onClick={e => { e.stopPropagation(); escalate(alert.id); }}
@@ -251,27 +251,27 @@ export default function CrewLinkPagingPage() {
                       ESCALATE
                     </button>
                   )}
-                  <span className="text-[rgba(255,255,255,0.2)] text-sm">{isSelected ? '▲' : '▼'}</span>
+                  <span className="text-text-muted text-sm">{isSelected ? '▲' : '▼'}</span>
                 </div>
               </button>
 
               {isSelected && (
-                <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.06)] space-y-4">
+                <div className="px-4 pb-4 border-t border-white/[0.06] space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Alert ID</div>
+                      <div className="text-micro uppercase tracking-wider text-text-muted">Alert ID</div>
                       <div className="text-body text-white font-mono">{alert.id.slice(0, 16)}</div>
                     </div>
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">ACK Deadline</div>
+                      <div className="text-micro uppercase tracking-wider text-text-muted">ACK Deadline</div>
                       <div className="text-body text-white">{d.ack_deadline ? new Date(d.ack_deadline).toLocaleTimeString() : '—'}</div>
                     </div>
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Accept Deadline</div>
+                      <div className="text-micro uppercase tracking-wider text-text-muted">Accept Deadline</div>
                       <div className="text-body text-white">{d.accept_deadline ? new Date(d.accept_deadline).toLocaleTimeString() : '—'}</div>
                     </div>
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Accepted By</div>
+                      <div className="text-micro uppercase tracking-wider text-text-muted">Accepted By</div>
                       <div className="text-body text-green-400">{d.accepted_by || '—'}</div>
                     </div>
                   </div>
@@ -279,11 +279,11 @@ export default function CrewLinkPagingPage() {
                   <div className="flex gap-2">
                     {!['ACCEPTED','CLOSED'].includes(d.state) && (
                       <button onClick={() => escalate(alert.id)}
-                        className="px-4 py-1.5 bg-[rgba(229,57,53,0.15)] border border-[rgba(229,57,53,0.3)] text-red-400 text-body font-bold chamfer-8 hover:bg-[rgba(229,57,53,0.2)]">
+                        className="px-4 py-1.5 bg-red-600/[0.15] border border-red-600/[0.3] text-red-400 text-body font-bold chamfer-8 hover:bg-red-600/[0.2]">
                         🔺 Escalate Now
                       </button>
                     )}
-                    <Link href={`/founder/ops/crewlink`} className="px-4 py-1.5 bg-[rgba(41,182,246,0.1)] border border-[rgba(41,182,246,0.3)] text-blue-400 text-body font-bold chamfer-8 hover:bg-[rgba(41,182,246,0.15)]">
+                    <Link href={`/founder/ops/crewlink`} className="px-4 py-1.5 bg-blue-400/[0.1] border border-blue-400/[0.3] text-blue-400 text-body font-bold chamfer-8 hover:bg-blue-400/[0.15]">
                       View Full Audit →
                     </Link>
                   </div>

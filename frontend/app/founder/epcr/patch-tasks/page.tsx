@@ -85,7 +85,7 @@ export default function PatchTasksPage() {
   if (loading) {
     return (
       <div className="p-5 min-h-screen bg-bg-void flex items-center">
-        <span className="text-xs text-[rgba(255,255,255,0.3)]">Loading patch tasks...</span>
+        <span className="text-xs text-text-muted">Loading patch tasks...</span>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function PatchTasksPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · PATCH TASKS
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Patch Tasks</h1>
@@ -108,16 +108,16 @@ export default function PatchTasksPage() {
           return (
             <div key={col.key} className="flex flex-col gap-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.5)]">
+                <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
                   {col.label}
                 </span>
-                <span className="text-micro bg-bg-input border border-border-DEFAULT text-[rgba(255,255,255,0.4)] px-2 py-0.5">
+                <span className="text-micro bg-bg-input border border-border-DEFAULT text-text-muted px-2 py-0.5">
                   {colTasks.length}
                 </span>
               </div>
               <div className="space-y-2 min-h-[120px]">
                 {colTasks.length === 0 && (
-                  <div className="text-body text-[rgba(255,255,255,0.2)] italic pt-2">No tasks</div>
+                  <div className="text-body text-text-muted italic pt-2">No tasks</div>
                 )}
                 {colTasks.map((task) => {
                   const d = task.data || {};
@@ -142,12 +142,12 @@ export default function PatchTasksPage() {
                         )}
                       </div>
                       {d.description && (
-                        <p className="text-body text-[rgba(255,255,255,0.45)] leading-tight">
+                        <p className="text-body text-text-muted leading-tight">
                           {d.description.length > 100 ? `${d.description.slice(0, 100)}...` : d.description}
                         </p>
                       )}
                       {d.steps && d.steps.length > 0 && (
-                        <div className="text-micro text-[rgba(255,255,255,0.3)]">
+                        <div className="text-micro text-text-muted">
                           {d.steps.length} step{d.steps.length !== 1 ? 's' : ''}
                         </div>
                       )}
@@ -157,7 +157,7 @@ export default function PatchTasksPage() {
                             key={ns}
                             onClick={() => updateStatus(task.id, ns)}
                             disabled={isUpdating}
-                            className="text-micro bg-bg-input border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] px-2 py-0.5 hover:border-[rgba(34,211,238,0.3)] hover:text-system-billing disabled:opacity-40 transition-colors"
+                            className="text-micro bg-bg-input border border-white/[0.12] text-text-secondary px-2 py-0.5 hover:border-cyan-500/[0.3] hover:text-system-billing disabled:opacity-40 transition-colors"
                           >
                             → {ns.replace('_', ' ')}
                           </button>
@@ -173,7 +173,7 @@ export default function PatchTasksPage() {
       </div>
 
       <div className="pt-2">
-        <a href="/founder/epcr" className="text-xs text-[rgba(34,211,238,0.6)] hover:text-system-billing">
+        <a href="/founder/epcr" className="text-xs text-system-billing hover:text-system-billing">
           ← Back to ePCR
         </a>
       </div>

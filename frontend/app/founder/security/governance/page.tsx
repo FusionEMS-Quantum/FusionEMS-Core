@@ -66,9 +66,9 @@ function TrustBadge({ label, status, count }: { label: string; status: string; c
 function TimelineRow({ time, actor, action, level }: { time: string; actor: string; action: string; level: string }) {
   const c = STATUS_COLOR[severity(level)];
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+    <div className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: c }} />
-      <span className="text-micro text-[rgba(255,255,255,0.35)] font-mono w-16 flex-shrink-0">{time}</span>
+      <span className="text-micro text-text-muted font-mono w-16 flex-shrink-0">{time}</span>
       <span className="text-xs text-text-secondary flex-1">{actor} — {action}</span>
     </div>
   );
@@ -85,7 +85,7 @@ function NextActionCard({ rank, title, why, action, severity: sev }: { rank: num
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
         <span className="text-xs font-bold text-text-primary">{title}</span>
       </div>
-      <p className="text-body text-[rgba(255,255,255,0.5)] mb-2">{why}</p>
+      <p className="text-body text-text-secondary mb-2">{why}</p>
       <p className="text-body font-semibold" style={{ color: c }}>→ {action}</p>
     </motion.div>
   );
@@ -96,8 +96,8 @@ function MeterBar({ label, value, max, color }: { label: string; value: number; 
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-micro text-[rgba(255,255,255,0.45)] w-24 flex-shrink-0">{label}</span>
-      <div className="flex-1 h-2 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+      <span className="text-micro text-text-muted w-24 flex-shrink-0">{label}</span>
+      <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
         <motion.div className="h-full rounded-full" style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
       </div>
       <span className="text-xs font-semibold text-text-primary w-10 text-right">{value}</span>
@@ -193,11 +193,11 @@ export default function GovernanceCommandPage() {
           <p className="text-xs text-text-muted mt-0.5">Security · Audit · PHI · Interoperability · Policy — Real-Time</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/founder/security/access-logs" className="h-8 px-3 bg-[rgba(229,57,53,0.12)] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-[rgba(229,57,53,0.2)] transition-colors flex items-center gap-1.5">
+          <Link href="/founder/security/access-logs" className="h-8 px-3 bg-red-600/[0.12] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-red-600/[0.2] transition-colors flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-red animate-pulse" />
             Access Logs
           </Link>
-          <Link href="/founder/security/role-builder" className="h-8 px-3 bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.25)] text-system-compliance text-xs font-semibold chamfer-4 hover:bg-[rgba(168,85,247,0.15)] transition-colors flex items-center">
+          <Link href="/founder/security/role-builder" className="h-8 px-3 bg-purple-500/[0.1] border border-purple-500/[0.25] text-system-compliance text-xs font-semibold chamfer-4 hover:bg-purple-500/[0.15] transition-colors flex items-center">
             Role Builder
           </Link>
         </div>
@@ -214,7 +214,7 @@ export default function GovernanceCommandPage() {
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-micro font-bold text-orange-dim font-mono">MODULE 01</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Trust Scores</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">Trust Scores</h2>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
@@ -230,7 +230,7 @@ export default function GovernanceCommandPage() {
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-micro font-bold text-orange-dim font-mono">MODULE 02</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Status Badges</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">Status Badges</h2>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -246,7 +246,7 @@ export default function GovernanceCommandPage() {
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-micro font-bold text-orange-dim font-mono">MODULE 03</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Activity Meters</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">Activity Meters</h2>
               </div>
             </div>
             <div className="bg-bg-panel border border-border-DEFAULT p-4 space-y-3" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
@@ -262,12 +262,12 @@ export default function GovernanceCommandPage() {
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-micro font-bold text-orange-dim font-mono">MODULE 04</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Sensitive Access Timeline</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">Sensitive Access Timeline</h2>
               </div>
             </div>
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               {timeline.length === 0 ? (
-                <div className="text-xs text-[rgba(255,255,255,0.4)]">No recent sensitive access events.</div>
+                <div className="text-xs text-text-muted">No recent sensitive access events.</div>
               ) : (
                 timeline.map((e, i) => <TimelineRow key={i} {...e} />)
               )}
@@ -279,8 +279,8 @@ export default function GovernanceCommandPage() {
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-micro font-bold text-orange-dim font-mono">MODULE 05</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Next Best Actions</h2>
-                <span className="text-xs text-[rgba(255,255,255,0.35)]">Top 3 priorities</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">Next Best Actions</h2>
+                <span className="text-xs text-text-muted">Top 3 priorities</span>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -293,7 +293,7 @@ export default function GovernanceCommandPage() {
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
                 <span className="text-micro font-bold text-orange-dim font-mono">MODULE 06</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Simple Mode</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">Simple Mode</h2>
               </div>
             </div>
             <div className="bg-bg-panel border border-border-DEFAULT p-5 space-y-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
@@ -307,7 +307,7 @@ export default function GovernanceCommandPage() {
               </div>
               <div>
                 <div className="text-micro font-bold uppercase tracking-widest text-orange-dim mb-1">WHY IT MATTERS</div>
-                <div className="text-sm text-[rgba(255,255,255,0.65)]">
+                <div className="text-sm text-text-primary">
                   {summary && summary.health_score < 80
                     ? 'Your trust score is below optimal. This means there are open security or compliance gaps that could put your agency at risk during audits or incidents.'
                     : 'Your agency is operating within healthy security and compliance boundaries. Good posture.'}
@@ -330,7 +330,7 @@ export default function GovernanceCommandPage() {
               { href: '/founder/security/field-masking', label: 'Field Masking', color: 'var(--q-red)' },
               { href: '/founder/security/policy-sandbox', label: 'Policy Sandbox', color: 'var(--q-red)' },
             ].map((l) => (
-              <Link key={l.href} href={l.href} className="block bg-bg-panel border border-border-DEFAULT p-4 hover:border-[rgba(255,255,255,0.18)] transition-colors text-center" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+              <Link key={l.href} href={l.href} className="block bg-bg-panel border border-border-DEFAULT p-4 hover:border-white/[0.18] transition-colors text-center" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
                 <div className="text-xs font-bold" style={{ color: l.color }}>{l.label}</div>
               </Link>
             ))}

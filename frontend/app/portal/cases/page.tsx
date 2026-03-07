@@ -716,7 +716,7 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
             <ul className="space-y-1">
               {result.issues.map((issue, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-0.5 text-[10px]" style={{ color: 'var(--q-red)' }}>&#x25CF;</span>
+                  <span className="mt-0.5 text-micro" style={{ color: 'var(--q-red)' }}>&#x25CF;</span>
                   <span className="text-body text-text-secondary">{issue}</span>
                 </li>
               ))}

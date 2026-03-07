@@ -27,7 +27,7 @@ function KpiCard({
   
   const inner = (
     <div
-      className="bg-bg-panel border border-border-DEFAULT p-4 h-full flex flex-col justify-between hover:border-[rgba(255,107,26,0.3)] transition-colors cursor-pointer group"
+      className="bg-bg-panel border border-border-DEFAULT p-4 h-full flex flex-col justify-between hover:border-brand-orange/[0.3] transition-colors cursor-pointer group"
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
       <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-2">{label}</div>
@@ -52,8 +52,8 @@ function SectionHeader({ title, sub, number }: { title: string; sub?: string; nu
     <div className="hud-rail pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -65,7 +65,7 @@ function RiskCard({ label, items }: { label: string; items: { text: string; leve
     <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
       <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">{label}</div>
       {items.length === 0 ? (
-          <div className="text-xs text-[rgba(255,255,255,0.4)]">No data available</div>
+          <div className="text-xs text-text-muted">No data available</div>
       ) : (
         <div className="space-y-1.5">
           {items.map((item, i) => (
@@ -97,11 +97,11 @@ function DenialHeatCell({ value, max }: { value: number; max: number }) {
 function ActionItemRow({ rank, text, category, urgency }: { rank: number; text: string; category: string; urgency: 'high' | 'medium' | 'low' }) {
   const urgencyColor = { high: 'var(--color-brand-red)', medium: 'var(--color-status-warning)', low: 'var(--color-status-active)' };
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
       <span className="text-micro font-bold text-orange-dim font-mono w-5">{rank}</span>
       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: urgencyColor[urgency] }} />
-      <span className="flex-1 text-xs text-[rgba(255,255,255,0.75)]">{text}</span>
-      <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)] bg-[rgba(255,255,255,0.05)] px-2 py-0.5 chamfer-4">
+      <span className="flex-1 text-xs text-text-primary">{text}</span>
+      <span className="text-micro uppercase tracking-wider text-text-muted bg-white/5 px-2 py-0.5 chamfer-4">
         {category}
       </span>
     </div>
@@ -112,8 +112,8 @@ function GrowthVelocityBar({ label, value, max }: { label: string; value: number
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-micro text-[rgba(255,255,255,0.45)] w-10 flex-shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+      <span className="text-micro text-text-muted w-10 flex-shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{ background: 'var(--color-brand-orange)' }}
@@ -182,16 +182,16 @@ export default function FounderExecutivePage() {
           <p className="text-xs text-text-muted mt-0.5">Executive Command Overview · Real-Time Backend Hooked System</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/founder/comms/inbox" className="h-8 px-3 bg-[rgba(34,211,238,0.1)] border border-[rgba(34,211,238,0.25)] text-system-billing text-xs font-semibold chamfer-4 hover:bg-[rgba(34,211,238,0.15)] transition-colors flex items-center gap-1.5">
+          <Link href="/founder/comms/inbox" className="h-8 px-3 bg-cyan-500/[0.1] border border-cyan-500/[0.25] text-system-billing text-xs font-semibold chamfer-4 hover:bg-cyan-500/[0.15] transition-colors flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-system-billing animate-pulse" />
             Communications
           </Link>
-          <Link href="/founder/ai/review-queue" className="h-8 px-3 bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.25)] text-system-compliance text-xs font-semibold chamfer-4 hover:bg-[rgba(168,85,247,0.15)] transition-colors flex items-center">
+          <Link href="/founder/ai/review-queue" className="h-8 px-3 bg-purple-500/[0.1] border border-purple-500/[0.25] text-system-compliance text-xs font-semibold chamfer-4 hover:bg-purple-500/[0.15] transition-colors flex items-center">
             AI Queue
           </Link>
           <button
             onClick={() => setIncidentMode(true)}
-            className="h-8 px-3 bg-[rgba(229,57,53,0.12)] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-[rgba(229,57,53,0.2)] transition-colors"
+            className="h-8 px-3 bg-red-600/[0.12] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-red-600/[0.2] transition-colors"
           >
             Incident Mode
           </button>
@@ -240,9 +240,9 @@ export default function FounderExecutivePage() {
             <table className="w-full min-w-[600px] text-xs">
               <thead>
                 <tr>
-                  <th className="text-left text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] pb-2 pr-4 font-semibold">Payer</th>
+                  <th className="text-left text-micro uppercase tracking-wider text-text-muted pb-2 pr-4 font-semibold">Payer</th>
                   {(Object.keys(denialHeatmap[0]).filter(k => k !== 'payer') as string[]).map((m) => (
-                    <th key={m} className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] pb-2 px-1 font-semibold">{m}</th>
+                    <th key={m} className="text-micro uppercase tracking-wider text-text-muted pb-2 px-1 font-semibold">{m}</th>
                   ))}
                 </tr>
               </thead>
@@ -278,14 +278,14 @@ export default function FounderExecutivePage() {
         <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
           <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Module 7 · Compliance Readiness</div>
           {!complianceGauges || complianceGauges.length === 0 ? (
-             <div className="text-xs text-[rgba(255,255,255,0.4)]">Data synchronizing from API</div>
+             <div className="text-xs text-text-muted">Data synchronizing from API</div>
           ) : complianceGauges.map((item) => (
             <div key={item.label} className="mb-2">
               <div className="flex justify-between text-body mb-0.5">
-                <span className="text-[rgba(255,255,255,0.55)]">{item.label}</span>
+                <span className="text-text-secondary">{item.label}</span>
                 <span className="font-semibold" style={{ color: item.color }}>{item.value}%</span>
               </div>
-              <div className="h-1 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+              <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${item.value}%`, background: item.color }} />
               </div>
             </div>
@@ -299,10 +299,10 @@ export default function FounderExecutivePage() {
         {actionBriefs.length === 0 ? (
           <QuantumEmptyState title="No active AI briefs" description="Your AI co-pilot has no pending critical items." icon="activity" />
         ) : (
-            <div className="bg-bg-panel border border-[rgba(255,107,26,0.15)] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
+            <div className="bg-bg-panel border border-brand-orange/[0.15] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange animate-pulse" />
-                <span className="text-micro font-bold uppercase tracking-widest text-[rgba(255,107,26,0.8)]">Quantum Intelligence Brief — Today</span>
+                <span className="text-micro font-bold uppercase tracking-widest text-brand-orange">Quantum Intelligence Brief — Today</span>
               </div>
               {actionBriefs.map((b: any, rank: number) => (
                  <ActionItemRow key={rank} rank={rank+1} text={b.text} category={b.category} urgency={b.urgency} />
@@ -315,19 +315,19 @@ export default function FounderExecutivePage() {
       <div>
         <SectionHeader number="14" title="System Incident Status" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="bg-[rgba(76,175,80,0.08)] border border-[rgba(76,175,80,0.2)] p-3 flex items-center gap-3" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+          <div className="bg-green-500/[0.08] border border-green-500/[0.2] p-3 flex items-center gap-3" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
             <span className="text-status-active text-xl font-black">✓</span>
             <div>
               <div className="text-xs font-semibold text-status-active">All Systems Operational</div>
-              <div className="text-body text-[rgba(255,255,255,0.4)]">No active incidents · Last checked moments ago</div>
+              <div className="text-body text-text-muted">No active incidents · Last checked moments ago</div>
             </div>
           </div>
           <div className="bg-bg-panel border border-border-DEFAULT p-3" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
-            <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] mb-2">Recent Incidents</div>
+            <div className="text-micro uppercase tracking-wider text-text-muted mb-2">Recent Incidents</div>
             {systemIncidents.length === 0 ? (
-                <div className="text-xs text-[rgba(255,255,255,0.4)]">No incidents in the last 30 days</div>
+                <div className="text-xs text-text-muted">No incidents in the last 30 days</div>
             ) : (
-                systemIncidents.map((inc: any, idx: number) => <div key={idx} className="text-xs text-[rgba(255,255,255,0.7)]">{inc.text}</div>)
+                systemIncidents.map((inc: any, idx: number) => <div key={idx} className="text-xs text-text-primary">{inc.text}</div>)
             )}
           </div>
         </div>
@@ -338,9 +338,9 @@ export default function FounderExecutivePage() {
         <SectionHeader number="15" title="Growth Velocity" sub="30 / 90 / 365 day view" />
         <div className="bg-bg-panel border border-border-DEFAULT p-5 grid grid-cols-1 md:grid-cols-2 gap-6" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
           <div>
-            <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] mb-3">Tenant Growth</div>
+            <div className="text-micro uppercase tracking-wider text-text-muted mb-3">Tenant Growth</div>
             {growthMetrics.tenants.length === 0 ? (
-                <div className="text-xs text-[rgba(255,255,255,0.4)]">Awaiting telemetry...</div>
+                <div className="text-xs text-text-muted">Awaiting telemetry...</div>
             ) : (
                 <div className="space-y-2">
                 {growthMetrics.tenants.map((t: any) => (
@@ -350,9 +350,9 @@ export default function FounderExecutivePage() {
             )}
           </div>
           <div>
-            <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] mb-3">Revenue Growth ($)</div>
+            <div className="text-micro uppercase tracking-wider text-text-muted mb-3">Revenue Growth ($)</div>
             {growthMetrics.revenue.length === 0 ? (
-                <div className="text-xs text-[rgba(255,255,255,0.4)]">Awaiting telemetry...</div>
+                <div className="text-xs text-text-muted">Awaiting telemetry...</div>
             ) : (
                 <div className="space-y-2">
                 {growthMetrics.revenue.map((r: any) => (
@@ -389,7 +389,7 @@ export default function FounderExecutivePage() {
               style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
             >
               <span className="text-[9px] font-bold font-mono" style={{ color: d.color }}>DOMAIN {d.mod}</span>
-              <span className="text-xs font-semibold text-[rgba(255,255,255,0.75)] group-hover:text-text-primary transition-colors">{d.label}</span>
+              <span className="text-xs font-semibold text-text-primary group-hover:text-text-primary transition-colors">{d.label}</span>
             </Link>
           ))}
         </div>

@@ -13,9 +13,8 @@ from typing import Any
 import redis.asyncio as aioredis
 import sqlalchemy
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from core_app.api.dependencies import db_session_dependency, get_current_user
+from core_app.api.dependencies import get_current_user
 from core_app.core.config import get_settings
 from core_app.db.session import async_engine
 from core_app.schemas.auth import CurrentUser
@@ -36,7 +35,10 @@ async def _probe_db() -> dict[str, Any]:
     except Exception as exc:
         logger.warning("DB probe failed: %s", exc)
         latency = int((time.monotonic() - start) * 1000)
-        return {"name": "PostgreSQL", "status": "RED", "latency_ms": latency, "uptime": "unreachable"}
+        return {
+            "name": "PostgreSQL", "status": "RED",
+            "latency_ms": latency, "uptime": "unreachable",
+        }
 
 
 async def _probe_redis() -> dict[str, Any]:

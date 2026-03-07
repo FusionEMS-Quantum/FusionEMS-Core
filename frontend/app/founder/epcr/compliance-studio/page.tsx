@@ -201,7 +201,7 @@ export default function ComplianceStudioPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · COMPLIANCE STUDIO
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Compliance Studio</h1>
@@ -211,7 +211,7 @@ export default function ComplianceStudioPage() {
       </div>
 
       <div className="bg-bg-panel border border-border-DEFAULT p-4 space-y-2">
-        <div className="text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-3">Pack Status</div>
+        <div className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">Pack Status</div>
         {packLoading ? (
           <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
         ) : (
@@ -244,10 +244,10 @@ export default function ComplianceStudioPage() {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        <div className="text-[rgba(255,255,255,0.5)] text-sm mb-2">
+        <div className="text-text-secondary text-sm mb-2">
           Drop NEMSIS resource files here (XSD, Schematron, StateDataSet, ZIP)
         </div>
-        <div className="text-[rgba(255,255,255,0.3)] text-xs mb-4">or click to browse</div>
+        <div className="text-text-muted text-xs mb-4">or click to browse</div>
         <input
           ref={dropFileInputRef}
           type="file"
@@ -257,17 +257,17 @@ export default function ComplianceStudioPage() {
         />
         <button
           onClick={() => dropFileInputRef.current?.click()}
-          className="bg-bg-input border border-[rgba(34,211,238,0.3)] text-system-billing text-xs px-4 py-2 hover:bg-[rgba(34,211,238,0.08)] transition-colors"
+          className="bg-bg-input border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 hover:bg-cyan-500/[0.08] transition-colors"
         >
           Browse Files
         </button>
         {uploadStatus && (
-          <div className="mt-3 text-xs text-[rgba(255,255,255,0.6)]">{uploadStatus}</div>
+          <div className="mt-3 text-xs text-text-secondary">{uploadStatus}</div>
         )}
       </div>
 
       <div className="bg-bg-panel border border-border-DEFAULT p-4 space-y-3">
-        <div className="text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Validate XML File</div>
+        <div className="text-xs font-bold uppercase tracking-wider text-text-secondary">Validate XML File</div>
         <div className="flex items-center gap-3">
           <input
             ref={fileInputRef}
@@ -278,7 +278,7 @@ export default function ComplianceStudioPage() {
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="bg-bg-input border border-border-strong text-[rgba(255,255,255,0.6)] text-xs px-3 py-2 hover:border-[rgba(255,255,255,0.3)] transition-colors"
+            className="bg-bg-input border border-border-strong text-text-secondary text-xs px-3 py-2 hover:border-white/[0.3] transition-colors"
           >
             {validationFile ? validationFile.name : 'Choose XML file'}
           </button>
@@ -313,7 +313,7 @@ export default function ComplianceStudioPage() {
             </div>
             <button
               onClick={sendAllToAgent}
-              className="text-xs bg-bg-panel border border-[rgba(34,211,238,0.3)] text-system-billing px-3 py-1.5 hover:bg-[rgba(34,211,238,0.08)] transition-colors"
+              className="text-xs bg-bg-panel border border-cyan-500/[0.3] text-system-billing px-3 py-1.5 hover:bg-cyan-500/[0.08] transition-colors"
             >
               Send All to Agent
             </button>
@@ -333,7 +333,7 @@ export default function ComplianceStudioPage() {
                   </span>
                   <span className="text-xs font-mono text-system-billing">{issue.element_id}</span>
                   {issue.ui_section && (
-                    <span className="text-micro text-[rgba(255,255,255,0.4)]">{issue.ui_section}</span>
+                    <span className="text-micro text-text-muted">{issue.ui_section}</span>
                   )}
                   {issue.rule_source && (
                     <span
@@ -343,9 +343,9 @@ export default function ComplianceStudioPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[rgba(255,255,255,0.75)]">{issue.plain_message}</p>
+                <p className="text-xs text-text-primary">{issue.plain_message}</p>
                 {issue.fix_hint && (
-                  <p className="text-body text-[rgba(255,255,255,0.4)] italic">{issue.fix_hint}</p>
+                  <p className="text-body text-text-muted italic">{issue.fix_hint}</p>
                 )}
                 <div>
                   <button
@@ -357,17 +357,17 @@ export default function ComplianceStudioPage() {
                   </button>
                 </div>
                 {aiExplanations[idx] && (
-                  <div className="mt-2 bg-bg-input border border-[rgba(34,211,238,0.15)] p-3 space-y-2">
+                  <div className="mt-2 bg-bg-input border border-cyan-500/[0.15] p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-micro font-bold text-system-billing">AI EXPLANATION</span>
                       <span className="text-micro bg-purple-900 text-purple-300 px-2 py-0.5 font-bold">
                         {aiExplanations[idx]!.fix_type}
                       </span>
                     </div>
-                    <p className="text-xs text-[rgba(255,255,255,0.7)]">{aiExplanations[idx]!.plain_explanation}</p>
+                    <p className="text-xs text-text-primary">{aiExplanations[idx]!.plain_explanation}</p>
                     {aiExplanations[idx]!.patch_task?.steps?.length > 0 && (
                       <div>
-                        <div className="text-micro text-[rgba(255,255,255,0.4)] mb-1 uppercase tracking-wider">Steps</div>
+                        <div className="text-micro text-text-muted mb-1 uppercase tracking-wider">Steps</div>
                         <ol className="space-y-1 list-decimal list-inside">
                           {aiExplanations[idx]!.patch_task.steps.map((step, si) => (
                             <li key={si} className="text-body text-text-secondary">{step}</li>
@@ -384,13 +384,13 @@ export default function ComplianceStudioPage() {
       )}
 
       <div className="bg-bg-panel border border-border-DEFAULT p-4">
-        <div className="text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-3">
+        <div className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">
           Certification Checklist
         </div>
         {certLoading ? (
           <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
         ) : certChecks.length === 0 ? (
-          <div className="text-xs text-[rgba(255,255,255,0.3)]">No checklist data available</div>
+          <div className="text-xs text-text-muted">No checklist data available</div>
         ) : (
           <div className="space-y-1.5">
             {certChecks.map((check, idx) => (
@@ -406,7 +406,7 @@ export default function ComplianceStudioPage() {
       </div>
 
       <div className="pt-2">
-        <a href="/founder/epcr" className="text-xs text-[rgba(34,211,238,0.6)] hover:text-system-billing">
+        <a href="/founder/epcr" className="text-xs text-system-billing hover:text-system-billing">
           ← Back to ePCR
         </a>
       </div>

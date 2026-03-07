@@ -310,7 +310,7 @@ export default function SupportInboxPage() {
           {/* Thread list */}
           <div className="flex-1 overflow-y-auto">
             {filteredThreads.length === 0 && (
-              <div className="p-4 text-body text-[rgba(255,255,255,0.3)] text-center mt-8">
+              <div className="p-4 text-body text-text-muted text-center mt-8">
                 No threads in this view
               </div>
             )}
@@ -320,7 +320,7 @@ export default function SupportInboxPage() {
                 <button
                   key={thread.id}
                   onClick={() => setActiveThread(thread)}
-                  className="w-full text-left px-3 py-3 border-b border-[rgba(255,255,255,0.05)] transition-colors hover:bg-[rgba(255,255,255,0.03)]"
+                  className="w-full text-left px-3 py-3 border-b border-white/5 transition-colors hover:bg-white/[0.03]"
                   style={{
                     background: isActive ? 'rgba(255,107,26,0.06)' : 'transparent',
                     borderLeft: isActive ? '3px solid var(--color-brand-orange)' : '3px solid transparent',
@@ -343,10 +343,10 @@ export default function SupportInboxPage() {
                     )}
                   </div>
                   <div className="flex items-end justify-between gap-2">
-                    <p className="text-body text-[rgba(255,255,255,0.45)] leading-snug flex-1 min-w-0 truncate">
+                    <p className="text-body text-text-muted leading-snug flex-1 min-w-0 truncate">
                       {lastPreview(thread)}
                     </p>
-                    <span className="text-micro text-[rgba(255,255,255,0.28)] whitespace-nowrap flex-shrink-0">
+                    <span className="text-micro text-text-muted whitespace-nowrap flex-shrink-0">
                       {relativeTime(thread.updated_at)}
                     </span>
                   </div>
@@ -361,8 +361,8 @@ export default function SupportInboxPage() {
           {!activeThread ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
-                <div className="text-3xl text-[rgba(255,255,255,0.06)]">{'\u25B8'}</div>
-                <p className="text-body text-[rgba(255,255,255,0.3)] uppercase tracking-wider">
+                <div className="text-3xl text-white/[0.06]">{'\u25B8'}</div>
+                <p className="text-body text-text-muted uppercase tracking-wider">
                   Select a thread
                 </p>
               </div>
@@ -412,7 +412,7 @@ export default function SupportInboxPage() {
               {/* AI Summary collapsible panel */}
               {summary && (
                 <div
-                  className="border-b border-[rgba(34,211,238,0.15)]"
+                  className="border-b border-cyan-500/[0.15]"
                   style={{ background: 'rgba(34,211,238,0.04)' }}
                 >
                   <button
@@ -422,12 +422,12 @@ export default function SupportInboxPage() {
                     <span className="text-micro font-semibold uppercase tracking-wider text-system-billing">
                       AI Summary
                     </span>
-                    <span className="text-micro text-[rgba(255,255,255,0.35)]">
+                    <span className="text-micro text-text-muted">
                       {summaryOpen ? '▲ Collapse' : '▼ Expand'}
                     </span>
                   </button>
                   {summaryOpen && (
-                    <div className="px-4 pb-3 text-body text-[rgba(255,255,255,0.7)] leading-relaxed">
+                    <div className="px-4 pb-3 text-body text-text-primary leading-relaxed">
                       {summary}
                     </div>
                   )}
@@ -437,12 +437,12 @@ export default function SupportInboxPage() {
               {/* Messages list */}
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {loadingMessages && (
-                  <div className="text-center text-body text-[rgba(255,255,255,0.3)] py-8">
+                  <div className="text-center text-body text-text-muted py-8">
                     Loading messages…
                   </div>
                 )}
                 {!loadingMessages && messages.length === 0 && (
-                  <div className="text-center text-body text-[rgba(255,255,255,0.3)] py-8">
+                  <div className="text-center text-body text-text-muted py-8">
                     No messages yet
                   </div>
                 )}
@@ -466,7 +466,7 @@ export default function SupportInboxPage() {
                         {msg.content}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5 px-0.5">
-                        <span className="text-micro text-[rgba(255,255,255,0.3)] uppercase tracking-wider">
+                        <span className="text-micro text-text-muted uppercase tracking-wider">
                           {msg.sender_role}
                         </span>
                         <span className="text-micro text-text-disabled">
@@ -490,7 +490,7 @@ export default function SupportInboxPage() {
                     }}
                     placeholder="Type a reply… (Ctrl+Enter to send)"
                     rows={3}
-                    className="flex-1 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none resize-none placeholder:text-text-disabled focus:border-[rgba(255,107,26,0.4)]"
+                    className="flex-1 bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none resize-none placeholder:text-text-disabled focus:border-brand-orange/40"
                   />
                   <button
                     onClick={sendReply}

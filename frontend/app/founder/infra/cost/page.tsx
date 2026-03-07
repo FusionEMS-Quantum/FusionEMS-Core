@@ -10,8 +10,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -36,9 +36,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
       className="bg-bg-panel border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -57,7 +57,7 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
       <motion.div
         className="h-full rounded-full"
         style={{ background: color }}
@@ -145,7 +145,7 @@ export default function InfraCostPage() {
             MODULE 10 · INFRASTRUCTURE
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-text-primary">Infrastructure Cost Dashboard</h1>
-          <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">
+          <p className="text-xs text-text-muted mt-1">
             AWS spend · service breakdown · budget tracking · optimization
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function InfraCostPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest text-micro">
+                <tr className="text-text-muted uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Service</th>
                   <th className="text-left pb-2 pr-4 font-semibold">MTD Cost</th>
                   <th className="text-left pb-2 pr-4 font-semibold">% of Total</th>
@@ -183,9 +183,9 @@ export default function InfraCostPage() {
               <tbody>
                 {SERVICES.map((svc) => (
                   <tr key={svc.name} className="border-t border-border-subtle">
-                    <td className="py-2 pr-4 text-[rgba(255,255,255,0.8)]">{svc.name}</td>
-                    <td className="py-2 pr-4 font-mono text-[rgba(255,255,255,0.7)]">${svc.mtd}</td>
-                    <td className="py-2 pr-4 text-[rgba(255,255,255,0.5)]">{svc.pct}</td>
+                    <td className="py-2 pr-4 text-text-primary">{svc.name}</td>
+                    <td className="py-2 pr-4 font-mono text-text-primary">${svc.mtd}</td>
+                    <td className="py-2 pr-4 text-text-secondary">{svc.pct}</td>
                     <td className="py-2 pr-4" style={{ color: svc.trendColor }}>{svc.mom}</td>
                     <td className="py-2"><TrendIcon trend={svc.trend} color={svc.trendColor} /></td>
                   </tr>
@@ -203,11 +203,11 @@ export default function InfraCostPage() {
           <div className="space-y-3">
             {MONTHS.map((m) => (
               <div key={m.label} className="flex items-center gap-3">
-                <span className="text-body font-mono text-[rgba(255,255,255,0.4)] w-8 flex-shrink-0">{m.label}</span>
+                <span className="text-body font-mono text-text-muted w-8 flex-shrink-0">{m.label}</span>
                 <div className="flex-1">
                   <ProgressBar value={m.cost} max={1500} color="var(--color-text-muted)" />
                 </div>
-                <span className="text-body font-mono text-[rgba(255,255,255,0.6)] w-14 text-right flex-shrink-0">${m.cost.toLocaleString()}</span>
+                <span className="text-body font-mono text-text-secondary w-14 text-right flex-shrink-0">${m.cost.toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -219,38 +219,38 @@ export default function InfraCostPage() {
         <SectionHeader number="4" title="Reserved vs On-Demand" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Panel>
-            <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-3">Current Savings</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Current Savings</div>
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="text-xs text-[rgba(255,255,255,0.75)]">RDS Reserved</div>
-                  <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">1-year reserved instance active</div>
+                  <div className="text-xs text-text-primary">RDS Reserved</div>
+                  <div className="text-body text-text-muted mt-0.5">1-year reserved instance active</div>
                 </div>
                 <span className="text-sm font-bold text-status-active">-$85/mo</span>
               </div>
-              <div className="border-t border-[rgba(255,255,255,0.05)] pt-3 flex justify-between items-start">
+              <div className="border-t border-white/5 pt-3 flex justify-between items-start">
                 <div>
-                  <div className="text-xs text-[rgba(255,255,255,0.75)]">Fargate Spot</div>
-                  <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">18% of tasks on Spot pricing</div>
+                  <div className="text-xs text-text-primary">Fargate Spot</div>
+                  <div className="text-body text-text-muted mt-0.5">18% of tasks on Spot pricing</div>
                 </div>
-                <span className="text-body font-mono text-[rgba(255,255,255,0.5)]">18%</span>
+                <span className="text-body font-mono text-text-secondary">18%</span>
               </div>
             </div>
           </Panel>
           <Panel>
-            <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-3">Optimization Potential</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Optimization Potential</div>
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="text-xs text-[rgba(255,255,255,0.75)]">Full RDS Reservation</div>
-                  <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">Reserve remaining on-demand instances</div>
+                  <div className="text-xs text-text-primary">Full RDS Reservation</div>
+                  <div className="text-body text-text-muted mt-0.5">Reserve remaining on-demand instances</div>
                 </div>
                 <span className="text-sm font-bold text-status-warning">+$42/mo</span>
               </div>
-              <div className="border-t border-[rgba(255,255,255,0.05)] pt-3 flex justify-between items-start">
+              <div className="border-t border-white/5 pt-3 flex justify-between items-start">
                 <div>
-                  <div className="text-xs text-[rgba(255,255,255,0.75)]">Fargate Savings Plan</div>
-                  <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">Commit to hourly compute spend</div>
+                  <div className="text-xs text-text-primary">Fargate Savings Plan</div>
+                  <div className="text-body text-text-muted mt-0.5">Commit to hourly compute spend</div>
                 </div>
                 <span className="text-sm font-bold text-status-warning">+$100/mo</span>
               </div>
@@ -281,7 +281,7 @@ export default function InfraCostPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest text-micro">
+                <tr className="text-text-muted uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Tenant</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Exports/mo</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Compute hrs</th>
@@ -291,10 +291,10 @@ export default function InfraCostPage() {
               <tbody>
                 {TENANTS.map((t) => (
                   <tr key={t.name} className="border-t border-border-subtle">
-                    <td className="py-2 pr-4 font-mono text-[rgba(255,255,255,0.7)]">{t.name}</td>
-                    <td className="py-2 pr-4 font-mono text-[rgba(255,255,255,0.55)]">{t.exports}</td>
-                    <td className="py-2 pr-4 font-mono text-[rgba(255,255,255,0.55)]">{t.compute}</td>
-                    <td className="py-2 font-mono font-semibold text-[rgba(255,255,255,0.75)]">{t.cost}</td>
+                    <td className="py-2 pr-4 font-mono text-text-primary">{t.name}</td>
+                    <td className="py-2 pr-4 font-mono text-text-secondary">{t.exports}</td>
+                    <td className="py-2 pr-4 font-mono text-text-secondary">{t.compute}</td>
+                    <td className="py-2 font-mono font-semibold text-text-primary">{t.cost}</td>
                   </tr>
                 ))}
               </tbody>
@@ -309,10 +309,10 @@ export default function InfraCostPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {OPTIMIZATIONS.map((opt, i) => (
             <Panel key={i}>
-              <div className="text-xs font-bold text-[rgba(255,255,255,0.85)] mb-1">{opt.title}</div>
-              <div className="text-body text-[rgba(255,255,255,0.45)] mb-3 leading-relaxed">{opt.desc}</div>
+              <div className="text-xs font-bold text-text-primary mb-1">{opt.title}</div>
+              <div className="text-body text-text-muted mb-3 leading-relaxed">{opt.desc}</div>
               <div className="flex items-center gap-2">
-                <span className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)]">Est. Saving</span>
+                <span className="text-micro font-semibold uppercase tracking-widest text-text-muted">Est. Saving</span>
                 <span className="text-xs font-bold text-status-active">{opt.saving}</span>
               </div>
             </Panel>

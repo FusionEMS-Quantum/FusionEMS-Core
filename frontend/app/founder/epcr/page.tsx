@@ -45,7 +45,7 @@ export default function EpcrPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           DOMAIN · ePCR & NEMSIS
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">ePCR &amp; NEMSIS</h1>
@@ -58,18 +58,18 @@ export default function EpcrPage() {
           <motion.div key={l.href} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <Link
               href={l.href}
-              className="block bg-bg-panel border border-border-DEFAULT p-5 hover:border-[rgba(34,211,238,0.3)] transition-colors"
+              className="block bg-bg-panel border border-border-DEFAULT p-5 hover:border-cyan-500/[0.3] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
             >
               <div className="text-sm font-bold mb-1" style={{ color: l.color }}>
                 {l.label}
               </div>
-              <div className="text-xs text-[rgba(255,255,255,0.45)]">{l.desc}</div>
+              <div className="text-xs text-text-muted">{l.desc}</div>
             </Link>
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[rgba(34,211,238,0.6)] hover:text-system-billing">
+      <Link href="/founder" className="text-xs text-system-billing hover:text-system-billing">
         ← Back to Founder Command OS
       </Link>
     </div>

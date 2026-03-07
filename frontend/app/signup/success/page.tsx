@@ -50,7 +50,7 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
           <div key={step.key} className="flex items-center gap-3">
             {/* Icon */}
             <div
-              className="flex-shrink-0 w-7 h-7 rounded-sm flex items-center justify-center"
+              className="flex-shrink-0 w-7 h-7 chamfer-4 flex items-center justify-center"
               style={{
                 backgroundColor: isDone
                   ? 'rgba(76,175,80,0.15)'
@@ -100,7 +100,7 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
 
             {isActive && (
               <span
-                className="ml-1 text-xs px-1.5 py-0.5 rounded-sm"
+                className="ml-1 text-xs px-1.5 py-0.5 chamfer-4"
                 style={{
                   backgroundColor: 'rgba(255,107,26,0.12)',
                   border: '1px solid rgba(255,107,26,0.25)',
@@ -179,19 +179,19 @@ export default function SuccessPage() {
 
   return (
     <div
-      className="rounded-sm border p-6 md:p-8"
+      className="chamfer-4 border p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Top success banner */}
       <div
-        className="rounded-sm border px-5 py-4 mb-6 flex items-start gap-4"
+        className="chamfer-4 border px-5 py-4 mb-6 flex items-start gap-4"
         style={{
           backgroundColor: isComplete ? 'rgba(76,175,80,0.08)' : 'rgba(255,107,26,0.06)',
           borderColor:     isComplete ? 'rgba(76,175,80,0.3)'  : 'rgba(255,107,26,0.2)',
         }}
       >
         <div
-          className="flex-shrink-0 w-10 h-10 rounded-sm flex items-center justify-center mt-0.5"
+          className="flex-shrink-0 w-10 h-10 chamfer-4 flex items-center justify-center mt-0.5"
           style={{
             backgroundColor: isComplete ? 'rgba(76,175,80,0.15)' : 'rgba(255,107,26,0.15)',
             border: isComplete ? '1px solid rgba(76,175,80,0.4)' : '1px solid rgba(255,107,26,0.4)',
@@ -227,7 +227,7 @@ export default function SuccessPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
         {/* Left: Provisioning steps */}
         <div
-          className="rounded-sm border p-5"
+          className="chamfer-4 border p-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.08)' }}
         >
           <div
@@ -266,7 +266,7 @@ export default function SuccessPage() {
           {/* Current step detail */}
           {statusData?.current_step && (
             <div
-              className="mt-3 text-xs px-2.5 py-1.5 rounded-sm"
+              className="mt-3 text-xs px-2.5 py-1.5 chamfer-4"
               style={{
                 backgroundColor: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.06)',
@@ -280,7 +280,7 @@ export default function SuccessPage() {
           {/* Poll error */}
           {pollError && (
             <div
-              className="mt-3 text-xs px-2.5 py-1.5 rounded-sm"
+              className="mt-3 text-xs px-2.5 py-1.5 chamfer-4"
               style={{
                 backgroundColor: 'rgba(255,59,59,0.06)',
                 border: '1px solid rgba(255,59,59,0.2)',
@@ -307,7 +307,7 @@ export default function SuccessPage() {
 
         {/* Right: Info panel */}
         <div
-          className="rounded-sm border p-5"
+          className="chamfer-4 border p-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.08)' }}
         >
           <div
@@ -353,7 +353,7 @@ export default function SuccessPage() {
             ].map((item, idx) => (
               <div key={idx} className="flex items-start gap-3">
                 <div
-                  className="flex-shrink-0 w-6 h-6 rounded-sm flex items-center justify-center mt-0.5"
+                  className="flex-shrink-0 w-6 h-6 chamfer-4 flex items-center justify-center mt-0.5"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.08)',
@@ -400,7 +400,7 @@ export default function SuccessPage() {
       {/* Provisioning error */}
       {currentStatus === 'error' && statusData?.error_message && (
         <div
-          className="rounded-sm border px-4 py-3 text-sm mb-5"
+          className="chamfer-4 border px-4 py-3 text-sm mb-5"
           style={{
             backgroundColor: 'rgba(255,59,59,0.08)',
             borderColor: 'rgba(255,59,59,0.3)',
@@ -425,7 +425,7 @@ export default function SuccessPage() {
         {isComplete ? (
           <button
             onClick={() => router.push('/login')}
-            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors rounded-sm"
+            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4"
           >
             Login Now →
           </button>

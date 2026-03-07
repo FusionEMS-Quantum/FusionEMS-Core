@@ -148,22 +148,22 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
-        className="bg-bg-base border border-[rgba(255,255,255,0.12)] chamfer-4 p-5 w-full max-w-sm shadow-2xl"
+        className="bg-bg-base border border-white/[0.12] chamfer-4 p-5 w-full max-w-sm shadow-2xl"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.7)' }}
       >
         <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary mb-2">{title}</h3>
-        <p className="text-body text-[rgba(255,255,255,0.55)] mb-4 leading-relaxed">{message}</p>
+        <p className="text-body text-text-secondary mb-4 leading-relaxed">{message}</p>
         {children && <div className="mb-4">{children}</div>}
         {title.toLowerCase().includes('revoke') && (
           <div className="mb-4">
-            <label className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.4)] block mb-1">
+            <label className="text-micro uppercase tracking-wider text-text-muted block mb-1">
               Reason (required)
             </label>
             <input
               value={extra}
               onChange={(e) => setExtra(e.target.value)}
               placeholder="Enter revocation reason…"
-              className="w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-[rgba(255,255,255,0.2)]"
+              className="w-full bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-muted"
             />
           </div>
         )}
@@ -237,7 +237,7 @@ function DetailDrawer({
           </div>
           <button
             onClick={onClose}
-            className="text-[rgba(255,255,255,0.4)] hover:text-text-primary transition-colors text-lg leading-none"
+            className="text-text-muted hover:text-text-primary transition-colors text-lg leading-none"
           >
             ✕
           </button>
@@ -252,10 +252,10 @@ function DetailDrawer({
             <div className="space-y-2.5">
               {fields.map(({ label, value }) => (
                 <div key={label} className="flex items-start justify-between gap-3">
-                  <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] flex-shrink-0 mt-0.5">
+                  <span className="text-micro uppercase tracking-wider text-text-muted flex-shrink-0 mt-0.5">
                     {label}
                   </span>
-                  <span className="text-xs text-[rgba(255,255,255,0.8)] text-right font-mono break-all">
+                  <span className="text-xs text-text-primary text-right font-mono break-all">
                     {value}
                   </span>
                 </div>
@@ -266,11 +266,11 @@ function DetailDrawer({
           {/* Status */}
           <div className="flex items-center justify-between py-3 border-y border-border-subtle">
             <div className="flex flex-col gap-1.5">
-              <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Status</span>
+              <span className="text-micro uppercase tracking-wider text-text-muted">Status</span>
               <StatusBadge status={app.status} />
             </div>
             <div className="flex flex-col gap-1.5 items-end">
-              <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Legal</span>
+              <span className="text-micro uppercase tracking-wider text-text-muted">Legal</span>
               <LegalBadge legalStatus={app.legal_status} />
             </div>
           </div>
@@ -281,9 +281,9 @@ function DetailDrawer({
               Legal Packet Sign Events
             </p>
             {loadingEvents ? (
-              <p className="text-body text-[rgba(255,255,255,0.3)]">Loading events…</p>
+              <p className="text-body text-text-muted">Loading events…</p>
             ) : signEvents.length === 0 ? (
-              <p className="text-body text-[rgba(255,255,255,0.3)]">No sign events recorded</p>
+              <p className="text-body text-text-muted">No sign events recorded</p>
             ) : (
               <div className="space-y-2">
                 {signEvents.map((ev, i) => (
@@ -304,15 +304,15 @@ function DetailDrawer({
                       )}
                     </div>
                     <div className="pb-1">
-                      <p className="text-body font-semibold text-[rgba(255,255,255,0.8)] uppercase tracking-wide">
+                      <p className="text-body font-semibold text-text-primary uppercase tracking-wide">
                         {ev.event_type}
                       </p>
                       {ev.signer_name && (
-                        <p className="text-micro text-[rgba(255,255,255,0.45)]">
+                        <p className="text-micro text-text-muted">
                           {ev.signer_name}{ev.signer_email ? ` · ${ev.signer_email}` : ''}
                         </p>
                       )}
-                      <p className="text-micro font-mono text-[rgba(255,255,255,0.3)]">
+                      <p className="text-micro font-mono text-text-muted">
                         {new Date(ev.occurred_at).toLocaleString()}
                       </p>
                     </div>
@@ -593,7 +593,7 @@ export default function OnboardingControlPage() {
             key={s.label}
             className="bg-bg-base border border-border-DEFAULT chamfer-4 p-3"
           >
-            <div className="text-[9px] uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">
+            <div className="text-[9px] uppercase tracking-widest text-text-muted mb-1">
               {s.label}
             </div>
             <div className="text-2xl font-bold" style={{ color: s.color }}>
@@ -608,7 +608,7 @@ export default function OnboardingControlPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)]"
+          className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40"
           style={{ minWidth: 150 }}
         >
           {STATUS_OPTS.map((o) => (
@@ -621,10 +621,10 @@ export default function OnboardingControlPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by email or agency…"
-          className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-text-disabled"
+          className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-disabled"
           style={{ minWidth: 220 }}
         />
-        <span className="text-micro text-[rgba(255,255,255,0.3)] ml-auto">
+        <span className="text-micro text-text-muted ml-auto">
           {apps.length} application{apps.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -633,7 +633,7 @@ export default function OnboardingControlPage() {
       <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-x-auto">
         <table className="w-full text-xs min-w-[860px]">
           <thead>
-            <tr className="border-b border-[rgba(255,255,255,0.07)]">
+            <tr className="border-b border-white/[0.07]">
               {[
                 'Agency Name',
                 'Contact Email',
@@ -646,7 +646,7 @@ export default function OnboardingControlPage() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="text-left py-2.5 px-3 text-[9px] uppercase tracking-wider text-[rgba(255,255,255,0.35)] font-semibold whitespace-nowrap"
+                  className="text-left py-2.5 px-3 text-[9px] uppercase tracking-wider text-text-muted font-semibold whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -656,14 +656,14 @@ export default function OnboardingControlPage() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-body text-[rgba(255,255,255,0.3)]">
+                <td colSpan={8} className="py-10 text-center text-body text-text-muted">
                   Loading…
                 </td>
               </tr>
             )}
             {!loading && apps.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-body text-[rgba(255,255,255,0.3)]">
+                <td colSpan={8} className="py-10 text-center text-body text-text-muted">
                   No applications found
                 </td>
               </tr>
@@ -672,18 +672,18 @@ export default function OnboardingControlPage() {
               apps.map((app) => (
                 <tr
                   key={app.id}
-                  className="border-b border-border-subtle hover:bg-[rgba(255,255,255,0.02)] transition-colors"
+                  className="border-b border-border-subtle hover:bg-white/[0.02] transition-colors"
                 >
-                  <td className="py-2.5 px-3 font-medium text-[rgba(255,255,255,0.85)] whitespace-nowrap">
+                  <td className="py-2.5 px-3 font-medium text-text-primary whitespace-nowrap">
                     {app.agency_name}
                   </td>
-                  <td className="py-2.5 px-3 text-[rgba(255,255,255,0.5)] font-mono">
+                  <td className="py-2.5 px-3 text-text-secondary font-mono">
                     {app.contact_email}
                   </td>
-                  <td className="py-2.5 px-3 text-[rgba(255,255,255,0.5)] uppercase">
+                  <td className="py-2.5 px-3 text-text-secondary uppercase">
                     {app.state}
                   </td>
-                  <td className="py-2.5 px-3 text-[rgba(255,255,255,0.6)] whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap">
                     {app.plan}
                   </td>
                   <td className="py-2.5 px-3">

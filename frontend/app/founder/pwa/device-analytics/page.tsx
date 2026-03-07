@@ -60,7 +60,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-[rgba(255,255,255,0.07)] overflow-hidden w-full">
+    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
       <div
         className="h-full rounded-full transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
@@ -173,7 +173,7 @@ export default function DeviceAnalyticsPage() {
                     <span className="text-xs font-bold text-text-primary">{os.os}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-body text-[rgba(255,255,255,0.55)]">{os.count} devices</span>
+                    <span className="text-body text-text-secondary">{os.count} devices</span>
                     <span className="text-body font-bold w-10 text-right" style={{ color: os.color }}>{os.pct}%</span>
                   </div>
                 </div>
@@ -204,8 +204,8 @@ export default function DeviceAnalyticsPage() {
                     <td className="py-2.5 pr-5 font-mono" style={{ color: row.avgLoad < 1000 ? 'var(--color-status-active)' : row.avgLoad < 1200 ? 'var(--color-status-warning)' : 'var(--color-brand-red)' }}>
                       {row.avgLoad}ms
                     </td>
-                    <td className="py-2.5 pr-5 text-[rgba(255,255,255,0.7)] font-mono">{row.crashRate}</td>
-                    <td className="py-2.5 pr-5 text-[rgba(255,255,255,0.55)]">{row.sessions}</td>
+                    <td className="py-2.5 pr-5 text-text-primary font-mono">{row.crashRate}</td>
+                    <td className="py-2.5 pr-5 text-text-secondary">{row.sessions}</td>
                     <td className="py-2.5 font-bold" style={{ color: DOMAIN_COLOR }}>{row.rating}</td>
                   </tr>
                 ))}
@@ -260,7 +260,7 @@ export default function DeviceAnalyticsPage() {
         <SectionHeader number="MOD 6" title="Crash &amp; Error Log" sub="Last 5 recorded crash events" />
         <Panel>
           {crashLog.length === 0 ? (
-            <div className="text-center py-8 text-[rgba(255,255,255,0.25)] text-xs uppercase tracking-widest">
+            <div className="text-center py-8 text-text-muted text-xs uppercase tracking-widest">
               No crashes in last 7 days
             </div>
           ) : (
@@ -277,7 +277,7 @@ export default function DeviceAnalyticsPage() {
                   {crashLog.map((row, i) => (
                     <tr key={i} className="border-b border-border-subtle last:border-0">
                       <td className="py-2.5 pr-5 text-text-muted font-mono text-micro">{row.ts}</td>
-                      <td className="py-2.5 pr-5 text-[rgba(255,255,255,0.7)]">{row.device}</td>
+                      <td className="py-2.5 pr-5 text-text-primary">{row.device}</td>
                       <td className="py-2.5 pr-5"><span className="font-mono text-red">{row.error}</span></td>
                       <td className="py-2.5"><Badge label={row.version} status={row.version === 'v2.4.1' ? 'ok' : row.version === 'v2.4.0' ? 'warn' : 'error'} /></td>
                     </tr>
@@ -303,7 +303,7 @@ export default function DeviceAnalyticsPage() {
                 >
                   <span className="text-[9px] font-bold text-text-primary opacity-80">{v}</span>
                 </div>
-                <span className="text-[9px] text-[rgba(255,255,255,0.25)] font-mono leading-none">{String(hour).padStart(2, '0')}</span>
+                <span className="text-[9px] text-text-muted font-mono leading-none">{String(hour).padStart(2, '0')}</span>
               </div>
             ))}
           </div>

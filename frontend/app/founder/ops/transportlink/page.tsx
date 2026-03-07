@@ -17,7 +17,7 @@ const REQUEST_STATE_COLORS: Record<string, { bg: string; text: string }> = {
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] chamfer-8 p-4 ${className}`}>
+    <div className={`bg-white/[0.03] border border-white/[0.08] chamfer-8 p-4 ${className}`}>
       {children}
     </div>
   );
@@ -148,36 +148,36 @@ export default function TransportLinkPage() {
         <div>
           <Link href="/founder/ops" className="text-body text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">TransportLink — Interfacility Intake</h1>
-          <p className="text-sm text-[rgba(255,255,255,0.45)] mt-1">
+          <p className="text-sm text-text-muted mt-1">
             Facility request intake · Validation · CAD injection · Request audit trail
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 bg-[rgba(255,193,7,0.1)] border border-[rgba(255,193,7,0.3)] chamfer-8">
+          <div className="px-3 py-1.5 bg-amber-400/[0.1] border border-amber-400/[0.3] chamfer-8">
             <span className="text-yellow-400 text-sm font-bold">{pending.length}</span>
-            <span className="text-micro text-[rgba(255,255,255,0.4)] ml-1">PENDING REVIEW</span>
+            <span className="text-micro text-text-muted ml-1">PENDING REVIEW</span>
           </div>
-          <div className="px-3 py-1.5 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.3)] chamfer-8">
+          <div className="px-3 py-1.5 bg-brand-orange/[0.1] border border-brand-orange/[0.3] chamfer-8">
             <span className="text-orange-400 text-sm font-bold">{injected.length}</span>
-            <span className="text-micro text-[rgba(255,255,255,0.4)] ml-1">IN CAD</span>
+            <span className="text-micro text-text-muted ml-1">IN CAD</span>
           </div>
         </div>
       </div>
 
       {/* ── Request Flow ── */}
       <Panel>
-        <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Request State Flow</div>
+        <div className="text-micro uppercase tracking-widest text-text-muted mb-3">Request State Flow</div>
         <div className="flex flex-wrap gap-1.5">
           {['REQUEST_CREATED','REQUEST_VALIDATED','REQUEST_ACCEPTED','DISPATCH_INJECTED','ASSIGNMENT_PENDING','CLOSED'].map((s, i, arr) => (
             <span key={s} className="flex items-center gap-1">
               <StateBadge state={s} />
-              {i < arr.length - 1 && <span className="text-[rgba(255,255,255,0.2)] text-xs">→</span>}
+              {i < arr.length - 1 && <span className="text-text-muted text-xs">→</span>}
             </span>
           ))}
-          <span className="text-[rgba(255,255,255,0.2)] text-xs mx-1">or</span>
+          <span className="text-text-muted text-xs mx-1">or</span>
           <StateBadge state="REQUEST_REJECTED" />
         </div>
-        <div className="mt-3 text-body text-[rgba(255,255,255,0.45)]">
+        <div className="mt-3 text-body text-text-muted">
           Facility requests MUST be validated before CAD injection. Rejected requests are audited with reason. 
           Injected requests create standard CAD missions — no side-channel records.
         </div>
@@ -186,7 +186,7 @@ export default function TransportLinkPage() {
       {/* ── Tabs ── */}
       <div className="flex gap-2">
         {(['requests', 'new'] as const).map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 chamfer-8 text-body font-bold uppercase tracking-wider ${activeTab === tab ? 'bg-purple-700 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 chamfer-8 text-body font-bold uppercase tracking-wider ${activeTab === tab ? 'bg-purple-700 text-white' : 'bg-white/[0.06] text-text-secondary'}`}>
             {tab === 'requests' ? `Requests (${requests.length})` : 'New Request'}
           </button>
         ))}
@@ -195,53 +195,53 @@ export default function TransportLinkPage() {
       {/* ── Requests List ── */}
       {activeTab === 'requests' && (
         <div className="space-y-2">
-          {loading && <div className="text-sm text-[rgba(255,255,255,0.4)] p-4">Loading requests…</div>}
+          {loading && <div className="text-sm text-text-muted p-4">Loading requests…</div>}
           {!loading && requests.length === 0 && (
-            <div className="text-center py-10 chamfer-4-xl border border-[rgba(255,255,255,0.08)]">
+            <div className="text-center py-10 chamfer-4-xl border border-white/[0.08]">
               <div className="text-3xl mb-2">🏥</div>
-              <div className="text-sm text-[rgba(255,255,255,0.45)]">No facility transport requests. Create one using the New Request tab.</div>
+              <div className="text-sm text-text-muted">No facility transport requests. Create one using the New Request tab.</div>
             </div>
           )}
           {requests.map(req => {
             const d = req.data ?? {};
             const isSelected = selected?.id === req.id;
             return (
-              <div key={req.id} className="chamfer-4-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+              <div key={req.id} className="chamfer-4-xl border border-white/[0.08] overflow-hidden">
                 <button onClick={() => setSelected(isSelected ? null : req)}
-                  className="w-full flex items-center gap-4 p-4 text-left hover:bg-[rgba(255,255,255,0.03)] transition-colors">
+                  className="w-full flex items-center gap-4 p-4 text-left hover:bg-white/[0.03] transition-colors">
                   <div className="flex-shrink-0">
                     <StateBadge state={d.state} />
-                    <div className="text-micro text-[rgba(255,255,255,0.4)] mt-1">{d.service_level} · {d.priority}</div>
+                    <div className="text-micro text-text-muted mt-1">{d.service_level} · {d.priority}</div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-white">{d.origin_facility} → {d.destination_facility}</div>
-                    <div className="text-body text-[rgba(255,255,255,0.5)]">{d.chief_complaint || 'No complaint noted'}</div>
-                    <div className="text-body text-[rgba(255,255,255,0.35)]">{d.origin_address}</div>
+                    <div className="text-body text-text-secondary">{d.chief_complaint || 'No complaint noted'}</div>
+                    <div className="text-body text-text-muted">{d.origin_address}</div>
                   </div>
                   <div className="flex-shrink-0 text-right">
-                    <div className="text-micro text-[rgba(255,255,255,0.4)]">{d.contact_name}</div>
-                    <div className="text-micro text-[rgba(255,255,255,0.3)]">{d.contact_phone}</div>
+                    <div className="text-micro text-text-muted">{d.contact_name}</div>
+                    <div className="text-micro text-text-muted">{d.contact_phone}</div>
                   </div>
-                  <span className="text-[rgba(255,255,255,0.2)] text-sm ml-2">{isSelected ? '▲' : '▼'}</span>
+                  <span className="text-text-muted text-sm ml-2">{isSelected ? '▲' : '▼'}</span>
                 </button>
 
                 {isSelected && (
-                  <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.06)] space-y-4">
+                  <div className="px-4 pb-4 border-t border-white/[0.06] space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                       <div>
-                        <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Request ID</div>
+                        <div className="text-micro uppercase tracking-wider text-text-muted">Request ID</div>
                         <div className="text-body text-white font-mono">{req.id.slice(0, 16)}</div>
                       </div>
                       <div>
-                        <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Origin</div>
+                        <div className="text-micro uppercase tracking-wider text-text-muted">Origin</div>
                         <div className="text-body text-white">{d.origin_address}</div>
                       </div>
                       <div>
-                        <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Destination</div>
+                        <div className="text-micro uppercase tracking-wider text-text-muted">Destination</div>
                         <div className="text-body text-white">{d.destination_address || d.destination_facility}</div>
                       </div>
                       <div>
-                        <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Mission ID</div>
+                        <div className="text-micro uppercase tracking-wider text-text-muted">Mission ID</div>
                         <div className="text-body text-white">{d.mission_id ? d.mission_id.slice(0, 12) : 'Not yet injected'}</div>
                       </div>
                     </div>
@@ -249,18 +249,18 @@ export default function TransportLinkPage() {
                     <div className="flex gap-2">
                       {d.state === 'REQUEST_CREATED' && (
                         <button onClick={() => validate(req.id)}
-                          className="px-4 py-1.5 bg-[rgba(41,182,246,0.15)] border border-[rgba(41,182,246,0.3)] text-blue-400 text-body font-bold chamfer-8 hover:bg-[rgba(41,182,246,0.2)]">
+                          className="px-4 py-1.5 bg-blue-400/[0.15] border border-blue-400/[0.3] text-blue-400 text-body font-bold chamfer-8 hover:bg-blue-400/[0.2]">
                           ✓ Validate Request
                         </button>
                       )}
                       {['REQUEST_CREATED', 'REQUEST_VALIDATED'].includes(d.state) && (
                         <button onClick={() => injectToCad(req.id)}
-                          className="px-4 py-1.5 bg-[rgba(255,107,26,0.15)] border border-[rgba(255,107,26,0.3)] text-orange-400 text-body font-bold chamfer-8 hover:bg-[rgba(255,107,26,0.2)]">
+                          className="px-4 py-1.5 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-orange-400 text-body font-bold chamfer-8 hover:bg-brand-orange/[0.2]">
                           📡 Inject to CAD
                         </button>
                       )}
                       {d.mission_id && (
-                        <Link href="/founder/ops/cad" className="px-4 py-1.5 bg-[rgba(76,175,80,0.1)] border border-[rgba(76,175,80,0.3)] text-green-400 text-body font-bold chamfer-8 hover:bg-[rgba(76,175,80,0.15)]">
+                        <Link href="/founder/ops/cad" className="px-4 py-1.5 bg-green-500/[0.1] border border-green-500/30 text-green-400 text-body font-bold chamfer-8 hover:bg-green-500/[0.15]">
                           View in CAD →
                         </Link>
                       )}
@@ -276,43 +276,43 @@ export default function TransportLinkPage() {
       {/* ── New Request Form ── */}
       {activeTab === 'new' && (
         <Panel>
-          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-4">
+          <div className="text-micro uppercase tracking-widest text-text-muted mb-4">
             New Interfacility Transport Request
           </div>
-          <div className="text-body text-[rgba(255,255,255,0.5)] mb-4">
+          <div className="text-body text-text-secondary mb-4">
             This request will be created in REQUEST_CREATED state. It must be validated before CAD injection.
             All fields are audited. Requests cannot silently enter CAD without validation.
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
             <input value={newReq.origin_facility} onChange={e => setNewReq(p => ({ ...p, origin_facility: e.target.value }))}
               placeholder="Origin facility name *"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
             <input value={newReq.destination_facility} onChange={e => setNewReq(p => ({ ...p, destination_facility: e.target.value }))}
               placeholder="Destination facility"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
             <input value={newReq.origin_address} onChange={e => setNewReq(p => ({ ...p, origin_address: e.target.value }))}
               placeholder="Pickup address *"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
             <input value={newReq.destination_address} onChange={e => setNewReq(p => ({ ...p, destination_address: e.target.value }))}
               placeholder="Drop-off address"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
             <select value={newReq.service_level} onChange={e => setNewReq(p => ({ ...p, service_level: e.target.value }))}
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400">
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400">
               {['BLS','ALS','CCT','HEMS'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select value={newReq.priority} onChange={e => setNewReq(p => ({ ...p, priority: e.target.value }))}
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400">
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400">
               {['P1','P2','P3','ROUTINE'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <input value={newReq.chief_complaint} onChange={e => setNewReq(p => ({ ...p, chief_complaint: e.target.value }))}
               placeholder="Chief complaint / reason for transport"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
             <input value={newReq.contact_name} onChange={e => setNewReq(p => ({ ...p, contact_name: e.target.value }))}
               placeholder="Contact name"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
             <input value={newReq.contact_phone} onChange={e => setNewReq(p => ({ ...p, contact_phone: e.target.value }))}
               placeholder="Contact phone"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-purple-400 placeholder-text-text-muted" />
           </div>
           <button onClick={createRequest} disabled={creating || !newReq.origin_address || !newReq.origin_facility}
             className="px-6 py-2 bg-purple-700 text-white text-sm font-bold chamfer-8 hover:bg-purple-600 disabled:opacity-40 transition-colors">

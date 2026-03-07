@@ -10,8 +10,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -86,14 +86,14 @@ export default function ExpenseLedgerPage() {
           <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-text-primary" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
           Expense Ledger
         </h1>
-        <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Track business expenses · categorize · export for accounting</p>
+        <p className="text-xs text-text-muted mt-1">Track business expenses · categorize · export for accounting</p>
       </motion.div>
 
       {/* MODULE 1 — Monthly Summary */}
@@ -106,7 +106,7 @@ export default function ExpenseLedgerPage() {
             { label: 'Marketing', value: '$340', status: 'warn' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-text-muted uppercase tracking-wider">{s.label}</span>
               <span
                 className="text-xl font-bold"
                 style={{ color: s.status === 'error' ? 'var(--color-brand-red)' : s.status === 'warn' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.9)' }}
@@ -133,30 +133,30 @@ export default function ExpenseLedgerPage() {
           {showForm && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Date</label>
+                <label className="text-micro text-text-muted uppercase tracking-wider">Date</label>
                 <input
                   type="date"
                   value={expenseForm.date}
                   onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                  className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Amount</label>
+                <label className="text-micro text-text-muted uppercase tracking-wider">Amount</label>
                 <input
                   type="number"
                   value={expenseForm.amount}
                   onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
                   placeholder="0.00"
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                  className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Category</label>
+                <label className="text-micro text-text-muted uppercase tracking-wider">Category</label>
                 <select
                   value={expenseForm.category}
                   onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                  className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
                 >
                   {['AWS', 'Software', 'Marketing', 'Legal', 'Travel', 'Other'].map((c) => (
                     <option key={c} value={c} className="bg-bg-panel">{c}</option>
@@ -164,23 +164,23 @@ export default function ExpenseLedgerPage() {
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Vendor</label>
+                <label className="text-micro text-text-muted uppercase tracking-wider">Vendor</label>
                 <input
                   type="text"
                   value={expenseForm.vendor}
                   onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })}
                   placeholder="Vendor name"
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                  className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Description</label>
+                <label className="text-micro text-text-muted uppercase tracking-wider">Description</label>
                 <input
                   type="text"
                   value={expenseForm.description}
                   onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
                   placeholder="Description"
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                  className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
                 />
               </div>
               <div className="flex items-end">
@@ -209,7 +209,7 @@ export default function ExpenseLedgerPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Date', 'Vendor', 'Category', 'Amount', 'Description', 'Receipt'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">
+                    <th key={h} className="text-left py-1.5 px-2 text-text-muted font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -217,19 +217,19 @@ export default function ExpenseLedgerPage() {
               </thead>
               <tbody>
                 {EXPENSES.map((exp, i) => (
-                  <tr key={i} className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="py-1.5 px-2 font-mono text-[rgba(255,107,26,0.7)] text-body">{exp.date}</td>
-                    <td className="py-1.5 px-2 text-[rgba(255,255,255,0.8)] font-medium">{exp.vendor}</td>
-                    <td className="py-1.5 px-2 text-[rgba(255,255,255,0.45)]">{exp.category}</td>
-                    <td className="py-1.5 px-2 font-mono text-[rgba(255,255,255,0.85)] font-semibold">
+                  <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
+                    <td className="py-1.5 px-2 font-mono text-brand-orange text-body">{exp.date}</td>
+                    <td className="py-1.5 px-2 text-text-primary font-medium">{exp.vendor}</td>
+                    <td className="py-1.5 px-2 text-text-muted">{exp.category}</td>
+                    <td className="py-1.5 px-2 font-mono text-text-primary font-semibold">
                       ${exp.amount.toLocaleString()}
                     </td>
-                    <td className="py-1.5 px-2 text-[rgba(255,255,255,0.45)]">{exp.description}</td>
+                    <td className="py-1.5 px-2 text-text-muted">{exp.description}</td>
                     <td className="py-1.5 px-2 text-center">
                       {exp.receipt ? (
                         <span className="text-status-active font-bold">&#10003;</span>
                       ) : (
-                        <span className="text-[rgba(255,255,255,0.25)]">—</span>
+                        <span className="text-text-muted">—</span>
                       )}
                     </td>
                   </tr>
@@ -247,8 +247,8 @@ export default function ExpenseLedgerPage() {
           <div className="space-y-3">
             {CATEGORY_BREAKDOWN.map((cat) => (
               <div key={cat.label} className="flex items-center gap-3">
-                <span className="text-xs text-[rgba(255,255,255,0.6)] w-32 shrink-0">{cat.label}</span>
-                <div className="flex-1 h-2 bg-[rgba(255,255,255,0.05)] rounded-full overflow-hidden">
+                <span className="text-xs text-text-secondary w-32 shrink-0">{cat.label}</span>
+                <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -262,8 +262,8 @@ export default function ExpenseLedgerPage() {
                     }}
                   />
                 </div>
-                <span className="text-micro font-mono text-[rgba(255,255,255,0.5)] w-8 text-right">{cat.pct}%</span>
-                <span className="text-body font-mono font-semibold text-[rgba(255,255,255,0.7)] w-16 text-right">{cat.amount}</span>
+                <span className="text-micro font-mono text-text-secondary w-8 text-right">{cat.pct}%</span>
+                <span className="text-body font-mono font-semibold text-text-primary w-16 text-right">{cat.amount}</span>
               </div>
             ))}
           </div>
@@ -303,7 +303,7 @@ export default function ExpenseLedgerPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

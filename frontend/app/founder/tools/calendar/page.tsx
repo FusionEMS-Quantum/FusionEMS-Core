@@ -10,8 +10,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
         <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
-        {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
+        {sub && <span className="text-xs text-text-muted">{sub}</span>}
       </div>
     </div>
   );
@@ -102,14 +102,14 @@ export default function FounderCalendarPage() {
           <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-text-primary" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
           Founder Calendar
         </h1>
-        <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Meetings · deadlines · billing cycles · compliance events</p>
+        <p className="text-xs text-text-muted mt-1">Meetings · deadlines · billing cycles · compliance events</p>
       </motion.div>
 
       {/* MODULE 1 — This Week */}
@@ -131,7 +131,7 @@ export default function FounderCalendarPage() {
                     : '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                <span className="text-micro font-semibold text-[rgba(255,255,255,0.4)] uppercase tracking-widest">{day}</span>
+                <span className="text-micro font-semibold text-text-muted uppercase tracking-widest">{day}</span>
                 <span
                   className="text-lg font-bold mt-0.5"
                   style={{ color: i === TODAY_INDEX ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.85)' }}
@@ -142,21 +142,21 @@ export default function FounderCalendarPage() {
                   {WEEK_EVENTS[i].length > 0 ? (
                     <>
                       <span className="w-1.5 h-1.5 rounded-full bg-orange" />
-                      <span className="text-[8px] text-[rgba(255,255,255,0.45)] text-center leading-tight mt-0.5 line-clamp-2">
+                      <span className="text-[8px] text-text-muted text-center leading-tight mt-0.5 line-clamp-2">
                         {WEEK_EVENTS[i][0]}
                       </span>
                     </>
                   ) : (
-                    <span className="text-[9px] text-[rgba(255,255,255,0.2)]">clear</span>
+                    <span className="text-[9px] text-text-muted">clear</span>
                   )}
                 </div>
               </button>
             ))}
           </div>
           {WEEK_EVENTS[selectedDay].length > 0 && (
-            <div className="mt-3 p-2 bg-[rgba(255,107,26,0.06)] border border-[rgba(255,107,26,0.15)] chamfer-4">
+            <div className="mt-3 p-2 bg-brand-orange/[0.06] border border-brand-orange/[0.15] chamfer-4">
               <span className="text-micro text-orange font-semibold">{DAYS[selectedDay]} selected: </span>
-              <span className="text-body text-[rgba(255,255,255,0.7)]">{WEEK_EVENTS[selectedDay].join(', ')}</span>
+              <span className="text-body text-text-primary">{WEEK_EVENTS[selectedDay].join(', ')}</span>
             </div>
           )}
         </Panel>
@@ -171,7 +171,7 @@ export default function FounderCalendarPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Date', 'Event', 'Category', 'Priority'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">
+                    <th key={h} className="text-left py-1.5 px-2 text-text-muted font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -179,10 +179,10 @@ export default function FounderCalendarPage() {
               </thead>
               <tbody>
                 {UPCOMING_EVENTS.map((ev, i) => (
-                  <tr key={i} className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="py-2 px-2 font-mono text-[rgba(255,107,26,0.8)]">{ev.date}</td>
-                    <td className="py-2 px-2 text-[rgba(255,255,255,0.75)]">{ev.event}</td>
-                    <td className="py-2 px-2 text-[rgba(255,255,255,0.45)]">{ev.category}</td>
+                  <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
+                    <td className="py-2 px-2 font-mono text-brand-orange">{ev.date}</td>
+                    <td className="py-2 px-2 text-text-primary">{ev.event}</td>
+                    <td className="py-2 px-2 text-text-muted">{ev.category}</td>
                     <td className="py-2 px-2">
                       <Badge
                         label={ev.priority === 'warn' ? 'medium' : ev.priority === 'info' ? 'low' : ev.priority}
@@ -203,30 +203,30 @@ export default function FounderCalendarPage() {
           <SectionHeader number="3" title="Add Event" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Event Title</label>
+              <label className="text-micro text-text-muted uppercase tracking-wider">Event Title</label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="Event title"
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Date</label>
+              <label className="text-micro text-text-muted uppercase tracking-wider">Date</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Category</label>
+              <label className="text-micro text-text-muted uppercase tracking-wider">Category</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
               >
                 {['Compliance', 'Sales', 'Billing', 'Executive', 'Infra'].map((c) => (
                   <option key={c} value={c} className="bg-bg-panel">{c}</option>
@@ -234,11 +234,11 @@ export default function FounderCalendarPage() {
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Priority</label>
+              <label className="text-micro text-text-muted uppercase tracking-wider">Priority</label>
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
               >
                 {['high', 'medium', 'low'].map((p) => (
                   <option key={p} value={p} className="bg-bg-panel">{p}</option>
@@ -272,11 +272,11 @@ export default function FounderCalendarPage() {
                   >
                     {r.freq}
                   </span>
-                  <span className="text-xs text-[rgba(255,255,255,0.75)]">{r.label}</span>
+                  <span className="text-xs text-text-primary">{r.label}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-micro font-mono text-[rgba(255,255,255,0.35)]">{r.time}</span>
-                  <span className="text-micro text-[rgba(255,255,255,0.3)] italic">{r.note}</span>
+                  <span className="text-micro font-mono text-text-muted">{r.time}</span>
+                  <span className="text-micro text-text-muted italic">{r.note}</span>
                 </div>
               </div>
             ))}
@@ -291,9 +291,9 @@ export default function FounderCalendarPage() {
           <div className="space-y-3">
             {COMPLIANCE_DEADLINES.map((cd, i) => (
               <div key={i} className="flex items-center justify-between py-2 px-3 chamfer-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span className="text-xs text-[rgba(255,255,255,0.75)]">{cd.label}</span>
+                <span className="text-xs text-text-primary">{cd.label}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-body font-mono text-[rgba(255,255,255,0.5)]">{cd.days} days</span>
+                  <span className="text-body font-mono text-text-secondary">{cd.days} days</span>
                   <Badge label={`${cd.days}d`} status={cd.status} />
                 </div>
               </div>
@@ -303,7 +303,7 @@ export default function FounderCalendarPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

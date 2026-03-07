@@ -108,7 +108,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -145,7 +145,7 @@ function IncidentStatusBadge({ status }: { status: IncidentStatus }) {
   const s = STATUS_STYLE[status] ?? STATUS_STYLE.draft;
   return (
     <span
-      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-sm whitespace-nowrap"
+      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider chamfer-4 whitespace-nowrap"
       style={{ color: s.color, background: s.bg }}
     >
       {s.label}
@@ -156,7 +156,7 @@ function IncidentStatusBadge({ status }: { status: IncidentStatus }) {
 function IncidentTypeBadge({ code }: { code: string }) {
   return (
     <span
-      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-sm"
+      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider chamfer-4"
       style={{ color: 'var(--q-yellow)', background: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.2)' }}
     >
       {code.replace(/_/g, ' ')}
@@ -166,9 +166,9 @@ function IncidentTypeBadge({ code }: { code: string }) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)]";
-const inputErrorClass = "w-full bg-[rgba(229,57,53,0.05)] border border-[rgba(229,57,53,0.4)] text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(229,57,53,0.6)] placeholder:text-[rgba(255,255,255,0.2)]";
-const labelClass = "block text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-1";
+const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)]";
+const inputErrorClass = "w-full bg-[rgba(229,57,53,0.05)] border border-[rgba(229,57,53,0.4)] text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(229,57,53,0.6)] placeholder:text-[rgba(255,255,255,0.2)]";
+const labelClass = "block text-micro uppercase tracking-wider text-text-muted mb-1";
 
 function makeEmptyForm(): IncidentForm {
   return {
@@ -229,7 +229,7 @@ function IncidentList({
         </div>
         <button
           onClick={onNew}
-          className="h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-sm"
+          className="h-7 px-3 text-micro font-bold uppercase tracking-wider chamfer-4"
           style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
         >
           + New
@@ -241,7 +241,7 @@ function IncidentList({
           <button
             key={f.value}
             onClick={() => onFilterChange(f.value)}
-            className="h-6 px-2 text-[9px] font-semibold uppercase tracking-wider rounded-sm transition-colors"
+            className="h-6 px-2 text-[9px] font-semibold uppercase tracking-wider chamfer-4 transition-colors"
             style={statusFilter === f.value
               ? { background: 'rgba(255,107,26,0.2)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.35)' }
               : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.07)' }
@@ -254,10 +254,10 @@ function IncidentList({
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading && (
-          <div className="py-8 text-center text-[11px] text-[rgba(255,255,255,0.3)]">Loading…</div>
+          <div className="py-8 text-center text-body text-text-muted">Loading…</div>
         )}
         {!loading && incidents.length === 0 && (
-          <div className="py-8 text-center text-[11px] text-[rgba(255,255,255,0.3)]">No incidents found</div>
+          <div className="py-8 text-center text-body text-text-muted">No incidents found</div>
         )}
         {!loading && incidents.map((inc) => (
           <button
@@ -271,7 +271,7 @@ function IncidentList({
               <IncidentStatusBadge status={inc.status} />
             </div>
             <IncidentTypeBadge code={inc.incident_type_code} />
-            <p className="text-[10px] text-[rgba(255,255,255,0.35)] mt-1 font-mono">
+            <p className="text-micro text-text-muted mt-1 font-mono">
               {inc.start_datetime ? new Date(inc.start_datetime).toLocaleString() : '—'}
             </p>
           </button>
@@ -297,7 +297,7 @@ function FormSection({
   const [open, setOpen] = useState(true);
   return (
     <div
-      className="bg-bg-base border rounded-sm overflow-hidden"
+      className="bg-bg-base border chamfer-4 overflow-hidden"
       style={{ borderColor: errorCount > 0 ? 'rgba(229,57,53,0.35)' : 'rgba(255,255,255,0.08)' }}
     >
       <button
@@ -307,12 +307,12 @@ function FormSection({
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-[rgba(255,255,255,0.85)]">{label}</span>
           {errorCount > 0 && (
-            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm" style={{ color: 'var(--q-red)', background: 'rgba(229,57,53,0.15)' }}>
+            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase chamfer-4" style={{ color: 'var(--q-red)', background: 'rgba(229,57,53,0.15)' }}>
               {errorCount} error{errorCount !== 1 ? 's' : ''}
             </span>
           )}
         </div>
-        <span className="text-[rgba(255,255,255,0.4)] text-sm">{open ? '▾' : '▸'}</span>
+        <span className="text-text-muted text-sm">{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)]">
@@ -343,7 +343,7 @@ function FormField({
         {required && <span className="ml-1" style={{ color: 'var(--q-orange)' }}>*</span>}
       </label>
       {children}
-      {error && <p className="text-[10px] text-red mt-0.5">{error}</p>}
+      {error && <p className="text-micro text-red mt-0.5">{error}</p>}
     </div>
   );
 }
@@ -554,7 +554,7 @@ function IncidentForm({
         {validationResult && (
           <div className="flex items-center gap-2">
             <span
-              className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-sm"
+              className="px-2 py-0.5 text-micro font-bold uppercase chamfer-4"
               style={validationResult.valid
                 ? { color: 'var(--q-green)', background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)' }
                 : { color: 'var(--q-red)', background: 'rgba(229,57,53,0.12)', border: '1px solid rgba(229,57,53,0.25)' }}
@@ -700,13 +700,13 @@ function IncidentForm({
         <FormSection id="units_personnel" label="Units & Personnel" errorCount={sectionErrors('units_personnel')}>
           <div className="space-y-3">
             {form.units.map((unit, i) => (
-              <div key={i} className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-sm p-3">
+              <div key={i} className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] chamfer-4 p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[9px] uppercase tracking-wider text-[rgba(255,107,26,0.7)]">Unit {i + 1}</span>
                   {form.units.length > 1 && (
                     <button
                       onClick={() => update('units', form.units.filter((_, idx) => idx !== i))}
-                      className="text-[10px] text-[rgba(229,57,53,0.6)] hover:text-red"
+                      className="text-micro text-[rgba(229,57,53,0.6)] hover:text-red"
                     >
                       Remove
                     </button>
@@ -760,7 +760,7 @@ function IncidentForm({
           </div>
           <button
             onClick={() => update('units', [...form.units, { apparatus_id: '', arrival_time: '', departure_time: '' }])}
-            className="mt-3 h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+            className="mt-3 h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
             style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
           >
             + Add Unit
@@ -822,7 +822,7 @@ function IncidentForm({
                 {form.actions.length > 1 && (
                   <button
                     onClick={() => update('actions', form.actions.filter((_, idx) => idx !== i))}
-                    className="h-9 px-2 text-[10px] text-[rgba(229,57,53,0.6)] hover:text-red mb-0.5"
+                    className="h-9 px-2 text-micro text-[rgba(229,57,53,0.6)] hover:text-red mb-0.5"
                   >
                     ✕
                   </button>
@@ -832,7 +832,7 @@ function IncidentForm({
           </div>
           <button
             onClick={() => update('actions', [...form.actions, { action_code: '', action_datetime: '' }])}
-            className="mt-3 h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+            className="mt-3 h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
             style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
           >
             + Add Action
@@ -873,7 +873,7 @@ function IncidentForm({
         <button
           onClick={saveDraft}
           disabled={savingDraft}
-          className="h-9 px-5 text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+          className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
           style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
         >
           {savingDraft ? 'Saving…' : 'Save Draft'}
@@ -881,7 +881,7 @@ function IncidentForm({
         <button
           onClick={validate}
           disabled={validating || !currentId}
-          className="h-9 px-5 text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+          className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
           style={{ background: 'rgba(34,211,238,0.12)', border: '1px solid rgba(34,211,238,0.3)', color: 'var(--color-system-billing)' }}
         >
           {validating ? 'Validating…' : 'Validate'}
@@ -890,7 +890,7 @@ function IncidentForm({
           onClick={doExport}
           disabled={incidentStatus !== 'validated' || exportingId !== null}
           title={incidentStatus !== 'validated' ? 'Validate incident before exporting' : undefined}
-          className="h-9 px-5 text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)', color: 'var(--q-green)' }}
         >
           {exportingId ? 'Exporting…' : 'Export'}
@@ -899,7 +899,7 @@ function IncidentForm({
           )}
         </button>
         {validationResult && !validationResult.valid && (
-          <span className="text-[10px] text-[rgba(229,57,53,0.8)]">
+          <span className="text-micro text-[rgba(229,57,53,0.8)]">
             {totalErrors} error{totalErrors !== 1 ? 's' : ''} — see highlighted sections
           </span>
         )}
@@ -1020,10 +1020,10 @@ export default function FireIncidentsPage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-3">
                 <div className="text-4xl opacity-20">🔥</div>
-                <p className="text-sm text-[rgba(255,255,255,0.3)]">Select an incident or create a new one.</p>
+                <p className="text-sm text-text-muted">Select an incident or create a new one.</p>
                 <button
                   onClick={handleNew}
-                  className="h-8 px-4 text-[10px] font-bold uppercase tracking-wider rounded-sm"
+                  className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
                 >
                   + New Incident
