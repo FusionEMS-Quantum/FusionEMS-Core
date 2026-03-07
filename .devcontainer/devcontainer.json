@@ -1,0 +1,33 @@
+{
+  "name": "FusionEMS-Core",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "forwardPorts": [3000, 8000, 5432, 6379, 8181, 9090, 3001],
+  "portsAttributes": {
+    "3000": {"label": "Frontend"},
+    "8000": {"label": "Backend API"},
+    "5432": {"label": "Postgres"},
+    "6379": {"label": "Redis"},
+    "8181": {"label": "OPA"},
+    "9090": {"label": "Prometheus"},
+    "3001": {"label": "Grafana"}
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "files.eol": "
+"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  }
+}
