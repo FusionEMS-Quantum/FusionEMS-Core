@@ -340,8 +340,8 @@ class BillingCommunicationService:
         """Check if a phone number has opted out of billing SMS for this tenant."""
         result = self.db.execute(
             text(
-                "SELECT 1 FROM billing_sms_opt_outs "
-                "WHERE tenant_id = :tid AND phone = :phone AND opted_out = TRUE LIMIT 1"
+                "SELECT 1 FROM telnyx_opt_outs "
+                "WHERE tenant_id = :tid AND phone_e164 = :phone LIMIT 1"
             ),
             {"tid": tenant_id, "phone": phone},
         ).first()
@@ -351,17 +351,12 @@ class BillingCommunicationService:
         """Record a STOP/opt-out for a phone number. Called by Telnyx webhook handler."""
         self.db.execute(
             text(
-                "INSERT INTO billing_sms_opt_outs "
-                "(id, tenant_id, phone, opted_out, source, created_at) "
-                "VALUES (:id, :tid, :phone, TRUE, :src, now()) "
-                "ON CONFLICT (tenant_id, phone) DO UPDATE SET opted_out = TRUE, source = :src"
+                "INSERT INTO telnyx_opt_outs "
+                "(tenant_id, phone_e164, opted_out_at, source) "
+                "VALUES (:tid, :phone, now(), :src) "
+                "ON CONFLICT (tenant_id, phone_e164) DO UPDATE SET opted_out_at = now(), source = :src"
             ),
-            {
-                "id": str(uuid.uuid4()),
-                "tid": tenant_id,
-                "phone": phone,
-                "src": source,
-            },
+            {"tid": tenant_id, "phone": phone, "src": source},
         )
         logger.info(
             "billing_sms_opt_out_recorded tenant=%s phone=%.6s source=%s",
@@ -369,15 +364,12 @@ class BillingCommunicationService:
         )
 
     async def record_opt_in(self, tenant_id: str, phone: str) -> None:
-        """Record UNSTOP / opt-in re-enrollment."""
+        """Record UNSTOP / opt-in re-enrollment (removes from opt-out table)."""
         self.db.execute(
             text(
-                "INSERT INTO billing_sms_opt_outs "
-                "(id, tenant_id, phone, opted_out, source, created_at) "
-                "VALUES (:id, :tid, :phone, FALSE, 'UNSTOP_REPLY', now()) "
-                "ON CONFLICT (tenant_id, phone) DO UPDATE SET opted_out = FALSE"
+                "DELETE FROM telnyx_opt_outs WHERE tenant_id = :tid AND phone_e164 = :phone"
             ),
-            {"id": str(uuid.uuid4()), "tid": tenant_id, "phone": phone},
+            {"tid": tenant_id, "phone": phone},
         )
 
     async def get_sms_log(

@@ -69,24 +69,8 @@ def upgrade() -> None:
             "ON billing_sms_log (tenant_id, dedup_key)"
         )
 
-    # ── billing_sms_opt_outs ──────────────────────────────────────────────────
-    # STOP/UNSTOP management. Checked before every SMS send.
-    if not _table_exists(conn, "billing_sms_opt_outs"):
-        op.execute("""
-            CREATE TABLE billing_sms_opt_outs (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                tenant_id UUID NOT NULL,
-                phone TEXT NOT NULL,
-                opted_out BOOLEAN NOT NULL DEFAULT TRUE,
-                source TEXT NOT NULL DEFAULT 'STOP_REPLY',
-                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-                UNIQUE (tenant_id, phone)
-            )
-        """)
-        op.execute(
-            "CREATE INDEX IF NOT EXISTS ix_billing_sms_opt_outs_tenant_phone "
-            "ON billing_sms_opt_outs (tenant_id, phone)"
-        )
+    # Note: opt-out management uses existing telnyx_opt_outs table (created in 0010)
+    # billing_communications_service.py reads/writes telnyx_opt_outs directly.
 
     # ── mail_fulfillment_records ──────────────────────────────────────────────
     # LOB physical mail sends — statements, collection notices, cover letters.
@@ -127,5 +111,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.execute("DROP TABLE IF EXISTS mail_fulfillment_records CASCADE")
-    op.execute("DROP TABLE IF EXISTS billing_sms_opt_outs CASCADE")
     op.execute("DROP TABLE IF EXISTS billing_sms_log CASCADE")
