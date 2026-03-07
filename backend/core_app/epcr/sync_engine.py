@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from backend.core_app.epcr.chart_model import Chart, ChartStatus, SyncStatus
+from core_app.epcr.chart_model import Chart, ChartStatus, SyncStatus
 
 
 class SyncConflictPolicy(StrEnum):

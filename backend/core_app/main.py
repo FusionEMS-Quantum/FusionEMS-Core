@@ -41,6 +41,8 @@ from core_app.api.documents_router import router as documents_router  # noqa: E4
 from core_app.api.epcr_capture_router import router as epcr_capture_router  # noqa: E402
 from core_app.api.epcr_customization_router import router as epcr_customization_router  # noqa: E402
 from core_app.api.epcr_router import router as epcr_router  # noqa: E402
+from core_app.api.clinical_workflow_router import router as clinical_workflow_router  # noqa: E402
+from core_app.api.founder_clinical_router import router as founder_clinical_router  # noqa: E402
 from core_app.api.events_router import router as events_router  # noqa: E402
 from core_app.api.export_status_router import router as export_status_router  # noqa: E402
 from core_app.api.exports_router import router as exports_router  # noqa: E402
@@ -185,6 +187,8 @@ app.include_router(edi_router)
 app.include_router(epcr_capture_router)
 app.include_router(epcr_customization_router)
 app.include_router(epcr_router)
+app.include_router(clinical_workflow_router)
+app.include_router(founder_clinical_router)
 app.include_router(events_router)
 app.include_router(export_status_router)
 app.include_router(exports_router)
