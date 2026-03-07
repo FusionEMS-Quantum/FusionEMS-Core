@@ -57,6 +57,8 @@ from core_app.api.founder_copilot_router import router as founder_copilot_router
 from core_app.api.founder_documents_router import router as founder_documents_router  # noqa: E402
 from core_app.api.founder_graph_router import router as founder_graph_router  # noqa: E402
 from core_app.api.founder_router import router as founder_router  # noqa: E402
+from core_app.api.gold_standard_router import router as gold_standard_router  # noqa: E402
+from core_app.api.governance_router import router as governance_router  # noqa: E402
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
 from core_app.api.icd10_router import router as icd10_router  # noqa: E402
@@ -154,6 +156,7 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 app.include_router(accreditation_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(governance_router, prefix="/api/v1")
 app.include_router(fhir_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(incident_router, prefix="/api/v1")
