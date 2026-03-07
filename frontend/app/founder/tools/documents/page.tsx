@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
       <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
@@ -88,10 +88,10 @@ export default function DocumentsVaultPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
@@ -111,7 +111,7 @@ export default function DocumentsVaultPage() {
             { label: 'Storage Used', value: '24 MB', status: 'ok' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
               <span className="text-2xl font-bold" style={{ color: s.value === '2' || s.value === '1' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.9)' }}>
                 {s.value}
               </span>
@@ -131,18 +131,18 @@ export default function DocumentsVaultPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search documents..."
-              className="flex-1 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+              className="flex-1 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
             />
             <select
               value={catFilter}
               onChange={(e) => setCatFilter(e.target.value)}
-              className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange"
+              className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
             >
               {['All', 'Contracts', 'BAA', 'Proposals', 'Certificates', 'Legal'].map((c) => (
                 <option key={c} value={c} className="bg-bg-panel">{c}</option>
               ))}
             </select>
-            <span className="text-[11px] text-[rgba(255,255,255,0.4)] whitespace-nowrap">
+            <span className="text-body text-[rgba(255,255,255,0.4)] whitespace-nowrap">
               Showing {filtered.length} document{filtered.length !== 1 ? 's' : ''}
             </span>
           </div>
@@ -158,7 +158,7 @@ export default function DocumentsVaultPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Document', 'Category', 'Status', 'Date', 'Actions'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-[10px]">
+                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -170,13 +170,13 @@ export default function DocumentsVaultPage() {
                     <td className="py-2 px-2 text-[rgba(255,255,255,0.8)] font-medium">{doc.name}</td>
                     <td className="py-2 px-2 text-[rgba(255,255,255,0.45)]">{doc.category}</td>
                     <td className="py-2 px-2">{statusBadge(doc.status)}</td>
-                    <td className="py-2 px-2 font-mono text-[rgba(255,107,26,0.7)] text-[11px]">{doc.date}</td>
+                    <td className="py-2 px-2 font-mono text-[rgba(255,107,26,0.7)] text-body">{doc.date}</td>
                     <td className="py-2 px-2">
                       <div className="flex gap-2">
                         {doc.actions.map((a) => (
                           <button
                             key={a}
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-sm transition-all hover:brightness-110"
+                            className="text-micro font-semibold px-2 py-0.5 chamfer-4 transition-all hover:brightness-110"
                             style={{
                               background: a === 'View' ? 'rgba(41,182,246,0.1)' : 'rgba(255,107,26,0.1)',
                               color: a === 'View' ? 'var(--color-status-info)' : 'var(--color-brand-orange)',
@@ -201,25 +201,25 @@ export default function DocumentsVaultPage() {
         <Panel>
           <SectionHeader number="4" title="Signature Queue" sub="awaiting action" />
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-sm" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
+            <div className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
               <div>
                 <p className="text-xs font-semibold text-[rgba(255,255,255,0.85)]">Agency B Service Agreement</p>
-                <p className="text-[10px] text-[rgba(255,255,255,0.4)] mt-0.5">Sent Jan 22 · Waiting for client signature</p>
+                <p className="text-micro text-[rgba(255,255,255,0.4)] mt-0.5">Sent Jan 22 · Waiting for client signature</p>
               </div>
               <button
-                className="text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-wider transition-all hover:brightness-110"
+                className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
                 style={{ background: 'rgba(255,152,0,0.15)', color: 'var(--q-yellow)', border: '1px solid rgba(255,152,0,0.35)' }}
               >
                 Send Reminder
               </button>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-sm" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
+            <div className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
               <div>
                 <p className="text-xs font-semibold text-[rgba(255,255,255,0.85)]">Agency E Renewal Agreement</p>
-                <p className="text-[10px] text-[rgba(255,255,255,0.4)] mt-0.5">Draft · Not yet sent</p>
+                <p className="text-micro text-[rgba(255,255,255,0.4)] mt-0.5">Draft · Not yet sent</p>
               </div>
               <button
-                className="text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-wider transition-all hover:brightness-110"
+                className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
                 style={{ background: 'var(--color-brand-orange)', color: '#000' }}
               >
                 Send for Signature
@@ -237,12 +237,12 @@ export default function DocumentsVaultPage() {
             {TEMPLATES.map((t) => (
               <div
                 key={t}
-                className="flex items-center justify-between p-3 rounded-sm"
+                className="flex items-center justify-between p-3 chamfer-4"
                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
                 <span className="text-xs text-[rgba(255,255,255,0.7)]">{t}</span>
                 <button
-                  className="text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider transition-all hover:brightness-110 ml-2 whitespace-nowrap"
+                  className="text-micro font-bold px-2 py-1 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110 ml-2 whitespace-nowrap"
                   style={{ background: 'rgba(255,107,26,0.12)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.25)' }}
                 >
                   Use Template
@@ -254,7 +254,7 @@ export default function DocumentsVaultPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

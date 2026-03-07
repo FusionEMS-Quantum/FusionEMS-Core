@@ -56,7 +56,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -103,7 +103,7 @@ function StatusBadge({ status }: { status: AppStatus }) {
   const s = STATUS_MAP[status] ?? STATUS_MAP.pending;
   return (
     <span
-      className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm whitespace-nowrap${s.pulse ? ' animate-pulse' : ''}`}
+      className={`px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4 whitespace-nowrap${s.pulse ? ' animate-pulse' : ''}`}
       style={{ color: s.color, background: s.bg }}
     >
       {s.label}
@@ -115,7 +115,7 @@ function LegalBadge({ legalStatus }: { legalStatus: string }) {
   const s = LEGAL_MAP[legalStatus] ?? LEGAL_MAP.not_sent;
   return (
     <span
-      className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm whitespace-nowrap"
+      className="px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4 whitespace-nowrap"
       style={{ color: s.color, background: s.bg }}
     >
       {s.label}
@@ -148,36 +148,36 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
-        className="bg-bg-base border border-[rgba(255,255,255,0.12)] rounded-sm p-5 w-full max-w-sm shadow-2xl"
+        className="bg-bg-base border border-[rgba(255,255,255,0.12)] chamfer-4 p-5 w-full max-w-sm shadow-2xl"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.7)' }}
       >
         <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary mb-2">{title}</h3>
-        <p className="text-[11px] text-[rgba(255,255,255,0.55)] mb-4 leading-relaxed">{message}</p>
+        <p className="text-body text-[rgba(255,255,255,0.55)] mb-4 leading-relaxed">{message}</p>
         {children && <div className="mb-4">{children}</div>}
         {title.toLowerCase().includes('revoke') && (
           <div className="mb-4">
-            <label className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)] block mb-1">
+            <label className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.4)] block mb-1">
               Reason (required)
             </label>
             <input
               value={extra}
               onChange={(e) => setExtra(e.target.value)}
               placeholder="Enter revocation reason…"
-              className="w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-[rgba(255,255,255,0.2)]"
+              className="w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-[rgba(255,255,255,0.2)]"
             />
           </div>
         )}
         <div className="flex gap-2 justify-end">
           <button
             onClick={onCancel}
-            className="h-8 px-4 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+            className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}
           >
             Cancel
           </button>
           <button
             onClick={() => onConfirm(extra || undefined)}
-            className="h-8 px-4 text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110"
+            className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110"
             style={{ background: confirmColor, color: confirmColor === 'var(--color-brand-red)' ? 'var(--color-text-primary)' : '#000' }}
           >
             {confirmLabel}
@@ -233,7 +233,7 @@ function DetailDrawer({
         <div className="px-5 py-4 border-b border-border-DEFAULT flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">Application Detail</h2>
-            <p className="text-[10px] text-text-muted mt-0.5">{app.agency_name}</p>
+            <p className="text-micro text-text-muted mt-0.5">{app.agency_name}</p>
           </div>
           <button
             onClick={onClose}
@@ -252,7 +252,7 @@ function DetailDrawer({
             <div className="space-y-2.5">
               {fields.map(({ label, value }) => (
                 <div key={label} className="flex items-start justify-between gap-3">
-                  <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)] flex-shrink-0 mt-0.5">
+                  <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] flex-shrink-0 mt-0.5">
                     {label}
                   </span>
                   <span className="text-xs text-[rgba(255,255,255,0.8)] text-right font-mono break-all">
@@ -266,11 +266,11 @@ function DetailDrawer({
           {/* Status */}
           <div className="flex items-center justify-between py-3 border-y border-border-subtle">
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Status</span>
+              <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Status</span>
               <StatusBadge status={app.status} />
             </div>
             <div className="flex flex-col gap-1.5 items-end">
-              <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Legal</span>
+              <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Legal</span>
               <LegalBadge legalStatus={app.legal_status} />
             </div>
           </div>
@@ -281,9 +281,9 @@ function DetailDrawer({
               Legal Packet Sign Events
             </p>
             {loadingEvents ? (
-              <p className="text-[11px] text-[rgba(255,255,255,0.3)]">Loading events…</p>
+              <p className="text-body text-[rgba(255,255,255,0.3)]">Loading events…</p>
             ) : signEvents.length === 0 ? (
-              <p className="text-[11px] text-[rgba(255,255,255,0.3)]">No sign events recorded</p>
+              <p className="text-body text-[rgba(255,255,255,0.3)]">No sign events recorded</p>
             ) : (
               <div className="space-y-2">
                 {signEvents.map((ev, i) => (
@@ -304,15 +304,15 @@ function DetailDrawer({
                       )}
                     </div>
                     <div className="pb-1">
-                      <p className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)] uppercase tracking-wide">
+                      <p className="text-body font-semibold text-[rgba(255,255,255,0.8)] uppercase tracking-wide">
                         {ev.event_type}
                       </p>
                       {ev.signer_name && (
-                        <p className="text-[10px] text-[rgba(255,255,255,0.45)]">
+                        <p className="text-micro text-[rgba(255,255,255,0.45)]">
                           {ev.signer_name}{ev.signer_email ? ` · ${ev.signer_email}` : ''}
                         </p>
                       )}
-                      <p className="text-[10px] font-mono text-[rgba(255,255,255,0.3)]">
+                      <p className="text-micro font-mono text-[rgba(255,255,255,0.3)]">
                         {new Date(ev.occurred_at).toLocaleString()}
                       </p>
                     </div>
@@ -331,7 +331,7 @@ function DetailDrawer({
               {app.legal_status === 'not_sent' && (
                 <button
                   onClick={() => onResendLegal(app)}
-                  className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                  className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(255,152,0,0.12)', border: '1px solid rgba(255,152,0,0.3)', color: 'var(--q-yellow)' }}
                 >
                   Send Legal
@@ -340,7 +340,7 @@ function DetailDrawer({
               {app.legal_status === 'sent' && app.status === 'legal_signed' && (
                 <button
                   onClick={() => onResendCheckout(app)}
-                  className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                  className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(41,182,246,0.1)', border: '1px solid rgba(41,182,246,0.25)', color: 'var(--color-status-info)' }}
                 >
                   Resend Checkout
@@ -349,7 +349,7 @@ function DetailDrawer({
               {app.status === 'paid' && (
                 <button
                   onClick={() => onManualProvision(app)}
-                  className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                  className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)', color: 'var(--q-orange)' }}
                 >
                   Manual Provision
@@ -358,7 +358,7 @@ function DetailDrawer({
               {app.status === 'active' && (
                 <button
                   onClick={() => onRevoke(app)}
-                  className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                  className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(229,57,53,0.12)', border: '1px solid rgba(229,57,53,0.3)', color: 'var(--q-red)' }}
                 >
                   Revoke
@@ -570,7 +570,7 @@ export default function OnboardingControlPage() {
 
       {/* Page header */}
       <div className="mb-5">
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
           FOUNDER TOOLS · ONBOARDING
         </div>
         <h1 className="text-lg font-black uppercase tracking-wider text-text-primary">
@@ -591,7 +591,7 @@ export default function OnboardingControlPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-bg-base border border-border-DEFAULT rounded-sm p-3"
+            className="bg-bg-base border border-border-DEFAULT chamfer-4 p-3"
           >
             <div className="text-[9px] uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">
               {s.label}
@@ -608,7 +608,7 @@ export default function OnboardingControlPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.4)]"
+          className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)]"
           style={{ minWidth: 150 }}
         >
           {STATUS_OPTS.map((o) => (
@@ -621,16 +621,16 @@ export default function OnboardingControlPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by email or agency…"
-          className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-text-disabled"
+          className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-text-disabled"
           style={{ minWidth: 220 }}
         />
-        <span className="text-[10px] text-[rgba(255,255,255,0.3)] ml-auto">
+        <span className="text-micro text-[rgba(255,255,255,0.3)] ml-auto">
           {apps.length} application{apps.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       {/* Table */}
-      <div className="bg-bg-base border border-border-DEFAULT rounded-sm overflow-x-auto">
+      <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-x-auto">
         <table className="w-full text-xs min-w-[860px]">
           <thead>
             <tr className="border-b border-[rgba(255,255,255,0.07)]">
@@ -656,14 +656,14 @@ export default function OnboardingControlPage() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-[11px] text-[rgba(255,255,255,0.3)]">
+                <td colSpan={8} className="py-10 text-center text-body text-[rgba(255,255,255,0.3)]">
                   Loading…
                 </td>
               </tr>
             )}
             {!loading && apps.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-[11px] text-[rgba(255,255,255,0.3)]">
+                <td colSpan={8} className="py-10 text-center text-body text-[rgba(255,255,255,0.3)]">
                   No applications found
                 </td>
               </tr>
@@ -789,7 +789,7 @@ function IconBtn({
   return (
     <button
       onClick={onClick}
-      className="w-7 h-7 flex items-center justify-center rounded-sm text-xs font-bold transition-all hover:brightness-125"
+      className="w-7 h-7 flex items-center justify-center chamfer-4 text-xs font-bold transition-all hover:brightness-125"
       style={{ color, background: bg, border: `1px solid ${border}` }}
     >
       {children}
@@ -808,7 +808,7 @@ function Tooltip({ label, children }: { label: string; children: React.ReactNode
       {children}
       {show && (
         <div
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-sm text-[9px] font-semibold uppercase tracking-wider whitespace-nowrap pointer-events-none z-10"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 chamfer-4 text-[9px] font-semibold uppercase tracking-wider whitespace-nowrap pointer-events-none z-10"
           style={{ background: 'var(--color-bg-input)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}
         >
           {label}

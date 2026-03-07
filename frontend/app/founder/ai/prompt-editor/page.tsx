@@ -63,7 +63,7 @@ export default function PromptEditorPage() {
   return (
     <div className="p-5 min-h-screen space-y-6">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Prompt Editor</h1>
         <p className="text-xs text-text-muted mt-0.5">Build, version, and test system prompts with guardrails</p>
       </div>
@@ -86,15 +86,15 @@ export default function PromptEditorPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-bold text-text-primary">{selected.template_key}</div>
-              <div className="text-[10px] text-text-muted">Domain: {selected.domain} · Version: {selected.version}</div>
+              <div className="text-micro text-text-muted">Domain: {selected.domain} · Version: {selected.version}</div>
             </div>
-            <button onClick={() => setSelected(null)} className="text-[10px] uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors">
+            <button onClick={() => setSelected(null)} className="text-micro uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors">
               Cancel
             </button>
           </div>
 
           <div>
-            <label className="text-[10px] uppercase tracking-widest text-text-muted block mb-1">System Prompt</label>
+            <label className="text-micro uppercase tracking-widest text-text-muted block mb-1">System Prompt</label>
             <textarea
               value={editSystem}
               onChange={(e) => setEditSystem(e.target.value)}
@@ -104,7 +104,7 @@ export default function PromptEditorPage() {
           </div>
 
           <div>
-            <label className="text-[10px] uppercase tracking-widest text-text-muted block mb-1">User Prompt Template</label>
+            <label className="text-micro uppercase tracking-widest text-text-muted block mb-1">User Prompt Template</label>
             <textarea
               value={editUser}
               onChange={(e) => setEditUser(e.target.value)}
@@ -116,7 +116,7 @@ export default function PromptEditorPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 chamfer-4 border transition-colors hover:bg-[rgba(255,107,26,0.12)] disabled:opacity-50"
+            className="text-micro uppercase tracking-widest font-bold px-4 py-2 chamfer-4 border transition-colors hover:bg-[rgba(255,107,26,0.12)] disabled:opacity-50"
             style={{ color: 'var(--color-brand-orange)', borderColor: 'rgba(255,107,26,0.35)' }}
           >
             {saving ? 'Saving...' : 'Save & Version'}
@@ -141,11 +141,11 @@ export default function PromptEditorPage() {
             >
               <div className="min-w-0">
                 <div className="text-sm font-bold text-text-primary">{tpl.template_key}</div>
-                <div className="text-[10px] text-text-muted">Domain: {tpl.domain} · v{tpl.version}</div>
+                <div className="text-micro text-text-muted">Domain: {tpl.domain} · v{tpl.version}</div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4"
+                  className="text-micro uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4"
                   style={{
                     color: tpl.is_active ? 'var(--color-status-active)' : 'var(--color-text-muted)',
                     background: tpl.is_active ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.04)',

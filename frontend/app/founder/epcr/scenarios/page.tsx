@@ -91,7 +91,7 @@ export default function ScenariosPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
           ePCR · TEST SCENARIOS
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Test Scenarios</h1>
@@ -140,12 +140,12 @@ export default function ScenariosPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 ${d.dataset_type === 'DEM' ? 'bg-purple-900 text-purple-300' : 'bg-blue-900 text-blue-300'}`}
+                      className={`text-micro font-bold px-2 py-0.5 ${d.dataset_type === 'DEM' ? 'bg-purple-900 text-purple-300' : 'bg-blue-900 text-blue-300'}`}
                     >
                       {d.dataset_type || 'EMS'}
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 ${d.expected_result === 'PASS' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
+                      className={`text-micro font-bold px-2 py-0.5 ${d.expected_result === 'PASS' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
                     >
                       Expected: {d.expected_result || 'PASS'}
                     </span>
@@ -155,7 +155,7 @@ export default function ScenariosPage() {
                 {d.sections && d.sections.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {d.sections.map((s: string, i: number) => (
-                      <span key={i} className="text-[10px] bg-bg-input border border-border-DEFAULT text-[rgba(255,255,255,0.5)] px-2 py-0.5">
+                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-[rgba(255,255,255,0.5)] px-2 py-0.5">
                         {s}
                       </span>
                     ))}
@@ -180,7 +180,7 @@ export default function ScenariosPage() {
                   {result && (
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 ${result.passed ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
+                        className={`text-micro font-bold px-2 py-0.5 ${result.passed ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
                       >
                         {result.passed ? 'PASS' : 'FAIL'}
                       </span>

@@ -167,11 +167,11 @@ export default function FounderCompliancePacksPage() {
 
       <div className="p-6 space-y-8 max-w-6xl">
         {/* Tenant Selector */}
-        <div className="rounded-xl border border-border-subtle bg-bg-panel p-4">
+        <div className="chamfer-4-xl border border-border-subtle bg-bg-panel p-4">
           <h2 className="text-sm font-semibold text-text-primary mb-3">Tenant Selector</h2>
           <div className="flex gap-3">
             <input
-              className="flex-1 px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500 font-mono"
+              className="flex-1 px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500 font-mono"
               placeholder="Tenant UUID"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
@@ -180,7 +180,7 @@ export default function FounderCompliancePacksPage() {
             <button
               onClick={() => loadTenantStatus(tenantId)}
               disabled={!tenantId || loadingStatus}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded text-sm font-medium transition-colors"
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
             >
               {loadingStatus ? "Loading…" : "Load Status"}
             </button>
@@ -188,19 +188,19 @@ export default function FounderCompliancePacksPage() {
 
           {tenantStatus && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="rounded-lg bg-bg-raised p-3">
+              <div className="chamfer-8 bg-bg-raised p-3">
                 <p className="text-xs text-text-muted">Active Packs</p>
                 <p className="text-xl font-bold text-text-primary">{tenantStatus.active_pack_ids.length}</p>
               </div>
-              <div className="rounded-lg bg-bg-raised p-3">
+              <div className="chamfer-8 bg-bg-raised p-3">
                 <p className="text-xs text-text-muted">Fleet Score</p>
                 <p className="text-xl font-bold text-text-primary">{tenantStatus.fleet_score !== null ? `${tenantStatus.fleet_score}%` : "—"}</p>
               </div>
-              <div className="rounded-lg bg-bg-raised p-3">
+              <div className="chamfer-8 bg-bg-raised p-3">
                 <p className="text-xs text-text-muted">Inspections</p>
                 <p className="text-xl font-bold text-text-primary">{tenantStatus.inspections_total}</p>
               </div>
-              <div className="rounded-lg bg-bg-raised p-3">
+              <div className="chamfer-8 bg-bg-raised p-3">
                 <p className="text-xs text-text-muted">Active Set</p>
                 <p className="text-sm font-semibold text-emerald-400 truncate">{tenantStatus.active_set_id ?? "—"}</p>
               </div>
@@ -218,13 +218,13 @@ export default function FounderCompliancePacksPage() {
               return (
                 <div
                   key={set.set_id}
-                  className={`rounded-xl border p-5 transition-colors ${
+                  className={`chamfer-4-xl border p-5 transition-colors ${
                     isActive ? "border-emerald-700 bg-emerald-900/10" : "border-border-subtle bg-bg-panel"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-bg-overlay flex items-center justify-center text-xs font-bold text-text-secondary">
+                      <div className="w-10 h-10 chamfer-8 bg-bg-overlay flex items-center justify-center text-xs font-bold text-text-secondary">
                         {SET_ICONS[set.set_id] ?? "SET"}
                       </div>
                       <div>
@@ -233,12 +233,12 @@ export default function FounderCompliancePacksPage() {
                       </div>
                     </div>
                     {isActive ? (
-                      <span className="flex-shrink-0 px-2 py-1 bg-emerald-800/50 text-emerald-400 text-xs rounded font-medium">Active</span>
+                      <span className="flex-shrink-0 px-2 py-1 bg-emerald-800/50 text-emerald-400 text-xs chamfer-4 font-medium">Active</span>
                     ) : (
                       <button
                         onClick={() => setConfirmSet(set)}
                         disabled={!tenantId || isApplying || !!applying}
-                        className="flex-shrink-0 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 rounded text-xs font-semibold transition-colors"
+                        className="flex-shrink-0 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 chamfer-4 text-xs font-semibold transition-colors"
                       >
                         {isApplying ? "Applying…" : "Apply"}
                       </button>
@@ -248,7 +248,7 @@ export default function FounderCompliancePacksPage() {
                     {set.pack_ids.map((pid) => (
                       <span
                         key={pid}
-                        className={`px-2 py-0.5 rounded text-xs border ${
+                        className={`px-2 py-0.5 chamfer-4 text-xs border ${
                           activePacks.has(pid) ? "bg-emerald-900/30 text-emerald-400 border-emerald-800" : "bg-bg-raised text-text-muted border-border-DEFAULT"
                         }`}
                       >
@@ -265,7 +265,7 @@ export default function FounderCompliancePacksPage() {
         {/* All Packs Table */}
         <div>
           <h2 className="text-base font-semibold text-text-primary mb-3">All Packs</h2>
-          <div className="rounded-xl border border-border-subtle overflow-hidden">
+          <div className="chamfer-4-xl border border-border-subtle overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-bg-raised text-text-muted text-xs">
                 <tr>
@@ -293,9 +293,9 @@ export default function FounderCompliancePacksPage() {
                       </td>
                       <td className="px-4 py-3">
                         {isActive ? (
-                          <span className="px-2 py-0.5 bg-emerald-900/40 text-emerald-400 rounded text-xs">Active</span>
+                          <span className="px-2 py-0.5 bg-emerald-900/40 text-emerald-400 chamfer-4 text-xs">Active</span>
                         ) : tenantStatus ? (
-                          <span className="px-2 py-0.5 bg-bg-overlay text-text-muted rounded text-xs">Inactive</span>
+                          <span className="px-2 py-0.5 bg-bg-overlay text-text-muted chamfer-4 text-xs">Inactive</span>
                         ) : (
                           <span className="text-text-disabled text-xs">—</span>
                         )}
@@ -307,7 +307,7 @@ export default function FounderCompliancePacksPage() {
                               <button
                                 onClick={() => enablePack(pack.pack_id)}
                                 disabled={isEnabling || !!applying}
-                                className="px-3 py-1 bg-emerald-800 hover:bg-emerald-700 disabled:opacity-40 rounded text-xs transition-colors"
+                                className="px-3 py-1 bg-emerald-800 hover:bg-emerald-700 disabled:opacity-40 chamfer-4 text-xs transition-colors"
                               >
                                 {isEnabling ? "Enabling…" : "Enable"}
                               </button>
@@ -315,7 +315,7 @@ export default function FounderCompliancePacksPage() {
                               <button
                                 onClick={() => disablePack(pack.pack_id)}
                                 disabled={isDisabling || !!applying}
-                                className="px-3 py-1 bg-bg-overlay hover:bg-bg-overlay disabled:opacity-40 rounded text-xs transition-colors"
+                                className="px-3 py-1 bg-bg-overlay hover:bg-bg-overlay disabled:opacity-40 chamfer-4 text-xs transition-colors"
                               >
                                 {isDisabling ? "Disabling…" : "Disable"}
                               </button>
@@ -344,7 +344,7 @@ export default function FounderCompliancePacksPage() {
             <h2 className="text-base font-semibold text-text-primary mb-3">Tenant Active Packs</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {tenantStatus.active_packs.map((p) => (
-                <div key={p.pack_id} className="rounded-lg border border-emerald-800 bg-emerald-900/10 p-3">
+                <div key={p.pack_id} className="chamfer-8 border border-emerald-800 bg-emerald-900/10 p-3">
                   <p className="text-sm font-medium text-emerald-300">{p.name}</p>
                   <p className="text-xs text-text-muted mt-0.5">{p.jurisdiction} · {p.status}</p>
                 </div>
@@ -355,7 +355,7 @@ export default function FounderCompliancePacksPage() {
 
         {/* Progress Log */}
         {progressLog.length > 0 && (
-          <div className="rounded-xl border border-border-subtle bg-bg-panel p-4">
+          <div className="chamfer-4-xl border border-border-subtle bg-bg-panel p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-text-primary">Activity Log</h3>
               {!applying && (
@@ -377,7 +377,7 @@ export default function FounderCompliancePacksPage() {
       {/* Confirm Modal */}
       {confirmSet && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-bg-panel border border-border-DEFAULT rounded-xl p-6 max-w-md w-full shadow-2xl">
+          <div className="bg-bg-panel border border-border-DEFAULT chamfer-4-xl p-6 max-w-md w-full shadow-2xl">
             <h3 className="text-lg font-bold text-text-primary mb-2">Apply Pack Set</h3>
             <p className="text-sm text-text-secondary mb-4">
               Apply <span className="text-blue-400 font-semibold">{confirmSet.label}</span> to tenant{" "}
@@ -399,13 +399,13 @@ export default function FounderCompliancePacksPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmSet(null)}
-                className="flex-1 py-2 border border-border-DEFAULT rounded-lg text-sm text-text-secondary hover:bg-bg-raised transition-colors"
+                className="flex-1 py-2 border border-border-DEFAULT chamfer-8 text-sm text-text-secondary hover:bg-bg-raised transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => applySet(confirmSet)}
-                className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition-colors"
+                className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 chamfer-8 text-sm font-semibold transition-colors"
               >
                 Apply Now
               </button>

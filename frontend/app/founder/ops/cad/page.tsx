@@ -38,7 +38,7 @@ const STATE_SEQUENCE = [
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-lg p-4 ${className}`}>
+    <div className={`bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] chamfer-8 p-4 ${className}`}>
       {children}
     </div>
   );
@@ -47,7 +47,7 @@ function Panel({ children, className = '' }: { children: React.ReactNode; classN
 function StateBadge({ state }: { state: string }) {
   const c = STATE_COLORS[state] ?? { bg: 'rgba(120,130,140,0.2)', text: '#78909c' };
   return (
-    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+    <span className="inline-block px-2 py-0.5 chamfer-4 text-micro font-bold uppercase tracking-wider"
       style={{ background: c.bg, color: c.text }}>
       {state.replace(/_/g, ' ')}
     </span>
@@ -149,26 +149,26 @@ export default function CadDispatchPage() {
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
       {toast && (
-        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">{toast}</div>
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 chamfer-8 text-sm font-medium shadow-lg">{toast}</div>
       )}
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-[11px] text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
+          <Link href="/founder/ops" className="text-body text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">CAD / Dispatch</h1>
           <p className="text-sm text-[rgba(255,255,255,0.45)] mt-1">Mission intake · State machine · Unit & crew assignment · Full audit trail</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.3)] rounded-lg">
+          <div className="px-3 py-1.5 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.3)] chamfer-8">
             <span className="text-orange-400 text-sm font-bold">{active.length}</span>
-            <span className="text-[10px] text-[rgba(255,255,255,0.4)] ml-1">ACTIVE</span>
+            <span className="text-micro text-[rgba(255,255,255,0.4)] ml-1">ACTIVE</span>
           </div>
-          <div className="px-3 py-1.5 bg-[rgba(229,57,53,0.1)] border border-[rgba(229,57,53,0.3)] rounded-lg">
+          <div className="px-3 py-1.5 bg-[rgba(229,57,53,0.1)] border border-[rgba(229,57,53,0.3)] chamfer-8">
             <span className="text-red-400 text-sm font-bold">{unassigned.length}</span>
-            <span className="text-[10px] text-[rgba(255,255,255,0.4)] ml-1">UNASSIGNED</span>
+            <span className="text-micro text-[rgba(255,255,255,0.4)] ml-1">UNASSIGNED</span>
           </div>
-          <button onClick={load} className="px-3 py-1.5 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-[11px] rounded-lg hover:bg-[rgba(255,255,255,0.1)]">
+          <button onClick={load} className="px-3 py-1.5 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] text-body chamfer-8 hover:bg-[rgba(255,255,255,0.1)]">
             ↻ Refresh
           </button>
         </div>
@@ -176,7 +176,7 @@ export default function CadDispatchPage() {
 
       {/* ── CAD State Machine Legend ── */}
       <Panel>
-        <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Mission State Machine</div>
+        <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Mission State Machine</div>
         <div className="flex flex-wrap gap-1.5">
           {STATE_SEQUENCE.map((s, i) => (
             <span key={s} className="flex items-center gap-1">
@@ -189,35 +189,35 @@ export default function CadDispatchPage() {
 
       {/* ── New Mission Intake ── */}
       <Panel>
-        <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">New Dispatch Request</div>
+        <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">New Dispatch Request</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <select value={newRequest.service_level} onChange={e => setNewRequest(p => ({ ...p, service_level: e.target.value }))}
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400">
+            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400">
             {['BLS','ALS','CCT','HEMS'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={newRequest.priority} onChange={e => setNewRequest(p => ({ ...p, priority: e.target.value }))}
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400">
+            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400">
             {['P1','P2','P3','ROUTINE','ECHO','DELTA'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <input value={newRequest.origin_address} onChange={e => setNewRequest(p => ({ ...p, origin_address: e.target.value }))}
             placeholder="Origin address *"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
           <input value={newRequest.chief_complaint} onChange={e => setNewRequest(p => ({ ...p, chief_complaint: e.target.value }))}
             placeholder="Chief complaint"
-            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
+            className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
         </div>
         <button onClick={createRequest} disabled={creating || !newRequest.origin_address}
-          className="px-6 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-500 disabled:opacity-40 transition-colors">
+          className="px-6 py-2 bg-orange-600 text-white text-sm font-bold chamfer-8 hover:bg-orange-500 disabled:opacity-40 transition-colors">
           {creating ? 'Creating…' : '+ Create Mission'}
         </button>
       </Panel>
 
       {/* ── Filter ── */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)]">Filter by state:</span>
-        <button onClick={() => setFilterState('')} className={`px-2 py-1 rounded text-[10px] font-bold ${!filterState ? 'bg-orange-600 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>ALL</button>
+        <span className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)]">Filter by state:</span>
+        <button onClick={() => setFilterState('')} className={`px-2 py-1 chamfer-4 text-micro font-bold ${!filterState ? 'bg-orange-600 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>ALL</button>
         {['NEW_REQUEST','READY_FOR_ASSIGNMENT','ASSIGNED','EN_ROUTE','ON_SCENE','TRANSPORTING'].map(s => (
-          <button key={s} onClick={() => setFilterState(s)} className={`px-2 py-1 rounded text-[10px] font-bold ${filterState === s ? 'bg-orange-600 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>
+          <button key={s} onClick={() => setFilterState(s)} className={`px-2 py-1 chamfer-4 text-micro font-bold ${filterState === s ? 'bg-orange-600 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>
             {s.replace(/_/g, ' ')}
           </button>
         ))}
@@ -227,7 +227,7 @@ export default function CadDispatchPage() {
       <div className="space-y-2">
         {loading && <div className="text-sm text-[rgba(255,255,255,0.4)] p-4">Loading missions…</div>}
         {!loading && filtered.length === 0 && (
-          <div className="text-center py-10 rounded-xl border border-[rgba(255,255,255,0.08)]">
+          <div className="text-center py-10 chamfer-4-xl border border-[rgba(255,255,255,0.08)]">
             <div className="text-3xl mb-2">📡</div>
             <div className="text-sm text-[rgba(255,255,255,0.45)]">No missions found. Create a new dispatch request above.</div>
           </div>
@@ -239,20 +239,20 @@ export default function CadDispatchPage() {
           const priorityColor = PRIORITY_COLORS[d.priority] ?? '#78909c';
 
           return (
-            <div key={m.id} className="rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+            <div key={m.id} className="chamfer-4-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
               <button onClick={() => setSelected(isSelected ? null : m)}
                 className="w-full flex items-center gap-4 p-4 text-left hover:bg-[rgba(255,255,255,0.03)] transition-colors">
                 <div className="flex-shrink-0">
-                  <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: priorityColor }}>{d.priority}</div>
-                  <div className="text-[11px] font-bold text-white mt-0.5">{d.service_level}</div>
+                  <div className="text-micro font-bold uppercase tracking-widest" style={{ color: priorityColor }}>{d.priority}</div>
+                  <div className="text-body font-bold text-white mt-0.5">{d.service_level}</div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{d.chief_complaint || 'No complaint recorded'}</div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.45)] truncate">{d.origin_address}</div>
+                  <div className="text-body text-[rgba(255,255,255,0.45)] truncate">{d.origin_address}</div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <StateBadge state={d.state} />
-                  {d.assigned_unit_id && <span className="text-[10px] text-green-400">Unit: {d.assigned_unit_id.slice(0, 8)}</span>}
+                  {d.assigned_unit_id && <span className="text-micro text-green-400">Unit: {d.assigned_unit_id.slice(0, 8)}</span>}
                   <span className="text-[rgba(255,255,255,0.2)] text-sm">{isSelected ? '▲' : '▼'}</span>
                 </div>
               </button>
@@ -261,7 +261,7 @@ export default function CadDispatchPage() {
                 <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.06)] space-y-4">
                   {/* State transition controls */}
                   <div className="mt-4">
-                    <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-2">Transition State</div>
+                    <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-2">Transition State</div>
                     <div className="flex flex-wrap gap-2">
                       {STATE_SEQUENCE
                         .filter(s => s !== d.state && !['CANCELLED','CLOSED'].includes(d.state))
@@ -269,7 +269,7 @@ export default function CadDispatchPage() {
                         .map(s => (
                           <button key={s} onClick={() => transition(m.id, s)}
                             disabled={transitioning}
-                            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-[rgba(255,255,255,0.12)] text-white hover:bg-[rgba(255,255,255,0.08)] disabled:opacity-40 transition-colors">
+                            className="px-3 py-1.5 chamfer-8 text-body font-semibold border border-[rgba(255,255,255,0.12)] text-white hover:bg-[rgba(255,255,255,0.08)] disabled:opacity-40 transition-colors">
                             → {s.replace(/_/g, ' ')}
                           </button>
                         ))
@@ -277,19 +277,19 @@ export default function CadDispatchPage() {
                     </div>
                     {transitionResult?.error === 'invalid_transition' && (
                       <div className="mt-3 space-y-2">
-                        <div className="text-[11px] text-yellow-400">{transitionResult.reason}</div>
+                        <div className="text-body text-yellow-400">{transitionResult.reason}</div>
                         <input value={overrideReason} onChange={e => setOverrideReason(e.target.value)}
                           placeholder="Override reason (required for manual override)"
-                          className="w-full h-8 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.3)] px-3 text-[11px] text-white rounded-lg focus:outline-none placeholder-[rgba(255,255,255,0.3)]" />
+                          className="w-full h-8 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.3)] px-3 text-body text-white chamfer-8 focus:outline-none placeholder-[rgba(255,255,255,0.3)]" />
                         <button onClick={() => transition(m.id, selected?.data?.state || '', true)}
                           disabled={!overrideReason}
-                          className="px-4 py-1.5 bg-orange-700 text-white text-[11px] font-bold rounded-lg hover:bg-orange-600 disabled:opacity-40">
+                          className="px-4 py-1.5 bg-orange-700 text-white text-body font-bold chamfer-8 hover:bg-orange-600 disabled:opacity-40">
                           Apply Manual Override
                         </button>
                       </div>
                     )}
                     {transitionResult && !transitionResult.error && (
-                      <div className="mt-2 text-[11px] text-green-400">
+                      <div className="mt-2 text-body text-green-400">
                         ✓ {transitionResult.previous_state} → {transitionResult.current_state}
                       </div>
                     )}
@@ -298,20 +298,20 @@ export default function CadDispatchPage() {
                   {/* Mission details */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Mission ID</div>
-                      <div className="text-[11px] text-white font-mono">{m.id.slice(0, 16)}</div>
+                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Mission ID</div>
+                      <div className="text-body text-white font-mono">{m.id.slice(0, 16)}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Destination</div>
-                      <div className="text-[11px] text-white">{d.destination_address || 'Not set'}</div>
+                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Destination</div>
+                      <div className="text-body text-white">{d.destination_address || 'Not set'}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Created</div>
-                      <div className="text-[11px] text-white">{d.created_at ? new Date(d.created_at).toLocaleString() : '—'}</div>
+                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Created</div>
+                      <div className="text-body text-white">{d.created_at ? new Date(d.created_at).toLocaleString() : '—'}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Last State Change</div>
-                      <div className="text-[11px] text-white">{d.state_updated_at ? new Date(d.state_updated_at).toLocaleString() : '—'}</div>
+                      <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Last State Change</div>
+                      <div className="text-body text-white">{d.state_updated_at ? new Date(d.state_updated_at).toLocaleString() : '—'}</div>
                     </div>
                   </div>
 
@@ -329,7 +329,7 @@ export default function CadDispatchPage() {
                             showToast('Mission cancelled'); load();
                           }
                         }}
-                        className="px-4 py-1.5 bg-[rgba(229,57,53,0.1)] border border-[rgba(229,57,53,0.3)] text-red-400 text-[11px] font-bold rounded-lg hover:bg-[rgba(229,57,53,0.15)]">
+                        className="px-4 py-1.5 bg-[rgba(229,57,53,0.1)] border border-[rgba(229,57,53,0.3)] text-red-400 text-body font-bold chamfer-8 hover:bg-[rgba(229,57,53,0.15)]">
                         Cancel Mission
                       </button>
                     </div>

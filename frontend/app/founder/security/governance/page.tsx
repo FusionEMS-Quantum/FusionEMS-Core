@@ -45,7 +45,7 @@ function ScoreRing({ score, label, color }: { score: number; label: string; colo
         />
         <text x="44" y="48" textAnchor="middle" fontSize="18" fontWeight="700" fill="white">{pct}</text>
       </svg>
-      <span className="text-[10px] uppercase tracking-widest text-text-muted mt-1">{label}</span>
+      <span className="text-micro uppercase tracking-widest text-text-muted mt-1">{label}</span>
     </div>
   );
 }
@@ -56,7 +56,7 @@ function TrustBadge({ label, status, count }: { label: string; status: string; c
   return (
     <div className="flex items-center gap-2 bg-bg-panel border border-border-DEFAULT px-3 py-2" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: c }} />
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-text-muted flex-1">{label}</span>
+      <span className="text-micro font-semibold uppercase tracking-widest text-text-muted flex-1">{label}</span>
       {count != null && <span className="text-sm font-bold" style={{ color: c }}>{count}</span>}
     </div>
   );
@@ -68,7 +68,7 @@ function TimelineRow({ time, actor, action, level }: { time: string; actor: stri
   return (
     <div className="flex items-center gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: c }} />
-      <span className="text-[10px] text-[rgba(255,255,255,0.35)] font-mono w-16 flex-shrink-0">{time}</span>
+      <span className="text-micro text-[rgba(255,255,255,0.35)] font-mono w-16 flex-shrink-0">{time}</span>
       <span className="text-xs text-text-secondary flex-1">{actor} — {action}</span>
     </div>
   );
@@ -81,12 +81,12 @@ function NextActionCard({ rank, title, why, action, severity: sev }: { rank: num
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: rank * 0.08 }}
       className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">#{rank}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">#{rank}</span>
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
         <span className="text-xs font-bold text-text-primary">{title}</span>
       </div>
-      <p className="text-[11px] text-[rgba(255,255,255,0.5)] mb-2">{why}</p>
-      <p className="text-[11px] font-semibold" style={{ color: c }}>→ {action}</p>
+      <p className="text-body text-[rgba(255,255,255,0.5)] mb-2">{why}</p>
+      <p className="text-body font-semibold" style={{ color: c }}>→ {action}</p>
     </motion.div>
   );
 }
@@ -96,7 +96,7 @@ function MeterBar({ label, value, max, color }: { label: string; value: number; 
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-[10px] text-[rgba(255,255,255,0.45)] w-24 flex-shrink-0">{label}</span>
+      <span className="text-micro text-[rgba(255,255,255,0.45)] w-24 flex-shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
         <motion.div className="h-full rounded-full" style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
       </div>
@@ -188,16 +188,16 @@ export default function GovernanceCommandPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">TRUST & GOVERNANCE</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">TRUST & GOVERNANCE</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Compliance Command Center</h1>
           <p className="text-xs text-text-muted mt-0.5">Security · Audit · PHI · Interoperability · Policy — Real-Time</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/founder/security/access-logs" className="h-8 px-3 bg-[rgba(229,57,53,0.12)] border border-red-ghost text-red text-xs font-semibold rounded-sm hover:bg-[rgba(229,57,53,0.2)] transition-colors flex items-center gap-1.5">
+          <Link href="/founder/security/access-logs" className="h-8 px-3 bg-[rgba(229,57,53,0.12)] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-[rgba(229,57,53,0.2)] transition-colors flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-red animate-pulse" />
             Access Logs
           </Link>
-          <Link href="/founder/security/role-builder" className="h-8 px-3 bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.25)] text-system-compliance text-xs font-semibold rounded-sm hover:bg-[rgba(168,85,247,0.15)] transition-colors flex items-center">
+          <Link href="/founder/security/role-builder" className="h-8 px-3 bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.25)] text-system-compliance text-xs font-semibold chamfer-4 hover:bg-[rgba(168,85,247,0.15)] transition-colors flex items-center">
             Role Builder
           </Link>
         </div>
@@ -213,7 +213,7 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE 01</span>
+                <span className="text-micro font-bold text-orange-dim font-mono">MODULE 01</span>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Trust Scores</h2>
               </div>
             </div>
@@ -229,7 +229,7 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE 02</span>
+                <span className="text-micro font-bold text-orange-dim font-mono">MODULE 02</span>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Status Badges</h2>
               </div>
             </div>
@@ -245,7 +245,7 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE 03</span>
+                <span className="text-micro font-bold text-orange-dim font-mono">MODULE 03</span>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Activity Meters</h2>
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE 04</span>
+                <span className="text-micro font-bold text-orange-dim font-mono">MODULE 04</span>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Sensitive Access Timeline</h2>
               </div>
             </div>
@@ -278,7 +278,7 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE 05</span>
+                <span className="text-micro font-bold text-orange-dim font-mono">MODULE 05</span>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Next Best Actions</h2>
                 <span className="text-xs text-[rgba(255,255,255,0.35)]">Top 3 priorities</span>
               </div>
@@ -292,13 +292,13 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE 06</span>
+                <span className="text-micro font-bold text-orange-dim font-mono">MODULE 06</span>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">Simple Mode</h2>
               </div>
             </div>
             <div className="bg-bg-panel border border-border-DEFAULT p-5 space-y-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-orange-dim mb-1">WHAT HAPPENED</div>
+                <div className="text-micro font-bold uppercase tracking-widest text-orange-dim mb-1">WHAT HAPPENED</div>
                 <div className="text-sm text-text-primary">
                   {summary?.failed_logins_24h ? `${summary.failed_logins_24h} failed login attempts detected.` : 'No anomalies detected.'}
                   {summary?.phi_access_count_24h ? ` ${summary.phi_access_count_24h} PHI access events logged.` : ''}
@@ -306,7 +306,7 @@ export default function GovernanceCommandPage() {
                 </div>
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-orange-dim mb-1">WHY IT MATTERS</div>
+                <div className="text-micro font-bold uppercase tracking-widest text-orange-dim mb-1">WHY IT MATTERS</div>
                 <div className="text-sm text-[rgba(255,255,255,0.65)]">
                   {summary && summary.health_score < 80
                     ? 'Your trust score is below optimal. This means there are open security or compliance gaps that could put your agency at risk during audits or incidents.'
@@ -314,7 +314,7 @@ export default function GovernanceCommandPage() {
                 </div>
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-orange-dim mb-1">DO THIS NEXT</div>
+                <div className="text-micro font-bold uppercase tracking-widest text-orange-dim mb-1">DO THIS NEXT</div>
                 <div className="text-sm font-semibold text-text-primary">
                   {actions[0]?.action ?? 'Continue monitoring. All clear.'}
                 </div>

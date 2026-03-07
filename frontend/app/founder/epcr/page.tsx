@@ -45,7 +45,7 @@ export default function EpcrPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
           DOMAIN · ePCR & NEMSIS
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">ePCR &amp; NEMSIS</h1>

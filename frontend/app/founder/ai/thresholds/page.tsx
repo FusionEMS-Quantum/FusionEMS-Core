@@ -50,7 +50,7 @@ export default function AiThresholdsPage() {
   return (
     <div className="p-5 min-h-screen space-y-6">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Confidence Thresholds</h1>
         <p className="text-xs text-text-muted mt-0.5">Escalation rules per risk tier · auto-approve boundaries</p>
       </div>
@@ -63,7 +63,7 @@ export default function AiThresholdsPage() {
 
       {/* Threshold reference table */}
       <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-4">Confidence Policy by Risk Tier</div>
+        <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-4">Confidence Policy by Risk Tier</div>
         <div className="space-y-2">
           {CONFIDENCE_THRESHOLDS.map((ct) => (
             <div key={ct.tier} className="flex items-center gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
@@ -77,7 +77,7 @@ export default function AiThresholdsPage() {
 
       {/* Use cases by risk tier */}
       <div>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Active Use Cases</div>
+        <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Active Use Cases</div>
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
@@ -103,17 +103,17 @@ export default function AiThresholdsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-bold text-text-primary">{uc.name}</span>
                     {!uc.is_enabled && (
-                      <span className="text-[10px] uppercase tracking-widest text-text-muted px-1.5 py-0.5 border border-border-DEFAULT chamfer-4">
+                      <span className="text-micro uppercase tracking-widest text-text-muted px-1.5 py-0.5 border border-border-DEFAULT chamfer-4">
                         DISABLED
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-text-muted">
+                  <div className="text-micro text-text-muted">
                     {uc.domain} · Override: {uc.human_override_behavior} · Fallback: {uc.fallback_behavior}
                   </div>
                 </div>
                 <span
-                  className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
+                  className="text-micro uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
                   style={{
                     color: riskColor(uc.risk_tier),
                     background: `color-mix(in srgb, ${riskColor(uc.risk_tier)} 12%, transparent)`,

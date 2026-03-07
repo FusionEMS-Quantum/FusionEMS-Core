@@ -19,7 +19,7 @@ export default function CertificationPage() {
               <div className="micro-caps text-green-500 mb-1">EMS Subsystem</div>
               <h2 className="text-h3 font-bold text-text-primary">NEMSIS v3.5.1</h2>
             </div>
-            <span className="px-2 py-1 text-[10px] font-mono uppercase bg-green-500/20 text-green-400 border border-green-500/30 chamfer-2">
+            <span className="px-2 py-1 text-micro font-mono uppercase bg-green-500/20 text-green-400 border border-green-500/30 chamfer-2">
               Ready
             </span>
           </div>
@@ -41,7 +41,7 @@ export default function CertificationPage() {
               <div className="micro-caps text-red-500 mb-1">Fire Subsystem</div>
               <h2 className="text-h3 font-bold text-text-primary">NERIS (Modernized)</h2>
             </div>
-            <span className="px-2 py-1 text-[10px] font-mono uppercase bg-green-500/20 text-green-400 border border-green-500/30 chamfer-2">
+            <span className="px-2 py-1 text-micro font-mono uppercase bg-green-500/20 text-green-400 border border-green-500/30 chamfer-2">
               Ready
             </span>
           </div>

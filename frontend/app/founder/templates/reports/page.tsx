@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `color-mix(in srgb, ${c[status]} 25%, transparent)`, color: c[status], background: `color-mix(in srgb, ${c[status]} 7%, transparent)` }}
     >
       <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
@@ -64,13 +64,13 @@ export default function ReportsPage() {
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold tracking-widest font-mono mb-1" style={{ color: 'rgba(41,182,246,0.6)' }}>
+            <p className="text-micro font-bold tracking-widest font-mono mb-1" style={{ color: 'rgba(41,182,246,0.6)' }}>
               MODULE 8 · TEMPLATES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-status-info)' }}>Report Foundry</h1>
             <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Audit automation · clinical outcomes · denial intelligence</p>
           </div>
-          <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.4)] hover:text-status-info transition-colors font-mono">
+          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-status-info transition-colors font-mono">
             ← Back to Founder OS
           </Link>
         </div>
@@ -82,15 +82,15 @@ export default function ReportsPage() {
             <SectionHeader number="1" title="Report Matrix" sub={`${data.templates.length} system templates`} />
             <div className="space-y-3">
               {data.templates.map(t => (
-                <div key={t.id} className="p-3 bg-bg-input border border-border-DEFAULT rounded-sm flex items-start justify-between hover:border-status-info/40 transition-colors cursor-pointer">
+                <div key={t.id} className="p-3 bg-bg-input border border-border-DEFAULT chamfer-4 flex items-start justify-between hover:border-status-info/40 transition-colors cursor-pointer">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[12px] font-semibold text-[rgba(255,255,255,0.85)]">{t.name}</span>
                       <Badge label={t.freq} status="info" />
                     </div>
-                    <p className="text-[11px] text-[rgba(255,255,255,0.4)]">{t.desc}</p>
+                    <p className="text-body text-[rgba(255,255,255,0.4)]">{t.desc}</p>
                   </div>
-                  <button className="text-[10px] font-semibold px-3 py-1.5 rounded-sm" style={{ background: 'color-mix(in srgb, var(--color-status-info) 9%, transparent)', color: 'var(--color-status-info)', border: '1px solid color-mix(in srgb, var(--color-status-info) 19%, transparent)' }}>
+                  <button className="text-micro font-semibold px-3 py-1.5 chamfer-4" style={{ background: 'color-mix(in srgb, var(--color-status-info) 9%, transparent)', color: 'var(--color-status-info)', border: '1px solid color-mix(in srgb, var(--color-status-info) 19%, transparent)' }}>
                     Generate
                   </button>
                 </div>
@@ -100,11 +100,11 @@ export default function ReportsPage() {
 
           <Panel>
             <SectionHeader number="2" title="Recent Executions" sub="Last 5 generated reports" />
-            <table className="w-full text-[11px]">
+            <table className="w-full text-body">
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['ID', 'Name', 'Domain', 'Date', 'Status'].map(h => (
-                    <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-[10px]">{h}</th>
+                    <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -128,19 +128,19 @@ export default function ReportsPage() {
             <SectionHeader number="3" title="Scheduled Runs" sub="Automated cron jobs" />
             <div className="space-y-3">
               {data.scheduled.map((s, i) => (
-                <div key={i} className="p-3 bg-bg-input border border-border-subtle rounded-sm">
+                <div key={i} className="p-3 bg-bg-input border border-border-subtle chamfer-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.85)]">{s.name}</span>
-                    <span className="text-[10px] font-mono text-status-warning">{s.time}</span>
+                    <span className="text-body font-semibold text-[rgba(255,255,255,0.85)]">{s.name}</span>
+                    <span className="text-micro font-mono text-status-warning">{s.time}</span>
                   </div>
-                  <div className="flex items-center gap-4 text-[10px] text-[rgba(255,255,255,0.4)]">
+                  <div className="flex items-center gap-4 text-micro text-[rgba(255,255,255,0.4)]">
                     <span>Target: <span className="text-[rgba(255,255,255,0.6)]">{s.targets}</span></span>
                     <span>Format: <span className="text-[rgba(255,255,255,0.6)]">{s.format}</span></span>
                   </div>
                 </div>
               ))}
             </div>
-            <button className="w-full mt-3 text-[10px] uppercase tracking-widest font-semibold py-2 rounded-sm border border-dashed border-status-info/30 text-status-info hover:bg-status-info/5 transition-colors">
+            <button className="w-full mt-3 text-micro uppercase tracking-widest font-semibold py-2 chamfer-4 border border-dashed border-status-info/30 text-status-info hover:bg-status-info/5 transition-colors">
               + Add Schedule
             </button>
           </Panel>
@@ -152,7 +152,7 @@ export default function ReportsPage() {
                 <div key={a.year} className="flex items-center justify-between p-2 pl-3 bg-bg-input border-l-2 border-l-border-subtle hover:border-l-status-info transition-colors cursor-pointer">
                   <span className="text-[12px] font-mono text-[rgba(255,255,255,0.85)]">{a.year} Core Sync</span>
                   <div className="text-right">
-                    <div className="text-[11px] text-[rgba(255,255,255,0.6)]">{a.count} artifacts</div>
+                    <div className="text-body text-[rgba(255,255,255,0.6)]">{a.count} artifacts</div>
                     <div className="text-[9px] text-[rgba(255,255,255,0.3)]">{a.size}</div>
                   </div>
                 </div>

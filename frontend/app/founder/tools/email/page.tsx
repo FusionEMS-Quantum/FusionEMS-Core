@@ -27,7 +27,7 @@ type Attachment = { id: string; name: string; contentType: string; size: number 
 function Badge({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${color}40`, color, background: `${color}12` }}
     >
       {label}
@@ -131,15 +131,15 @@ export default function FounderEmailPage() {
     window.open(`${API}/api/v1/founder/graph/mail/${msgId}/attachments/${att.id}/download`, '_blank');
   };
 
-  const inputCls = 'w-full bg-bg-input border border-border-DEFAULT text-text-primary text-xs px-3 py-2 rounded-sm focus:outline-none focus:border-orange';
+  const inputCls = 'w-full bg-bg-input border border-border-DEFAULT text-text-primary text-xs px-3 py-2 chamfer-4 focus:outline-none focus:border-orange';
 
   return (
     <div className="p-5 space-y-5 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FOUNDER TOOLS · MICROSOFT GRAPH</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FOUNDER TOOLS · MICROSOFT GRAPH</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Inbox</h1>
-          <p className="text-[11px] text-text-muted mt-0.5">Application permissions · Founder mailbox only · No delegated access</p>
+          <p className="text-body text-text-muted mt-0.5">Application permissions · Founder mailbox only · No delegated access</p>
         </div>
         <div className="flex gap-2">
           {view !== 'compose' && (
@@ -161,7 +161,7 @@ export default function FounderEmailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Panel className="lg:col-span-1 overflow-hidden">
-          <div className="p-3 border-b border-border-subtle text-[10px] font-semibold uppercase tracking-widest text-text-muted">
+          <div className="p-3 border-b border-border-subtle text-micro font-semibold uppercase tracking-widest text-text-muted">
             Inbox {!loading && `· ${messages.length} messages`}
           </div>
           {loading ? (
@@ -177,14 +177,14 @@ export default function FounderEmailPage() {
                   className={`w-full text-left px-3 py-3 hover:bg-[rgba(255,255,255,0.03)] transition-colors ${selected?.id === msg.id ? 'bg-[rgba(255,107,26,0.06)] border-l-2 border-orange' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-0.5">
-                    <span className={`text-[11px] truncate ${msg.isRead ? 'text-[rgba(255,255,255,0.55)]' : 'text-text-primary font-semibold'}`}>
+                    <span className={`text-body truncate ${msg.isRead ? 'text-[rgba(255,255,255,0.55)]' : 'text-text-primary font-semibold'}`}>
                       {msg.from?.emailAddress?.name || msg.from?.emailAddress?.address || 'Unknown'}
                     </span>
-                    <span className="text-[10px] text-[rgba(255,255,255,0.3)] whitespace-nowrap shrink-0">{formatDate(msg.receivedDateTime)}</span>
+                    <span className="text-micro text-[rgba(255,255,255,0.3)] whitespace-nowrap shrink-0">{formatDate(msg.receivedDateTime)}</span>
                   </div>
-                  <div className={`text-[11px] truncate mb-0.5 ${msg.isRead ? 'text-[rgba(255,255,255,0.45)]' : 'text-[rgba(255,255,255,0.85)]'}`}>{msg.subject || '(no subject)'}</div>
-                  <div className="text-[10px] text-[rgba(255,255,255,0.28)] truncate">{msg.bodyPreview}</div>
-                  {msg.hasAttachments && <div className="text-[10px] text-status-warning mt-0.5">+ attachments</div>}
+                  <div className={`text-body truncate mb-0.5 ${msg.isRead ? 'text-[rgba(255,255,255,0.45)]' : 'text-[rgba(255,255,255,0.85)]'}`}>{msg.subject || '(no subject)'}</div>
+                  <div className="text-micro text-[rgba(255,255,255,0.28)] truncate">{msg.bodyPreview}</div>
+                  {msg.hasAttachments && <div className="text-micro text-status-warning mt-0.5">+ attachments</div>}
                 </button>
               ))}
             </div>
@@ -195,7 +195,7 @@ export default function FounderEmailPage() {
           <AnimatePresence mode="wait">
             {view === 'compose' ? (
               <motion.div key="compose" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 space-y-3">
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">New Message</div>
+                <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-2">New Message</div>
                 <input className={inputCls} placeholder="To (comma-separated)" value={composeForm.to} onChange={(e) => setComposeForm((f) => ({ ...f, to: e.target.value }))} />
                 <input className={inputCls} placeholder="CC (optional)" value={composeForm.cc} onChange={(e) => setComposeForm((f) => ({ ...f, cc: e.target.value }))} />
                 <input className={inputCls} placeholder="Subject" value={composeForm.subject} onChange={(e) => setComposeForm((f) => ({ ...f, subject: e.target.value }))} />
@@ -220,7 +220,7 @@ export default function FounderEmailPage() {
                       {selected.hasAttachments && <Badge label="Attachments" color="var(--color-status-warning)" />}
                     </div>
                   </div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.45)] space-y-0.5">
+                  <div className="text-body text-[rgba(255,255,255,0.45)] space-y-0.5">
                     <div><span className="text-[rgba(255,255,255,0.28)]">From: </span>{selected.from?.emailAddress?.name} &lt;{selected.from?.emailAddress?.address}&gt;</div>
                     <div><span className="text-[rgba(255,255,255,0.28)]">Date: </span>{formatDate(selected.receivedDateTime)}</div>
                   </div>
@@ -230,7 +230,7 @@ export default function FounderEmailPage() {
                     <iframe
                       ref={iframeRef}
                       srcDoc={selected.body.content}
-                      className="w-full min-h-[300px] border-0 bg-white rounded-sm"
+                      className="w-full min-h-[300px] border-0 bg-white chamfer-4"
                       sandbox=""
                       title="message-body"
                     />
@@ -240,13 +240,13 @@ export default function FounderEmailPage() {
                 </div>
                 {attachments.length > 0 && (
                   <div className="px-4 pb-3 border-t border-border-subtle pt-3">
-                    <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">Attachments</div>
+                    <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-2">Attachments</div>
                     <div className="flex flex-wrap gap-2">
                       {attachments.map((att) => (
                         <button
                           key={att.id}
                           onClick={() => downloadAttachment(selected.id, att)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] border border-border-DEFAULT text-[rgba(255,255,255,0.6)] hover:text-text-primary hover:border-[rgba(255,255,255,0.25)] transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-body border border-border-DEFAULT text-[rgba(255,255,255,0.6)] hover:text-text-primary hover:border-[rgba(255,255,255,0.25)] transition-colors"
                         >
                           <span>↓</span>
                           <span className="truncate max-w-[180px]">{att.name}</span>

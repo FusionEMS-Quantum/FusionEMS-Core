@@ -347,8 +347,7 @@ function Step3({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       ))}
       <button
         onClick={addStation}
-        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
-        style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
+        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4 bg-cyan-500/[0.08] border border-cyan-500/20 text-system-billing"
       >
         + Add Station
       </button>
@@ -426,8 +425,7 @@ function Step4({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       ))}
       <button
         onClick={addRow}
-        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
-        style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
+        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4 bg-cyan-500/[0.08] border border-cyan-500/20 text-system-billing"
       >
         + Add Unit
       </button>
@@ -490,8 +488,7 @@ function Step5({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       ))}
       <button
         onClick={addRow}
-        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
-        style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
+        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4 bg-cyan-500/[0.08] border border-cyan-500/20 text-system-billing"
       >
         + Add Person
       </button>
@@ -559,7 +556,7 @@ function Step6({
         </div>
       )}
       {(done || assignedPackName) && packName && (
-        <div className="p-4 chamfer-4" style={{ background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)' }}>
+        <div className="p-4 chamfer-4 bg-green-500/[0.08] border border-green-500/25">
           <p className="text-xs font-semibold text-status-active">Pack Assigned Successfully</p>
           <p className="text-xs text-text-secondary mt-1 font-mono">{packName}</p>
         </div>
@@ -704,8 +701,7 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
         <button
           onClick={handleCreateAndValidate}
           disabled={loading || !form.incident_number.trim() || !form.start_datetime}
-          className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
-          style={{ background: 'rgba(34,211,238,0.14)', border: '1px solid rgba(34,211,238,0.3)', color: 'var(--color-system-billing)' }}
+          className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40 bg-cyan-500/[0.14] border border-cyan-500/30 text-system-billing"
         >
           {loading ? 'Working…' : 'Create & Validate'}
         </button>
@@ -713,14 +709,14 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       {validationDone && (
         <div className="space-y-3">
           {errorCount === 0 ? (
-            <div className="p-3 chamfer-4" style={{ background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)' }}>
+            <div className="p-3 chamfer-4 bg-green-500/[0.08] border border-green-500/25">
               <p className="text-xs font-semibold text-status-active">Validation Passed — 0 errors</p>
               {issues.length > 0 && (
                 <p className="text-body text-text-secondary mt-0.5">{issues.filter((i) => i.severity === 'warning').length} warning(s)</p>
               )}
             </div>
           ) : (
-            <div className="p-3 chamfer-4" style={{ background: 'rgba(229,57,53,0.07)', border: '1px solid rgba(229,57,53,0.2)' }}>
+            <div className="p-3 chamfer-4 bg-red-500/[0.07] border border-red-500/20">
               <p className="text-xs font-semibold text-red">{errorCount} validation error{errorCount !== 1 ? 's' : ''}</p>
               <p className="text-body text-text-muted mt-1">Fix the errors below and re-validate.</p>
             </div>
@@ -808,8 +804,7 @@ function Step8({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
         </PrimaryBtn>
         <button
           onClick={() => window.print()}
-          className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}
+          className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4 bg-white/[0.06] border border-white/10 text-text-secondary"
         >
           Print
         </button>
@@ -825,7 +820,7 @@ function Step8({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
 function CompleteBanner({ departmentName }: { departmentName?: string }) {
   return (
-    <div className="p-8 chamfer-4 text-center space-y-4" style={{ background: 'rgba(76,175,80,0.07)', border: '1px solid rgba(76,175,80,0.3)' }}>
+    <div className="p-8 chamfer-4 text-center space-y-4 bg-green-500/[0.07] border border-green-500/30">
       <div className="text-4xl">🏆</div>
       <div>
         <p className="text-micro uppercase tracking-[0.25em] text-status-active font-bold mb-1">NERIS Onboarding Complete</p>
@@ -839,8 +834,7 @@ function CompleteBanner({ departmentName }: { departmentName?: string }) {
       </p>
       <button
         onClick={() => window.print()}
-        className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4"
-        style={{ background: 'rgba(76,175,80,0.2)', border: '1px solid rgba(76,175,80,0.4)', color: 'var(--q-green)' }}
+        className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 bg-green-500/20 border border-green-500/40 text-[var(--q-green)]"
       >
         Print Summary
       </button>

@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -20,7 +20,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
   const colors = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${colors[status]}40`, color: colors[status], background: `${colors[status]}12` }}>
       <span className="w-1 h-1 rounded-full" style={{ background: colors[status] }} />
       {label}
@@ -31,9 +31,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -97,7 +97,7 @@ export default function ECSClusterHealth() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="text-body font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
               MODULE 10 · INFRASTRUCTURE
             </div>
             <h1 className="text-2xl font-bold uppercase tracking-widest text-text-primary">ECS Cluster Health</h1>
@@ -109,7 +109,7 @@ export default function ECSClusterHealth() {
             <Badge label="All Services Healthy" status="ok" />
             <button
               onClick={handleRefresh}
-              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest border transition-all"
+              className="px-3 py-1.5 text-body font-bold uppercase tracking-widest border transition-all"
               style={{
                 borderColor: 'rgba(255,107,26,0.4)',
                 color: refreshed ? 'var(--color-text-primary)' : 'var(--color-brand-orange)',
@@ -139,7 +139,7 @@ export default function ECSClusterHealth() {
           <SectionHeader number="2" title="Service Status" sub="per-service breakdown" />
           <Panel>
             <div className="overflow-x-auto">
-              <table className="w-full text-[11px]">
+              <table className="w-full text-body">
                 <thead>
                   <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest border-b border-border-subtle">
                     <th className="text-left py-2 pr-4 font-semibold">Service</th>
@@ -179,8 +179,8 @@ export default function ECSClusterHealth() {
                 { k: 'Scale-In Threshold',   v: '<30% CPU for 10 min' },
               ].map(({ k, v }) => (
                 <div key={k} className="flex justify-between items-center border-b border-border-subtle py-1.5">
-                  <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{k}</span>
-                  <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)]">{v}</span>
+                  <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{k}</span>
+                  <span className="text-body font-semibold text-[rgba(255,255,255,0.8)]">{v}</span>
                 </div>
               ))}
             </div>
@@ -204,15 +204,15 @@ export default function ECSClusterHealth() {
           <SectionHeader number="5" title="Health Check Status" sub="ALB target group health" />
           <Panel>
             <div className="space-y-2">
-              <div className="grid grid-cols-3 text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)] border-b border-border-subtle pb-2 mb-1">
+              <div className="grid grid-cols-3 text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)] border-b border-border-subtle pb-2 mb-1">
                 <span>Endpoint</span>
                 <span className="text-center">Response Time</span>
                 <span className="text-right">Status</span>
               </div>
               {HEALTH_CHECKS.map((h) => (
                 <div key={h.endpoint} className="grid grid-cols-3 items-center py-1.5 border-b border-border-subtle">
-                  <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.75)]">{h.endpoint}</span>
-                  <span className="text-[11px] text-[rgba(255,255,255,0.5)] text-center">{h.rt}</span>
+                  <span className="text-body font-semibold text-[rgba(255,255,255,0.75)]">{h.endpoint}</span>
+                  <span className="text-body text-[rgba(255,255,255,0.5)] text-center">{h.rt}</span>
                   <span className="text-right"><Badge label={h.status} status={h.status} /></span>
                 </div>
               ))}
@@ -227,12 +227,12 @@ export default function ECSClusterHealth() {
             <div className="space-y-1.5">
               {LOGS.map((l, i) => (
                 <div key={i} className="flex items-start gap-3 py-1.5 border-b border-border-subtle last:border-0">
-                  <span className="text-[10px] text-[rgba(255,255,255,0.25)] whitespace-nowrap shrink-0">{l.ts}</span>
-                  <span className="text-[10px] font-semibold text-system-cad whitespace-nowrap shrink-0 w-28">{l.svc}</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.25)] whitespace-nowrap shrink-0">{l.ts}</span>
+                  <span className="text-micro font-semibold text-system-cad whitespace-nowrap shrink-0 w-28">{l.svc}</span>
                   <span className="shrink-0">
                     <Badge label={l.level} status={l.level === 'WARN' ? 'warn' : 'info'} />
                   </span>
-                  <span className="text-[11px] text-[rgba(255,255,255,0.6)]">{l.msg}</span>
+                  <span className="text-body text-[rgba(255,255,255,0.6)]">{l.msg}</span>
                 </div>
               ))}
             </div>
@@ -243,14 +243,14 @@ export default function ECSClusterHealth() {
         <section>
           <SectionHeader number="7" title="Task History" sub="last 7 days" />
           <Panel>
-            <div className="text-[11px] text-[rgba(255,255,255,0.4)] mb-4">Last 7 days — all tasks stable</div>
+            <div className="text-body text-[rgba(255,255,255,0.4)] mb-4">Last 7 days — all tasks stable</div>
             <div className="grid grid-cols-7 gap-2">
               {DAYS.map((day) => (
                 <div key={day} className="flex flex-col items-center gap-2 p-3 bg-[rgba(255,255,255,0.02)] border border-border-subtle"
                   style={{ clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)' }}>
-                  <span className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.35)]">{day}</span>
+                  <span className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.35)]">{day}</span>
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--color-status-active)', boxShadow: '0 0 6px color-mix(in srgb, var(--color-status-active) 53%, transparent)' }} />
-                  <span className="text-[10px] font-bold" style={{ color: 'var(--q-green)' }}>8/8</span>
+                  <span className="text-micro font-bold" style={{ color: 'var(--q-green)' }}>8/8</span>
                 </div>
               ))}
             </div>

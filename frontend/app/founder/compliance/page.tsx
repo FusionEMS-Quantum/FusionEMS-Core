@@ -13,7 +13,7 @@ export default function CompliancePage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">DOMAIN 5 · COMPLIANCE</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">DOMAIN 5 · COMPLIANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Compliance</h1>
         <p className="text-xs text-text-muted mt-0.5">NEMSIS · NIERS · export status · certification</p>
       </div>

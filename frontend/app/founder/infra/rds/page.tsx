@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -20,7 +20,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
   const colors = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${colors[status]}40`, color: colors[status], background: `${colors[status]}12` }}>
       <span className="w-1 h-1 rounded-full" style={{ background: colors[status] }} />
       {label}
@@ -31,9 +31,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -101,7 +101,7 @@ export default function RDSPostgresHealth() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="text-body font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
               MODULE 10 · INFRASTRUCTURE
             </div>
             <h1 className="text-2xl font-bold uppercase tracking-widest text-text-primary">RDS PostgreSQL Health</h1>
@@ -135,8 +135,8 @@ export default function RDSPostgresHealth() {
               {PERF_METRICS.map((m) => (
                 <div key={m.label}>
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.5)] uppercase tracking-wider">{m.label}</span>
-                    <span className="text-[11px] font-semibold" style={{ color: m.color }}>
+                    <span className="text-body text-[rgba(255,255,255,0.5)] uppercase tracking-wider">{m.label}</span>
+                    <span className="text-body font-semibold" style={{ color: m.color }}>
                       {m.value}{m.max === 100 ? '%' : ''}{m.max !== 100 ? ` / ${m.max}` : ''}
                     </span>
                   </div>
@@ -152,7 +152,7 @@ export default function RDSPostgresHealth() {
           <SectionHeader number="3" title="Connection Pools" sub="PgBouncer · transaction mode" />
           <Panel>
             <div className="overflow-x-auto">
-              <table className="w-full text-[11px]">
+              <table className="w-full text-body">
                 <thead>
                   <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest border-b border-border-subtle">
                     <th className="text-left py-2 pr-4 font-semibold">Pool</th>
@@ -183,7 +183,7 @@ export default function RDSPostgresHealth() {
           <SectionHeader number="4" title="Slow Query Log" sub="sanitized · top 5 by avg duration" />
           <Panel>
             <div className="overflow-x-auto">
-              <table className="w-full text-[11px]">
+              <table className="w-full text-body">
                 <thead>
                   <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest border-b border-border-subtle">
                     <th className="text-left py-2 pr-4 font-semibold">Query (sanitized)</th>
@@ -222,9 +222,9 @@ export default function RDSPostgresHealth() {
                 { k: 'Backup Size',        v: '8.4 GB',          badge: null },
               ].map(({ k, v, badge }) => (
                 <div key={k} className="flex justify-between items-center border-b border-border-subtle py-1.5">
-                  <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{k}</span>
+                  <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{k}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)]">{v}</span>
+                    <span className="text-body font-semibold text-[rgba(255,255,255,0.8)]">{v}</span>
                     {badge && <Badge label={badge.label} status={badge.status} />}
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function RDSPostgresHealth() {
           <SectionHeader number="6" title="CloudWatch Alarms" sub="RDS alarm group" />
           <Panel>
             <div className="space-y-1">
-              <div className="grid grid-cols-4 text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)] border-b border-border-subtle pb-2 mb-1">
+              <div className="grid grid-cols-4 text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)] border-b border-border-subtle pb-2 mb-1">
                 <span>Alarm</span>
                 <span className="text-center">Threshold</span>
                 <span className="text-center">Current</span>
@@ -246,9 +246,9 @@ export default function RDSPostgresHealth() {
               </div>
               {CW_ALARMS.map((a, i) => (
                 <div key={a.name} className={`grid grid-cols-4 items-center py-2 border-b border-border-subtle ${i % 2 === 0 ? 'bg-[rgba(255,255,255,0.01)]' : ''}`}>
-                  <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)]">{a.name}</span>
-                  <span className="text-[11px] text-[rgba(255,255,255,0.45)] text-center">{a.threshold}</span>
-                  <span className="text-[11px] font-semibold text-center" style={{ color: 'var(--q-green)' }}>{a.current}</span>
+                  <span className="text-body font-semibold text-[rgba(255,255,255,0.8)]">{a.name}</span>
+                  <span className="text-body text-[rgba(255,255,255,0.45)] text-center">{a.threshold}</span>
+                  <span className="text-body font-semibold text-center" style={{ color: 'var(--q-green)' }}>{a.current}</span>
                   <span className="text-right"><Badge label={a.status} status={a.status} /></span>
                 </div>
               ))}
@@ -264,19 +264,19 @@ export default function RDSPostgresHealth() {
               {/* Primary */}
               <div className="bg-[rgba(76,175,80,0.04)] border border-[rgba(76,175,80,0.15)] p-4"
                 style={{ clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)' }}>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Primary AZ</div>
+                <div className="text-micro font-bold uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Primary AZ</div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Availability Zone</span>
-                    <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)]">us-east-1a</span>
+                    <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Availability Zone</span>
+                    <span className="text-body font-semibold text-[rgba(255,255,255,0.8)]">us-east-1a</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Status</span>
+                    <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Status</span>
                     <Badge label="Primary / Active" status="ok" />
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Last Failover</span>
-                    <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.5)]">Never</span>
+                    <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Last Failover</span>
+                    <span className="text-body font-semibold text-[rgba(255,255,255,0.5)]">Never</span>
                   </div>
                 </div>
               </div>
@@ -284,19 +284,19 @@ export default function RDSPostgresHealth() {
               {/* Standby */}
               <div className="bg-[rgba(41,182,246,0.04)] border border-[rgba(41,182,246,0.15)] p-4"
                 style={{ clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)' }}>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Standby AZ</div>
+                <div className="text-micro font-bold uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Standby AZ</div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Availability Zone</span>
-                    <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.8)]">us-east-1b</span>
+                    <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Availability Zone</span>
+                    <span className="text-body font-semibold text-[rgba(255,255,255,0.8)]">us-east-1b</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Status</span>
+                    <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Status</span>
                     <Badge label="Standby / Synced" status="info" />
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Replication Lag</span>
-                    <span className="text-[11px] font-semibold" style={{ color: 'var(--q-green)' }}>0ms</span>
+                    <span className="text-body text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Replication Lag</span>
+                    <span className="text-body font-semibold" style={{ color: 'var(--q-green)' }}>0ms</span>
                   </div>
                 </div>
               </div>
@@ -305,13 +305,13 @@ export default function RDSPostgresHealth() {
             {/* Failover drill row */}
             <div className="flex items-center justify-between border-t border-border-subtle pt-4">
               <div className="flex items-center gap-3">
-                <span className="text-[11px] text-[rgba(255,255,255,0.45)] uppercase tracking-wider">Last failover drill:</span>
-                <span className="text-[11px] font-semibold text-[rgba(255,255,255,0.7)]">30 days ago</span>
+                <span className="text-body text-[rgba(255,255,255,0.45)] uppercase tracking-wider">Last failover drill:</span>
+                <span className="text-body font-semibold text-[rgba(255,255,255,0.7)]">30 days ago</span>
                 <Badge label="Due Soon" status="warn" />
               </div>
               <button
                 onClick={handleScheduleDrill}
-                className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest border transition-all"
+                className="px-3 py-1.5 text-body font-bold uppercase tracking-widest border transition-all"
                 style={{
                   borderColor: 'rgba(255,107,26,0.4)',
                   color: drillScheduled ? 'var(--color-text-primary)' : 'var(--color-brand-orange)',

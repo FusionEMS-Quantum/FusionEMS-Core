@@ -86,7 +86,7 @@ export default function AiReviewQueuePage() {
     <div className="p-5 min-h-screen space-y-6">
       {/* Header */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">AI Review Queue</h1>
         <p className="text-xs text-text-muted mt-0.5">Approve, reject, or take over AI decisions requiring human review</p>
       </div>
@@ -126,7 +126,7 @@ export default function AiReviewQueuePage() {
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ background: priorityColor(item.priority) }} />
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-text-primary truncate">{item.review_type}</div>
-                  <div className="text-[10px] text-text-muted">
+                  <div className="text-micro text-text-muted">
                     Workflow: <span className="font-mono">{item.workflow_id.slice(0, 8)}</span>
                     {' · '}
                     {new Date(item.created_at).toLocaleString()}
@@ -137,7 +137,7 @@ export default function AiReviewQueuePage() {
               {/* Right: status + actions */}
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4"
+                  className="text-micro uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4"
                   style={{
                     color: statusColor(item.status),
                     background: `color-mix(in srgb, ${statusColor(item.status)} 12%, transparent)`,
@@ -152,7 +152,7 @@ export default function AiReviewQueuePage() {
                     <button
                       onClick={() => handleApprove(item.id)}
                       disabled={actionLoading === item.id}
-                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[rgba(34,197,94,0.12)] disabled:opacity-50"
+                      className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[rgba(34,197,94,0.12)] disabled:opacity-50"
                       style={{ color: 'var(--color-status-active)', borderColor: 'rgba(34,197,94,0.35)' }}
                     >
                       Approve
@@ -160,7 +160,7 @@ export default function AiReviewQueuePage() {
                     <button
                       onClick={() => handleReject(item.id)}
                       disabled={actionLoading === item.id}
-                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[rgba(255,45,45,0.12)] disabled:opacity-50"
+                      className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[rgba(255,45,45,0.12)] disabled:opacity-50"
                       style={{ color: 'var(--color-brand-red)', borderColor: 'rgba(255,45,45,0.35)' }}
                     >
                       Reject

@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
       <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
@@ -47,9 +47,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
       className="bg-bg-panel border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -106,13 +106,13 @@ export default function ProposalTrackerPage() {
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold tracking-widest font-mono mb-1" style={{ color: 'rgba(255,152,0,0.6)' }}>
+            <p className="text-micro font-bold tracking-widest font-mono mb-1" style={{ color: 'rgba(255,152,0,0.6)' }}>
               MODULE 8 · ROI &amp; SALES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>Proposal Tracker</h1>
             <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Track sent proposals · follow up · conversion analytics</p>
           </div>
-          <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.4)] hover:text-status-warning transition-colors font-mono">
+          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-status-warning transition-colors font-mono">
             ← Back to Founder OS
           </Link>
         </div>
@@ -134,7 +134,7 @@ export default function ProposalTrackerPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className="text-[10px] font-semibold px-3 py-1 rounded-sm transition-all"
+              className="text-micro font-semibold px-3 py-1 chamfer-4 transition-all"
               style={{
                 background: filter === f ? 'color-mix(in srgb, var(--color-status-warning) 9%, transparent)' : 'transparent',
                 color: filter === f ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.4)',
@@ -146,11 +146,11 @@ export default function ProposalTrackerPage() {
           ))}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-[11px]">
+          <table className="w-full text-body">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Agency', 'Sent Date', 'Value/yr', 'Status', 'Days Open', 'Action'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-[10px]">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -171,7 +171,7 @@ export default function ProposalTrackerPage() {
                     <td className="py-2 pr-4 text-[rgba(255,255,255,0.5)]">{p.days} days</td>
                     <td className="py-2 pr-4">
                       <button
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-sm"
+                        className="text-micro font-semibold px-2 py-0.5 chamfer-4"
                         style={{
                           background: p.statusKey === 'error' ? 'color-mix(in srgb, var(--color-brand-red) 6%, transparent)' : 'color-mix(in srgb, var(--color-status-warning) 6%, transparent)',
                           color: p.statusKey === 'error' ? 'var(--color-brand-red)' : 'var(--color-status-warning)',
@@ -192,11 +192,11 @@ export default function ProposalTrackerPage() {
       <Panel>
         <SectionHeader number="3" title="Accepted Proposals History" sub="4 converted deals" />
         <div className="overflow-x-auto">
-          <table className="w-full text-[11px]">
+          <table className="w-full text-body">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Agency', 'Date', 'Value/yr', 'Closed', 'MRR'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-[10px]">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -227,15 +227,15 @@ export default function ProposalTrackerPage() {
         <div className="mt-4 space-y-3">
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-[11px] text-[rgba(255,255,255,0.6)]">Accept Rate</span>
-              <span className="text-[11px] font-bold text-status-active">66.7%</span>
+              <span className="text-body text-[rgba(255,255,255,0.6)]">Accept Rate</span>
+              <span className="text-body font-bold text-status-active">66.7%</span>
             </div>
             <ProgressBar value={66.7} max={100} color="var(--color-status-active)" />
           </div>
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-[11px] text-[rgba(255,255,255,0.6)]">Pipeline Coverage (ARR target)</span>
-              <span className="text-[11px] font-bold text-status-warning">43%</span>
+              <span className="text-body text-[rgba(255,255,255,0.6)]">Pipeline Coverage (ARR target)</span>
+              <span className="text-body font-bold text-status-warning">43%</span>
             </div>
             <ProgressBar value={43} max={100} color="var(--color-status-warning)" />
           </div>
@@ -247,21 +247,21 @@ export default function ProposalTrackerPage() {
         <SectionHeader number="5" title="Follow-Up Queue" sub="3 proposals flagged" />
         <div className="space-y-2">
           {FOLLOW_UP_QUEUE.map((f, i) => (
-            <div key={i} className="flex items-center justify-between p-3 bg-bg-input border border-[rgba(255,152,0,0.1)] rounded-sm">
+            <div key={i} className="flex items-center justify-between p-3 bg-bg-input border border-[rgba(255,152,0,0.1)] chamfer-4">
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-[12px] font-semibold text-[rgba(255,255,255,0.85)]">{f.agency}</span>
                   <Badge label={f.status} status="warn" />
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-[rgba(255,255,255,0.35)]">Sent {f.sent}</span>
-                  <span className="text-[10px] text-[rgba(255,255,255,0.35)]">·</span>
-                  <span className="text-[10px] text-[rgba(255,255,255,0.35)]">Last contact: {f.lastContact}</span>
-                  <span className="text-[10px] font-mono text-status-warning">{f.value}/yr</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.35)]">Sent {f.sent}</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.35)]">·</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.35)]">Last contact: {f.lastContact}</span>
+                  <span className="text-micro font-mono text-status-warning">{f.value}/yr</span>
                 </div>
               </div>
               <button
-                className="text-[10px] font-semibold px-3 py-1.5 rounded-sm"
+                className="text-micro font-semibold px-3 py-1.5 chamfer-4"
                 style={{ background: 'color-mix(in srgb, var(--color-status-warning) 9%, transparent)', color: 'var(--q-yellow)', border: '1px solid color-mix(in srgb, var(--color-status-warning) 19%, transparent)' }}
               >
                 Send Email
@@ -276,38 +276,38 @@ export default function ProposalTrackerPage() {
         <SectionHeader number="6" title="Create Proposal" sub="Quick ROI proposal generator" />
         <div className="grid grid-cols-3 gap-3 mb-3">
           <div>
-            <label className="text-[10px] text-[rgba(255,255,255,0.4)] block mb-1">Agency Name</label>
+            <label className="text-micro text-[rgba(255,255,255,0.4)] block mb-1">Agency Name</label>
             <input
               value={newAgency}
               onChange={(e) => setNewAgency(e.target.value)}
               placeholder="Agency H"
-              className="w-full bg-bg-input border border-border-DEFAULT text-[11px] text-text-primary px-3 py-2 rounded-sm outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <div>
-            <label className="text-[10px] text-[rgba(255,255,255,0.4)] block mb-1">Contact Email</label>
+            <label className="text-micro text-[rgba(255,255,255,0.4)] block mb-1">Contact Email</label>
             <input
               type="email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="contact@agencyh.com"
-              className="w-full bg-bg-input border border-border-DEFAULT text-[11px] text-text-primary px-3 py-2 rounded-sm outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <div>
-            <label className="text-[10px] text-[rgba(255,255,255,0.4)] block mb-1">Monthly Call Volume</label>
+            <label className="text-micro text-[rgba(255,255,255,0.4)] block mb-1">Monthly Call Volume</label>
             <input
               type="number"
               value={newVolume}
               onChange={(e) => setNewVolume(e.target.value)}
               placeholder="200"
-              className="w-full bg-bg-input border border-border-DEFAULT text-[11px] text-text-primary px-3 py-2 rounded-sm outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
         </div>
         <button
           disabled={!newAgency || !newEmail}
-          className="text-[11px] font-bold px-6 py-2.5 rounded-sm transition-all disabled:opacity-30 hover:opacity-90"
+          className="text-body font-bold px-6 py-2.5 chamfer-4 transition-all disabled:opacity-30 hover:opacity-90"
           style={{ background: 'var(--color-status-warning)', color: '#000' }}
         >
           Generate ROI Proposal

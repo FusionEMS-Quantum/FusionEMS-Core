@@ -37,19 +37,19 @@ function CopilotResultPanel({ result }: { result: CopilotResult }) {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-orange" stroke="currentColor" strokeWidth="2">
           <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
         </svg>
-        <h3 className="text-[11px] uppercase tracking-[0.1em] font-bold text-orange">NEMSIS AI Clinical Expert Analysis</h3>
+        <h3 className="text-body uppercase tracking-[0.1em] font-bold text-orange">NEMSIS AI Clinical Expert Analysis</h3>
       </div>
       
       <p className="text-sm text-text-primary mb-4">{result.summary}</p>
 
       {result.actions.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-[10px] uppercase tracking-wider text-text-muted">Recommended Actions</h4>
+          <h4 className="text-micro uppercase tracking-wider text-text-muted">Recommended Actions</h4>
           {result.actions.map((act, i) => (
             <div key={i} className="bg-hud-bg/50 border border-hud-border p-3 chamfer-2">
               <div className="flex items-start gap-3">
                 <div className="mt-1 flex-shrink-0">
-                  <div className="w-5 h-5 rounded-full bg-orange/10 border border-orange/40 flex items-center justify-center text-[10px] text-orange">
+                  <div className="w-5 h-5 rounded-full bg-orange/10 border border-orange/40 flex items-center justify-center text-micro text-orange">
                     {i + 1}
                   </div>
                 </div>
@@ -58,7 +58,7 @@ function CopilotResultPanel({ result }: { result: CopilotResult }) {
                     [{act.type}] {act.ui_section ? `Section: ${act.ui_section}` : ''}
                   </div>
                   <div className="text-sm text-text-primary">{act.instruction}</div>
-                  {act.path && <div className="text-[10px] text-text-muted mt-1 font-mono">{act.path}</div>}
+                  {act.path && <div className="text-micro text-text-muted mt-1 font-mono">{act.path}</div>}
                 </div>
               </div>
             </div>
@@ -66,7 +66,7 @@ function CopilotResultPanel({ result }: { result: CopilotResult }) {
         </div>
       )}
       
-      <div className="mt-4 pt-3 border-t border-hud-border/30 flex justify-between items-center text-[10px] text-text-muted font-mono">
+      <div className="mt-4 pt-3 border-t border-hud-border/30 flex justify-between items-center text-micro text-text-muted font-mono">
         <span>Confidence: {(result.confidence * 100).toFixed(0)}%</span>
         <span>Models: gpt-4o / gemini-1.5-pro</span>
       </div>
@@ -378,12 +378,12 @@ export default function NemsisPage() {
                   {issues.map(issue => (
                     <div key={issue.id} className="border border-hud-border/40 p-3 bg-hud-bg chamfer-2">
                       <div className="flex gap-2 items-start">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase mt-0.5 ${issue.level === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-orange/20 text-orange'}`}>
+                        <span className={`px-1.5 py-0.5 chamfer-4 text-[9px] font-mono uppercase mt-0.5 ${issue.level === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-orange/20 text-orange'}`}>
                           {issue.level}
                         </span>
                         <div>
                           <div className="font-mono text-xs text-text-primary">{issue.message}</div>
-                          <div className="font-mono text-[10px] text-text-muted mt-1 break-all bg-black/40 p-1 px-2 rounded">
+                          <div className="font-mono text-micro text-text-muted mt-1 break-all bg-black/40 p-1 px-2 chamfer-4">
                             {issue.path}
                           </div>
                         </div>
@@ -417,7 +417,7 @@ export default function NemsisPage() {
                 </div>
                 <div>
                   <strong className="text-text-primary block">XSD Validation Engine</strong>
-                  <span className="text-[11px]">Strict schema compliance checks</span>
+                  <span className="text-body">Strict schema compliance checks</span>
                 </div>
               </li>
               <li className="flex items-start gap-3 relative z-10">
@@ -426,7 +426,7 @@ export default function NemsisPage() {
                 </div>
                 <div>
                   <strong className="text-text-primary block">Schematron Business Rules</strong>
-                  <span className="text-[11px]">State & National demographic tracking</span>
+                  <span className="text-body">State & National demographic tracking</span>
                 </div>
               </li>
               <li className="flex items-start gap-3 relative z-10">
@@ -435,7 +435,7 @@ export default function NemsisPage() {
                 </div>
                 <div>
                   <strong className="text-orange block">Mission Control AI Copilot</strong>
-                  <span className="text-[11px]">Deep context translation mapped to your inputs</span>
+                  <span className="text-body">Deep context translation mapped to your inputs</span>
                 </div>
               </li>
               <li className="flex items-start gap-3 relative z-10 opacity-50">
@@ -444,7 +444,7 @@ export default function NemsisPage() {
                 </div>
                 <div>
                   <strong className="text-text-primary block">Production Export Pipeline</strong>
-                  <span className="text-[11px]">Awaiting green light state clearance</span>
+                  <span className="text-body">Awaiting green light state clearance</span>
                 </div>
               </li>
             </ul>

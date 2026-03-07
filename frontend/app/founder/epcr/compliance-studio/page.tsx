@@ -201,7 +201,7 @@ export default function ComplianceStudioPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
           ePCR · COMPLIANCE STUDIO
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Compliance Studio</h1>
@@ -228,7 +228,7 @@ export default function ComplianceStudioPage() {
                     className={`inline-block w-2 h-2 rounded-full ${pack?.active ? 'bg-green-400' : 'bg-red-500'}`}
                   />
                   <span className="text-xs text-text-primary">{pack?.name || label}</span>
-                  <span className={`text-[10px] font-bold ${pack?.active ? 'text-green-400' : 'text-red-400'}`}>
+                  <span className={`text-micro font-bold ${pack?.active ? 'text-green-400' : 'text-red-400'}`}>
                     {pack?.active ? 'Active' : 'Missing'}
                   </span>
                 </div>
@@ -239,7 +239,7 @@ export default function ComplianceStudioPage() {
       </div>
 
       <div
-        className={`border-2 border-dashed rounded transition-colors ${isDragging ? 'border-cyan-400 bg-bg-input' : 'border-border-strong bg-bg-panel'} p-8 text-center`}
+        className={`border-2 border-dashed chamfer-4 transition-colors ${isDragging ? 'border-cyan-400 bg-bg-input' : 'border-border-strong bg-bg-panel'} p-8 text-center`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
@@ -327,17 +327,17 @@ export default function ComplianceStudioPage() {
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 uppercase ${issue.severity === 'error' ? 'bg-red-900 text-red-300' : 'bg-yellow-900 text-yellow-300'}`}
+                    className={`text-micro font-bold px-2 py-0.5 uppercase ${issue.severity === 'error' ? 'bg-red-900 text-red-300' : 'bg-yellow-900 text-yellow-300'}`}
                   >
                     {issue.severity}
                   </span>
                   <span className="text-xs font-mono text-system-billing">{issue.element_id}</span>
                   {issue.ui_section && (
-                    <span className="text-[10px] text-[rgba(255,255,255,0.4)]">{issue.ui_section}</span>
+                    <span className="text-micro text-[rgba(255,255,255,0.4)]">{issue.ui_section}</span>
                   )}
                   {issue.rule_source && (
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 ${issue.rule_source.toLowerCase().includes('wisconsin') ? 'bg-blue-900 text-blue-300' : 'bg-bg-raised text-text-secondary'}`}
+                      className={`text-micro font-bold px-2 py-0.5 ${issue.rule_source.toLowerCase().includes('wisconsin') ? 'bg-blue-900 text-blue-300' : 'bg-bg-raised text-text-secondary'}`}
                     >
                       {issue.rule_source}
                     </span>
@@ -345,13 +345,13 @@ export default function ComplianceStudioPage() {
                 </div>
                 <p className="text-xs text-[rgba(255,255,255,0.75)]">{issue.plain_message}</p>
                 {issue.fix_hint && (
-                  <p className="text-[11px] text-[rgba(255,255,255,0.4)] italic">{issue.fix_hint}</p>
+                  <p className="text-body text-[rgba(255,255,255,0.4)] italic">{issue.fix_hint}</p>
                 )}
                 <div>
                   <button
                     onClick={() => fetchAiExplain(idx)}
                     disabled={aiLoadingIdx === idx}
-                    className="text-[11px] text-system-billing hover:underline disabled:opacity-40"
+                    className="text-body text-system-billing hover:underline disabled:opacity-40"
                   >
                     {aiLoadingIdx === idx ? 'Loading...' : 'AI Explain'}
                   </button>
@@ -359,18 +359,18 @@ export default function ComplianceStudioPage() {
                 {aiExplanations[idx] && (
                   <div className="mt-2 bg-bg-input border border-[rgba(34,211,238,0.15)] p-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-system-billing">AI EXPLANATION</span>
-                      <span className="text-[10px] bg-purple-900 text-purple-300 px-2 py-0.5 font-bold">
+                      <span className="text-micro font-bold text-system-billing">AI EXPLANATION</span>
+                      <span className="text-micro bg-purple-900 text-purple-300 px-2 py-0.5 font-bold">
                         {aiExplanations[idx]!.fix_type}
                       </span>
                     </div>
                     <p className="text-xs text-[rgba(255,255,255,0.7)]">{aiExplanations[idx]!.plain_explanation}</p>
                     {aiExplanations[idx]!.patch_task?.steps?.length > 0 && (
                       <div>
-                        <div className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1 uppercase tracking-wider">Steps</div>
+                        <div className="text-micro text-[rgba(255,255,255,0.4)] mb-1 uppercase tracking-wider">Steps</div>
                         <ol className="space-y-1 list-decimal list-inside">
                           {aiExplanations[idx]!.patch_task.steps.map((step, si) => (
-                            <li key={si} className="text-[11px] text-text-secondary">{step}</li>
+                            <li key={si} className="text-body text-text-secondary">{step}</li>
                           ))}
                         </ol>
                       </div>

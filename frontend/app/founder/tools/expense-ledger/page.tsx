@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
       <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
@@ -83,10 +83,10 @@ export default function ExpenseLedgerPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
@@ -106,7 +106,7 @@ export default function ExpenseLedgerPage() {
             { label: 'Marketing', value: '$340', status: 'warn' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
               <span
                 className="text-xl font-bold"
                 style={{ color: s.status === 'error' ? 'var(--color-brand-red)' : s.status === 'warn' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.9)' }}
@@ -125,7 +125,7 @@ export default function ExpenseLedgerPage() {
           <SectionHeader number="2" title="Add Expense" />
           <button
             onClick={() => setShowForm((v) => !v)}
-            className="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-sm transition-all hover:brightness-110"
+            className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
             style={{ background: 'var(--color-brand-orange)', color: '#000' }}
           >
             {showForm ? 'Hide Form' : 'Add Expense'}
@@ -133,30 +133,30 @@ export default function ExpenseLedgerPage() {
           {showForm && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Date</label>
+                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Date</label>
                 <input
                   type="date"
                   value={expenseForm.date}
                   onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange"
+                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Amount</label>
+                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Amount</label>
                 <input
                   type="number"
                   value={expenseForm.amount}
                   onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
                   placeholder="0.00"
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Category</label>
+                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Category</label>
                 <select
                   value={expenseForm.category}
                   onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange"
+                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
                 >
                   {['AWS', 'Software', 'Marketing', 'Legal', 'Travel', 'Other'].map((c) => (
                     <option key={c} value={c} className="bg-bg-panel">{c}</option>
@@ -164,28 +164,28 @@ export default function ExpenseLedgerPage() {
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Vendor</label>
+                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Vendor</label>
                 <input
                   type="text"
                   value={expenseForm.vendor}
                   onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })}
                   placeholder="Vendor name"
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Description</label>
+                <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Description</label>
                 <input
                   type="text"
                   value={expenseForm.description}
                   onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
                   placeholder="Description"
-                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                  className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
                 />
               </div>
               <div className="flex items-end">
                 <button
-                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-sm transition-all hover:brightness-110"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
                   style={{ background: 'var(--color-brand-orange)', color: '#000' }}
                   onClick={() => {
                     setExpenseForm({ date: '', amount: '', category: 'AWS', description: '', vendor: '' });
@@ -209,7 +209,7 @@ export default function ExpenseLedgerPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Date', 'Vendor', 'Category', 'Amount', 'Description', 'Receipt'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-[10px]">
+                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -218,7 +218,7 @@ export default function ExpenseLedgerPage() {
               <tbody>
                 {EXPENSES.map((exp, i) => (
                   <tr key={i} className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="py-1.5 px-2 font-mono text-[rgba(255,107,26,0.7)] text-[11px]">{exp.date}</td>
+                    <td className="py-1.5 px-2 font-mono text-[rgba(255,107,26,0.7)] text-body">{exp.date}</td>
                     <td className="py-1.5 px-2 text-[rgba(255,255,255,0.8)] font-medium">{exp.vendor}</td>
                     <td className="py-1.5 px-2 text-[rgba(255,255,255,0.45)]">{exp.category}</td>
                     <td className="py-1.5 px-2 font-mono text-[rgba(255,255,255,0.85)] font-semibold">
@@ -262,8 +262,8 @@ export default function ExpenseLedgerPage() {
                     }}
                   />
                 </div>
-                <span className="text-[10px] font-mono text-[rgba(255,255,255,0.5)] w-8 text-right">{cat.pct}%</span>
-                <span className="text-[11px] font-mono font-semibold text-[rgba(255,255,255,0.7)] w-16 text-right">{cat.amount}</span>
+                <span className="text-micro font-mono text-[rgba(255,255,255,0.5)] w-8 text-right">{cat.pct}%</span>
+                <span className="text-body font-mono font-semibold text-[rgba(255,255,255,0.7)] w-16 text-right">{cat.amount}</span>
               </div>
             ))}
           </div>
@@ -282,7 +282,7 @@ export default function ExpenseLedgerPage() {
             ].map((btn) => (
               <button
                 key={btn.label}
-                className="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-sm transition-all hover:brightness-110"
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
                 style={btn.style}
               >
                 {btn.label}
@@ -290,7 +290,7 @@ export default function ExpenseLedgerPage() {
             ))}
             <div className="flex items-center gap-2">
               <button
-                className="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-sm opacity-60 cursor-not-allowed"
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 opacity-60 cursor-not-allowed"
                 style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}
                 disabled
               >
@@ -303,7 +303,7 @@ export default function ExpenseLedgerPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

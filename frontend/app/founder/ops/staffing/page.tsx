@@ -11,7 +11,7 @@ const CERT_FOR_LEVEL: Record<string, string> = { BLS: 'EMT', ALS: 'AEMT', CCT: '
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-lg p-4 ${className}`}>
+    <div className={`bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] chamfer-8 p-4 ${className}`}>
       {children}
     </div>
   );
@@ -25,7 +25,7 @@ function StateBadge({ state, color }: { state: string; color?: string }) {
   };
   const c = color ?? colors[state] ?? '#78909c';
   return (
-    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+    <span className="inline-block px-2 py-0.5 chamfer-4 text-micro font-bold uppercase tracking-wider"
       style={{ background: c + '22', color: c, border: `1px solid ${c}44` }}>
       {state.replace(/_/g, ' ')}
     </span>
@@ -111,13 +111,13 @@ export default function StaffingPage() {
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
       {toast && (
-        <div className="fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">{toast}</div>
+        <div className="fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 chamfer-8 text-sm font-medium shadow-lg">{toast}</div>
       )}
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-[11px] text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
+          <Link href="/founder/ops" className="text-body text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">Staffing & Response Readiness</h1>
           <p className="text-sm text-[rgba(255,255,255,0.45)] mt-1">
             Crew qualifications · Availability · Conflict detection · Fatigue flags · Audit
@@ -127,9 +127,9 @@ export default function StaffingPage() {
       </div>
 
       {/* ── Hard Rules Notice ── */}
-      <div className="p-3 rounded-xl border border-[rgba(255,193,7,0.3)] bg-[rgba(255,193,7,0.06)]">
-        <div className="text-[10px] uppercase tracking-widest text-yellow-400 mb-1">Deterministic Staffing Rules</div>
-        <div className="text-[11px] text-[rgba(255,255,255,0.65)]">
+      <div className="p-3 chamfer-4-xl border border-[rgba(255,193,7,0.3)] bg-[rgba(255,193,7,0.06)]">
+        <div className="text-micro uppercase tracking-widest text-yellow-400 mb-1">Deterministic Staffing Rules</div>
+        <div className="text-body text-[rgba(255,255,255,0.65)]">
           No unit will be assigned to crew lacking required certification. No silent override of staffing conflicts.
           All overrides create a permanent audit record. AI may explain risk — hard rules are not AI decisions.
         </div>
@@ -146,9 +146,9 @@ export default function StaffingPage() {
             { label: 'Fatigue Flags', value: summary.fatigue_flags, color: summary.fatigue_flags > 0 ? '#ffc107' : '#4caf50' },
             { label: 'Conflicts', value: summary.active_conflicts, color: summary.active_conflicts > 0 ? '#ef5350' : '#4caf50' },
           ].map(item => (
-            <div key={item.label} className="rounded-xl p-4 border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-center">
+            <div key={item.label} className="chamfer-4-xl p-4 border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-center">
               <div className="text-3xl font-black" style={{ color: item.color }}>{item.value}</div>
-              <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mt-1">{item.label}</div>
+              <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mt-1">{item.label}</div>
             </div>
           ))}
         </div>
@@ -157,7 +157,7 @@ export default function StaffingPage() {
       {/* ── Qualified by Service Level ── */}
       {summary?.qualified_by_service_level && (
         <Panel>
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">
             Qualified Crew by Service Level
           </div>
           <div className="grid grid-cols-4 gap-3">
@@ -165,10 +165,10 @@ export default function StaffingPage() {
               const count = summary.qualified_by_service_level[level] ?? 0;
               const cert = CERT_FOR_LEVEL[level];
               return (
-                <div key={level} className="text-center p-3 rounded-lg bg-[rgba(255,255,255,0.04)]">
+                <div key={level} className="text-center p-3 chamfer-8 bg-[rgba(255,255,255,0.04)]">
                   <div className="text-2xl font-black" style={{ color: count > 0 ? '#4caf50' : '#ef5350' }}>{count}</div>
                   <div className="text-sm font-bold text-white mt-0.5">{level}</div>
-                  <div className="text-[10px] text-[rgba(255,255,255,0.35)]">Min: {cert}</div>
+                  <div className="text-micro text-[rgba(255,255,255,0.35)]">Min: {cert}</div>
                 </div>
               );
             })}
@@ -179,10 +179,10 @@ export default function StaffingPage() {
       {/* ── Staffing Gaps ── */}
       {(summary?.staffing_gaps ?? []).length > 0 && (
         <div className="space-y-2">
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)]">Active Staffing Gaps</div>
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)]">Active Staffing Gaps</div>
           {summary!.staffing_gaps.map((gap, i) => (
-            <div key={i} className="p-3 rounded-xl border border-[rgba(255,107,26,0.3)] bg-[rgba(255,107,26,0.08)]">
-              <div className="text-[10px] font-bold uppercase text-orange-400 mb-0.5">{gap.type.replace(/_/g, ' ')}</div>
+            <div key={i} className="p-3 chamfer-4-xl border border-[rgba(255,107,26,0.3)] bg-[rgba(255,107,26,0.08)]">
+              <div className="text-micro font-bold uppercase text-orange-400 mb-0.5">{gap.type.replace(/_/g, ' ')}</div>
               <div className="text-sm text-white">{gap.message}</div>
             </div>
           ))}
@@ -192,7 +192,7 @@ export default function StaffingPage() {
       {/* ── Tabs ── */}
       <div className="flex gap-2">
         {(['summary', 'check', 'availability', 'fatigue'] as const).map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider ${activeTab === tab ? 'bg-yellow-700 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 chamfer-8 text-body font-bold uppercase tracking-wider ${activeTab === tab ? 'bg-yellow-700 text-white' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.5)]'}`}>
             {tab === 'summary' ? 'Summary' : tab === 'check' ? 'Qualification Check' : tab === 'availability' ? 'Set Availability' : 'Fatigue Flag'}
           </button>
         ))}
@@ -201,56 +201,56 @@ export default function StaffingPage() {
       {/* ── Qualification Check ── */}
       {activeTab === 'check' && (
         <Panel>
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">
             Deterministic Qualification Check
           </div>
-          <div className="text-[11px] text-[rgba(255,255,255,0.5)] mb-4">
+          <div className="text-body text-[rgba(255,255,255,0.5)] mb-4">
             This check cannot be silently overridden. Results reflect actual active certifications.
           </div>
           <div className="grid grid-cols-3 gap-3 mb-3">
             <input value={checkCrew.crew_member_id} onChange={e => setCheckCrew(p => ({ ...p, crew_member_id: e.target.value }))}
               placeholder="Crew Member ID *"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-yellow-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-yellow-400 placeholder-[rgba(255,255,255,0.25)]" />
             <select value={checkCrew.service_level} onChange={e => setCheckCrew(p => ({ ...p, service_level: e.target.value }))}
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-yellow-400">
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-yellow-400">
               {SERVICE_LEVELS.map(s => <option key={s} value={s}>{s} — requires {CERT_FOR_LEVEL[s]}</option>)}
             </select>
             <button onClick={runCheck} disabled={checking || !checkCrew.crew_member_id}
-              className="h-9 px-6 bg-yellow-700 text-white text-sm font-bold rounded-lg hover:bg-yellow-600 disabled:opacity-40">
+              className="h-9 px-6 bg-yellow-700 text-white text-sm font-bold chamfer-8 hover:bg-yellow-600 disabled:opacity-40">
               {checking ? 'Checking…' : 'Run Check'}
             </button>
           </div>
           {checkResult && (
             <div className="space-y-3 mt-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 rounded-xl border" style={{
+                <div className="p-4 chamfer-4-xl border" style={{
                   borderColor: ((checkResult.qualification as Record<string, unknown>)?.qualified ? '#4caf50' : '#ef5350') + '44',
                   background: ((checkResult.qualification as Record<string, unknown>)?.qualified ? '#4caf50' : '#ef5350') + '0a',
                 }}>
-                  <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-2">Qualification</div>
+                  <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-2">Qualification</div>
                   <div className="text-lg font-black" style={{ color: (checkResult.qualification as Record<string, unknown>)?.qualified ? '#4caf50' : '#ef5350' }}>
                     {(checkResult.qualification as Record<string, unknown>)?.qualified ? '✓ QUALIFIED' : '✗ NOT QUALIFIED'}
                   </div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.6)] mt-1">
+                  <div className="text-body text-[rgba(255,255,255,0.6)] mt-1">
                     Highest cert: {String((checkResult.qualification as Record<string, unknown>)?.highest_active_certification ?? 'NONE')}
                   </div>
                   {((checkResult.qualification as Record<string, unknown>)?.blocking_reasons as string[])?.map((r: string, i: number) => (
-                    <div key={i} className="text-[11px] text-red-400 mt-1">{r}</div>
+                    <div key={i} className="text-body text-red-400 mt-1">{r}</div>
                   ))}
                 </div>
-                <div className="p-4 rounded-xl border" style={{
+                <div className="p-4 chamfer-4-xl border" style={{
                   borderColor: ((checkResult.availability as Record<string, unknown>)?.available ? '#4caf50' : '#ef5350') + '44',
                   background: ((checkResult.availability as Record<string, unknown>)?.available ? '#4caf50' : '#ef5350') + '0a',
                 }}>
-                  <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-2">Availability</div>
+                  <div className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-2">Availability</div>
                   <div className="text-lg font-black" style={{ color: (checkResult.availability as Record<string, unknown>)?.available ? '#4caf50' : '#ef5350' }}>
                     {String((checkResult.availability as Record<string, unknown>)?.state ?? 'UNKNOWN').replace(/_/g, ' ')}
                   </div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.6)] mt-1">
+                  <div className="text-body text-[rgba(255,255,255,0.6)] mt-1">
                     Status: {String((checkResult.availability as Record<string, unknown>)?.availability_status ?? '—')}
                   </div>
                   {((checkResult.availability as Record<string, unknown>)?.warnings as string[])?.map((w: string, i: number) => (
-                    <div key={i} className="text-[11px] text-yellow-400 mt-1">⚠ {w}</div>
+                    <div key={i} className="text-body text-yellow-400 mt-1">⚠ {w}</div>
                   ))}
                 </div>
               </div>
@@ -262,21 +262,21 @@ export default function StaffingPage() {
       {/* ── Set Availability ── */}
       {activeTab === 'availability' && (
         <Panel>
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Update Crew Availability</div>
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Update Crew Availability</div>
           <div className="grid grid-cols-3 gap-3 mb-3">
             <input value={availForm.crew_member_id} onChange={e => setAvailForm(p => ({ ...p, crew_member_id: e.target.value }))}
               placeholder="Crew Member ID *"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-yellow-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-yellow-400 placeholder-[rgba(255,255,255,0.25)]" />
             <select value={availForm.status} onChange={e => setAvailForm(p => ({ ...p, status: e.target.value }))}
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-yellow-400">
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-yellow-400">
               {['AVAILABLE','ASSIGNED','UNAVAILABLE','OFF_DUTY','ON_STANDBY','SICK'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <input value={availForm.note} onChange={e => setAvailForm(p => ({ ...p, note: e.target.value }))}
               placeholder="Note (optional)"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-yellow-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-yellow-400 placeholder-[rgba(255,255,255,0.25)]" />
           </div>
           <button onClick={setAvailability} disabled={submitting || !availForm.crew_member_id}
-            className="px-6 py-2 bg-yellow-700 text-white text-sm font-bold rounded-lg hover:bg-yellow-600 disabled:opacity-40">
+            className="px-6 py-2 bg-yellow-700 text-white text-sm font-bold chamfer-8 hover:bg-yellow-600 disabled:opacity-40">
             {submitting ? 'Updating…' : 'Update Availability'}
           </button>
         </Panel>
@@ -285,25 +285,25 @@ export default function StaffingPage() {
       {/* ── Fatigue Flag ── */}
       {activeTab === 'fatigue' && (
         <Panel>
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Flag Crew for Fatigue Review</div>
-          <div className="text-[11px] text-[rgba(255,255,255,0.5)] mb-4">
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3">Flag Crew for Fatigue Review</div>
+          <div className="text-body text-[rgba(255,255,255,0.5)] mb-4">
             Fatigue flags prevent silent assignment. Flagged crew must be explicitly cleared with a reason before dispatch.
             All actions are audited permanently.
           </div>
           <div className="grid grid-cols-3 gap-3 mb-3">
             <input value={fatigueForm.crew_member_id} onChange={e => setFatigueForm(p => ({ ...p, crew_member_id: e.target.value }))}
               placeholder="Crew Member ID *"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
             <input value={fatigueForm.reason} onChange={e => setFatigueForm(p => ({ ...p, reason: e.target.value }))}
               placeholder="Reason for flag *"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
             <input value={fatigueForm.hours_on_duty} onChange={e => setFatigueForm(p => ({ ...p, hours_on_duty: e.target.value }))}
               placeholder="Hours on duty (optional)"
               type="number"
-              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white rounded-lg focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
+              className="h-9 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.12)] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-[rgba(255,255,255,0.25)]" />
           </div>
           <button onClick={flagFatigue} disabled={submitting || !fatigueForm.crew_member_id || !fatigueForm.reason}
-            className="px-6 py-2 bg-orange-700 text-white text-sm font-bold rounded-lg hover:bg-orange-600 disabled:opacity-40">
+            className="px-6 py-2 bg-orange-700 text-white text-sm font-bold chamfer-8 hover:bg-orange-600 disabled:opacity-40">
             {submitting ? 'Flagging…' : '⚠ Flag for Fatigue Review'}
           </button>
         </Panel>

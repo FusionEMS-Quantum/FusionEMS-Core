@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
       <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
@@ -36,9 +36,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
       className="bg-bg-panel border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.35)] mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -112,7 +112,7 @@ export default function AIGPUMonitorPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <div className="text-[10px] font-bold font-mono text-orange-dim uppercase tracking-widest mb-1">
+          <div className="text-micro font-bold font-mono text-orange-dim uppercase tracking-widest mb-1">
             MODULE 10 · INFRASTRUCTURE
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-text-primary">AI GPU Monitor</h1>
@@ -143,7 +143,7 @@ export default function AIGPUMonitorPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest text-[10px]">
+                <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Job ID</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Type</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Model</th>
@@ -176,7 +176,7 @@ export default function AIGPUMonitorPage() {
               <div key={m.name}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs text-[rgba(255,255,255,0.7)]">{m.name}</span>
-                  <span className="text-[11px] font-mono" style={{ color: m.color }}>{m.latency}ms avg latency</span>
+                  <span className="text-body font-mono" style={{ color: m.color }}>{m.latency}ms avg latency</span>
                 </div>
                 <ProgressBar value={m.latency} max={m.max} color={m.color} />
               </div>
@@ -189,7 +189,7 @@ export default function AIGPUMonitorPage() {
       <section>
         <SectionHeader number="4" title="GPU Memory Allocation" />
         <Panel>
-          <div className="flex rounded-sm overflow-hidden h-7 mb-3">
+          <div className="flex chamfer-4 overflow-hidden h-7 mb-3">
             {MEMORY_SEGMENTS.map((seg) => (
               <div
                 key={seg.label}
@@ -201,13 +201,13 @@ export default function AIGPUMonitorPage() {
           <div className="flex flex-wrap gap-4">
             {MEMORY_SEGMENTS.map((seg) => (
               <div key={seg.label} className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: seg.color, border: '1px solid rgba(255,255,255,0.1)' }} />
-                <span className="text-[11px] text-[rgba(255,255,255,0.55)]">{seg.label}</span>
-                <span className="text-[11px] font-mono text-[rgba(255,255,255,0.7)]">{seg.gb} GB</span>
+                <span className="w-2.5 h-2.5 chamfer-4 flex-shrink-0" style={{ background: seg.color, border: '1px solid rgba(255,255,255,0.1)' }} />
+                <span className="text-body text-[rgba(255,255,255,0.55)]">{seg.label}</span>
+                <span className="text-body font-mono text-[rgba(255,255,255,0.7)]">{seg.gb} GB</span>
               </div>
             ))}
           </div>
-          <div className="mt-2 text-[10px] text-[rgba(255,255,255,0.3)] font-mono">Total: {TOTAL_GB.toFixed(1)} GB</div>
+          <div className="mt-2 text-micro text-[rgba(255,255,255,0.3)] font-mono">Total: {TOTAL_GB.toFixed(1)} GB</div>
         </Panel>
       </section>
 
@@ -226,17 +226,17 @@ export default function AIGPUMonitorPage() {
       <section>
         <SectionHeader number="6" title="Temperature History" sub="Last 12 hours" />
         <Panel>
-          <div className="text-[10px] text-[rgba(255,255,255,0.35)] uppercase tracking-widest mb-3">
+          <div className="text-micro text-[rgba(255,255,255,0.35)] uppercase tracking-widest mb-3">
             Last 12 hours — GPU temperature
           </div>
           <div className="flex gap-2 flex-wrap">
             {TEMP_HISTORY.map((t, i) => (
               <div key={i} className="flex flex-col items-center gap-1">
                 <div
-                  className="rounded-sm"
+                  className="chamfer-4"
                   style={{ width: 32, height: 24, background: tempColor(t) + '33', border: `1px solid ${tempColor(t)}66` }}
                 />
-                <span className="text-[10px] font-mono" style={{ color: tempColor(t) }}>{t}°</span>
+                <span className="text-micro font-mono" style={{ color: tempColor(t) }}>{t}°</span>
               </div>
             ))}
           </div>
@@ -250,7 +250,7 @@ export default function AIGPUMonitorPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest text-[10px]">
+                <tr className="text-[rgba(255,255,255,0.35)] uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Model</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Version</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Size</th>

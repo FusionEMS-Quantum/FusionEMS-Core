@@ -93,7 +93,7 @@ export default function PatchTasksPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[rgba(34,211,238,0.6)] mb-1">
           ePCR · PATCH TASKS
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Patch Tasks</h1>
@@ -111,13 +111,13 @@ export default function PatchTasksPage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-[rgba(255,255,255,0.5)]">
                   {col.label}
                 </span>
-                <span className="text-[10px] bg-bg-input border border-border-DEFAULT text-[rgba(255,255,255,0.4)] px-2 py-0.5">
+                <span className="text-micro bg-bg-input border border-border-DEFAULT text-[rgba(255,255,255,0.4)] px-2 py-0.5">
                   {colTasks.length}
                 </span>
               </div>
               <div className="space-y-2 min-h-[120px]">
                 {colTasks.length === 0 && (
-                  <div className="text-[11px] text-[rgba(255,255,255,0.2)] italic pt-2">No tasks</div>
+                  <div className="text-body text-[rgba(255,255,255,0.2)] italic pt-2">No tasks</div>
                 )}
                 {colTasks.map((task) => {
                   const d = task.data || {};
@@ -133,21 +133,21 @@ export default function PatchTasksPage() {
                       <div className="text-xs font-bold text-text-primary leading-tight">{d.title || 'Untitled Task'}</div>
                       <div className="flex flex-wrap items-center gap-1.5">
                         {d.element_id && (
-                          <span className="text-[10px] font-mono text-system-billing">{d.element_id}</span>
+                          <span className="text-micro font-mono text-system-billing">{d.element_id}</span>
                         )}
                         {d.fix_type && (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 ${fixTypeClass}`}>
+                          <span className={`text-micro font-bold px-2 py-0.5 ${fixTypeClass}`}>
                             {d.fix_type}
                           </span>
                         )}
                       </div>
                       {d.description && (
-                        <p className="text-[11px] text-[rgba(255,255,255,0.45)] leading-tight">
+                        <p className="text-body text-[rgba(255,255,255,0.45)] leading-tight">
                           {d.description.length > 100 ? `${d.description.slice(0, 100)}...` : d.description}
                         </p>
                       )}
                       {d.steps && d.steps.length > 0 && (
-                        <div className="text-[10px] text-[rgba(255,255,255,0.3)]">
+                        <div className="text-micro text-[rgba(255,255,255,0.3)]">
                           {d.steps.length} step{d.steps.length !== 1 ? 's' : ''}
                         </div>
                       )}
@@ -157,7 +157,7 @@ export default function PatchTasksPage() {
                             key={ns}
                             onClick={() => updateStatus(task.id, ns)}
                             disabled={isUpdating}
-                            className="text-[10px] bg-bg-input border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] px-2 py-0.5 hover:border-[rgba(34,211,238,0.3)] hover:text-system-billing disabled:opacity-40 transition-colors"
+                            className="text-micro bg-bg-input border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.5)] px-2 py-0.5 hover:border-[rgba(34,211,238,0.3)] hover:text-system-billing disabled:opacity-40 transition-colors"
                           >
                             → {ns.replace('_', ' ')}
                           </button>

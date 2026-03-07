@@ -67,10 +67,10 @@ const CATALOG: { product: string; key: string; color: string; prices: PriceEntry
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] rounded-sm px-4 py-3">
-      <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-1">{label}</div>
+    <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] chamfer-4 px-4 py-3">
+      <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-1">{label}</div>
       <div className="text-lg font-bold text-text-primary">{value}</div>
-      {sub && <div className="text-[10px] text-[rgba(255,255,255,0.35)] mt-0.5">{sub}</div>}
+      {sub && <div className="text-micro text-[rgba(255,255,255,0.35)] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -86,14 +86,14 @@ function CatalogTab() {
       </div>
 
       {CATALOG.map((product) => (
-        <div key={product.key} className="bg-bg-base border border-[rgba(255,255,255,0.07)] rounded-sm overflow-hidden">
+        <div key={product.key} className="bg-bg-base border border-[rgba(255,255,255,0.07)] chamfer-4 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: product.color }} />
               <span className="text-sm font-semibold text-text-primary">{product.product}</span>
-              <span className="text-[10px] text-[rgba(255,255,255,0.3)] font-mono">{product.key}</span>
+              <span className="text-micro text-[rgba(255,255,255,0.3)] font-mono">{product.key}</span>
             </div>
-            <button className="h-6 px-2.5 bg-orange-ghost border border-[rgba(255,107,26,0.2)] text-[10px] font-semibold uppercase tracking-wider text-orange hover:bg-[rgba(255,107,26,0.14)] transition-colors rounded-sm">
+            <button className="h-6 px-2.5 bg-orange-ghost border border-[rgba(255,107,26,0.2)] text-micro font-semibold uppercase tracking-wider text-orange hover:bg-[rgba(255,107,26,0.14)] transition-colors chamfer-4">
               Edit
             </button>
           </div>
@@ -102,14 +102,14 @@ function CatalogTab() {
               <div key={price.tier} className="flex items-center justify-between px-4 py-3">
                 <div>
                   <div className="text-xs font-medium text-text-primary">{price.tier}</div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.4)] mt-0.5">{price.description}</div>
+                  <div className="text-body text-[rgba(255,255,255,0.4)] mt-0.5">{price.description}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-bold" style={{ color: product.color }}>
-                    ${price.monthly.toLocaleString()}<span className="text-[10px] font-normal text-[rgba(255,255,255,0.35)]">/mo</span>
+                    ${price.monthly.toLocaleString()}<span className="text-micro font-normal text-[rgba(255,255,255,0.35)]">/mo</span>
                   </div>
                   {price.perTransport && (
-                    <div className="text-[10px] text-[rgba(255,255,255,0.4)]">+ ${price.perTransport.toFixed(2)}/transport</div>
+                    <div className="text-micro text-[rgba(255,255,255,0.4)]">+ ${price.perTransport.toFixed(2)}/transport</div>
                   )}
                 </div>
               </div>
@@ -126,24 +126,24 @@ function PricebooksTab() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className="text-xs text-[rgba(255,255,255,0.5)]">Versioned pricebooks — draft → scheduled → active → archived</div>
-        <button className="h-7 px-3 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.25)] text-[10px] font-semibold uppercase tracking-wider text-orange hover:bg-[rgba(255,107,26,0.18)] transition-colors rounded-sm">
+        <button className="h-7 px-3 bg-[rgba(255,107,26,0.1)] border border-[rgba(255,107,26,0.25)] text-micro font-semibold uppercase tracking-wider text-orange hover:bg-[rgba(255,107,26,0.18)] transition-colors chamfer-4">
           New Draft
         </button>
       </div>
 
-      <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] rounded-sm overflow-hidden">
-        <div className="grid grid-cols-6 px-4 py-2 border-b border-border-subtle text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.3)]">
+      <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] chamfer-4 overflow-hidden">
+        <div className="grid grid-cols-6 px-4 py-2 border-b border-border-subtle text-micro uppercase tracking-widest text-[rgba(255,255,255,0.3)]">
           <span>Version</span><span>Label</span><span>Status</span><span>Effective Date</span><span>Created By</span><span>Actions</span>
         </div>
         <div className="px-4 py-3 grid grid-cols-6 items-center border-b border-border-subtle">
           <span className="text-xs font-mono text-text-primary">v1.0</span>
           <span className="text-xs text-[rgba(255,255,255,0.7)]">Initial Catalog</span>
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm bg-[rgba(76,175,80,0.12)] text-status-active w-fit">Active</span>
+          <span className="inline-flex items-center px-2 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4 bg-[rgba(76,175,80,0.12)] text-status-active w-fit">Active</span>
           <span className="text-xs text-[rgba(255,255,255,0.5)]">2026-01-01</span>
           <span className="text-xs text-[rgba(255,255,255,0.5)]">System</span>
           <div className="flex gap-2">
-            <button className="h-6 px-2.5 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-[10px] text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors rounded-sm">View</button>
-            <button className="h-6 px-2.5 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-[10px] text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors rounded-sm">Clone</button>
+            <button className="h-6 px-2.5 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-micro text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors chamfer-4">View</button>
+            <button className="h-6 px-2.5 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-micro text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors chamfer-4">Clone</button>
           </div>
         </div>
         <div className="px-4 py-8 text-center text-xs text-[rgba(255,255,255,0.25)]">Draft a new pricebook to test pricing changes before activating</div>
@@ -182,14 +182,14 @@ function EstimatorTab() {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] rounded-sm p-4">
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Base Plan</div>
+        <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] chamfer-4 p-4">
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Base Plan</div>
           <div className="flex gap-2 mb-3">
             {['SCHEDULING_ONLY', 'BILLING_AUTOMATION_BASE'].map((p) => (
               <button
                 key={p}
                 onClick={() => { setPlan(p); setTier(p === 'SCHEDULING_ONLY' ? 'S1' : 'B1'); }}
-                className={`flex-1 h-8 text-[11px] font-medium rounded-sm border transition-colors ${
+                className={`flex-1 h-8 text-body font-medium chamfer-4 border transition-colors ${
                   plan === p
                     ? 'bg-[rgba(255,107,26,0.15)] border-[rgba(255,107,26,0.4)] text-orange'
                     : 'bg-[rgba(255,255,255,0.03)] border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary'
@@ -204,7 +204,7 @@ function EstimatorTab() {
               <button
                 key={t}
                 onClick={() => setTier(t)}
-                className={`flex-1 h-7 text-[11px] font-mono rounded-sm border transition-colors ${
+                className={`flex-1 h-7 text-body font-mono chamfer-4 border transition-colors ${
                   tier === t
                     ? 'bg-[rgba(34,211,238,0.12)] border-[rgba(34,211,238,0.3)] text-system-billing'
                     : 'bg-[rgba(255,255,255,0.03)] border-border-DEFAULT text-[rgba(255,255,255,0.45)] hover:text-text-primary'
@@ -217,9 +217,9 @@ function EstimatorTab() {
         </div>
 
         {plan === 'BILLING_AUTOMATION_BASE' && (
-          <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] rounded-sm p-4">
+          <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] chamfer-4 p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.3)]">Monthly Transports</div>
+              <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.3)]">Monthly Transports</div>
               <span className="text-sm font-bold text-text-primary">{transports}</span>
             </div>
             <input
@@ -231,14 +231,14 @@ function EstimatorTab() {
               onChange={(e) => setTransports(Number(e.target.value))}
               className="w-full accent-[var(--color-brand-orange)]"
             />
-            <div className="flex justify-between text-[10px] text-[rgba(255,255,255,0.3)] mt-1">
+            <div className="flex justify-between text-micro text-[rgba(255,255,255,0.3)] mt-1">
               <span>10</span><span>500</span><span>1000</span>
             </div>
           </div>
         )}
 
-        <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] rounded-sm p-4">
-          <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Add-ons</div>
+        <div className="bg-bg-base border border-[rgba(255,255,255,0.07)] chamfer-4 p-4">
+          <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-3">Add-ons</div>
           {[
             { key: 'CCT', label: 'CCT Transport Ops', price: 399 },
             { key: 'HEMS', label: 'HEMS Module', price: 750 },
@@ -260,8 +260,8 @@ function EstimatorTab() {
         </div>
       </div>
 
-      <div className="bg-bg-base border border-[rgba(255,107,26,0.2)] rounded-sm p-5 flex flex-col">
-        <div className="text-[10px] uppercase tracking-widest text-orange-dim mb-4">Monthly Estimate</div>
+      <div className="bg-bg-base border border-[rgba(255,107,26,0.2)] chamfer-4 p-5 flex flex-col">
+        <div className="text-micro uppercase tracking-widest text-orange-dim mb-4">Monthly Estimate</div>
         <div className="space-y-3 flex-1">
           <div className="flex justify-between text-xs">
             <span className="text-[rgba(255,255,255,0.5)]">
@@ -289,7 +289,7 @@ function EstimatorTab() {
               ${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </span>
           </div>
-          <div className="text-[10px] text-[rgba(255,255,255,0.3)] mt-1">
+          <div className="text-micro text-[rgba(255,255,255,0.3)] mt-1">
             Annual: ${(total * 12).toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function PricingStudioPage() {
   return (
     <div className="p-6 max-w-[1300px]">
       <div className="mb-6">
-        <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-1">Founder OS</div>
+        <div className="text-micro uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-1">Founder OS</div>
         <h1 className="text-xl font-bold text-text-primary">Pricing Studio</h1>
         <p className="text-xs text-[rgba(255,255,255,0.4)] mt-1">Product catalog, versioned pricebooks, price estimator, and Stripe catalog management</p>
       </div>

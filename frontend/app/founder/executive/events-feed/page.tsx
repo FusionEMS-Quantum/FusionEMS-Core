@@ -185,7 +185,7 @@ function EventRow({
       {/* Event type badge */}
       <td className="pr-4 py-3">
         <span
-          className="text-[11px] font-mono px-1.5 py-0.5 rounded-sm border"
+          className="text-body font-mono px-1.5 py-0.5 chamfer-4 border"
           style={domainBadgeStyle(domain)}
         >
           {event.event_type}
@@ -227,7 +227,7 @@ function ExpandedRow({
   return (
     <tr className="bg-bg-base">
       <td colSpan={colSpan} className="px-6 py-4">
-        <pre className="text-xs text-system-billing bg-bg-void border border-border-DEFAULT rounded-sm p-4 overflow-x-auto whitespace-pre-wrap break-words">
+        <pre className="text-xs text-system-billing bg-bg-void border border-border-DEFAULT chamfer-4 p-4 overflow-x-auto whitespace-pre-wrap break-words">
           {json}
         </pre>
       </td>
@@ -398,7 +398,7 @@ export default function EventsFeedPage() {
           {/* Auto-refresh toggle */}
           <button
             onClick={() => setAutoRefresh((v) => !v)}
-            className={`text-xs px-3 py-1.5 rounded-sm border transition-colors ${
+            className={`text-xs px-3 py-1.5 chamfer-4 border transition-colors ${
               autoRefresh
                 ? 'border-[rgba(76,175,80,0.4)] text-status-active bg-[rgba(76,175,80,0.08)]'
                 : 'border-border-DEFAULT text-[rgba(255,255,255,0.4)]'
@@ -409,7 +409,7 @@ export default function EventsFeedPage() {
           {/* Mark all read */}
           <button
             onClick={markAllRead}
-            className="text-xs px-3 py-1.5 rounded-sm border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)] transition-colors"
+            className="text-xs px-3 py-1.5 chamfer-4 border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)] transition-colors"
           >
             Mark all read
           </button>
@@ -426,7 +426,7 @@ export default function EventsFeedPage() {
               <button
                 key={pill.value}
                 onClick={() => setFilter(pill.value)}
-                className={`text-xs px-3 py-1 rounded-sm border transition-colors font-mono ${
+                className={`text-xs px-3 py-1 chamfer-4 border transition-colors font-mono ${
                   active
                     ? 'border-[rgba(255,107,26,0.5)] text-orange bg-[rgba(255,107,26,0.1)]'
                     : 'border-border-DEFAULT text-[rgba(255,255,255,0.4)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)]'
@@ -449,7 +449,7 @@ export default function EventsFeedPage() {
               <button
                 key={opt.value}
                 onClick={() => setDateRange(opt.value)}
-                className={`text-xs px-3 py-1 rounded-sm border transition-colors ${
+                className={`text-xs px-3 py-1 chamfer-4 border transition-colors ${
                   active
                     ? 'border-[rgba(34,211,238,0.4)] text-system-billing bg-[rgba(34,211,238,0.08)]'
                     : 'border-border-DEFAULT text-[rgba(255,255,255,0.4)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)]'
@@ -463,7 +463,7 @@ export default function EventsFeedPage() {
       </div>
 
       {/* ── Events table ──────────────────────────────────────────────────── */}
-      <div className="bg-bg-base border border-border-DEFAULT rounded-sm overflow-hidden flex-1">
+      <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-hidden flex-1">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <span className="text-sm text-[rgba(255,255,255,0.3)]">Loading events…</span>
@@ -478,19 +478,19 @@ export default function EventsFeedPage() {
               <thead>
                 <tr className="border-b border-border-DEFAULT">
                   <th className="w-5 pl-4 pr-2 py-2" />
-                  <th className="pr-4 py-2 text-left text-[10px] font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)] whitespace-nowrap">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)] whitespace-nowrap">
                     Time
                   </th>
-                  <th className="pr-4 py-2 text-left text-[10px] font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
                     Tenant
                   </th>
-                  <th className="pr-4 py-2 text-left text-[10px] font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
                     Event Type
                   </th>
-                  <th className="pr-4 py-2 text-left text-[10px] font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
                     Entity
                   </th>
-                  <th className="pr-4 py-2 text-left text-[10px] font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[rgba(255,255,255,0.3)]">
                     Summary
                   </th>
                 </tr>

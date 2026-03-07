@@ -9,10 +9,10 @@ const DOMAIN_COLOR = 'var(--color-system-fleet)';
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="mb-4">
-      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+      <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-[11px] text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-text-muted">{sub}</p>}
     </div>
   );
 }
@@ -39,7 +39,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const s = badgeColors[status];
   return (
     <span
-      className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm"
+      className="text-micro font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
       style={{ background: s.bg, color: s.color }}
     >
       {label}
@@ -50,9 +50,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -132,7 +132,7 @@ export default function CrewLinkPage() {
     <div className="p-5 min-h-screen bg-bg-void">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
-        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+        <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
         <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export default function CrewLinkPage() {
               <thead>
                 <tr className="text-text-muted border-b border-border-subtle">
                   {['Crew Member', 'Unit', 'Last Activity', 'Status', 'Device'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-4 font-bold uppercase tracking-widest text-[10px]">{h}</th>
+                    <th key={h} className="text-left pb-2 pr-4 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -190,11 +190,11 @@ export default function CrewLinkPage() {
           {syncCategories.map((cat, i) => (
             <Panel key={i}>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-[11px] font-bold text-text-primary uppercase tracking-widest">{cat.label}</span>
-                <span className="text-[11px] text-[rgba(255,255,255,0.55)]">{cat.synced.toLocaleString()} {cat.unit}</span>
+                <span className="text-body font-bold text-text-primary uppercase tracking-widest">{cat.label}</span>
+                <span className="text-body text-[rgba(255,255,255,0.55)]">{cat.synced.toLocaleString()} {cat.unit}</span>
               </div>
               <ProgressBar value={cat.synced} max={cat.max} color={cat.color} />
-              <div className="text-[10px] text-text-muted mt-1.5">{Math.round((cat.synced / cat.max) * 100)}% synced</div>
+              <div className="text-micro text-text-muted mt-1.5">{Math.round((cat.synced / cat.max) * 100)}% synced</div>
             </Panel>
           ))}
         </div>
@@ -207,14 +207,14 @@ export default function CrewLinkPage() {
           <div className="space-y-3 mb-4">
             {notifications.map((n) => (
               <div key={n.id} className="flex items-start gap-3 border-b border-[rgba(255,255,255,0.05)] pb-3 last:border-0 last:pb-0">
-                <span className="text-[10px] text-text-muted mt-0.5 w-10 shrink-0">{n.time}</span>
+                <span className="text-micro text-text-muted mt-0.5 w-10 shrink-0">{n.time}</span>
                 <Badge label={n.type} status={notifTypeMap[n.type]} />
                 <span className="text-xs text-[rgba(255,255,255,0.7)]">{n.text}</span>
               </div>
             ))}
           </div>
           <button
-            className="text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-sm border transition-colors"
+            className="text-xs font-bold uppercase tracking-widest px-4 py-2 chamfer-4 border transition-colors"
             style={{ borderColor: DOMAIN_COLOR, color: DOMAIN_COLOR, background: 'rgba(59,130,246,0.08)' }}
             onClick={() => {}}
           >
@@ -243,7 +243,7 @@ export default function CrewLinkPage() {
           {devices.map((d, i) => (
             <Panel key={i}>
               <div className="text-xs font-bold text-text-primary mb-2">{d.name}</div>
-              <div className="space-y-1.5 text-[11px]">
+              <div className="space-y-1.5 text-body">
                 <div className="flex justify-between">
                   <span className="text-text-muted">Battery</span>
                   <span style={{ color: batteryColor(d.battery) }} className="font-bold">{d.battery}%</span>

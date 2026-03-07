@@ -78,7 +78,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -118,7 +118,7 @@ function PackStatusBadge({ status }: { status: PackStatus }) {
   const s = PACK_STATUS_MAP[status] ?? PACK_STATUS_MAP.staged;
   return (
     <span
-      className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm whitespace-nowrap${s.pulse ? ' animate-pulse' : ''}`}
+      className={`px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4 whitespace-nowrap${s.pulse ? ' animate-pulse' : ''}`}
       style={{ color: s.color, background: s.bg }}
     >
       {s.label}
@@ -164,7 +164,7 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
       onClick={onClose}
     >
       <div
-        className="bg-bg-base border border-[rgba(255,255,255,0.12)] rounded-sm p-6 w-full max-w-md shadow-2xl"
+        className="bg-bg-base border border-[rgba(255,255,255,0.12)] chamfer-4 p-6 w-full max-w-md shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -178,18 +178,18 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
             { label: 'Ref (branch/tag)', value: ref, onChange: setRef, placeholder: 'main' },
           ].map((f) => (
             <div key={f.label}>
-              <label className="block text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-1">{f.label}</label>
+              <label className="block text-micro uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-1">{f.label}</label>
               <input
                 type="text"
                 value={f.value}
                 onChange={(e) => f.onChange(e.target.value)}
                 placeholder={f.placeholder}
-                className="w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-[rgba(255,255,255,0.2)]"
+                className="w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-[rgba(255,255,255,0.2)]"
               />
             </div>
           ))}
           {error && (
-            <div className="p-2 text-xs text-red bg-[rgba(229,57,53,0.08)] border border-[rgba(229,57,53,0.25)] rounded-sm">
+            <div className="p-2 text-xs text-red bg-[rgba(229,57,53,0.08)] border border-[rgba(229,57,53,0.25)] chamfer-4">
               {error}
             </div>
           )}
@@ -197,7 +197,7 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+              className="flex-1 py-2 text-xs font-semibold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
               style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
             >
               {loading ? 'Importing…' : 'Start Import'}
@@ -205,7 +205,7 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-wider chamfer-4"
               style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}
             >
               Cancel
@@ -242,7 +242,7 @@ function PackDetailDrawer({
         <div className="px-5 py-4 border-b border-border-DEFAULT flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">Pack Detail</h2>
-            <p className="text-[10px] text-text-muted mt-0.5">{pack.name}</p>
+            <p className="text-micro text-text-muted mt-0.5">{pack.name}</p>
           </div>
           <button onClick={onClose} className="text-[rgba(255,255,255,0.4)] hover:text-text-primary transition-colors text-lg leading-none">✕</button>
         </div>
@@ -259,7 +259,7 @@ function PackDetailDrawer({
                 { label: 'Created', value: new Date(pack.created_at).toLocaleString() },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-start justify-between gap-3">
-                  <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)] flex-shrink-0 mt-0.5">{label}</span>
+                  <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)] flex-shrink-0 mt-0.5">{label}</span>
                   <span className="text-xs text-[rgba(255,255,255,0.8)] text-right font-mono break-all">{value}</span>
                 </div>
               ))}
@@ -267,23 +267,23 @@ function PackDetailDrawer({
           </div>
           <div className="flex items-center justify-between py-3 border-y border-border-subtle">
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Status</span>
+              <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Status</span>
               <PackStatusBadge status={pack.status} />
             </div>
             {pack.compiled && (
               <div className="flex flex-col gap-1.5 items-end">
-                <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Compiled</span>
-                <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm" style={{ color: 'var(--q-green)', background: 'rgba(76,175,80,0.12)' }}>YES</span>
+                <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">Compiled</span>
+                <span className="px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4" style={{ color: 'var(--q-green)', background: 'rgba(76,175,80,0.12)' }}>YES</span>
               </div>
             )}
           </div>
           {pack.compiled && (
             <div className="flex gap-2">
-              <div className="flex flex-col items-center px-3 py-2 rounded-sm" style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)' }}>
+              <div className="flex flex-col items-center px-3 py-2 chamfer-4" style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)' }}>
                 <span className="text-[9px] uppercase tracking-wider text-[rgba(255,255,255,0.4)]">Entity Rules</span>
                 <span className="text-base font-bold text-system-billing">{(pack.data as any)?.rules_json?.entity_rules?.length ?? '—'}</span>
               </div>
-              <div className="flex flex-col items-center px-3 py-2 rounded-sm" style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)' }}>
+              <div className="flex flex-col items-center px-3 py-2 chamfer-4" style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)' }}>
                 <span className="text-[9px] uppercase tracking-wider text-[rgba(255,255,255,0.4)]">Incident Rules</span>
                 <span className="text-base font-bold text-system-compliance">{(pack.data as any)?.rules_json?.incident_rules?.length ?? '—'}</span>
               </div>
@@ -295,7 +295,7 @@ function PackDetailDrawer({
               {pack.status === 'staged' && (
                 <button
                   onClick={() => onAction('compile', pack.id)}
-                  className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                  className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', color: 'var(--color-system-fleet)' }}
                 >
                   Compile
@@ -304,14 +304,14 @@ function PackDetailDrawer({
               {(pack.status === 'staged' || pack.status === 'compiled') && (
                 <button
                   onClick={() => onAction('activate', pack.id)}
-                  className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                  className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
                   style={{ background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)', color: 'var(--q-green)' }}
                 >
                   Activate
                 </button>
               )}
               {pack.status === 'active' && (
-                <span className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm flex items-center" style={{ color: 'var(--q-green)', background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.2)' }}>
+                <span className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4 flex items-center" style={{ color: 'var(--q-green)', background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.2)' }}>
                   Currently Active
                 </span>
               )}
@@ -391,26 +391,26 @@ function PacksTab({
         <div className="flex items-center gap-3">
           <button
             onClick={onImport}
-            className="h-8 px-4 text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110"
+            className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110"
             style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
           >
             Import from GitHub
           </button>
           <button
             onClick={onRefresh}
-            className="h-8 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+            className="h-8 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
           >
             Refresh
           </button>
         </div>
         {lastRefreshed && (
-          <span className="text-[10px] text-[rgba(255,255,255,0.3)] font-mono">
+          <span className="text-micro text-[rgba(255,255,255,0.3)] font-mono">
             Last refreshed: {lastRefreshed.toLocaleTimeString()}
           </span>
         )}
       </div>
-      <div className="bg-bg-base border border-border-DEFAULT rounded-sm overflow-x-auto">
+      <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-x-auto">
         <table className="w-full text-xs min-w-[780px]">
           <thead>
             <tr className="border-b border-[rgba(255,255,255,0.07)]">
@@ -424,12 +424,12 @@ function PacksTab({
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-[11px] text-[rgba(255,255,255,0.3)]">Loading…</td>
+                <td colSpan={6} className="py-10 text-center text-body text-[rgba(255,255,255,0.3)]">Loading…</td>
               </tr>
             )}
             {!loading && packs.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-[11px] text-[rgba(255,255,255,0.3)]">No packs found. Import a pack to get started.</td>
+                <td colSpan={6} className="py-10 text-center text-body text-[rgba(255,255,255,0.3)]">No packs found. Import a pack to get started.</td>
               </tr>
             )}
             {!loading && packs.map((pack) => (
@@ -449,7 +449,7 @@ function PacksTab({
                 <td className="py-2.5 px-3 font-mono text-text-muted whitespace-nowrap">
                   {new Date(pack.created_at).toLocaleDateString()}
                 </td>
-                <td className="py-2.5 px-3 font-mono text-[rgba(255,255,255,0.4)] text-[10px]">
+                <td className="py-2.5 px-3 font-mono text-[rgba(255,255,255,0.4)] text-micro">
                   {pack.sha256 ? pack.sha256.slice(0, 12) : '—'}
                 </td>
                 <td className="py-2.5 px-3">
@@ -457,7 +457,7 @@ function PacksTab({
                     {pack.status === 'staged' && (
                       <button
                         onClick={() => doCompile(pack.id)}
-                        className="h-6 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                        className="h-6 px-2 text-micro font-semibold uppercase tracking-wider chamfer-4"
                         style={{ background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)', color: 'var(--color-system-fleet)' }}
                       >
                         Compile
@@ -466,7 +466,7 @@ function PacksTab({
                     {(pack.status === 'staged' || pack.status === 'compiled') && (
                       <button
                         onClick={() => doActivate(pack.id)}
-                        className="h-6 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                        className="h-6 px-2 text-micro font-semibold uppercase tracking-wider chamfer-4"
                         style={{ background: 'rgba(76,175,80,0.1)', border: '1px solid rgba(76,175,80,0.25)', color: 'var(--q-green)' }}
                       >
                         Activate
@@ -474,7 +474,7 @@ function PacksTab({
                     )}
                     <button
                       onClick={() => setDetailPack(pack)}
-                      className="h-6 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+                      className="h-6 px-2 text-micro font-semibold uppercase tracking-wider chamfer-4"
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
                     >
                       Details
@@ -494,7 +494,7 @@ function PacksTab({
 
 function CopilotResult({ result }: { result: CopilotResult }) {
   return (
-    <div className="mt-4 p-4 rounded-sm space-y-3" style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)' }}>
+    <div className="mt-4 p-4 chamfer-4 space-y-3" style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)' }}>
       <p className="text-[9px] uppercase tracking-[0.18em] text-system-compliance">Copilot Analysis</p>
       {result.summary && (
         <p className="text-xs text-[rgba(255,255,255,0.75)] leading-relaxed">{result.summary}</p>
@@ -504,7 +504,7 @@ function CopilotResult({ result }: { result: CopilotResult }) {
           {result.actions.map((item, i) => (
             <div key={i} className="flex gap-2 items-start">
               <span
-                className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm shrink-0 mt-0.5"
+                className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider chamfer-4 shrink-0 mt-0.5"
                 style={{ background: 'rgba(255,107,26,0.15)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.3)' }}
               >
                 {item.type}
@@ -518,7 +518,7 @@ function CopilotResult({ result }: { result: CopilotResult }) {
         <div>
           <div className="flex items-center justify-between mb-1">
             <span className="text-[9px] uppercase tracking-wider text-[rgba(255,255,255,0.4)]">Confidence</span>
-            <span className="text-[10px] font-mono text-[rgba(255,255,255,0.6)]">{Math.round(result.confidence * 100)}%</span>
+            <span className="text-micro font-mono text-[rgba(255,255,255,0.6)]">{Math.round(result.confidence * 100)}%</span>
           </div>
           <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.08)]">
             <div
@@ -537,7 +537,7 @@ function CopilotResult({ result }: { result: CopilotResult }) {
 function IssueCard({ issue }: { issue: ValidationIssue }) {
   return (
     <div
-      className="p-3 rounded-sm"
+      className="p-3 chamfer-4"
       style={{
         background: issue.severity === 'error' ? 'rgba(229,57,53,0.06)' : 'rgba(255,152,0,0.06)',
         border: `1px solid ${issue.severity === 'error' ? 'rgba(229,57,53,0.2)' : 'rgba(255,152,0,0.2)'}`,
@@ -545,7 +545,7 @@ function IssueCard({ issue }: { issue: ValidationIssue }) {
     >
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
         <span
-          className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm"
+          className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider chamfer-4"
           style={{
             color: issue.severity === 'error' ? 'var(--color-brand-red)' : 'var(--color-status-warning)',
             background: issue.severity === 'error' ? 'rgba(229,57,53,0.15)' : 'rgba(255,152,0,0.15)',
@@ -557,11 +557,11 @@ function IssueCard({ issue }: { issue: ValidationIssue }) {
           <span className="text-xs font-semibold text-[rgba(255,255,255,0.8)]">{issue.field_label}</span>
         )}
         {issue.path && (
-          <span className="text-[10px] font-mono text-[rgba(255,255,255,0.45)]">{issue.path}</span>
+          <span className="text-micro font-mono text-[rgba(255,255,255,0.45)]">{issue.path}</span>
         )}
         {issue.ui_section && (
           <span
-            className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-sm"
+            className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider chamfer-4"
             style={{ background: 'rgba(34,211,238,0.1)', color: 'var(--color-system-billing)', border: '1px solid rgba(34,211,238,0.2)' }}
           >
             {issue.ui_section}
@@ -570,7 +570,7 @@ function IssueCard({ issue }: { issue: ValidationIssue }) {
       </div>
       <p className="text-xs text-[rgba(255,255,255,0.7)] mb-1">{issue.message}</p>
       {issue.suggested_fix && (
-        <p className="text-[11px] text-text-muted">{issue.suggested_fix}</p>
+        <p className="text-body text-text-muted">{issue.suggested_fix}</p>
       )}
     </div>
   );
@@ -670,21 +670,21 @@ function ValidateTab({
     ...(incidentResult?.issues ?? []),
   ];
 
-  const inputClass = "w-full bg-[rgba(255,255,255,0.03)] border border-border-DEFAULT text-xs font-mono text-[rgba(255,255,255,0.75)] px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)] resize-y";
+  const inputClass = "w-full bg-[rgba(255,255,255,0.03)] border border-border-DEFAULT text-xs font-mono text-[rgba(255,255,255,0.75)] px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)] resize-y";
 
   return (
     <div className="space-y-5">
       {!activePackId && (
-        <div className="p-3 rounded-sm text-xs" style={{ background: 'rgba(255,152,0,0.08)', border: '1px solid rgba(255,152,0,0.25)', color: 'var(--q-yellow)' }}>
+        <div className="p-3 chamfer-4 text-xs" style={{ background: 'rgba(255,152,0,0.08)', border: '1px solid rgba(255,152,0,0.25)', color: 'var(--q-yellow)' }}>
           No active NERIS pack. Go to the Packs tab to import and activate a pack.
         </div>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Entity panel */}
-        <div className="bg-bg-base border border-border-DEFAULT rounded-sm p-4 space-y-3">
+        <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-4 space-y-3">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-orange-dim mb-0.5">Entity (Department)</p>
-            <p className="text-[11px] text-[rgba(255,255,255,0.35)]">Paste entity JSON payload below</p>
+            <p className="text-micro uppercase tracking-[0.18em] text-orange-dim mb-0.5">Entity (Department)</p>
+            <p className="text-body text-[rgba(255,255,255,0.35)]">Paste entity JSON payload below</p>
           </div>
           <textarea
             value={entityJson}
@@ -699,7 +699,7 @@ function ValidateTab({
           <button
             onClick={validateEntity}
             disabled={loadingEntity || !entityJson.trim()}
-            className="w-full py-2 text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+            className="w-full py-2 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
             style={{ background: 'rgba(255,107,26,0.16)', border: '1px solid rgba(255,107,26,0.3)', color: 'var(--q-orange)' }}
           >
             {loadingEntity ? 'Validating…' : 'Validate Entity'}
@@ -708,14 +708,14 @@ function ValidateTab({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span
-                  className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-sm"
+                  className="px-2 py-0.5 text-micro font-bold uppercase chamfer-4"
                   style={entityResult.valid
                     ? { color: 'var(--q-green)', background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)' }
                     : { color: 'var(--q-red)', background: 'rgba(229,57,53,0.12)', border: '1px solid rgba(229,57,53,0.25)' }}
                 >
                   {entityResult.valid ? 'VALID' : 'INVALID'}
                 </span>
-                <span className="text-[11px] text-[rgba(255,255,255,0.4)]">{entityResult.issues.length} issue{entityResult.issues.length !== 1 ? 's' : ''}</span>
+                <span className="text-body text-[rgba(255,255,255,0.4)]">{entityResult.issues.length} issue{entityResult.issues.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {entityResult.issues.map((issue, i) => <IssueCard key={i} issue={issue} />)}
@@ -724,17 +724,17 @@ function ValidateTab({
           )}
         </div>
         {/* Incident panel */}
-        <div className="bg-bg-base border border-border-DEFAULT rounded-sm p-4 space-y-3">
+        <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-4 space-y-3">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-orange-dim mb-0.5">Incident</p>
-            <p className="text-[11px] text-[rgba(255,255,255,0.35)]">Paste incident JSON payload below</p>
+            <p className="text-micro uppercase tracking-[0.18em] text-orange-dim mb-0.5">Incident</p>
+            <p className="text-body text-[rgba(255,255,255,0.35)]">Paste incident JSON payload below</p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)]">Entity Type</label>
+            <label className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.4)]">Entity Type</label>
             <select
               value={entityType}
               onChange={(e) => setEntityType(e.target.value as 'ENTITY' | 'INCIDENT')}
-              className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-2 py-1 rounded-sm outline-none focus:border-[rgba(255,107,26,0.4)]"
+              className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-2 py-1 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.4)]"
               style={{ background: 'var(--color-bg-base)' }}
             >
               <option value="ENTITY">ENTITY</option>
@@ -754,7 +754,7 @@ function ValidateTab({
           <button
             onClick={validateIncident}
             disabled={loadingIncident || !incidentJson.trim()}
-            className="w-full py-2 text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+            className="w-full py-2 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
             style={{ background: 'rgba(255,107,26,0.16)', border: '1px solid rgba(255,107,26,0.3)', color: 'var(--q-orange)' }}
           >
             {loadingIncident ? 'Validating…' : 'Validate'}
@@ -763,14 +763,14 @@ function ValidateTab({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span
-                  className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-sm"
+                  className="px-2 py-0.5 text-micro font-bold uppercase chamfer-4"
                   style={incidentResult.valid
                     ? { color: 'var(--q-green)', background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)' }
                     : { color: 'var(--q-red)', background: 'rgba(229,57,53,0.12)', border: '1px solid rgba(229,57,53,0.25)' }}
                 >
                   {incidentResult.valid ? 'VALID' : 'INVALID'}
                 </span>
-                <span className="text-[11px] text-[rgba(255,255,255,0.4)]">{incidentResult.issues.length} issue{incidentResult.issues.length !== 1 ? 's' : ''}</span>
+                <span className="text-body text-[rgba(255,255,255,0.4)]">{incidentResult.issues.length} issue{incidentResult.issues.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {incidentResult.issues.map((issue, i) => <IssueCard key={i} issue={issue} />)}
@@ -784,7 +784,7 @@ function ValidateTab({
           <button
             onClick={() => explainWithCopilot(allIssues)}
             disabled={loadingCopilot}
-            className="h-8 px-4 text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+            className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
             style={{ background: 'rgba(168,85,247,0.16)', border: '1px solid rgba(168,85,247,0.35)', color: 'var(--color-system-compliance)' }}
           >
             {loadingCopilot ? 'Analyzing…' : 'Explain with Copilot'}
@@ -867,7 +867,7 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
         <div className="flex items-center gap-2">
           <button
             onClick={copyAsJson}
-            className="h-7 px-3 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+            className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
           >
             Copy Fix List as JSON
@@ -875,7 +875,7 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
           <button
             onClick={explainAll}
             disabled={loadingCopilot}
-            className="h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-sm disabled:opacity-40"
+            className="h-7 px-3 text-micro font-bold uppercase tracking-wider chamfer-4 disabled:opacity-40"
             style={{ background: 'rgba(168,85,247,0.14)', border: '1px solid rgba(168,85,247,0.3)', color: 'var(--color-system-compliance)' }}
           >
             {loadingCopilot ? 'Analyzing…' : 'Explain All with Copilot'}
@@ -888,7 +888,7 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
         const secErrors = sectionIssues.filter((i) => i.severity === 'error').length;
         const secWarns = sectionIssues.filter((i) => i.severity === 'warning').length;
         return (
-          <div key={section} className="bg-bg-base border border-border-DEFAULT rounded-sm overflow-hidden">
+          <div key={section} className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-hidden">
             <button
               onClick={() => toggleSection(section)}
               className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors"
@@ -896,12 +896,12 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
               <div className="flex items-center gap-3">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[rgba(255,255,255,0.8)]">{section}</span>
                 {secErrors > 0 && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm" style={{ color: 'var(--q-red)', background: 'rgba(229,57,53,0.15)' }}>
+                  <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase chamfer-4" style={{ color: 'var(--q-red)', background: 'rgba(229,57,53,0.15)' }}>
                     {secErrors} error{secErrors !== 1 ? 's' : ''}
                   </span>
                 )}
                 {secWarns > 0 && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-sm" style={{ color: 'var(--q-yellow)', background: 'rgba(255,152,0,0.12)' }}>
+                  <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase chamfer-4" style={{ color: 'var(--q-yellow)', background: 'rgba(255,152,0,0.12)' }}>
                     {secWarns} warning{secWarns !== 1 ? 's' : ''}
                   </span>
                 )}
@@ -918,9 +918,9 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
                       </span>
                       <div>
                         <span className="text-xs font-semibold text-[rgba(255,255,255,0.8)]">{issue.field_label ?? issue.path ?? 'Field'}</span>
-                        <p className="text-[11px] text-[rgba(255,255,255,0.6)] mt-0.5">{issue.message}</p>
+                        <p className="text-body text-[rgba(255,255,255,0.6)] mt-0.5">{issue.message}</p>
                         {issue.suggested_fix && (
-                          <p className="text-[10px] text-[rgba(255,255,255,0.35)] mt-0.5">{issue.suggested_fix}</p>
+                          <p className="text-micro text-[rgba(255,255,255,0.35)] mt-0.5">{issue.suggested_fix}</p>
                         )}
                       </div>
                     </div>
@@ -996,7 +996,7 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-orange-dim">Active Pack</p>
+          <p className="text-micro uppercase tracking-[0.18em] text-orange-dim">Active Pack</p>
           <p className="text-sm font-semibold text-text-primary">{activePack?.name ?? activePackId}</p>
         </div>
         <div className="flex gap-1 border-b border-border-DEFAULT ml-auto">
@@ -1022,15 +1022,15 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
         {rules.map((section) => {
           const isOpen = expandedSections.has(section.id);
           return (
-            <div key={section.id} className="bg-bg-base border border-border-DEFAULT rounded-sm overflow-hidden">
+            <div key={section.id} className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-hidden">
               <button
                 onClick={() => toggleSection(section.id)}
                 className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-[rgba(255,255,255,0.35)]">{section.id}</span>
+                  <span className="text-micro font-mono text-[rgba(255,255,255,0.35)]">{section.id}</span>
                   <span className="text-xs font-semibold text-[rgba(255,255,255,0.85)]">{section.label}</span>
-                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded-sm" style={{ color: 'var(--color-system-billing)', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)' }}>
+                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase chamfer-4" style={{ color: 'var(--color-system-billing)', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)' }}>
                     {section.fields.length} field{section.fields.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -1042,12 +1042,12 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
                     const fKey = `${section.id}::${field.path}`;
                     const fOpen = expandedFields.has(fKey);
                     return (
-                      <div key={field.path} className="rounded-sm overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div key={field.path} className="chamfer-4 overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                         <button
                           onClick={() => toggleField(fKey)}
                           className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors"
                         >
-                          <span className="text-[11px] font-mono text-[rgba(255,255,255,0.6)] flex-1 truncate">{field.path}</span>
+                          <span className="text-body font-mono text-[rgba(255,255,255,0.6)] flex-1 truncate">{field.path}</span>
                           {field.type && (
                             <span className="text-[9px] font-mono uppercase text-[rgba(255,255,255,0.35)]">{field.type}</span>
                           )}
@@ -1065,7 +1065,7 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
                               {field.value_set.map((v) => (
                                 <span
                                   key={v}
-                                  className="px-1.5 py-0.5 text-[10px] font-mono rounded-sm"
+                                  className="px-1.5 py-0.5 text-micro font-mono chamfer-4"
                                   style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: 'var(--color-system-compliance)' }}
                                 >
                                   {v}
@@ -1145,7 +1145,7 @@ export default function NerisComplianceStudioPage() {
 
       {/* Page Header */}
       <div className="mb-5">
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
           5 · COMPLIANCE
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -1154,7 +1154,7 @@ export default function NerisComplianceStudioPage() {
           </h1>
           <span className="text-base">🏴</span>
           <span
-            className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+            className="px-2 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4"
             style={{ color: 'var(--color-system-billing)', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)' }}
           >
             Wisconsin RMS-Only
@@ -1180,7 +1180,7 @@ export default function NerisComplianceStudioPage() {
             {t.label}
             {t.key === 'fixlist' && fixListCount > 0 && (
               <span
-                className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold rounded-sm"
+                className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold chamfer-4"
                 style={{ background: 'rgba(229,57,53,0.2)', color: 'var(--q-red)' }}
               >
                 {fixListCount}

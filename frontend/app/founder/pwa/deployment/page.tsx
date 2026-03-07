@@ -9,10 +9,10 @@ const DOMAIN_COLOR = 'var(--color-system-fleet)';
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="mb-4">
-      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+      <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-[11px] text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-text-muted">{sub}</p>}
     </div>
   );
 }
@@ -39,7 +39,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const s = badgeColors[status];
   return (
     <span
-      className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm"
+      className="text-micro font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
       style={{ background: s.bg, color: s.color }}
     >
       {label}
@@ -50,9 +50,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -110,7 +110,7 @@ export default function DeploymentPage() {
     <div className="p-5 min-h-screen bg-bg-void">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
-        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+        <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">PWA Deployment Monitor</h1>
@@ -139,7 +139,7 @@ export default function DeploymentPage() {
               <thead>
                 <tr className="text-text-muted border-b border-border-subtle">
                   {['Version', 'Device Count', 'Percentage', 'Status'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-[10px]">{h}</th>
+                    <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -176,7 +176,7 @@ export default function DeploymentPage() {
               {pipeline.map((step, i) => (
                 <div key={i} className="flex items-start gap-4 py-3 border-b border-border-subtle last:border-0">
                   <div
-                    className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-[10px] font-black border-2 z-10"
+                    className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-micro font-black border-2 z-10"
                     style={{
                       background: 'var(--q-surface)',
                       borderColor: badgeColors[step.status].color,
@@ -190,8 +190,8 @@ export default function DeploymentPage() {
                       <span className="text-xs font-bold text-text-primary uppercase tracking-widest">{step.stage}</span>
                       <Badge label={step.status === 'ok' ? 'Passed' : step.status === 'warn' ? 'Warning' : 'Failed'} status={step.status} />
                     </div>
-                    <div className="text-[10px] text-text-muted">{step.note}</div>
-                    <div className="text-[10px] text-[rgba(255,255,255,0.25)] font-mono mt-0.5">{step.ts}</div>
+                    <div className="text-micro text-text-muted">{step.note}</div>
+                    <div className="text-micro text-[rgba(255,255,255,0.25)] font-mono mt-0.5">{step.ts}</div>
                   </div>
                 </div>
               ))}
@@ -209,7 +209,7 @@ export default function DeploymentPage() {
               <thead>
                 <tr className="text-text-muted border-b border-border-subtle">
                   {['Device ID', 'Version', 'Last Seen', 'Update Status'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-[10px]">{h}</th>
+                    <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -71,7 +71,7 @@ export default function AiPoliciesPage() {
     <div className="p-5 min-h-screen space-y-6">
       {/* Header */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">AI Governance & Policies</h1>
         <p className="text-xs text-text-muted mt-0.5">Guardrail rules · protected actions · enforcement levels</p>
       </div>
@@ -92,7 +92,7 @@ export default function AiPoliciesPage() {
         <>
           {/* Guardrail Rules */}
           <section>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Guardrail Rules</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Guardrail Rules</div>
             {rules.length === 0 ? (
               <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-6 text-center text-xs text-text-muted">
                 No guardrail rules configured
@@ -112,16 +112,16 @@ export default function AiPoliciesPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-bold text-text-primary">{rule.rule_name}</span>
                         {!rule.is_active && (
-                          <span className="text-[10px] uppercase tracking-widest text-text-muted px-1.5 py-0.5 border border-border-DEFAULT chamfer-4">
+                          <span className="text-micro uppercase tracking-widest text-text-muted px-1.5 py-0.5 border border-border-DEFAULT chamfer-4">
                             DISABLED
                           </span>
                         )}
                       </div>
                       <div className="text-xs text-text-secondary">{rule.description}</div>
-                      <div className="text-[10px] text-text-muted mt-1">Domain: {rule.domain}</div>
+                      <div className="text-micro text-text-muted mt-1">Domain: {rule.domain}</div>
                     </div>
                     <span
-                      className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
+                      className="text-micro uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
                       style={{
                         color: enforcementColor(rule.enforcement),
                         background: `color-mix(in srgb, ${enforcementColor(rule.enforcement)} 12%, transparent)`,
@@ -138,7 +138,7 @@ export default function AiPoliciesPage() {
 
           {/* Protected Actions */}
           <section>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Protected Actions</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Protected Actions</div>
             {actions.length === 0 ? (
               <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-6 text-center text-xs text-text-muted">
                 No protected actions configured
@@ -157,13 +157,13 @@ export default function AiPoliciesPage() {
                     <div className="min-w-0">
                       <div className="text-sm font-bold text-text-primary mb-0.5">{action.action_name}</div>
                       <div className="text-xs text-text-secondary">{action.description}</div>
-                      <div className="text-[10px] text-text-muted mt-1">
+                      <div className="text-micro text-text-muted mt-1">
                         Domain: {action.domain}
                         {action.requires_human && ' · Human review required'}
                       </div>
                     </div>
                     <span
-                      className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
+                      className="text-micro uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
                       style={{
                         color: riskColor(action.risk_tier),
                         background: `color-mix(in srgb, ${riskColor(action.risk_tier)} 12%, transparent)`,

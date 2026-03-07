@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -49,10 +49,10 @@ export default function FunnelPage() {
     <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 09 · ROI & GROWTH
           </span>
-          <Link href="/founder/roi" className="text-[11px] text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder/roi" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
             ← Back to ROI
           </Link>
         </div>
@@ -71,7 +71,7 @@ export default function FunnelPage() {
             { label: 'Conversion Rate', value: `${kpis?.proposal_to_paid_conversion_pct ?? '-'}%` },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
               <span className="text-xl font-bold" style={{ color: 'var(--color-status-info)' }}>{s.value}</span>
             </Panel>
           ))}
@@ -89,7 +89,7 @@ export default function FunnelPage() {
               return (
                 <div key={i} className="flex items-center gap-4">
                   <div className="w-32 text-xs text-[rgba(255,255,255,0.7)] uppercase tracking-wider">{s.stage}</div>
-                  <div className="flex-1 h-3 bg-[rgba(255,255,255,0.05)] rounded-sm overflow-hidden relative">
+                  <div className="flex-1 h-3 bg-[rgba(255,255,255,0.05)] chamfer-4 overflow-hidden relative">
                     <div 
                       className="absolute top-0 left-0 h-full transition-all duration-1000"
                       style={{ width: `${width}%`, background: 'var(--color-brand-cyan)' }}
@@ -104,7 +104,7 @@ export default function FunnelPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder/roi" className="text-[11px] text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder/roi" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
           ← Back to ROI Overview
         </Link>
       </div>

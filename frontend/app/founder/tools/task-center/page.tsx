@@ -9,7 +9,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold text-orange-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-[rgba(255,255,255,0.85)]">{title}</h2>
         {sub && <span className="text-xs text-[rgba(255,255,255,0.35)]">{sub}</span>}
       </div>
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
       <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
@@ -124,10 +124,10 @@ export default function TaskCenterPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-[rgba(255,255,255,0.4)] hover:text-orange transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
@@ -147,7 +147,7 @@ export default function TaskCenterPage() {
             { label: 'Completed This Week', value: '7', status: 'ok' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{s.label}</span>
               <span
                 className="text-2xl font-bold"
                 style={{
@@ -177,7 +177,7 @@ export default function TaskCenterPage() {
             {highTasks.map((t) => (
               <div
                 key={t.id}
-                className="flex items-center gap-3 p-2 rounded-sm transition-all"
+                className="flex items-center gap-3 p-2 chamfer-4 transition-all"
                 style={{
                   background: t.completed ? 'rgba(76,175,80,0.04)' : 'rgba(229,57,53,0.04)',
                   border: `1px solid ${t.completed ? 'rgba(76,175,80,0.15)' : 'rgba(229,57,53,0.15)'}`,
@@ -185,13 +185,13 @@ export default function TaskCenterPage() {
               >
                 <button
                   onClick={() => toggleHighTask(t.id)}
-                  className="w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 transition-all"
+                  className="w-4 h-4 chamfer-4 border flex items-center justify-center shrink-0 transition-all"
                   style={{
                     borderColor: t.completed ? 'var(--color-status-active)' : 'var(--color-brand-red)',
                     background: t.completed ? 'rgba(76,175,80,0.2)' : 'transparent',
                   }}
                 >
-                  {t.completed && <span className="text-[10px] text-status-active font-bold leading-none">&#10003;</span>}
+                  {t.completed && <span className="text-micro text-status-active font-bold leading-none">&#10003;</span>}
                 </button>
                 <span
                   className="flex-1 text-xs"
@@ -203,7 +203,7 @@ export default function TaskCenterPage() {
                   {t.task}
                 </span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] text-[rgba(255,255,255,0.35)] font-mono">{t.due}</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.35)] font-mono">{t.due}</span>
                   <Badge label={t.category} status="info" />
                   <span className="w-2 h-2 rounded-full" style={{ background: 'var(--color-brand-red)' }} />
                 </div>
@@ -222,7 +222,7 @@ export default function TaskCenterPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['#', 'Task', 'Category', 'Due', 'Priority', 'Status'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-[10px]">
+                    <th key={h} className="text-left py-1.5 px-2 text-[rgba(255,255,255,0.35)] font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -231,7 +231,7 @@ export default function TaskCenterPage() {
               <tbody>
                 {allTasks.map((t, i) => (
                   <tr key={t.id} className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.02)]">
-                    <td className="py-1.5 px-2 font-mono text-orange-dim text-[11px]">{i + 1}</td>
+                    <td className="py-1.5 px-2 font-mono text-orange-dim text-body">{i + 1}</td>
                     <td
                       className="py-1.5 px-2"
                       style={{
@@ -242,7 +242,7 @@ export default function TaskCenterPage() {
                       {t.task}
                     </td>
                     <td className="py-1.5 px-2 text-[rgba(255,255,255,0.45)]">{t.category}</td>
-                    <td className="py-1.5 px-2 font-mono text-[rgba(255,255,255,0.45)] text-[11px]">{t.due}</td>
+                    <td className="py-1.5 px-2 font-mono text-[rgba(255,255,255,0.45)] text-body">{t.due}</td>
                     <td className="py-1.5 px-2">
                       <Badge label={t.priority} status={priorityStatus(t.priority)} />
                     </td>
@@ -261,30 +261,30 @@ export default function TaskCenterPage() {
           <SectionHeader number="4" title="Add Task" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="flex flex-col gap-1 lg:col-span-2">
-              <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Task Description</label>
+              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Task Description</label>
               <input
                 type="text"
                 value={newTask.task}
                 onChange={(e) => setNewTask({ ...newTask, task: e.target.value })}
                 placeholder="Describe the task..."
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
+                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[rgba(255,255,255,0.2)]"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Due Date</label>
+              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Due Date</label>
               <input
                 type="date"
                 value={newTask.due}
                 onChange={(e) => setNewTask({ ...newTask, due: e.target.value })}
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange"
+                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Category</label>
+              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Category</label>
               <select
                 value={newTask.category}
                 onChange={(e) => setNewTask({ ...newTask, category: e.target.value })}
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange"
+                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
               >
                 {['Ops', 'Sales', 'Compliance', 'Billing', 'Revenue', 'Infra', 'Legal', 'Executive', 'AI', 'Security', 'Support'].map((c) => (
                   <option key={c} value={c} className="bg-bg-panel">{c}</option>
@@ -292,11 +292,11 @@ export default function TaskCenterPage() {
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Priority</label>
+              <label className="text-micro text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Priority</label>
               <select
                 value={newTask.priority}
                 onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as TaskPriority })}
-                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-orange"
+                className="bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
               >
                 {(['high', 'medium', 'low'] as TaskPriority[]).map((p) => (
                   <option key={p} value={p} className="bg-bg-panel">{p}</option>
@@ -305,7 +305,7 @@ export default function TaskCenterPage() {
             </div>
             <div className="flex items-end lg:col-span-1">
               <button
-                className="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-sm transition-all hover:brightness-110"
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
                 style={{ background: 'var(--color-brand-orange)', color: '#000' }}
                 onClick={() => setNewTask({ task: '', due: '', category: 'Ops', priority: 'medium' })}
               >
@@ -331,7 +331,7 @@ export default function TaskCenterPage() {
                   <span className="text-xs line-through text-[rgba(255,255,255,0.3)]">{t.task}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-2">
-                  <span className="text-[10px] font-mono text-[rgba(255,255,255,0.25)]">{t.due}</span>
+                  <span className="text-micro font-mono text-[rgba(255,255,255,0.25)]">{t.due}</span>
                   <Badge label={t.category} status="ok" />
                 </div>
               </div>
@@ -348,7 +348,7 @@ export default function TaskCenterPage() {
             {DELEGATED.map((d, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between p-3 rounded-sm"
+                className="flex items-center justify-between p-3 chamfer-4"
                 style={{
                   background: d.status === 'in-progress' ? 'rgba(41,182,246,0.04)' : 'rgba(255,152,0,0.04)',
                   border: `1px solid ${d.status === 'in-progress' ? 'rgba(41,182,246,0.15)' : 'rgba(255,152,0,0.15)'}`,
@@ -357,10 +357,10 @@ export default function TaskCenterPage() {
                 <div>
                   <p className="text-xs font-semibold text-[rgba(255,255,255,0.8)]">{d.task}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] text-[rgba(255,255,255,0.4)]">→</span>
-                    <span className="text-[10px] text-[rgba(255,107,26,0.8)] font-semibold">{d.assignee}</span>
-                    <span className="text-[10px] text-[rgba(255,255,255,0.3)]">·</span>
-                    <span className="text-[10px] font-mono text-[rgba(255,255,255,0.35)]">Due {d.due}</span>
+                    <span className="text-micro text-[rgba(255,255,255,0.4)]">→</span>
+                    <span className="text-micro text-[rgba(255,107,26,0.8)] font-semibold">{d.assignee}</span>
+                    <span className="text-micro text-[rgba(255,255,255,0.3)]">·</span>
+                    <span className="text-micro font-mono text-[rgba(255,255,255,0.35)]">Due {d.due}</span>
                   </div>
                 </div>
                 <Badge
@@ -374,7 +374,7 @@ export default function TaskCenterPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-[11px] text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-[rgba(255,255,255,0.35)] hover:text-orange transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

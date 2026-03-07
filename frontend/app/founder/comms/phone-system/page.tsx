@@ -8,7 +8,7 @@ function PageHeader() {
     <div className="hud-rail pb-3 mb-6">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
             CATEGORY 2 · MODULES C2.1–100
           </div>
           <h1 className="text-lg font-black uppercase tracking-wider text-text-primary">AI Voice, Phone Tree, Ringing & Alerting System</h1>
@@ -19,7 +19,7 @@ function PageHeader() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-system-billing animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-system-billing">AI VOICE LIVE</span>
+            <span className="text-micro font-semibold uppercase tracking-wider text-system-billing">AI VOICE LIVE</span>
           </div>
         </div>
       </div>
@@ -57,10 +57,10 @@ function CallQueueRow({ position, caller, intent, wait, score, aiCanResolve }: {
   const scoreColor = score >= 80 ? 'var(--color-brand-red)' : score >= 50 ? 'var(--color-status-warning)' : 'var(--color-status-active)';
   return (
     <tr>
-      <td className="py-2 pr-3 text-[10px] font-bold font-mono text-orange-dim">{position}</td>
+      <td className="py-2 pr-3 text-micro font-bold font-mono text-orange-dim">{position}</td>
       <td className="py-2 pr-3 text-xs text-text-primary">{caller}</td>
       <td className="py-2 pr-3">
-        <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.5)] rounded-sm">{intent}</span>
+        <span className="text-micro uppercase tracking-wider px-1.5 py-0.5 bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.5)] chamfer-4">{intent}</span>
       </td>
       <td className="py-2 pr-3 text-xs text-[rgba(255,255,255,0.5)]">{wait}</td>
       <td className="py-2 pr-3">
@@ -68,11 +68,11 @@ function CallQueueRow({ position, caller, intent, wait, score, aiCanResolve }: {
           <div className="h-1 w-16 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
             <div className="h-full rounded-full" style={{ width: `${score}%`, background: scoreColor }} />
           </div>
-          <span className="text-[10px] font-semibold" style={{ color: scoreColor }}>{score}</span>
+          <span className="text-micro font-semibold" style={{ color: scoreColor }}>{score}</span>
         </div>
       </td>
       <td className="py-2">
-        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${aiCanResolve ? 'text-status-active bg-[rgba(76,175,80,0.12)]' : 'text-status-warning bg-[rgba(255,152,0,0.12)]'}`}>
+        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 chamfer-4 ${aiCanResolve ? 'text-status-active bg-[rgba(76,175,80,0.12)]' : 'text-status-warning bg-[rgba(255,152,0,0.12)]'}`}>
           {aiCanResolve ? 'AI CAN RESOLVE' : 'ESCALATE'}
         </span>
       </td>
@@ -141,13 +141,13 @@ function ModuleCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-xs font-semibold text-[rgba(255,255,255,0.85)] truncate">{title}</span>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm flex-shrink-0" style={{ color: statusColor, background: `${statusColor}18` }}>
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 chamfer-4 flex-shrink-0" style={{ color: statusColor, background: `${statusColor}18` }}>
               {statusLabel}
             </span>
           </div>
-          <div className="text-[11px] text-[rgba(255,255,255,0.4)] leading-snug">{desc}</div>
+          <div className="text-body text-[rgba(255,255,255,0.4)] leading-snug">{desc}</div>
         </div>
-        <span className={`text-[10px] text-[rgba(255,255,255,0.3)] flex-shrink-0 mt-0.5 transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
+        <span className={`text-micro text-[rgba(255,255,255,0.3)] flex-shrink-0 mt-0.5 transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
       </button>
       <AnimatePresence>
         {expanded && children && (
@@ -318,7 +318,7 @@ export default function PhoneSystemPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`h-8 px-4 text-[11px] font-semibold uppercase tracking-wider transition-colors border-b-2 -mb-px ${
+            className={`h-8 px-4 text-body font-semibold uppercase tracking-wider transition-colors border-b-2 -mb-px ${
               activeTab === tab.key
                 ? 'text-orange border-orange'
                 : 'text-[rgba(255,255,255,0.4)] border-transparent hover:text-[rgba(255,255,255,0.7)]'
@@ -333,7 +333,7 @@ export default function PhoneSystemPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">MODULE 31 · Live Call Queue</span>
+              <span className="text-micro font-bold uppercase tracking-widest text-text-muted">MODULE 31 · Live Call Queue</span>
               <span className="text-[9px] bg-[rgba(34,211,238,0.1)] text-system-billing px-2 py-0.5 uppercase tracking-wider font-bold">3 CALLERS</span>
             </div>
             <table className="w-full">
@@ -358,8 +358,8 @@ export default function PhoneSystemPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">MODULE 3 · Billing Call Script Flow (Preview)</span>
-              <button className="h-6 px-2.5 bg-orange-ghost border border-[rgba(255,107,26,0.25)] text-orange text-[10px] font-semibold rounded-sm hover:bg-[rgba(255,107,26,0.2)] transition-colors">
+              <span className="text-micro font-bold uppercase tracking-widest text-text-muted">MODULE 3 · Billing Call Script Flow (Preview)</span>
+              <button className="h-6 px-2.5 bg-orange-ghost border border-[rgba(255,107,26,0.25)] text-orange text-micro font-semibold chamfer-4 hover:bg-[rgba(255,107,26,0.2)] transition-colors">
                 Open Flow Builder
               </button>
             </div>
@@ -388,7 +388,7 @@ export default function PhoneSystemPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 16 · AI Deflection Rate</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 16 · AI Deflection Rate</div>
               {[
                 { label: 'Billing inquiries', deflected: 91 },
                 { label: 'Export support', deflected: 78 },
@@ -397,7 +397,7 @@ export default function PhoneSystemPage() {
                 { label: 'Scheduling support', deflected: 88 },
               ].map((item) => (
                 <div key={item.label} className="mb-2">
-                  <div className="flex justify-between text-[11px] mb-0.5">
+                  <div className="flex justify-between text-body mb-0.5">
                     <span className="text-[rgba(255,255,255,0.55)]">{item.label}</span>
                     <span className="font-semibold text-system-billing">{item.deflected}%</span>
                   </div>
@@ -409,7 +409,7 @@ export default function PhoneSystemPage() {
             </div>
 
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 94 · Latency & Quality</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 94 · Latency & Quality</div>
               {[
                 { label: 'Voice latency (p50)', value: '180ms', ok: true },
                 { label: 'Voice latency (p99)', value: '310ms', ok: true },
@@ -418,14 +418,14 @@ export default function PhoneSystemPage() {
                 { label: 'Noise suppression', value: 'Active', ok: true },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between py-1.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                  <span className="text-[11px] text-[rgba(255,255,255,0.55)]">{item.label}</span>
-                  <span className="text-[11px] font-semibold" style={{ color: item.ok ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>{item.value}</span>
+                  <span className="text-body text-[rgba(255,255,255,0.55)]">{item.label}</span>
+                  <span className="text-body font-semibold" style={{ color: item.ok ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>{item.value}</span>
                 </div>
               ))}
             </div>
 
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 56 · Cost per Tenant</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 56 · Cost per Tenant</div>
               {[
                 { tenant: 'Metro EMS', cost: '$3.84', calls: 47 },
                 { tenant: 'Valley Amb.', cost: '$1.62', calls: 22 },
@@ -433,8 +433,8 @@ export default function PhoneSystemPage() {
                 { tenant: 'City Hosp.', cost: '$0.74', calls: 9 },
               ].map((item) => (
                 <div key={item.tenant} className="flex items-center gap-3 py-1.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                  <span className="flex-1 text-[11px] text-text-secondary">{item.tenant}</span>
-                  <span className="text-[10px] text-[rgba(255,255,255,0.35)]">{item.calls} calls</span>
+                  <span className="flex-1 text-body text-text-secondary">{item.tenant}</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.35)]">{item.calls} calls</span>
                   <span className="text-xs font-semibold text-system-billing">{item.cost}</span>
                 </div>
               ))}
@@ -446,13 +446,13 @@ export default function PhoneSystemPage() {
       {activeTab === 'modules' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.35)]">FILTER:</span>
+            <span className="text-micro uppercase tracking-wider text-[rgba(255,255,255,0.35)]">FILTER:</span>
             <div className="flex gap-1 flex-wrap">
               {(['all', 'voice', 'ai', 'analytics', 'compliance', 'security'] as FilterCat[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setCatFilter(f)}
-                  className={`h-6 px-2.5 text-[10px] uppercase tracking-wider font-semibold transition-colors rounded-sm ${
+                  className={`h-6 px-2.5 text-micro uppercase tracking-wider font-semibold transition-colors chamfer-4 ${
                     catFilter === f ? 'bg-orange text-text-inverse' : 'bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.45)] hover:text-text-primary'
                   }`}
                 >
@@ -465,7 +465,7 @@ export default function PhoneSystemPage() {
                 <button
                   key={f}
                   onClick={() => setStatusFilter(f)}
-                  className={`h-6 px-2.5 text-[10px] uppercase tracking-wider font-semibold transition-colors rounded-sm ${
+                  className={`h-6 px-2.5 text-micro uppercase tracking-wider font-semibold transition-colors chamfer-4 ${
                     statusFilter === f ? 'bg-[rgba(255,255,255,0.15)] text-text-primary' : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.35)] hover:text-text-primary'
                   }`}
                 >
@@ -477,9 +477,9 @@ export default function PhoneSystemPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search modules..."
-              className="h-6 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT px-2 text-[11px] text-text-primary placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(255,107,26,0.4)] rounded-sm flex-1 min-w-[120px]"
+              className="h-6 bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT px-2 text-body text-text-primary placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(255,107,26,0.4)] chamfer-4 flex-1 min-w-[120px]"
             />
-            <span className="text-[10px] text-[rgba(255,255,255,0.3)] ml-auto">{filtered.length} / 100 modules</span>
+            <span className="text-micro text-[rgba(255,255,255,0.3)] ml-auto">{filtered.length} / 100 modules</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
@@ -493,12 +493,12 @@ export default function PhoneSystemPage() {
                 status={m.status as 'active' | 'configured' | 'pending'}
               >
                 <div className="space-y-2">
-                  <div className="text-[11px] text-[rgba(255,255,255,0.5)] leading-relaxed">{m.desc}</div>
+                  <div className="text-body text-[rgba(255,255,255,0.5)] leading-relaxed">{m.desc}</div>
                   <div className="flex gap-2">
-                    <button className="h-6 px-2.5 bg-orange-ghost border border-[rgba(255,107,26,0.25)] text-orange text-[10px] font-semibold rounded-sm hover:bg-[rgba(255,107,26,0.2)] transition-colors">
+                    <button className="h-6 px-2.5 bg-orange-ghost border border-[rgba(255,107,26,0.25)] text-orange text-micro font-semibold chamfer-4 hover:bg-[rgba(255,107,26,0.2)] transition-colors">
                       Configure
                     </button>
-                    <button className="h-6 px-2.5 bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT text-[rgba(255,255,255,0.5)] text-[10px] rounded-sm hover:text-text-primary transition-colors">
+                    <button className="h-6 px-2.5 bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT text-[rgba(255,255,255,0.5)] text-micro chamfer-4 hover:text-text-primary transition-colors">
                       View Logs
                     </button>
                   </div>
@@ -529,17 +529,17 @@ export default function PhoneSystemPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 99 · Human Review Queue</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 99 · Human Review Queue</div>
               {reviewQueue.length === 0 ? (
                 <div className="text-xs text-[rgba(255,255,255,0.3)] py-4 text-center">No pending reviews</div>
               ) : (
                 <div className="space-y-2">
                   {reviewQueue.slice(0, 5).map((item, i) => (
                     <div key={i} className="flex items-start gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                      <span className="text-[9px] font-bold text-status-warning bg-[rgba(255,152,0,0.1)] px-1.5 py-0.5 rounded-sm flex-shrink-0">
+                      <span className="text-[9px] font-bold text-status-warning bg-[rgba(255,152,0,0.1)] px-1.5 py-0.5 chamfer-4 flex-shrink-0">
                         {String(Math.round((item.ai_confidence as number) * 100))}% CONF
                       </span>
-                      <span className="text-[11px] text-[rgba(255,255,255,0.6)] truncate">{String(item.transcript ?? '').slice(0, 80)}…</span>
+                      <span className="text-body text-[rgba(255,255,255,0.6)] truncate">{String(item.transcript ?? '').slice(0, 80)}…</span>
                     </div>
                   ))}
                 </div>
@@ -547,7 +547,7 @@ export default function PhoneSystemPage() {
             </div>
 
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 100 · Improvement Tickets</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 100 · Improvement Tickets</div>
               {improvementTickets.length === 0 ? (
                 <div className="text-xs text-[rgba(255,255,255,0.3)] py-4 text-center">No open improvement tickets</div>
               ) : (
@@ -555,10 +555,10 @@ export default function PhoneSystemPage() {
                   {improvementTickets.slice(0, 5).map((item, i) => (
                     <div key={i} className="py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm" style={{ color: item.severity === 'high' ? 'var(--color-brand-red)' : 'var(--color-status-warning)', background: item.severity === 'high' ? 'rgba(229,57,53,0.1)' : 'rgba(255,152,0,0.1)' }}>{String(item.severity)}</span>
-                        <span className="text-[11px] text-[rgba(255,255,255,0.75)] truncate">{String(item.what_went_wrong ?? '').slice(0, 60)}</span>
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 chamfer-4" style={{ color: item.severity === 'high' ? 'var(--color-brand-red)' : 'var(--color-status-warning)', background: item.severity === 'high' ? 'rgba(229,57,53,0.1)' : 'rgba(255,152,0,0.1)' }}>{String(item.severity)}</span>
+                        <span className="text-body text-[rgba(255,255,255,0.75)] truncate">{String(item.what_went_wrong ?? '').slice(0, 60)}</span>
                       </div>
-                      <div className="text-[10px] text-[rgba(255,255,255,0.35)]">Fix: {String(item.proposed_fix ?? '').slice(0, 60)}</div>
+                      <div className="text-micro text-[rgba(255,255,255,0.35)]">Fix: {String(item.proposed_fix ?? '').slice(0, 60)}</div>
                     </div>
                   ))}
                 </div>
@@ -568,17 +568,17 @@ export default function PhoneSystemPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 91 · Scheduled Callbacks</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 91 · Scheduled Callbacks</div>
               {callbackSlots.length === 0 ? (
                 <div className="text-xs text-[rgba(255,255,255,0.3)] py-4 text-center">No callbacks scheduled</div>
               ) : (
                 <div className="space-y-2">
                   {callbackSlots.slice(0, 5).map((slot, i) => (
                     <div key={i} className="flex items-center justify-between py-1.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                      <span className="text-[11px] text-text-secondary">{String(slot.caller_phone ?? '')}</span>
+                      <span className="text-body text-text-secondary">{String(slot.caller_phone ?? '')}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono text-[rgba(255,255,255,0.4)]">{String(slot.scheduled_at ?? '').slice(0, 16)}</span>
-                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm" style={{ color: (slot.urgency_score as number) >= 80 ? 'var(--color-brand-red)' : 'var(--color-status-active)', background: (slot.urgency_score as number) >= 80 ? 'rgba(229,57,53,0.1)' : 'rgba(76,175,80,0.1)' }}>{String(slot.urgency_tier ?? 'std')}</span>
+                        <span className="text-micro font-mono text-[rgba(255,255,255,0.4)]">{String(slot.scheduled_at ?? '').slice(0, 16)}</span>
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 chamfer-4" style={{ color: (slot.urgency_score as number) >= 80 ? 'var(--color-brand-red)' : 'var(--color-status-active)', background: (slot.urgency_score as number) >= 80 ? 'rgba(229,57,53,0.1)' : 'rgba(76,175,80,0.1)' }}>{String(slot.urgency_tier ?? 'std')}</span>
                       </div>
                     </div>
                   ))}
@@ -587,15 +587,15 @@ export default function PhoneSystemPage() {
             </div>
 
             <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 93 · A/B Script Tests</div>
+              <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">MODULE 93 · A/B Script Tests</div>
               {abTests.length === 0 ? (
                 <div className="text-xs text-[rgba(255,255,255,0.3)] py-4 text-center">No active A/B tests</div>
               ) : (
                 <div className="space-y-2">
                   {abTests.slice(0, 5).map((test, i) => (
                     <div key={i} className="flex items-center justify-between py-1.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                      <span className="text-[11px] text-[rgba(255,255,255,0.75)]">{String(test.test_name ?? '')}</span>
-                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm text-system-billing bg-[rgba(34,211,238,0.1)]">{String(test.status ?? '')}</span>
+                      <span className="text-body text-[rgba(255,255,255,0.75)]">{String(test.test_name ?? '')}</span>
+                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 chamfer-4 text-system-billing bg-[rgba(34,211,238,0.1)]">{String(test.status ?? '')}</span>
                     </div>
                   ))}
                 </div>
@@ -604,7 +604,7 @@ export default function PhoneSystemPage() {
           </div>
 
           <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3">Features 65–100 Status Matrix</div>
+            <div className="text-micro font-bold uppercase tracking-widest text-text-muted mb-3">Features 65–100 Status Matrix</div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
               {([
                 [65, 'Caller Context Auto-Fetch'], [66, 'Ring + Screen Pop'], [67, 'Smart Alert Policies'],
@@ -620,10 +620,10 @@ export default function PhoneSystemPage() {
                 [95, 'Cost Governor'], [96, 'Voice Memory'], [97, 'Recording Governance'],
                 [98, 'Incident War Room'], [99, 'Human-in-Loop Queue'], [100, 'Continuous Improvement'],
               ] as [number, string][]).map(([n, label]) => (
-                <div key={n} className="flex items-center gap-1.5 py-1 px-2 bg-[rgba(76,175,80,0.06)] border border-[rgba(76,175,80,0.15)] rounded-sm">
+                <div key={n} className="flex items-center gap-1.5 py-1 px-2 bg-[rgba(76,175,80,0.06)] border border-[rgba(76,175,80,0.15)] chamfer-4">
                   <span className="w-1.5 h-1.5 rounded-full bg-status-active flex-shrink-0" />
                   <span className="text-[9px] font-bold text-[rgba(255,107,26,0.7)] w-7 flex-shrink-0">{n}</span>
-                  <span className="text-[10px] text-[rgba(255,255,255,0.6)] truncate">{label}</span>
+                  <span className="text-micro text-[rgba(255,255,255,0.6)] truncate">{label}</span>
                 </div>
               ))}
             </div>

@@ -9,10 +9,10 @@ const DOMAIN_COLOR = 'var(--color-system-fleet)';
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="mb-4">
-      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+      <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-[11px] text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-text-muted">{sub}</p>}
     </div>
   );
 }
@@ -39,7 +39,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const s = badgeColors[status];
   return (
     <span
-      className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm"
+      className="text-micro font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
       style={{ background: s.bg, color: s.color }}
     >
       {label}
@@ -50,9 +50,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -140,7 +140,7 @@ export default function DeviceAnalyticsPage() {
     <div className="p-5 min-h-screen bg-bg-void">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
-        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+        <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Device Analytics</h1>
@@ -173,8 +173,8 @@ export default function DeviceAnalyticsPage() {
                     <span className="text-xs font-bold text-text-primary">{os.os}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-[rgba(255,255,255,0.55)]">{os.count} devices</span>
-                    <span className="text-[11px] font-bold w-10 text-right" style={{ color: os.color }}>{os.pct}%</span>
+                    <span className="text-body text-[rgba(255,255,255,0.55)]">{os.count} devices</span>
+                    <span className="text-body font-bold w-10 text-right" style={{ color: os.color }}>{os.pct}%</span>
                   </div>
                 </div>
                 <ProgressBar value={os.pct} max={100} color={os.color} />
@@ -193,7 +193,7 @@ export default function DeviceAnalyticsPage() {
               <thead>
                 <tr className="text-text-muted border-b border-border-subtle">
                   {['Device Type', 'Avg Load (ms)', 'Crash Rate', 'Sessions Today', 'Rating'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-5 font-bold uppercase tracking-widest text-[10px]">{h}</th>
+                    <th key={h} className="text-left pb-2 pr-5 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -221,9 +221,9 @@ export default function DeviceAnalyticsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {batteryEntries.map((d, i) => (
             <Panel key={i}>
-              <div className="text-[11px] font-bold text-text-primary mb-2 leading-tight">{d.name}</div>
+              <div className="text-body font-bold text-text-primary mb-2 leading-tight">{d.name}</div>
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[10px] text-text-muted">{d.charge}</span>
+                <span className="text-micro text-text-muted">{d.charge}</span>
                 <span className="text-sm font-black" style={{ color: batteryColor(d.battery) }}>{d.battery}%</span>
               </div>
               <ProgressBar value={d.battery} max={100} color={batteryColor(d.battery)} />
@@ -246,7 +246,7 @@ export default function DeviceAnalyticsPage() {
                 <span className="text-xs font-bold text-text-primary uppercase tracking-widest">{conn.type}</span>
               </div>
               <div className="text-3xl font-black mb-1" style={{ color: conn.color }}>{conn.devices}</div>
-              <div className="text-[10px] text-text-muted mb-2">
+              <div className="text-micro text-text-muted mb-2">
                 devices ({Math.round((conn.devices / conn.total) * 100)}% of fleet)
               </div>
               <ProgressBar value={conn.devices} max={conn.total} color={conn.color} />
@@ -269,14 +269,14 @@ export default function DeviceAnalyticsPage() {
                 <thead>
                   <tr className="text-text-muted border-b border-border-subtle">
                     {['Timestamp', 'Device', 'Error Type', 'Version'].map(h => (
-                      <th key={h} className="text-left pb-2 pr-5 font-bold uppercase tracking-widest text-[10px]">{h}</th>
+                      <th key={h} className="text-left pb-2 pr-5 font-bold uppercase tracking-widest text-micro">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {crashLog.map((row, i) => (
                     <tr key={i} className="border-b border-border-subtle last:border-0">
-                      <td className="py-2.5 pr-5 text-text-muted font-mono text-[10px]">{row.ts}</td>
+                      <td className="py-2.5 pr-5 text-text-muted font-mono text-micro">{row.ts}</td>
                       <td className="py-2.5 pr-5 text-[rgba(255,255,255,0.7)]">{row.device}</td>
                       <td className="py-2.5 pr-5"><span className="font-mono text-red">{row.error}</span></td>
                       <td className="py-2.5"><Badge label={row.version} status={row.version === 'v2.4.1' ? 'ok' : row.version === 'v2.4.0' ? 'warn' : 'error'} /></td>
@@ -297,7 +297,7 @@ export default function DeviceAnalyticsPage() {
             {heatData.map((v, hour) => (
               <div key={hour} className="flex flex-col items-center gap-1">
                 <div
-                  className="w-full h-10 rounded-sm border border-border-subtle flex items-center justify-center"
+                  className="w-full h-10 chamfer-4 border border-border-subtle flex items-center justify-center"
                   style={{ background: heatColor(v, maxHeat) }}
                   title={`${hour}:00 — ${v} sessions`}
                 >
@@ -308,11 +308,11 @@ export default function DeviceAnalyticsPage() {
             ))}
           </div>
           <div className="flex items-center gap-3 mt-4">
-            <span className="text-[10px] text-text-muted">Low</span>
+            <span className="text-micro text-text-muted">Low</span>
             {[0.08, 0.22, 0.42, 0.65, 0.90].map((op, i) => (
-              <div key={i} className="w-6 h-3 rounded-sm" style={{ background: `rgba(59,130,246,${op})` }} />
+              <div key={i} className="w-6 h-3 chamfer-4" style={{ background: `rgba(59,130,246,${op})` }} />
             ))}
-            <span className="text-[10px] text-text-muted">High</span>
+            <span className="text-micro text-text-muted">High</span>
           </div>
         </Panel>
       </motion.div>

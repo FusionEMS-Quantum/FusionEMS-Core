@@ -94,7 +94,7 @@ function HealthGauge({ score }: { score: number }) {
       </svg>
       <div className="absolute text-center">
         <div className="text-3xl font-black" style={{ color }}>{score}</div>
-        <div className="text-[10px] uppercase tracking-widest text-text-muted">AI Health</div>
+        <div className="text-micro uppercase tracking-widest text-text-muted">AI Health</div>
       </div>
     </div>
   );
@@ -106,7 +106,7 @@ function KpiCard({ label, value, color }: { label: string; value: string | numbe
       className="bg-bg-panel border border-border-DEFAULT p-4 flex flex-col justify-between"
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color || 'var(--color-text-primary)' }}>{value}</div>
     </div>
   );
@@ -116,7 +116,7 @@ function RiskBar({ label, count, total, color }: { label: string; count: number;
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="text-[10px] uppercase tracking-widest text-text-muted w-24 shrink-0">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-text-muted w-24 shrink-0">{label}</div>
       <div className="flex-1 h-2 bg-[rgba(255,255,255,0.04)] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
       </div>
@@ -172,7 +172,7 @@ export default function AICommandCenterPage() {
     <div className="p-5 space-y-6 min-h-screen">
       {/* Header */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FOUNDER · AI PLATFORM</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FOUNDER · AI PLATFORM</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">AI Command Center</h1>
         <p className="text-xs text-text-muted mt-0.5">Real-time health · governance · review queue · risk posture</p>
       </div>
@@ -205,7 +205,7 @@ export default function AICommandCenterPage() {
 
       {/* Risk Breakdown */}
       <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-4">Risk Tier Distribution</div>
+        <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-4">Risk Tier Distribution</div>
         <div className="space-y-2.5">
           <RiskBar label="Restricted" count={metrics.risk_tier_breakdown.RESTRICTED ?? 0} total={totalUseCases} color="var(--color-brand-red)" />
           <RiskBar label="High Risk" count={metrics.risk_tier_breakdown.HIGH_RISK ?? 0} total={totalUseCases} color="var(--color-brand-orange)" />
@@ -219,8 +219,8 @@ export default function AICommandCenterPage() {
         {/* Review Queue */}
         <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted">Review Queue</div>
-            <Link href="/founder/ai/review-queue" className="text-[10px] text-orange-dim hover:text-orange uppercase tracking-widest">
+            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted">Review Queue</div>
+            <Link href="/founder/ai/review-queue" className="text-micro text-orange-dim hover:text-orange uppercase tracking-widest">
               View All →
             </Link>
           </div>
@@ -234,7 +234,7 @@ export default function AICommandCenterPage() {
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: priorityColor(item.priority) }} />
                     <span className="text-xs text-text-secondary truncate">{item.use_case_name} — {item.domain}</span>
                   </div>
-                  <span className="text-[10px] uppercase tracking-wider shrink-0" style={{ color: priorityColor(item.priority) }}>
+                  <span className="text-micro uppercase tracking-wider shrink-0" style={{ color: priorityColor(item.priority) }}>
                     {item.priority}
                   </span>
                 </div>
@@ -245,7 +245,7 @@ export default function AICommandCenterPage() {
 
         {/* Governance Actions */}
         <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-4">Top Governance Actions</div>
+          <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-4">Top Governance Actions</div>
           {metrics.top_actions.length === 0 ? (
             <div className="text-xs text-[rgba(255,255,255,0.4)] py-6 text-center">No governance actions</div>
           ) : (
@@ -254,7 +254,7 @@ export default function AICommandCenterPage() {
                 <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-text-primary truncate">{ga.title}</div>
-                    <div className="text-[10px] text-text-muted truncate">{ga.description}</div>
+                    <div className="text-micro text-text-muted truncate">{ga.description}</div>
                   </div>
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: severityColor(ga.severity) }} />
                 </div>

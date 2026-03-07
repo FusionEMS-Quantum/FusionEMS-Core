@@ -9,10 +9,10 @@ const DOMAIN_COLOR = 'var(--color-system-fleet)';
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="mb-4">
-      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+      <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-[11px] text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-text-muted">{sub}</p>}
     </div>
   );
 }
@@ -39,7 +39,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   const s = badgeColors[status];
   return (
     <span
-      className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm"
+      className="text-micro font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
       style={{ background: s.bg, color: s.color }}
     >
       {label}
@@ -50,9 +50,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-[11px] text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -129,7 +129,7 @@ export default function SchedulingPage() {
     <div className="p-5 min-h-screen bg-bg-void">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
-        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
+        <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
         <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Mobile Scheduling Interface</h1>
@@ -157,7 +157,7 @@ export default function SchedulingPage() {
               <thead>
                 <tr className="text-text-muted border-b border-border-subtle">
                   {['Unit', 'Crew Lead', 'Partner', 'Shift Start', 'Shift End', 'Status'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-4 font-bold uppercase tracking-widest text-[10px]">{h}</th>
+                    <th key={h} className="text-left pb-2 pr-4 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -185,8 +185,8 @@ export default function SchedulingPage() {
           {complianceBars.map((item, i) => (
             <Panel key={i}>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-[11px] font-bold text-text-primary uppercase tracking-widest">{item.label}</span>
-                <span className="text-[11px] font-bold" style={{ color: item.color }}>{item.display}</span>
+                <span className="text-body font-bold text-text-primary uppercase tracking-widest">{item.label}</span>
+                <span className="text-body font-bold" style={{ color: item.color }}>{item.display}</span>
               </div>
               <ProgressBar value={item.value} max={item.max} color={item.color} />
             </Panel>
@@ -203,14 +203,14 @@ export default function SchedulingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-xs font-bold text-text-primary mb-1">{shift.station}</div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.55)] mb-1 font-mono">{shift.time}</div>
+                  <div className="text-body text-[rgba(255,255,255,0.55)] mb-1 font-mono">{shift.time}</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-text-muted uppercase tracking-widest">Required:</span>
+                    <span className="text-micro text-text-muted uppercase tracking-widest">Required:</span>
                     <Badge label={shift.cert} status="info" />
                   </div>
                 </div>
                 <button
-                  className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm border shrink-0 transition-colors"
+                  className="text-micro font-bold uppercase tracking-widest px-3 py-1.5 chamfer-4 border shrink-0 transition-colors"
                   style={{ borderColor: 'var(--color-status-active)', color: 'var(--q-green)', background: 'rgba(76,175,80,0.08)' }}
                   onClick={() => {}}
                 >
@@ -235,7 +235,7 @@ export default function SchedulingPage() {
               <div className="mb-2">
                 <ProgressBar value={crew.kss} max={10} color={kssColor(crew.kss)} />
               </div>
-              <div className="flex justify-between text-[10px]">
+              <div className="flex justify-between text-micro">
                 <span className="text-text-muted">Hours on duty</span>
                 <span style={{ color: crew.hours >= 14 ? 'var(--color-brand-red)' : 'rgba(255,255,255,0.55)' }} className="font-bold">{crew.hours}h</span>
               </div>
