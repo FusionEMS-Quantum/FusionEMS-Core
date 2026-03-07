@@ -151,3 +151,72 @@ async def get_export(
         "error": data.get("error"),
         "has_xml": bool(data.get("xml_b64")),
     }
+
+@router.post("/validate_raw_xml")
+async def validate_raw_xml(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user)
+):
+    body = await request.body()
+    validation = validate_nemsis_xml(body)
+    
+    # Format for the frontend UI
+    issues = []
+    for err in validation.get("errors", []):
+        issues.append({
+            "id": f"err-{uuid.uuid4()}",
+            "path": err.get("element", "Unknown"),
+            "message": err.get("message", "Validation error"),
+            "level": "error",
+            "ui_section": "XML Upload",
+            "suggested_fix": err.get("message", "Check XML schema")
+        })
+    for warn in validation.get("warnings", []):
+        issues.append({
+            "id": f"warn-{uuid.uuid4()}",
+            "path": warn.get("element", "Unknown"),
+            "message": warn.get("message", "Validation warning"),
+            "level": "warning",
+            "ui_section": "XML Upload",
+            "suggested_fix": warn.get("message", "Check XML schema")
+        })
+        
+    return {
+        "valid": validation["valid"],
+        "issues": issues,
+        "raw_errors": validation["errors"],
+        "raw_warnings": validation["warnings"]
+    }
+
+@router.post("/simulate_wisconsin")
+async def simulate_wisconsin(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency)
+):
+    svc = DominationService(db, get_event_publisher())
+    
+    # Generate 5 mock payloads
+    jobs = []
+    for i in range(5):
+        job = {
+            "status": "completed",
+            "range": {
+                "start": f"2026-03-01T0{i}:00:00Z",
+                "end": f"2026-03-01T0{i+1}:00:00Z"
+            },
+            "agency": {"id": "WI-1029", "name": "Wisconsin Advanced EMS"},
+            "xml_b64": base64.b64encode(b"<EMSDataSet><Record/></EMSDataSet>").decode(),
+            "simulated": True,
+            "rules_passed": 142
+        }
+        res = await svc.create(
+            table="nemsis_export_jobs",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            data=job,
+            correlation_id=getattr(request.state, "correlation_id", None)
+        )
+        jobs.append(res)
+        
+    return {"status": "success", "jobs": jobs}
