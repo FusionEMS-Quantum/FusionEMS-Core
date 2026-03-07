@@ -1,7 +1,7 @@
 """Governance trust domain tables
 
-Revision ID: 20260307_0026
-Revises: 20260301_0025
+Revision ID: 20260307_0029
+Revises: 20260307_0028
 Create Date: 2026-03-07
 
 Creates governance tables for the six trust domains:
@@ -25,8 +25,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision = "20260307_0026"
-down_revision = "20260301_0025"
+revision = "20260307_0029"
+down_revision = "20260307_0028"
 branch_labels = None
 depends_on = None
 
