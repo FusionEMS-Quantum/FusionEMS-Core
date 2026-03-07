@@ -75,3 +75,42 @@ class DebtSetoffResponseRecord(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     amount_offset_cents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=True)
     processed_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, nullable=False)
+
+
+class StateDebtSetoffRulePack(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """
+    Per-state rule pack defining legal and procedural requirements for debt-setoff.
+    """
+    __tablename__ = "state_debt_setoff_rule_packs"
+
+    state_profile_id: Mapped[UUID] = mapped_column(ForeignKey("state_debt_setoff_profiles.id"), unique=True, nullable=False)
+
+    notice_required_days: Mapped[int] = mapped_column(Integer, default=30, nullable=False)
+    max_offset_pct: Mapped[int] = mapped_column(Integer, default=100, nullable=False)  # % of refund that can be offset
+    hardship_exemption_enabled: Mapped[bool] = mapped_column(default=False, nullable=False)
+    appeal_window_days: Mapped[int] = mapped_column(Integer, default=30, nullable=False)
+    eligible_refund_types: Mapped[list[str]] = mapped_column(JSONB, default=["income_tax"], nullable=False)
+    submission_format: Mapped[str] = mapped_column(String(64), default="CSV_STANDARD", nullable=False)
+    required_fields: Mapped[list[str]] = mapped_column(JSONB, default=["ssn", "full_name", "debt_amount", "account_number"], nullable=False)
+    statute_reference: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+
+class DebtSetoffBatch(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """
+    Tracks a batch submission of debts to a state debt-setoff program.
+    """
+    __tablename__ = "debt_setoff_batches"
+
+    enrollment_id: Mapped[UUID] = mapped_column(ForeignKey("agency_debt_setoff_enrollments.id"), nullable=False)
+    tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenants.id"), nullable=False, index=True)
+
+    batch_reference: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    record_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total_amount_cents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    status: Mapped[str] = mapped_column(String(32), default="PENDING", nullable=False)  # PENDING, SUBMITTED, ACCEPTED, PARTIALLY_ACCEPTED, REJECTED
+    submitted_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    response_received_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+
+    export_file_key: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)  # S3 key for exported CSV
+    response_file_key: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)

@@ -22,25 +22,38 @@ from .pricing import (
     SubscriptionPlan,
     SubscriptionItem,
     ContractOverride,
-    PriceChangeAudit
+    PriceChangeAudit,
+    UsageMeter,
+    BillingInvoiceMirror,
 )
 from .agency import (
     AgencyBillingPolicy,
     AgencyCollectionsPolicy,
-    AgencyPublicSectorProfile
+    AgencyPaymentPlanPolicy,
+    AgencyWriteoffPolicy,
+    AgencyDebtSetoffPolicy,
+    AgencyPublicSectorProfile,
 )
 from .state_debt_setoff import (
     StateDebtSetoffProfile,
     AgencyDebtSetoffEnrollment,
     DebtSetoffSubmissionRecord,
-    DebtSetoffResponseRecord
+    DebtSetoffResponseRecord,
+    StateDebtSetoffRulePack,
+    DebtSetoffBatch,
 )
 from .billing import (
+    ClaimState,
+    PatientBalanceState,
     Claim,
     ClaimIssue,
     PatientBalanceLedger,
     PaymentLinkEvent,
-    CollectionsReview
+    CollectionsReview,
+    ClaimAuditEvent,
+    ReminderEvent,
+    AppealReview,
+    HumanApprovalEvent,
 )
 from .communications import (
     AgencyPhoneNumber,
@@ -123,4 +136,41 @@ from .analytics import (
     ReportArtifact,
     ReportFilterSet,
     ReportAuditEvent
+)
+
+# Patient Identity + CRM Models
+from .patient_identity import (
+    PatientAlias,
+    PatientIdentifier,
+    PatientDuplicateCandidate,
+    PatientMergeRequest,
+    PatientMergeAuditEvent,
+    PatientRelationshipFlag,
+)
+from .responsible_party import (
+    ResponsibleParty,
+    PatientResponsiblePartyLink,
+    InsuranceSubscriberProfile,
+    ResponsibilityAuditEvent,
+)
+from .facility import (
+    Facility,
+    FacilityContact,
+    FacilityRelationshipNote,
+    FacilityServiceProfile,
+    FacilityFrictionFlag,
+    FacilityAuditEvent,
+)
+from .relationship_history import (
+    RelationshipTimelineEvent,
+    InternalAccountNote,
+    PatientWarningFlag,
+    FacilityWarningFlag,
+    RelationshipSummarySnapshot,
+)
+from .contact_preference import (
+    ContactPreference,
+    CommunicationOptOutEvent,
+    LanguagePreference,
+    ContactPolicyAuditEvent,
 )

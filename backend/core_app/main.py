@@ -96,6 +96,23 @@ from core_app.api.neris_router import router as neris_router  # noqa: E402
 from core_app.api.neris_tenant_router import router as neris_tenant_router  # noqa: E402
 from core_app.api.onboarding_router import router as onboarding_router  # noqa: E402
 from core_app.api.patient_router import router as patient_router  # noqa: E402
+from core_app.api.patient_identity_router import (  # noqa: E402
+    router as patient_identity_router,
+    dup_router as identity_dup_router,
+    merge_router as identity_merge_router,
+)
+from core_app.api.responsible_party_router import (  # noqa: E402
+    router as responsible_party_router,
+    link_router as responsible_party_link_router,
+)
+from core_app.api.facility_router import router as facility_router  # noqa: E402
+from core_app.api.relationship_history_router import (  # noqa: E402
+    patient_router as rel_history_patient_router,
+    facility_router as rel_history_facility_router,
+    general_router as rel_history_general_router,
+)
+from core_app.api.contact_preference_router import router as contact_preference_router  # noqa: E402
+from core_app.api.relationship_command_router import router as relationship_command_router  # noqa: E402
 from core_app.api.payments_router import router as payments_router  # noqa: E402
 from core_app.api.pricebook_router import router as pricebook_router  # noqa: E402
 from core_app.api.pricing_router import router as pricing_router  # noqa: E402
@@ -270,6 +287,19 @@ app.include_router(voice_advanced_router)
 app.include_router(voice_webhook_router)
 app.include_router(weather_router)
 app.include_router(sync_router)
+
+# --- CRM / Relationship routers (self-prefixed) ---
+app.include_router(patient_identity_router)
+app.include_router(identity_dup_router)
+app.include_router(identity_merge_router)
+app.include_router(responsible_party_router)
+app.include_router(responsible_party_link_router)
+app.include_router(facility_router)
+app.include_router(rel_history_patient_router)
+app.include_router(rel_history_facility_router)
+app.include_router(rel_history_general_router)
+app.include_router(contact_preference_router)
+app.include_router(relationship_command_router)
 
 
 @app.get("/health")

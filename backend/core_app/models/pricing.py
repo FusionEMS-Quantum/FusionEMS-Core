@@ -101,6 +101,49 @@ class ContractOverride(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     valid_until: Mapped[Optional[datetime]] = mapped_column(nullable=True)
 
 
+class UsageMeter(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """
+    Tracks metered usage for a subscription item (e.g. per-transport, per-call).
+    Aggregated for invoice line items at billing cycle close.
+    """
+    __tablename__ = "usage_meters"
+
+    subscription_item_id: Mapped[UUID] = mapped_column(ForeignKey("subscription_items.id"), nullable=False, index=True)
+    tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenants.id"), nullable=False, index=True)
+
+    metric_name: Mapped[str] = mapped_column(String(128), nullable=False)  # e.g. "transports", "api_calls"
+    period_start: Mapped[datetime] = mapped_column(nullable=False)
+    period_end: Mapped[datetime] = mapped_column(nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    reported_to_stripe: Mapped[bool] = mapped_column(default=False, nullable=False)
+    stripe_usage_record_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+
+
+class BillingInvoiceMirror(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """
+    Local mirror of Stripe invoices for offline querying, audit, and reconciliation.
+    Populated by Stripe webhook events (invoice.paid, invoice.finalized, etc.).
+    """
+    __tablename__ = "billing_invoice_mirrors"
+
+    tenant_id: Mapped[UUID] = mapped_column(ForeignKey("tenants.id"), nullable=False, index=True)
+    stripe_invoice_id: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    stripe_subscription_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+
+    status: Mapped[str] = mapped_column(String(32), nullable=False)  # draft, open, paid, void, uncollectible
+    amount_due_cents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    amount_paid_cents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), default="usd", nullable=False)
+
+    period_start: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    period_end: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    paid_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+
+    line_items_json: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
+    hosted_invoice_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
 class PriceChangeAudit(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     """
     Audit trail for price changes.

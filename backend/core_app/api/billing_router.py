@@ -15,6 +15,7 @@ from core_app.api.dependencies import (
 )
 from core_app.billing.ar_aging import compute_ar_aging, compute_revenue_forecast
 from core_app.billing.artifacts import store_edi_artifact
+from core_app.billing.pre_submission_rules import PreSubmissionRulesEngine
 from core_app.billing.validation import BillingValidator
 from core_app.billing.x12_835 import parse_835
 from core_app.billing.x12_837p import build_837p_ambulance
@@ -26,12 +27,22 @@ from core_app.integrations.officeally import (
     OfficeAllySftpConfig,
     submit_837_via_sftp,
 )
+from core_app.models.billing import Claim as ClaimModel
 from core_app.payments.stripe_service import (
     StripeConfig,
     StripeNotConfigured,
     create_patient_checkout_session,
 )
 from core_app.schemas.auth import CurrentUser
+from core_app.schemas.billing import (
+    AppealStrategyOut,
+    AppealStrategyRequest,
+    BillingHealthScoreOut,
+    DenialPredictionOut,
+    PreSubmissionVerdictOut,
+    RuleResultOut,
+)
+from core_app.services.billing_ai_service import BillingAIService
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher
 
@@ -512,3 +523,135 @@ async def get_revenue_forecast(
 ):
     require_role(current, ["founder", "billing", "admin"])
     return compute_revenue_forecast(db, current.tenant_id, months=months)
+
+
+# ── Pre-Submission Rules Engine ───────────────────────────────────────────────
+
+
+@router.post(
+    "/claims/{claim_id}/pre-submission-check",
+    response_model=PreSubmissionVerdictOut,
+)
+async def pre_submission_check(
+    claim_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Run all pre-submission rules against a claim before 837 generation."""
+    require_role(current, ["founder", "billing", "admin"])
+    claim = db.query(ClaimModel).filter(
+        ClaimModel.id == claim_id,
+        ClaimModel.tenant_id == current.tenant_id,
+    ).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="claim_not_found")
+
+    engine = PreSubmissionRulesEngine(db)
+    verdict = engine.evaluate(claim)
+    db.commit()
+    return PreSubmissionVerdictOut(
+        claim_id=verdict.claim_id,
+        submittable=verdict.submittable,
+        results=[
+            RuleResultOut(
+                rule_id=r.rule_id,
+                severity=r.severity.value,
+                passed=r.passed,
+                what_is_wrong=r.what_is_wrong,
+                why_it_matters=r.why_it_matters,
+                what_to_do_next=r.what_to_do_next,
+            )
+            for r in verdict.results
+        ],
+        blocking_count=verdict.blocking_count,
+        warning_count=verdict.warning_count,
+        checked_at=verdict.checked_at,
+    )
+
+
+# ── Billing AI Endpoints ─────────────────────────────────────────────────────
+
+
+@router.post(
+    "/claims/{claim_id}/denial-risk",
+    response_model=DenialPredictionOut,
+)
+async def denial_risk_prediction(
+    claim_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """AI-powered denial risk scoring for a claim."""
+    require_role(current, ["founder", "billing", "admin"])
+    claim = db.query(ClaimModel).filter(
+        ClaimModel.id == claim_id,
+        ClaimModel.tenant_id == current.tenant_id,
+    ).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="claim_not_found")
+
+    ai = BillingAIService(db)
+    prediction = ai.predict_denial_risk(claim)
+    return DenialPredictionOut(
+        claim_id=prediction.claim_id,
+        risk_score=prediction.risk_score,
+        risk_level=prediction.risk_level,
+        top_risk_factors=prediction.top_risk_factors,
+        recommended_actions=prediction.recommended_actions,
+        confidence=prediction.confidence,
+        model_version=prediction.model_version,
+    )
+
+
+@router.post(
+    "/claims/{claim_id}/appeal-strategy",
+    response_model=AppealStrategyOut,
+)
+async def appeal_strategy(
+    claim_id: uuid.UUID,
+    body: AppealStrategyRequest,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """AI-powered appeal strategy recommendation for a denied claim."""
+    require_role(current, ["founder", "billing", "admin"])
+    claim = db.query(ClaimModel).filter(
+        ClaimModel.id == claim_id,
+        ClaimModel.tenant_id == current.tenant_id,
+    ).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="claim_not_found")
+
+    ai = BillingAIService(db)
+    strategy = ai.recommend_appeal_strategy(claim, body.denial_code)
+    return AppealStrategyOut(
+        claim_id=strategy.claim_id,
+        denial_code=strategy.denial_code,
+        recommended_strategy=strategy.recommended_strategy,
+        supporting_evidence=strategy.supporting_evidence,
+        estimated_success_pct=strategy.estimated_success_pct,
+        confidence=strategy.confidence,
+        model_version=strategy.model_version,
+    )
+
+
+@router.get(
+    "/health-score",
+    response_model=BillingHealthScoreOut,
+)
+async def billing_health_score(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Composite billing health score for the current tenant."""
+    require_role(current, ["founder", "billing", "admin"])
+    ai = BillingAIService(db)
+    score = ai.compute_health_score(current.tenant_id)
+    return BillingHealthScoreOut(
+        tenant_id=score.tenant_id,
+        overall_score=score.overall_score,
+        grade=score.grade,
+        factors=score.factors,
+        recommendations=score.recommendations,
+        computed_at=score.computed_at,
+    )
