@@ -115,6 +115,10 @@ class Settings(BaseSettings):
     # SQS queues (Lambda workers)
     lob_events_queue_url: str = Field(default="")
     stripe_events_queue_url: str = Field(default="")
+    onboarding_events_queue_url: str = Field(
+        default="",
+        description="SQS FIFO queue URL for checkout.session.completed → tenant provisioning",
+    )
     neris_pack_import_queue_url: str = Field(default="")
     neris_pack_compile_queue_url: str = Field(default="")
     neris_export_queue_url: str = Field(default="")

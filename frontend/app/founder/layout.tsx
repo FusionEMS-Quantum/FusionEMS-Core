@@ -152,6 +152,12 @@ const NAV_DOMAINS = [
     icon: '◈',
     color: 'var(--color-system-billing)',
     links: [
+      { href: '/founder/ops', label: '⚡ Ops Command Center' },
+      { href: '/founder/ops/cad', label: 'CAD / Dispatch' },
+      { href: '/founder/ops/crewlink', label: 'CrewLink Paging' },
+      { href: '/founder/ops/fleet', label: 'Fleet & Telemetry' },
+      { href: '/founder/ops/staffing', label: 'Staffing Readiness' },
+      { href: '/founder/ops/transportlink', label: 'TransportLink' },
       { href: '/portal/cases', label: 'Cases (Cross-Portal)' },
       { href: '/founder/ops/fleet-intelligence', label: 'Fleet Intelligence' },
       { href: '/founder/ops/readiness', label: 'Readiness Monitor' },

@@ -107,6 +107,10 @@ from core_app.api.systems_router import router as systems_router  # noqa: E402
 from core_app.api.template_router import router as template_router  # noqa: E402
 from core_app.api.tracking_router import router as tracking_router  # noqa: E402
 from core_app.api.transportlink_router import router as transportlink_router  # noqa: E402
+from core_app.api.dispatch_router import router as dispatch_router  # noqa: E402
+from core_app.api.crewlink_paging_router import router as crewlink_paging_router  # noqa: E402
+from core_app.api.staffing_router import router as staffing_router  # noqa: E402
+from core_app.api.ops_command_router import router as ops_command_router  # noqa: E402
 from core_app.api.trip_router import router as trip_router  # noqa: E402
 from core_app.api.visibility_router import router as visibility_router  # noqa: E402
 from core_app.api.vital_router import router as vital_router  # noqa: E402
@@ -243,6 +247,10 @@ app.include_router(systems_router)
 app.include_router(template_router)
 app.include_router(tracking_router)
 app.include_router(transportlink_router)
+app.include_router(dispatch_router)
+app.include_router(crewlink_paging_router)
+app.include_router(staffing_router)
+app.include_router(ops_command_router)
 app.include_router(trip_router)
 app.include_router(visibility_router)
 app.include_router(voice_advanced_router)

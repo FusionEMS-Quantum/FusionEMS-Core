@@ -123,7 +123,7 @@ async def stripe_webhook(
         correlation_id=correlation_id,
     )
 
-    # ── Enqueue ───────────────────────────────────────────────────────────────
+    # ── Enqueue to Stripe events queue (billing/statements worker) ───────────
     queue_url = settings.stripe_events_queue_url
     if not queue_url:
         logger.error(
@@ -133,18 +133,40 @@ async def stripe_webhook(
         raise HTTPException(
             status_code=500, detail="stripe_events_queue_not_configured"
         )
-    enqueue(
-        queue_url,
-        {
-            "source": "stripe_webhook",
-            "event_id": event_id,
-            "event_type": event_type,
-            "connected_account_id": connected_account_id,
-            "payload": event,
-            "correlation_id": correlation_id,
-            "received_at": datetime.now(UTC).isoformat(),
-        },
-        deduplication_id=event_id,
-    )
+
+    _message = {
+        "source": "stripe_webhook",
+        "event_id": event_id,
+        "event_type": event_type,
+        "connected_account_id": connected_account_id,
+        "payload": event,
+        "correlation_id": correlation_id,
+        "received_at": datetime.now(UTC).isoformat(),
+    }
+
+    enqueue(queue_url, _message, deduplication_id=event_id)
+
+    # ── Route checkout.session.completed to onboarding queue ─────────────────
+    # This triggers the zero-error deployment state machine (onboarding_worker.py)
+    # which provisions the new agency tenant idempotently.
+    if event_type == "checkout.session.completed":
+        onboarding_queue_url = settings.onboarding_events_queue_url
+        if onboarding_queue_url:
+            enqueue(
+                onboarding_queue_url,
+                _message,
+                deduplication_id=f"onboard_{event_id}",
+            )
+            logger.info(
+                "stripe_webhook_onboarding_enqueued event_id=%s correlation_id=%s",
+                event_id, correlation_id,
+            )
+        else:
+            logger.warning(
+                "onboarding_events_queue_url_not_configured — "
+                "checkout.session.completed event_id=%s will not trigger provisioning. "
+                "Set ONBOARDING_EVENTS_QUEUE_URL to enable automatic tenant provisioning.",
+                event_id,
+            )
 
     return {"status": "ok", "event_id": event_id, "event_type": event_type}
