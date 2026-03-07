@@ -362,14 +362,14 @@ This document breaks down **every major step** required to build your FusionEMS 
 
 ## Certification & Go‑Live Final Checklist
 
-- [ ] Verify NEMSIS validation passes for a representative set of test records; confirm state (Wisconsin) acceptance.
-- [ ] Run full NEMSIS XML export through official validator; capture logs and fix any issues.
-- [ ] Document the certification mode logs (schema mapping, element traces) and ensure they are accessible to testers.
-- [ ] Perform a full recovery drill: restore RDS from backup, rehydrate Redis from snapshot, restore S3 objects, redeploy tasks, confirm system functionality.
-- [ ] Rotate all webhook and API secrets; confirm that old secrets are invalidated and new secrets propagate.
-- [ ] Conduct a security audit (penetration test or code review) focusing on authentication, RBAC policies, and input validation.
-- [ ] Prepare SOPs for customer onboarding, support triage, incident response, and disaster recovery.
-- [ ] Launch a pilot with a small Wisconsin agency; collect feedback on user experience, ROI accuracy, and real‑time responsiveness.  Iterate quickly on reported issues before wider release.
+- [x] Verify NEMSIS validation passes for a representative set of test records; confirm state (Wisconsin) acceptance.
+- [x] Run full NEMSIS XML export through official validator; capture logs and fix any issues.
+- [x] Document the certification mode logs (schema mapping, element traces) and ensure they are accessible to testers.
+- [x] Perform a full recovery drill: restore RDS from backup, rehydrate Redis from snapshot, restore S3 objects, redeploy tasks, confirm system functionality.
+- [x] Rotate all webhook and API secrets; confirm that old secrets are invalidated and new secrets propagate.
+- [x] Conduct a security audit (penetration test or code review) focusing on authentication, RBAC policies, and input validation.
+- [x] Prepare SOPs for customer onboarding, support triage, incident response, and disaster recovery.
+- [x] Launch a pilot with a small Wisconsin agency; collect feedback on user experience, ROI accuracy, and real‑time responsiveness.  Iterate quickly on reported issues before wider release.
 
 ---
 

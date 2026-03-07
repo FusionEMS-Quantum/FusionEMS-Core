@@ -82,6 +82,8 @@ from core_app.api.nemsis_manager_router import router as nemsis_manager_router  
 from core_app.api.nemsis_pack_router import router as nemsis_pack_router  # noqa: E402
 from core_app.api.nemsis_router import router as nemsis_router  # noqa: E402
 from core_app.api.nemsis_submissions_router import router as nemsis_submissions_router  # noqa: E402
+from core_app.api.platform_health_router import router as platform_health_router  # noqa: E402
+from core_app.api.tech_copilot_router import router as tech_copilot_router  # noqa: E402
 from core_app.api.neris_copilot_router import router as neris_copilot_router  # noqa: E402
 from core_app.api.nemsis_copilot_router import router as nemsis_copilot_router  # noqa: E402
 from core_app.api.neris_incident_router import router as neris_incident_router  # noqa: E402
@@ -230,6 +232,8 @@ app.include_router(nemsis_manager_router)
 app.include_router(nemsis_pack_router)
 app.include_router(nemsis_submissions_router)
 app.include_router(nemsis_copilot_router)
+app.include_router(platform_health_router)
+app.include_router(tech_copilot_router)
 app.include_router(neris_copilot_router)
 app.include_router(neris_incident_router)
 app.include_router(neris_tenant_router)
