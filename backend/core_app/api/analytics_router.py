@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from core_app.db.session import get_session
+from core_app.db.session import get_db_session
 # Add dependency injection for auth here...
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 @router.get("/{agency_id}/executive-summary")
 async def get_executive_summary(
     agency_id: UUID,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Returns the latest ExecutiveSummarySnapshot for the given agency.
@@ -23,7 +23,7 @@ async def get_operational_metrics(
     agency_id: UUID,
     period_start: datetime = Query(None),
     period_end: datetime = Query(None),
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Returns OperationalMetricSnapshot and response timing data.
@@ -36,7 +36,7 @@ async def get_financial_metrics(
     agency_id: UUID,
     period_start: datetime = Query(None),
     period_end: datetime = Query(None),
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Returns FinancialMetricSnapshot data.
@@ -48,7 +48,7 @@ async def get_clinical_metrics(
     agency_id: UUID,
     period_start: datetime = Query(None),
     period_end: datetime = Query(None),
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Returns ClinicalMetricSnapshot data.
@@ -60,7 +60,7 @@ async def get_readiness_metrics(
     agency_id: UUID,
     period_start: datetime = Query(None),
     period_end: datetime = Query(None),
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Returns ReadinessMetricSnapshot data.
@@ -71,7 +71,7 @@ async def get_readiness_metrics(
 @router.get("/{agency_id}/reports")
 async def list_reports(
     agency_id: UUID,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Lists generated reports and report definitions.
@@ -83,7 +83,7 @@ async def list_reports(
 async def generate_report(
     agency_id: UUID,
     report_definition_id: UUID,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Trigger manual generation of a report.
@@ -95,7 +95,7 @@ async def generate_report(
 async def get_alerts(
     agency_id: UUID,
     severity: str = Query(None),
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_db_session)
 ):
     """
     Get executive alerts for the founder command center.
