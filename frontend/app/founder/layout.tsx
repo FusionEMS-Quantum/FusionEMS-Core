@@ -76,6 +76,7 @@ const NAV_DOMAINS = [
     icon: '◈',
     color: 'var(--q-red)',
     links: [
+      { href: '/founder/security/governance', label: 'Governance Command' },
       { href: '/founder/security/role-builder', label: 'Role Builder' },
       { href: '/founder/security/field-masking', label: 'Field Masking' },
       { href: '/founder/security/access-logs', label: 'Access Logs' },

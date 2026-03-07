@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const LINKS = [
+  { href: '/founder/security/governance', label: 'Governance Command', desc: 'Trust scores, audit timeline, next-best-actions, sensitive access meter', color: 'var(--q-orange)' },
   { href: '/founder/security/role-builder', label: 'Role Builder', desc: 'Define RBAC roles, permissions, and module access controls', color: 'var(--q-red)' },
   { href: '/founder/security/field-masking', label: 'Field Masking', desc: 'Configure PHI field masking rules by role and context', color: 'var(--q-red)' },
   { href: '/founder/security/access-logs', label: 'Access Logs', desc: 'Immutable audit log of all PHI access and export events', color: 'var(--q-red)' },
