@@ -55,22 +55,6 @@ from .crewlink import (
     CrewMissionAssignment
 )
 
-# Governance Models
-from .governance import (
-    AuthenticationEvent,
-    UserSession,
-    SupportAccessGrant,
-    Permission,
-    Role,
-    RolePermission,
-    ProtectedActionApproval,
-    PhiaAccessAudit,
-    DataExportRequest,
-    DataProvenance,
-    HandoffExchangeRecord,
-    TenantPolicy,
-)
-
 # Analytics Models
 from .analytics import (
     KPIComputationRun,

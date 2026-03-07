@@ -16,7 +16,6 @@ PHI_PROTECTED_PREFIXES = [
     "/api/v1/statements",
     "/api/v1/exports",
     "/api/v1/nemsis",
-    "/api/v1/governance/phi-audit",
 ]
 
 PUBLIC_PREFIXES = [
@@ -63,9 +62,5 @@ class PHILockMiddleware(BaseHTTPMiddleware):
                     "next_step": "sign_baa",
                 },
             )
-
-        # Tag PHI access on request state for downstream audit logging
-        request.state.phi_access = True
-        request.state.phi_path = path
 
         return await call_next(request)
