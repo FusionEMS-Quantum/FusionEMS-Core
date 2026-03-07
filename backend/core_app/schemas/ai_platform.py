@@ -1,20 +1,23 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List
+from __future__ import annotations
+
+import uuid
 from datetime import datetime
-from enum import Enum
 
-from .ai_platform import AIRiskTier, AIWorkflowState, AIGovernanceState, AIOverrideState, AIConfidenceLevel
+from pydantic import BaseModel, Field
 
-class AIExplanationResponse(BaseModel):
-    title: str = Field(..., description="Short title")
-    severity: str = Field(..., description="BLOCKING, HIGH, MEDIUM, LOW, or INFORMATIONAL")
-    source: str = Field(..., description="AI REVIEW, RULE + AI, PROVIDER RESPONSE, or HUMAN NOTE")
-    what_is_wrong: str = Field(..., description="Exact problem")
-    why_it_matters: str = Field(..., description="Plain-English impact")
-    what_you_should_do: str = Field(..., description="Concrete next step")
-    domain_context: str = Field(..., description="Short explanation")
-    human_review: str = Field(..., description="REQUIRED, RECOMMENDED, or SAFE TO AUTO-PROCESS")
-    confidence: AIConfidenceLevel = Field(..., description="HIGH, MEDIUM, or LOW")
+from core_app.models.ai_platform import (
+    AIConfidenceLevel,
+    AIExplanationSeverity,
+    AIExplanationSource,
+    AIGovernanceState,
+    AIHumanReviewRequirement,
+    AIOverrideState,
+    AIRiskTier,
+    AIWorkflowState,
+)
+
+
+# ── AI USE-CASE REGISTRY ─────────────────────────────────────────────────────
 
 class AIUseCaseCreate(BaseModel):
     name: str = Field(..., max_length=255)
@@ -23,40 +26,183 @@ class AIUseCaseCreate(BaseModel):
     model_provider: str = Field(..., max_length=100)
     prompt_template_id: str = Field(..., max_length=100)
     risk_tier: AIRiskTier
-    fallback_behavior: str
-    owner: str = Field(..., max_length=100)
+    fallback_behavior: str = Field(..., max_length=255)
+    owner: str = Field(..., max_length=255)
+    allowed_data_scope: dict = Field(default_factory=dict)
+    human_override_behavior: str = Field(default="pause_and_review", max_length=50)
 
-class AIUseCaseResponse(AIUseCaseCreate):
-    id: int
+
+class AIUseCaseUpdate(BaseModel):
+    name: str | None = None
+    purpose: str | None = None
+    risk_tier: AIRiskTier | None = None
+    is_enabled: bool | None = None
+    fallback_behavior: str | None = None
+    owner: str | None = None
+    change_reason: str = Field(..., min_length=1)
+
+
+class AIUseCaseResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    domain: str
+    purpose: str
+    model_provider: str
+    prompt_template_id: str
+    risk_tier: str
     is_enabled: bool
+    fallback_behavior: str
+    owner: str
+    allowed_data_scope: dict
+    human_override_behavior: str
     last_review_date: datetime
-
-    class Config:
-        from_attributes = True
-
-class AIWorkflowRunBase(BaseModel):
-    use_case_id: int
-    correlation_id: str
-    context_snapshot: Optional[Dict[str, Any]] = None
-
-class AIWorkflowRunResponse(AIWorkflowRunBase):
-    id: int
-    state: AIWorkflowState
-    governance_state: AIGovernanceState
-    override_state: AIOverrideState
-    fallback_used: bool
-    error_message: Optional[str] = None
-    confidence_level: Optional[AIConfidenceLevel] = None
-    explanation_summary: Optional[str] = None
-    next_step: Optional[str] = None
     created_at: datetime
-    completed_at: Optional[datetime] = None
+    updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+# ── AI WORKFLOW ORCHESTRATION ─────────────────────────────────────────────────
+
+class AIWorkflowStartRequest(BaseModel):
+    use_case_id: uuid.UUID
+    correlation_id: str = Field(..., max_length=255)
+    context_snapshot: dict | None = None
+
+
+class AIWorkflowRunResponse(BaseModel):
+    id: uuid.UUID
+    use_case_id: uuid.UUID
+    correlation_id: str
+    state: str
+    governance_state: str
+    override_state: str
+    fallback_used: bool
+    error_message: str | None = None
+    confidence_level: str | None = None
+    explanation_summary: str | None = None
+    next_step: str | None = None
+    created_at: datetime
+    completed_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class AIInferenceResultRequest(BaseModel):
+    provider_response: dict
+    explanation: AIExplanationInput
+
+
+class AIExplanationInput(BaseModel):
+    title: str = Field(..., max_length=255)
+    severity: AIExplanationSeverity
+    source: AIExplanationSource
+    what_is_wrong: str
+    why_it_matters: str
+    what_you_should_do: str
+    domain_context: str
+    human_review: AIHumanReviewRequirement
+    confidence: AIConfidenceLevel
+    simple_mode_summary: str | None = None
+
+
+class AIExplanationResponse(BaseModel):
+    id: uuid.UUID
+    workflow_id: uuid.UUID
+    title: str
+    severity: str
+    source: str
+    what_is_wrong: str
+    why_it_matters: str
+    what_you_should_do: str
+    domain_context: str
+    human_review: str
+    confidence: str
+    simple_mode_summary: str | None = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── HUMAN OVERRIDE ────────────────────────────────────────────────────────────
 
 class AIHumanOverrideRequest(BaseModel):
-    workflow_id: int
-    actor_id: str
     new_state: AIOverrideState
-    reason: str
+    reason: str = Field(..., min_length=1)
+
+
+class AIReviewItemResponse(BaseModel):
+    id: uuid.UUID
+    workflow_id: uuid.UUID
+    review_type: str
+    priority: str
+    assigned_to: uuid.UUID | None = None
+    status: str
+    resolved_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AIReviewActionRequest(BaseModel):
+    action: str = Field(..., pattern="^(approve|reject)$")
+    reason: str | None = None
+    regenerate_requested: bool = False
+
+
+# ── DOMAIN COPILOT ────────────────────────────────────────────────────────────
+
+class AIDomainCopilotResponse(BaseModel):
+    id: uuid.UUID
+    domain: str
+    name: str
+    is_active: bool
+    explanation_rules: dict
+    data_scope_controls: dict
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── FOUNDER COMMAND CENTER ────────────────────────────────────────────────────
+
+class AICommandCenterMetrics(BaseModel):
+    health_score: float
+    total_use_cases: int
+    enabled_use_cases: int
+    disabled_workflows: int
+    low_confidence_count: int
+    review_queue_count: int
+    failed_runs_count: int
+    risk_tier_breakdown: dict[str, int]
+    recent_reviews: list[AIReviewQueueEntry]
+    top_actions: list[AIGovernanceAction]
+
+
+class AIReviewQueueEntry(BaseModel):
+    review_id: uuid.UUID
+    workflow_id: uuid.UUID
+    correlation_id: str
+    use_case_name: str
+    domain: str
+    priority: str
+    summary: str | None = None
+    created_at: datetime
+
+
+class AIGovernanceAction(BaseModel):
+    action_type: str
+    title: str
+    description: str
+    severity: str
+    target_id: uuid.UUID | None = None
+
+
+# Rebuild forward references
+AICommandCenterMetrics.model_rebuild()

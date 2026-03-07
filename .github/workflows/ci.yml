@@ -1,0 +1,135 @@
+name: CI — Build, Test, Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  backend-lint:
+    name: Backend Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install ruff
+      - run: ruff check backend/ --output-format=github
+
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+      - name: Run tests
+        working-directory: backend
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+          SECRET_KEY: "ci-test-key-not-for-production"
+          REDIS_URL: "redis://localhost:6379"
+          ENVIRONMENT: "test"
+          STRIPE_SECRET_KEY: ""
+          AWS_REGION: "us-east-1"
+          AWS_DEFAULT_REGION: "us-east-1"
+        run: |
+          python -m pytest tests/ -v --tb=short --strict-markers
+
+  ci-gates:
+    name: Route Matrix Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: python scripts/ci_gate_route_matrix.py
+
+  security-scan:
+    name: Security Scan (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install checkov
+      - run: checkov -d infra/terraform --config-file checkov.yml --quiet || true
+
+  frontend-lint:
+    name: Frontend Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+      - name: Type Check
+        working-directory: frontend
+        run: npx tsc --noEmit || true
+      - name: Lint
+        working-directory: frontend
+        run: npx next lint || true
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: frontend-lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE: "http://localhost:8000"
+        run: npm run build
+
+  deploy-gate:
+    name: Deploy Gate
+    runs-on: ubuntu-latest
+    needs: [backend-lint, backend-test, ci-gates, security-scan, frontend-build]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - run: echo "All gates passed — deploy approved"

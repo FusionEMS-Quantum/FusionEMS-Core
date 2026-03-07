@@ -1,8 +1,10 @@
 'use client';
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
+import { QuantumCardSkeleton } from '@/components/ui';
+import { useToast } from '@/components/ui/ProductPolish';
+import { ModuleDashboardShell } from '@/components/shells/PageShells';
 
 import { getWSClient, RealtimeEvent } from '@/services/websocket';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -26,42 +28,6 @@ interface SafetyEvent {
   event_type: string;
   timestamp: string;
   details?: Record<string, unknown>;
-}
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-
-interface ToastItem { id: number; msg: string; type: 'success' | 'error' }
-
-function Toast({ items }: { items: ToastItem[] }) {
-  if (!items.length) return null;
-  return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
-      {items.map((t) => (
-        <div
-          key={t.id}
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold shadow-lg"
-          style={{
-            background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
-            border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
-            color: t.type === 'success' ? 'var(--color-status-active)' : 'var(--color-brand-red)',
-          }}
-        >
-          {t.msg}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function useToast() {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const counter = useRef(0);
-  const push = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
-    const id = ++counter.current;
-    setToasts((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
-  }, []);
-  return { toasts, push };
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -140,7 +106,7 @@ function ReadinessBadge({ state }: { state: ReadinessState }) {
   const s = READINESS_STYLE[state] ?? READINESS_STYLE.no_go;
   return (
     <span
-      className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+      className="px-2 py-0.5 text-micro font-label uppercase tracking-wider chamfer-4"
       style={{ color: s.color, background: s.bg, border: `1px solid ${s.color}33` }}
     >
       {s.label}
@@ -161,7 +127,7 @@ function fmtTs(ts: string): string {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HemsPage() {
-  const { toasts, push } = useToast();
+  const toast = useToast();
 
   // Shared IDs
   const [missionId, setMissionId] = useState('');
@@ -227,12 +193,11 @@ export default function HemsPage() {
         if (event.event_type === 'hems_mission_events.created') {
           const payload = event.payload?.record?.data as any;
           if (payload?.mission_id === missionId) {
-            push(`Mission update: ${payload.event_type}`, 'success');
+            toast.success(`Mission update: ${payload.event_type}`);
             fetchTimeline();
           } else if (!missionId && payload?.mission_id) {
-            // Auto-detect mission if none selected (e.g. valid for pilot's tenant)
              setMissionId(payload.mission_id);
-             push(`New Mission Received: ${payload.mission_id}`, 'success');
+             toast.success(`New Mission Received: ${payload.mission_id}`);
           }
         }
         
@@ -240,7 +205,7 @@ export default function HemsPage() {
         if (event.event_type === 'hems_acceptance_records.created') {
              const payload = event.payload?.record?.data as any;
              if (payload?.mission_id === missionId) {
-                 push('Checklist accepted by another crew member.', 'success');
+                 toast.success('Checklist accepted by another crew member.');
              }
         }
       });
@@ -255,12 +220,12 @@ export default function HemsPage() {
       if (removeHandler) removeHandler();
       clearInterval(pollInterval);
     };
-  }, [missionId, push]);
+  }, [missionId, toast]);
 
   // ── Action Handlers ───
 
   async function performAction(endpoint: string, body: any, successMsg: string) {
-      if (!missionId.trim()) { push('Enter mission ID', 'error'); return; }
+      if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
       try {
         const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/${endpoint}`, {
           method: 'POST',
@@ -268,16 +233,16 @@ export default function HemsPage() {
           body: JSON.stringify(body),
         });
         if (!r.ok) throw new Error(await r.text());
-        push(successMsg);
-        fetchTimeline(); // Optimistic update
+        toast.success(successMsg);
+        fetchTimeline();
       } catch (e: unknown) {
-        push(e instanceof Error ? e.message : 'Action failed', 'error');
+        toast.error(e instanceof Error ? e.message : 'Action failed');
       }
   }
 
   // ── Set Readiness ───
   async function submitReadiness() {
-    if (!aircraftId.trim()) { push('Enter aircraft ID', 'error'); return; }
+    if (!aircraftId.trim()) { toast.error('Enter aircraft ID'); return; }
     setReadinessBusy(true);
     try {
       const r = await fetch(`${API}/api/v1/hems/aircraft/${aircraftId.trim()}/readiness`, {
@@ -288,9 +253,9 @@ export default function HemsPage() {
       if (!r.ok) throw new Error(await r.text());
       setReadinessState(newReadiness);
       setReadinessReason('');
-      push('Readiness updated');
+      toast.success('Readiness updated');
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to update readiness', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to update readiness');
     } finally {
       setReadinessBusy(false);
     }
@@ -302,7 +267,7 @@ export default function HemsPage() {
   }
 
   async function submitAcceptance() {
-    if (!missionId.trim()) { push('Enter mission ID', 'error'); return; }
+    if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
     setAcceptanceBusy(true);
     try {
       const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/acceptance`, {
@@ -316,9 +281,9 @@ export default function HemsPage() {
         }),
       });
       if (!r.ok) throw new Error(await r.text());
-      push('Acceptance submitted');
+      toast.success('Acceptance submitted');
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to submit acceptance', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to submit acceptance');
     } finally {
       setAcceptanceBusy(false);
     }
@@ -326,7 +291,7 @@ export default function HemsPage() {
 
   // ── Submit Weather Brief ───
   async function submitWeather() {
-    if (!missionId.trim()) { push('Enter mission ID', 'error'); return; }
+    if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
     setWxBusy(true);
     try {
       const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/weather-brief`, {
@@ -346,9 +311,9 @@ export default function HemsPage() {
         }),
       });
       if (!r.ok) throw new Error(await r.text());
-      push('Weather brief submitted');
+      toast.success('Weather brief submitted');
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to submit weather brief', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to submit weather brief');
     } finally {
       setWxBusy(false);
     }
@@ -356,7 +321,7 @@ export default function HemsPage() {
 
   // ── Fetch Safety Timeline ───
   async function fetchTimeline() {
-    if (!missionId.trim()) { push('Enter mission ID', 'error'); return; }
+    if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
     setTimelineBusy(true);
     try {
       const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/safety-timeline`, {
@@ -366,7 +331,7 @@ export default function HemsPage() {
       const data = await r.json();
       setTimeline(Array.isArray(data) ? data : (data.events ?? []));
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to fetch timeline', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch timeline');
     } finally {
       setTimelineBusy(false);
     }
@@ -375,8 +340,11 @@ export default function HemsPage() {
   const score = riskScore();
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary" style={{ fontFamily: 'inherit' }}>
-      <Toast items={toasts} />
+    <ModuleDashboardShell
+      title="HEMS Pilot Portal"
+      subtitle="Helicopter Emergency Medical Services — Mission Acceptance &amp; Safety"
+      accentColor="var(--color-system-hems)"
+    >
 
       {/* Header */}
       <div className="px-6 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>

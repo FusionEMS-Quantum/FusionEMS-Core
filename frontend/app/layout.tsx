@@ -2,6 +2,7 @@ import './globals.css';
 import { ReactNode } from 'react';
 import { AuthProvider } from '@/components/AuthProvider';
 import { WSBootstrap } from '@/components/WSBootstrap';
+import { Providers } from './providers';
 
 export const metadata = {
   title: 'FusionEMS Quantum',
@@ -21,8 +22,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <AuthProvider>
-          <WSBootstrap />
-          {children}
+          <Providers>
+            <WSBootstrap />
+            {children}
+          </Providers>
         </AuthProvider>
       </body>
     </html>

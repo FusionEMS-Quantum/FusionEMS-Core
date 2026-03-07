@@ -28,6 +28,19 @@ module.exports = {
       }
     },
 
+    /* ============================= */
+    /* WIDESCREEN BREAKPOINTS        */
+    /* ============================= */
+    screens: {
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+      "3xl": "1920px",
+      "4xl": "2560px",
+    },
+
     extend: {
       /* ============================= */
       /* COLOR SYSTEM (Token Driven)   */
@@ -111,8 +124,10 @@ module.exports = {
         h1: ["var(--text-h1)", { lineHeight: "var(--leading-tight)", fontWeight: "700" }],
         h2: ["var(--text-h2)", { lineHeight: "var(--leading-snug)", fontWeight: "700" }],
         h3: ["var(--text-h3)", { lineHeight: "var(--leading-snug)", fontWeight: "600" }],
+        "body-lg": ["var(--text-body-lg)", { lineHeight: "var(--leading-base)" }],
         body: ["var(--text-body)", { lineHeight: "var(--leading-base)" }],
-        label: ["var(--text-label)", { lineHeight: "var(--leading-tight)", fontWeight: "600" }]
+        label: ["var(--text-label)", { lineHeight: "var(--leading-tight)", fontWeight: "600" }],
+        micro: ["var(--text-micro)", { lineHeight: "var(--leading-tight)", fontWeight: "500" }]
       },
 
       /* ============================= */

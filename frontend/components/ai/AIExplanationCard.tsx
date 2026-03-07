@@ -1,77 +1,153 @@
-"use client"
+'use client';
 
-import React from "react"
+import { cn } from '@/lib/utils';
 
-export interface AIExplanationProps {
-  title: string
-  severity: "BLOCKING" | "HIGH" | "MEDIUM" | "LOW" | "INFORMATIONAL"
-  source: "AI REVIEW" | "RULE + AI" | "PROVIDER RESPONSE" | "HUMAN NOTE"
-  whatIsWrong: string
-  whyItMatters: string
-  whatYouShouldDo: string
-  domainContext: string
-  humanReview: "REQUIRED" | "RECOMMENDED" | "SAFE TO AUTO-PROCESS"
-  confidence: "HIGH" | "MEDIUM" | "LOW"
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface AIExplanation {
+  title: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+  source: 'AI_ENGINE' | 'GOVERNANCE' | 'HUMAN_OVERRIDE';
+  what_is_wrong: string;
+  why_it_matters: string;
+  what_you_should_do: string;
+  domain_context: string;
+  human_review: 'REQUIRED' | 'RECOMMENDED' | 'OPTIONAL';
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  simple_mode_summary?: string;
 }
 
-export function AIExplanationCard({ data }: { data: AIExplanationProps }) {
-  const getSeverityColor = (sev: string) => {
-    switch (sev) {
-      case "BLOCKING": return "bg-red-100 text-red-800 border-red-300"
-      case "HIGH": return "bg-orange-100 text-orange-800 border-orange-300"
-      case "MEDIUM": return "bg-yellow-100 text-yellow-800 border-yellow-300"
-      default: return "bg-slate-100 text-slate-800 border-slate-300"
-    }
-  }
+export interface AIExplanationCardProps {
+  readonly explanation: AIExplanation;
+  readonly compact?: boolean;
+  readonly className?: string;
+  readonly onAction?: () => void;
+  readonly actionLabel?: string;
+}
 
-  const getConfidenceBadge = (conf: string) => {
-    if (conf === "LOW") return "bg-yellow-100 text-yellow-800 border border-yellow-300"
-    if (conf === "MEDIUM") return "bg-blue-100 text-blue-800 border border-blue-300"
-    return "bg-green-100 text-green-800 border border-green-300"
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function severityStyle(s: string): { bg: string; border: string; text: string; label: string } {
+  switch (s) {
+    case 'CRITICAL':
+      return { bg: 'rgba(255,45,45,0.08)', border: 'rgba(255,45,45,0.35)', text: 'var(--color-brand-red)', label: 'CRITICAL' };
+    case 'HIGH':
+      return { bg: 'rgba(255,107,26,0.08)', border: 'rgba(255,107,26,0.35)', text: 'var(--color-brand-orange)', label: 'HIGH' };
+    case 'MEDIUM':
+      return { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', text: 'var(--color-status-warning)', label: 'MEDIUM' };
+    case 'LOW':
+      return { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.25)', text: 'var(--color-status-active)', label: 'LOW' };
+    default:
+      return { bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.25)', text: 'var(--color-status-info)', label: 'INFO' };
   }
+}
+
+function confidenceDot(c: string): string {
+  switch (c) {
+    case 'HIGH': return 'var(--color-status-active)';
+    case 'MEDIUM': return 'var(--color-status-warning)';
+    default: return 'var(--color-brand-red)';
+  }
+}
+
+function reviewBadge(h: string): { color: string; label: string } {
+  switch (h) {
+    case 'REQUIRED':
+      return { color: 'var(--color-brand-red)', label: 'REVIEW REQUIRED' };
+    case 'RECOMMENDED':
+      return { color: 'var(--color-status-warning)', label: 'REVIEW RECOMMENDED' };
+    default:
+      return { color: 'var(--color-status-active)', label: 'REVIEW OPTIONAL' };
+  }
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
+export function AIExplanationCard({ explanation, compact, className, onAction, actionLabel }: AIExplanationCardProps) {
+  const sev = severityStyle(explanation.severity);
+  const rev = reviewBadge(explanation.human_review);
 
   return (
-    <div className="border border-slate-200 shadow-sm rounded-lg overflow-hidden bg-white text-slate-900 text-sm">
-      {/* Header */}
-      <div className={`px-4 py-3 border-b flex justify-between items-center ${getSeverityColor(data.severity)}`}>
-        <div className="font-bold flex items-center space-x-2">
-          <span>{data.title}</span>
-          <span className="px-2 py-0.5 text-xs rounded bg-white bg-opacity-50">
-            {data.severity}
+    <div
+      className={cn('border p-4 space-y-3', className)}
+      style={{
+        backgroundColor: sev.bg,
+        borderColor: sev.border,
+        clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)',
+      }}
+    >
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4 shrink-0"
+            style={{ color: sev.text, background: `color-mix(in srgb, ${sev.text} 15%, transparent)` }}
+          >
+            {sev.label}
           </span>
+          <h3 className="text-sm font-bold text-text-primary truncate">{explanation.title}</h3>
         </div>
-        <div className={`px-2 py-0.5 text-xs rounded font-bold ${getConfidenceBadge(data.confidence)}`}>
-          CONFIDENCE: {data.confidence}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: confidenceDot(explanation.confidence) }} />
+          <span className="text-[10px] uppercase tracking-wider text-text-muted">{explanation.confidence}</span>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <div className="text-xs font-bold text-slate-500 uppercase">What is wrong</div>
-            <div className="mt-1 text-slate-800">{data.whatIsWrong}</div>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-slate-500 uppercase">Why it matters</div>
-            <div className="mt-1 text-slate-800">{data.whyItMatters}</div>
-          </div>
-        </div>
+      {/* Source + Review badges */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] uppercase tracking-widest text-text-muted px-2 py-0.5 border border-border-DEFAULT chamfer-4">
+          {explanation.source.replace(/_/g, ' ')}
+        </span>
+        <span
+          className="text-[10px] uppercase tracking-widest px-2 py-0.5 chamfer-4"
+          style={{ color: rev.color, background: `color-mix(in srgb, ${rev.color} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${rev.color} 30%, transparent)` }}
+        >
+          {rev.label}
+        </span>
+      </div>
 
-        <div className="bg-slate-50 p-3 rounded border border-slate-100">
-          <div className="text-xs font-bold text-slate-500 uppercase mb-1">What you should do</div>
-          <div className="font-medium text-slate-900">{data.whatYouShouldDo}</div>
+      {/* Body: the 3-part explanation */}
+      {!compact && (
+        <div className="space-y-2.5">
+          <ExplanationSection icon="⚠" title="What Happened" body={explanation.what_is_wrong} />
+          <ExplanationSection icon="→" title="Why It Matters" body={explanation.why_it_matters} />
+          <ExplanationSection icon="✓" title="Do This Next" body={explanation.what_you_should_do} />
         </div>
+      )}
 
-        <div className="flex justify-between items-end pt-2 border-t border-slate-100 text-xs text-slate-500">
-          <div>
-            <strong>SOURCE:</strong> {data.source} <br/>
-            <strong>CONTEXT:</strong> {data.domainContext}
-          </div>
-          <div className={`font-bold ${data.humanReview === 'REQUIRED' ? 'text-red-600' : 'text-slate-500'}`}>
-            REVIEW: {data.humanReview}
-          </div>
+      {compact && explanation.simple_mode_summary && (
+        <p className="text-xs text-text-secondary leading-relaxed">{explanation.simple_mode_summary}</p>
+      )}
+
+      {/* Domain context */}
+      {!compact && (
+        <div className="text-[10px] text-text-muted border-t border-[rgba(255,255,255,0.05)] pt-2 mt-2">
+          <span className="uppercase tracking-widest font-semibold">Context:</span> {explanation.domain_context}
         </div>
+      )}
+
+      {/* Optional action button */}
+      {onAction && (
+        <button
+          onClick={onAction}
+          className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 transition-colors hover:bg-[rgba(255,107,26,0.12)]"
+          style={{ color: 'var(--color-brand-orange)', borderColor: 'rgba(255,107,26,0.35)' }}
+        >
+          {actionLabel || 'Take Action'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ExplanationSection({ icon, title, body }: { icon: string; title: string; body: string }) {
+  return (
+    <div className="flex gap-2">
+      <span className="text-xs shrink-0 mt-0.5" aria-hidden>{icon}</span>
+      <div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-0.5">{title}</div>
+        <p className="text-xs text-text-secondary leading-relaxed">{body}</p>
       </div>
     </div>
-  )
+  );
 }

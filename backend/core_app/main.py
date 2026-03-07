@@ -1,3 +1,4 @@
+import logging
 import os
 
 import redis.asyncio as aioredis
@@ -18,8 +19,10 @@ from core_app.observability.otel import configure_otel
 
 settings = get_settings()
 configure_logging("DEBUG" if settings.debug else "INFO")
+logger = logging.getLogger(__name__)
 
 from core_app.api.accreditation_router import router as accreditation_router  # noqa: E402
+from core_app.api.ai_platform_router import router as ai_platform_router  # noqa: E402
 from core_app.api.ai_router import router as ai_router  # noqa: E402
 from core_app.api.analytics_router import router as analytics_router  # noqa: E402
 from core_app.api.ar_router import router as ar_router  # noqa: E402
@@ -83,6 +86,7 @@ from core_app.api.nemsis_pack_router import router as nemsis_pack_router  # noqa
 from core_app.api.nemsis_router import router as nemsis_router  # noqa: E402
 from core_app.api.nemsis_submissions_router import router as nemsis_submissions_router  # noqa: E402
 from core_app.api.platform_health_router import router as platform_health_router  # noqa: E402
+from core_app.api.platform_incidents_router import router as platform_incidents_router  # noqa: E402
 from core_app.api.tech_copilot_router import router as tech_copilot_router  # noqa: E402
 from core_app.api.neris_copilot_router import router as neris_copilot_router  # noqa: E402
 from core_app.api.nemsis_copilot_router import router as nemsis_copilot_router  # noqa: E402
@@ -181,6 +185,7 @@ app.include_router(roi_router, prefix="/api/v1")
 app.include_router(vital_router, prefix="/api/v1")
 
 # --- Routers without prefix ---
+app.include_router(ai_platform_router)
 app.include_router(ai_router)
 app.include_router(analytics_router)
 app.include_router(ar_router)
@@ -233,6 +238,7 @@ app.include_router(nemsis_pack_router)
 app.include_router(nemsis_submissions_router)
 app.include_router(nemsis_copilot_router)
 app.include_router(platform_health_router)
+app.include_router(platform_incidents_router)
 app.include_router(tech_copilot_router)
 app.include_router(neris_copilot_router)
 app.include_router(neris_incident_router)
@@ -307,7 +313,10 @@ async def healthz() -> JSONResponse:
 
     healthy = checks["db"] == "ok" and (redis_ok or not redis_required)
 
-    logger.error(f"HEALTHZ DEGRADED: checks={checks} warnings={warnings} healthy={healthy}"); content: dict[str, object] = {"status": "ok" if healthy else "degraded", "checks": checks}
+    if not healthy:
+        logger.error("HEALTHZ DEGRADED: checks=%s warnings=%s", checks, warnings)
+
+    content: dict[str, object] = {"status": "ok" if healthy else "degraded", "checks": checks}
     if warnings:
         content["warnings"] = warnings
     return JSONResponse(

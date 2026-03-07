@@ -1,44 +1,120 @@
+"""Platform Health Router — live infrastructure probes.
+
+Returns real-time health telemetry by probing DB, Redis, and integrations.
+No hardcoded values. All probe results are measured at request time.
+"""
+from __future__ import annotations
+
+import logging
+import time
+from datetime import datetime, timezone
+from typing import Any
+
+import redis.asyncio as aioredis
+import sqlalchemy
 from fastapi import APIRouter, Depends
-from typing import Any, List, Dict
-import random
-import datetime
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core_app.api.dependencies import db_session_dependency, get_current_user
+from core_app.core.config import get_settings
+from core_app.db.session import async_engine
 from core_app.schemas.auth import CurrentUser
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/v1/platform", tags=["Platform Health"])
+
+
+async def _probe_db() -> dict[str, Any]:
+    """Measure real Postgres latency and reachability."""
+    start = time.monotonic()
+    try:
+        async with async_engine.connect() as conn:
+            await conn.execute(sqlalchemy.text("SELECT 1"))
+        latency = int((time.monotonic() - start) * 1000)
+        return {"name": "PostgreSQL", "status": "GREEN", "latency_ms": latency, "uptime": "live"}
+    except Exception as exc:
+        logger.warning("DB probe failed: %s", exc)
+        latency = int((time.monotonic() - start) * 1000)
+        return {"name": "PostgreSQL", "status": "RED", "latency_ms": latency, "uptime": "unreachable"}
+
+
+async def _probe_redis() -> dict[str, Any]:
+    """Measure real Redis latency and reachability."""
+    settings = get_settings()
+    if not settings.redis_url:
+        return {"name": "Redis", "status": "GRAY", "latency_ms": 0, "uptime": "not_configured"}
+    start = time.monotonic()
+    try:
+        async with aioredis.from_url(settings.redis_url, socket_connect_timeout=2) as r:
+            await r.ping()
+        latency = int((time.monotonic() - start) * 1000)
+        return {"name": "Redis", "status": "GREEN", "latency_ms": latency, "uptime": "live"}
+    except Exception as exc:
+        logger.warning("Redis probe failed: %s", exc)
+        latency = int((time.monotonic() - start) * 1000)
+        return {"name": "Redis", "status": "RED", "latency_ms": latency, "uptime": "unreachable"}
+
+
+def _probe_api() -> dict[str, Any]:
+    """Self-probe — the fact that we're responding means FastAPI is up."""
+    return {"name": "FastAPI Core", "status": "GREEN", "latency_ms": 0, "uptime": "live"}
+
+
+def _compute_score(services: list[dict[str, Any]]) -> int:
+    """Weighted health score: all GREEN = 100, RED services deduct heavily."""
+    total = len(services)
+    if total == 0:
+        return 0
+    healthy = sum(1 for s in services if s["status"] == "GREEN")
+    return max(0, int((healthy / total) * 100))
+
+
+def _overall_status(score: int) -> str:
+    if score >= 90:
+        return "GREEN"
+    if score >= 60:
+        return "YELLOW"
+    return "RED"
+
 
 @router.get("/health")
 async def get_platform_health(
     current: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(db_session_dependency),
-):
-    # Simulated realtime deep-scan of the Domination OS
+) -> dict[str, Any]:
+    """Live platform health — all values measured at request time."""
+    services = [
+        _probe_api(),
+        await _probe_db(),
+        await _probe_redis(),
+    ]
+    score = _compute_score(services)
+    settings = get_settings()
+
+    # Integration status — report configured vs. unconfigured
+    integrations = []
+    for name, configured in [
+        ("Stripe", bool(settings.stripe_secret_key)),
+        ("Telnyx", bool(settings.telnyx_api_key)),
+        ("OpenAI", bool(settings.openai_api_key)),
+    ]:
+        integrations.append({
+            "name": name,
+            "status": "GREEN" if configured else "GRAY",
+            "last_sync": "configured" if configured else "not_configured",
+        })
+
     return {
-        "score": 98,
-        "status": "GREEN",
-        "timestamp": datetime.datetime.utcnow().isoformat(),
-        "services": [
-            {"name": "FastAPI Core", "status": "GREEN", "latency_ms": 45, "uptime": "99.99%"},
-            {"name": "PostgreSQL RDS", "status": "GREEN", "latency_ms": 12, "uptime": "100%"},
-            {"name": "Redis Broker", "status": "GREEN", "latency_ms": 2, "uptime": "99.95%"},
-            {"name": "Next.js Edge", "status": "GREEN", "latency_ms": 30, "uptime": "99.90%"}
-        ],
-        "integrations": [
-            {"name": "Stripe", "status": "GREEN", "last_sync": "1m ago"},
-            {"name": "Office Ally", "status": "GREEN", "last_sync": "5m ago"},
-            {"name": "Telnyx IVR", "status": "GREEN", "last_sync": "10s ago"},
-            {"name": "Lob Direct Mail", "status": "GREEN", "last_sync": "1h ago"},
-        ],
-        "queues": [
-            {"name": "nemsis-export-queue", "depth": 0, "status": "GREEN"},
-            {"name": "neris-pack-compile", "depth": 2, "status": "BLUE"},
-            {"name": "billing-retry-dlq", "depth": 0, "status": "GREEN"}
-        ],
+        "score": score,
+        "status": _overall_status(score),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "services": services,
+        "integrations": integrations,
+        "queues": [],
         "ci_cd": {
-            "last_build": "PASSING",
+            "last_build": "N/A",
             "branch": "main",
-            "deployment": "ZERO_ERROR_VALIDATED"
+            "deployment": "LIVE_PROBES_ACTIVE",
         },
-        "incidents": []
+        "incidents": [],
     }

@@ -55,6 +55,36 @@ from .crewlink import (
     CrewMissionAssignment
 )
 
+# AI Platform Models
+from .ai_platform import (
+    AIUseCase,
+    AIUseCaseVersion,
+    AIModelBinding,
+    AIPromptTemplate,
+    AIUseCaseAuditEvent,
+    AIWorkflowRun,
+    AIContextSnapshot,
+    AIWorkflowFailure,
+    AIFallbackDecision,
+    AIGuardrailRule,
+    AIApprovalRequirement,
+    AIProtectedAction,
+    AIGovernanceDecision,
+    AIRestrictedOutputEvent,
+    AIExplanationRecord,
+    AIConfidenceRecord,
+    AIOutputTag,
+    AIHumanOverrideEvent,
+    AIReviewItem,
+    AIApprovalEvent,
+    AIRejectionEvent,
+    AIResumeEvent,
+    AIDomainCopilot,
+    AIDomainPolicy,
+    AICopilotActionBoundary,
+    AICopilotAuditEvent,
+)
+
 # Analytics Models
 from .analytics import (
     KPIComputationRun,

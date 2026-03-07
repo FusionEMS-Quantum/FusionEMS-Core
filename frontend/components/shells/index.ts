@@ -18,3 +18,19 @@ export type {
   DashboardGridProps,
   GridCellProps,
 } from './PageShells';
+
+export {
+  CrossModuleHealth,
+  CrossModuleActions,
+  DomainNavCard,
+  FounderStatusBar,
+} from './FounderCommand';
+
+export type {
+  DomainHealth,
+  CrossModuleHealthProps,
+  CrossModuleAction,
+  CrossModuleActionsProps,
+  DomainNavCardProps,
+  FounderStatusBarProps,
+} from './FounderCommand';

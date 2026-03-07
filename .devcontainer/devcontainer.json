@@ -1,32 +1,50 @@
 {
   "name": "FusionEMS-Core",
   "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "forwardPorts": [3000, 8000, 5432, 6379, 8181, 9090, 3001],
+  "forwardPorts": [3000, 8000, 5432, 6379, 8181, 9090, 3001, 4318, 8889],
   "portsAttributes": {
-    "3000": {"label": "Frontend"},
-    "8000": {"label": "Backend API"},
-    "5432": {"label": "Postgres"},
-    "6379": {"label": "Redis"},
-    "8181": {"label": "OPA"},
-    "9090": {"label": "Prometheus"},
-    "3001": {"label": "Grafana"}
+    "3000": {"label": "Frontend (Next.js)", "onAutoForward": "notify"},
+    "8000": {"label": "Backend API (FastAPI)", "onAutoForward": "notify"},
+    "5432": {"label": "PostgreSQL", "onAutoForward": "silent"},
+    "6379": {"label": "Redis", "onAutoForward": "silent"},
+    "8181": {"label": "OPA Policy Engine", "onAutoForward": "silent"},
+    "9090": {"label": "Prometheus", "onAutoForward": "silent"},
+    "3001": {"label": "Grafana", "onAutoForward": "silent"},
+    "4318": {"label": "OTEL Collector HTTP", "onAutoForward": "silent"},
+    "8889": {"label": "OTEL Prometheus Export", "onAutoForward": "silent"}
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "postStartCommand": "bash .devcontainer/post-start.sh",
+  "containerEnv": {
+    "ENVIRONMENT": "development",
+    "AUTH_MODE": "local",
+    "DATABASE_URL": "postgresql+psycopg2://postgres:postgres@localhost:5432/fusionems",
+    "REDIS_URL": "redis://localhost:6379",
+    "OTEL_ENABLED": "false"
+  },
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
-        "files.eol": "
-"
+        "files.eol": "\n",
+        "python.defaultInterpreterPath": ".venv/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["backend/tests"],
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
       },
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
         "ms-azuretools.vscode-docker",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
     }
   }
