@@ -191,20 +191,22 @@ export default function HemsPage() {
       removeHandler = client.addHandler((event: RealtimeEvent) => {
         // HEMS mission events
         if (event.event_type === 'hems_mission_events.created') {
-          const payload = event.payload?.record?.data as any;
+          const record = (event.payload as Record<string, unknown>)?.record as Record<string, unknown> | undefined;
+          const payload = record?.data as Record<string, unknown> | undefined;
           if (payload?.mission_id === missionId) {
-            toast.success(`Mission update: ${payload.event_type}`);
+            toast.success(`Mission update: ${String(payload.event_type)}`);
             fetchTimeline();
           } else if (!missionId && payload?.mission_id) {
-             setMissionId(payload.mission_id);
-             toast.success(`New Mission Received: ${payload.mission_id}`);
+             setMissionId(String(payload.mission_id));
+             toast.success(`New Mission Received: ${String(payload.mission_id)}`);
           }
         }
         
         // HEMS acceptance events
         if (event.event_type === 'hems_acceptance_records.created') {
-             const payload = event.payload?.record?.data as any;
-             if (payload?.mission_id === missionId) {
+             const acceptRecord = (event.payload as Record<string, unknown>)?.record as Record<string, unknown> | undefined;
+             const acceptData = acceptRecord?.data as Record<string, unknown> | undefined;
+             if (acceptData?.mission_id === missionId) {
                  toast.success('Checklist accepted by another crew member.');
              }
         }
@@ -346,38 +348,25 @@ export default function HemsPage() {
       accentColor="var(--color-system-hems)"
     >
 
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-        <h1 className="text-sm font-semibold tracking-wide text-text-primary">HEMS Pilot Portal</h1>
-        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Helicopter Emergency Medical Services — Mission Acceptance &amp; Safety
-        </p>
-      </div>
-
-      <div className="px-6 py-5 space-y-5">
+      <div className="space-y-5">
 
         {/* ── Shared ID inputs ── */}
-        <div
-          className="p-4 rounded-sm"
-          style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>Session IDs</p>
+        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
+          <p className="text-body font-label mb-3 text-text-secondary">Session IDs</p>
           <div className="flex flex-wrap gap-3">
             <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Aircraft ID</label>
+              <label className="text-body text-text-muted">Aircraft ID</label>
               <input
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                 placeholder="e.g. N123HM"
                 value={aircraftId}
                 onChange={(e) => setAircraftId(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Mission ID</label>
+              <label className="text-body text-text-muted">Mission ID</label>
               <input
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                 placeholder="e.g. MSN-0001"
                 value={missionId}
                 onChange={(e) => setMissionId(e.target.value)}
@@ -387,27 +376,21 @@ export default function HemsPage() {
         </div>
 
         {/* ── 1. Aircraft Readiness Panel ── */}
-        <div
-          className="p-4 rounded-sm"
-          style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
+        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Aircraft Readiness
-            </p>
+            <p className="text-body font-label text-text-secondary">Aircraft Readiness</p>
             {readinessState && <ReadinessBadge state={readinessState} />}
           </div>
           {!readinessState && (
-            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-body mb-3 text-text-muted">
               No readiness state recorded this session.
             </p>
           )}
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex flex-col gap-1">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>New State</label>
+              <label className="text-body text-text-muted">New State</label>
               <select
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                 value={newReadiness}
                 onChange={(e) => setNewReadiness(e.target.value as ReadinessState)}
               >
@@ -417,10 +400,9 @@ export default function HemsPage() {
               </select>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Reason</label>
+              <label className="text-body text-text-muted">Reason</label>
               <input
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                 placeholder="Optional reason"
                 value={readinessReason}
                 onChange={(e) => setReadinessReason(e.target.value)}
@@ -429,26 +411,20 @@ export default function HemsPage() {
             <button
               onClick={submitReadiness}
               disabled={readinessBusy}
-              className="px-3 py-1.5 text-xs font-semibold rounded-sm disabled:opacity-40 transition-opacity"
-              style={{ background: 'var(--color-brand-orange)', color: 'var(--color-text-primary)' }}
+              className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-text-primary disabled:opacity-40 transition-opacity"
             >
               {readinessBusy ? 'Saving...' : 'Set Readiness'}
             </button>
           </div>
         </div>
 
-        {/* ── 3. Mission Actions ── */}
-        <div
-            className="p-4 rounded-sm"
-            style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-            <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Mission Controls
-            </p>
+        {/* ── Mission Actions ── */}
+        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
+            <p className="text-body font-label mb-3 text-text-secondary">Mission Controls</p>
             <div className="flex flex-wrap gap-2">
                 <button
                     onClick={() => performAction('acknowledge', { decision: 'accept' }, 'Mission Accepted')}
-                    className="px-4 py-2 text-xs font-semibold rounded-sm bg-green-600/20 text-green-400 border border-green-600/30 hover:bg-green-600/30"
+                    className="px-4 py-2 text-body font-label chamfer-4 bg-green-600/20 text-green-400 border border-green-600/30 hover:bg-green-600/30"
                 >
                     Accept Mission
                 </button>
@@ -457,41 +433,36 @@ export default function HemsPage() {
                         const reason = prompt('Reason for decline?');
                         if (reason) performAction('acknowledge', { decision: 'decline', decline_reason: reason }, 'Mission Declined');
                     }}
-                    className="px-4 py-2 text-xs font-semibold rounded-sm bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30"
+                    className="px-4 py-2 text-body font-label chamfer-4 bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30"
                 >
                     Decline
                 </button>
-                 <div className="w-4" />
+                <div className="w-4" />
                 <button
                     onClick={() => performAction('wheels-up', { aircraft_id: aircraftId, crew: [] }, 'Wheels Up Recorded')}
-                    className="px-4 py-2 text-xs font-semibold rounded-sm bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:bg-blue-600/30"
+                    className="px-4 py-2 text-body font-label chamfer-4 bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:bg-blue-600/30"
                 >
                     Wheels Up
                 </button>
                 <button
                     onClick={() => performAction('wheels-down', { destination: 'Hospital' }, 'Wheels Down Recorded')}
-                    className="px-4 py-2 text-xs font-semibold rounded-sm bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:bg-blue-600/30"
+                    className="px-4 py-2 text-body font-label chamfer-4 bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:bg-blue-600/30"
                 >
                     Wheels Down
                 </button>
-                 <div className="w-4" />
-                 <button
+                <div className="w-4" />
+                <button
                     onClick={() => performAction('complete', { outcome: 'completed' }, 'Mission Completed')}
-                    className="px-4 py-2 text-xs font-semibold rounded-sm bg-gray-600/20 text-gray-300 border border-gray-600/30 hover:bg-gray-600/30"
+                    className="px-4 py-2 text-body font-label chamfer-4 bg-gray-600/20 text-gray-300 border border-gray-600/30 hover:bg-gray-600/30"
                 >
                     Complete Mission
                 </button>
             </div>
         </div>
 
-        {/* ── 2. Mission Acceptance Checklist ── */}
-        <div
-          className="p-4 rounded-sm"
-          style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Mission Acceptance Checklist
-          </p>
+        {/* ── Mission Acceptance Checklist ── */}
+        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
+          <p className="text-body font-label mb-3 text-text-secondary">Mission Acceptance Checklist</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 mb-4">
             {CHECKLIST_KEYS.map((key) => (
@@ -504,16 +475,12 @@ export default function HemsPage() {
                   }
                   className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
                 />
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                  {CHECKLIST_LABELS[key]}
-                </span>
+                <span className="text-body text-text-secondary">{CHECKLIST_LABELS[key]}</span>
               </label>
             ))}
           </div>
 
-          <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            Risk Factors
-          </p>
+          <p className="text-body font-label mb-2 text-text-muted">Risk Factors</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 mb-4">
             {RISK_FACTOR_KEYS.map((key) => (
               <label key={key} className="flex items-center gap-2 cursor-pointer">
@@ -525,11 +492,9 @@ export default function HemsPage() {
                   }
                   className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
                 />
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                <span className="text-body text-text-secondary">
                   {RISK_FACTOR_LABELS[key]}
-                  <span className="ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    (+{RISK_WEIGHTS[key]})
-                  </span>
+                  <span className="ml-1 text-text-muted">(+{RISK_WEIGHTS[key]})</span>
                 </span>
               </label>
             ))}
@@ -537,7 +502,7 @@ export default function HemsPage() {
 
           {/* Risk Score */}
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Risk Score:</span>
+            <span className="text-body text-text-muted">Risk Score:</span>
             <span
               className="text-sm font-bold tabular-nums"
               style={{ color: riskColor(score) }}
@@ -545,7 +510,7 @@ export default function HemsPage() {
               {score}
             </span>
             <span
-              className="text-[10px] px-1.5 py-0.5 rounded-sm font-semibold uppercase"
+              className="text-micro px-1.5 py-0.5 chamfer-4 font-label uppercase"
               style={{
                 color: riskColor(score),
                 background: `${riskColor(score)}1a`,
@@ -559,21 +524,15 @@ export default function HemsPage() {
           <button
             onClick={submitAcceptance}
             disabled={acceptanceBusy}
-            className="px-3 py-1.5 text-xs font-semibold rounded-sm disabled:opacity-40 transition-opacity"
-            style={{ background: 'var(--color-brand-orange)', color: 'var(--color-text-primary)' }}
+            className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-text-primary disabled:opacity-40 transition-opacity"
           >
             {acceptanceBusy ? 'Submitting...' : 'Submit Acceptance'}
           </button>
         </div>
 
-        {/* ── 3. Weather Brief ── */}
-        <div
-          className="p-4 rounded-sm"
-          style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Weather Brief
-          </p>
+        {/* ── Weather Brief ── */}
+        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
+          <p className="text-body font-label mb-3 text-text-secondary">Weather Brief</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
             {(
               [
@@ -586,11 +545,10 @@ export default function HemsPage() {
               ] as { key: keyof typeof wx; label: string; type: string }[]
             ).map(({ key, label, type }) => (
               <div key={key} className="flex flex-col gap-1">
-                <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>
+                <label className="text-body text-text-muted">{label}</label>
                 <input
                   type={type}
-                  className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                  style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                  className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                   value={wx[key] as string}
                   onChange={(e) => setWx((prev) => ({ ...prev, [key]: e.target.value }))}
                 />
@@ -598,10 +556,9 @@ export default function HemsPage() {
             ))}
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Turbulence</label>
+              <label className="text-body text-text-muted">Turbulence</label>
               <select
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                 value={wx.turbulence}
                 onChange={(e) => setWx((prev) => ({ ...prev, turbulence: e.target.value as TurbulenceLevel }))}
               >
@@ -613,10 +570,9 @@ export default function HemsPage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Go / No-Go</label>
+              <label className="text-body text-text-muted">Go / No-Go</label>
               <select
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
                 value={wx.go_no_go}
                 onChange={(e) => setWx((prev) => ({ ...prev, go_no_go: e.target.value as GoNoGo }))}
               >
@@ -634,7 +590,7 @@ export default function HemsPage() {
                 onChange={(e) => setWx((prev) => ({ ...prev, precip: e.target.checked }))}
                 className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
               />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Precipitation</span>
+              <span className="text-body text-text-secondary">Precipitation</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -643,67 +599,47 @@ export default function HemsPage() {
                 onChange={(e) => setWx((prev) => ({ ...prev, icing: e.target.checked }))}
                 className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
               />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Icing</span>
+              <span className="text-body text-text-secondary">Icing</span>
             </label>
           </div>
 
           <button
             onClick={submitWeather}
             disabled={wxBusy}
-            className="px-3 py-1.5 text-xs font-semibold rounded-sm disabled:opacity-40 transition-opacity"
-            style={{ background: 'var(--color-brand-orange)', color: 'var(--color-text-primary)' }}
+            className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-text-primary disabled:opacity-40 transition-opacity"
           >
             {wxBusy ? 'Submitting...' : 'Submit Weather Brief'}
           </button>
         </div>
 
-        {/* ── 4. Safety Timeline ── */}
-        <div
-          className="p-4 rounded-sm"
-          style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
+        {/* ── Safety Timeline ── */}
+        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Safety Timeline
-            </p>
+            <p className="text-body font-label text-text-secondary">Safety Timeline</p>
             <button
               onClick={fetchTimeline}
               disabled={timelineBusy}
-              className="px-3 py-1 text-xs font-semibold rounded-sm disabled:opacity-40 transition-opacity"
-              style={{ background: 'rgba(255,107,26,0.15)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.3)' }}
+              className="px-3 py-1 text-body font-label chamfer-4 bg-brand-orange/15 text-brand-orange border border-brand-orange/30 disabled:opacity-40 transition-opacity"
             >
               {timelineBusy ? 'Loading...' : 'Fetch Timeline'}
             </button>
           </div>
 
           {timeline.length === 0 ? (
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-body text-text-muted">
               No events loaded. Enter a mission ID and click Fetch Timeline.
             </p>
           ) : (
             <div className="relative pl-4">
-              {/* vertical line */}
-              <div
-                className="absolute left-1 top-0 bottom-0 w-px"
-                style={{ background: 'rgba(255,255,255,0.08)' }}
-              />
+              <div className="absolute left-1 top-0 bottom-0 w-px bg-[var(--color-border-default)]" />
               <div className="space-y-3">
                 {timeline.map((ev, i) => (
                   <div key={i} className="relative">
-                    <div
-                      className="absolute -left-[13px] top-1 w-2 h-2 rounded-full"
-                      style={{ background: 'var(--color-brand-orange)' }}
-                    />
-                    <p className="text-[10px] mb-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      {fmtTs(ev.timestamp)}
-                    </p>
-                    <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                      {ev.event_type}
-                    </p>
+                    <div className="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-brand-orange" />
+                    <p className="text-micro mb-0.5 text-text-muted">{fmtTs(ev.timestamp)}</p>
+                    <p className="text-body font-label text-text-primary">{ev.event_type}</p>
                     {ev.details && Object.keys(ev.details).length > 0 && (
-                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        {JSON.stringify(ev.details)}
-                      </p>
+                      <p className="text-micro mt-0.5 text-text-muted">{JSON.stringify(ev.details)}</p>
                     )}
                   </div>
                 ))}
@@ -713,6 +649,6 @@ export default function HemsPage() {
         </div>
 
       </div>
-    </div>
+    </ModuleDashboardShell>
   );
 }

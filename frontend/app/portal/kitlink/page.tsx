@@ -1,5 +1,8 @@
 "use client";
 import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
+import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
+import { ModuleDashboardShell } from '@/components/shells/PageShells';
+import { MetricCard } from '@/components/ui/MetricCard';
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -37,69 +40,35 @@ async function post(path: string, tenantId: string, body: object): Promise<any> 
   }
 }
 
+const TAB_ITEMS = TABS.map((t) => ({ id: t, label: t }));
+
 function KitLinkPageInner() {
   const params = useSearchParams();
   const tenantId = params.get("tenant_id") ?? "";
   const [activeTab, setActiveTab] = useState<Tab>("Dashboard");
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary">
-      <div className="border-b border-border-subtle px-6 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-sm font-bold">K</div>
-        <div>
-          <h1 className="text-lg font-semibold text-text-primary">KitLink AR</h1>
-          <p className="text-xs text-text-muted">Inventory · Narcotics · AR Markers · Compliance</p>
-        </div>
-        <div className="ml-auto">
-          <a
-            href={`/portal/kitlink/wizard?tenant_id=${tenantId}`}
-            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-xs font-medium transition-colors"
-          >
-            1-Day Go-Live Wizard
-          </a>
-        </div>
-      </div>
-
-      <div className="border-b border-border-subtle px-6 flex gap-1">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setActiveTab(t)}
-            className={`px-4 py-3 text-sm border-b-2 transition-colors ${
-              activeTab === t
-                ? "border-emerald-500 text-emerald-400"
-                : "border-transparent text-text-muted hover:text-text-primary"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="p-6">
-        {activeTab === "Dashboard" && <DashboardTab tenantId={tenantId} />}
-        {activeTab === "Items & Formulary" && <ItemsTab tenantId={tenantId} />}
-        {activeTab === "Kit Templates" && <KitsTab tenantId={tenantId} />}
-        {activeTab === "Unit Layouts" && <LayoutsTab tenantId={tenantId} />}
-        {activeTab === "AR Markers" && <MarkersTab tenantId={tenantId} />}
-        {activeTab === "Reports" && <ReportsTab tenantId={tenantId} />}
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, color = "emerald" }: { label: string; value: string | number; color?: string }) {
-  const colors: Record<string, string> = {
-    emerald: "border-emerald-700 bg-emerald-900/20",
-    amber: "border-amber-700 bg-amber-900/20",
-    red: "border-red-700 bg-red-900/20",
-    blue: "border-blue-700 bg-blue-900/20",
-  };
-  return (
-    <div className={`rounded-lg border p-4 ${colors[color] ?? colors.emerald}`}>
-      <p className="text-xs text-text-muted mb-1">{label}</p>
-      <p className="text-2xl font-bold text-text-primary">{value}</p>
-    </div>
+    <ModuleDashboardShell
+      title="KitLink AR"
+      subtitle="Inventory · Narcotics · AR Markers · Compliance"
+      accentColor="var(--color-emerald-500, #10b981)"
+      headerActions={
+        <a
+          href={`/portal/kitlink/wizard?tenant_id=${tenantId}`}
+          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 chamfer-4 text-xs font-medium transition-colors"
+        >
+          1-Day Go-Live Wizard
+        </a>
+      }
+      toolbar={<TabBar tabs={TAB_ITEMS} activeTab={activeTab} onTabChange={(id) => setActiveTab(id as Tab)} />}
+    >
+      <TabPanel tabId="Dashboard" activeTab={activeTab}><DashboardTab tenantId={tenantId} /></TabPanel>
+      <TabPanel tabId="Items & Formulary" activeTab={activeTab}><ItemsTab tenantId={tenantId} /></TabPanel>
+      <TabPanel tabId="Kit Templates" activeTab={activeTab}><KitsTab tenantId={tenantId} /></TabPanel>
+      <TabPanel tabId="Unit Layouts" activeTab={activeTab}><LayoutsTab tenantId={tenantId} /></TabPanel>
+      <TabPanel tabId="AR Markers" activeTab={activeTab}><MarkersTab tenantId={tenantId} /></TabPanel>
+      <TabPanel tabId="Reports" activeTab={activeTab}><ReportsTab tenantId={tenantId} /></TabPanel>
+    </ModuleDashboardShell>
   );
 }
 
@@ -112,14 +81,14 @@ function DashboardTab({ tenantId }: { tenantId: string }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Kit Templates" value={kits ? kits.length : "—"} />
-        <StatCard label="Expiring (30d)" value={expiringData?.expiring_count ?? "—"} color="amber" />
-        <StatCard label="Open Discrepancies" value={discData?.open_count ?? "—"} color="red" />
-        <StatCard label="PAR Misses" value={parData?.par_miss_count ?? "—"} color="amber" />
+        <MetricCard label="Kit Templates" value={kits ? String(kits.length) : "—"} compact />
+        <MetricCard label="Expiring (30d)" value={String(expiringData?.expiring_count ?? "—")} compact />
+        <MetricCard label="Open Discrepancies" value={String(discData?.open_count ?? "—")} compact />
+        <MetricCard label="PAR Misses" value={String(parData?.par_miss_count ?? "—")} compact />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+        <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
           <h3 className="text-sm font-semibold text-text-primary mb-3">Quick Actions</h3>
           <div className="space-y-2">
             {[
@@ -131,7 +100,7 @@ function DashboardTab({ tenantId }: { tenantId: string }) {
               <a
                 key={a.label}
                 href={a.href !== "#" ? a.href : undefined}
-                className="flex items-center justify-between px-3 py-2 rounded bg-bg-raised hover:bg-bg-overlay text-sm text-text-primary cursor-pointer transition-colors"
+                className="flex items-center justify-between px-3 py-2 chamfer-4 bg-bg-raised hover:bg-bg-overlay text-sm text-text-primary cursor-pointer transition-colors"
               >
                 <span>{a.label}</span>
                 <span className="text-text-muted">→</span>
@@ -140,7 +109,7 @@ function DashboardTab({ tenantId }: { tenantId: string }) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+        <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
           <h3 className="text-sm font-semibold text-text-primary mb-3">Open Narcotics Discrepancies</h3>
           {discData?.items?.length ? (
             <div className="space-y-2">
@@ -180,23 +149,23 @@ function ItemsTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+      <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
         <h3 className="text-sm font-semibold text-text-primary mb-3">Add Inventory Item</h3>
         <div className="grid grid-cols-3 gap-3">
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500"
             placeholder="Item name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500"
             placeholder="Unit (each, vial, bag)"
             value={form.unit}
             onChange={(e) => setForm({ ...form, unit: e.target.value })}
           />
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500"
             placeholder="Category"
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -205,13 +174,13 @@ function ItemsTab({ tenantId }: { tenantId: string }) {
         <button
           onClick={submit}
           disabled={saving || !form.name}
-          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded text-sm font-medium transition-colors"
+          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
         >
           {saving ? "Saving…" : "Add Item"}
         </button>
       </div>
 
-      <div className="rounded-lg border border-border-subtle overflow-hidden">
+      <div className="chamfer-8 border border-border-subtle overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-bg-raised text-text-muted text-xs">
             <tr>
@@ -256,7 +225,7 @@ function KitsTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+      <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
         <h3 className="text-sm font-semibold text-text-primary mb-1">Load Starter Templates</h3>
         <p className="text-xs text-text-muted mb-3">Clone a preconfigured kit template into your account.</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -265,7 +234,7 @@ function KitsTab({ tenantId }: { tenantId: string }) {
               key={key}
               onClick={() => cloneStarter(key)}
               disabled={!!cloning || cloned.includes(key)}
-              className={`px-3 py-2 rounded text-xs font-medium border transition-colors ${
+              className={`px-3 py-2 chamfer-4 text-xs font-medium border transition-colors ${
                 cloned.includes(key)
                   ? "border-emerald-700 bg-emerald-900/30 text-emerald-400 cursor-default"
                   : "border-border-DEFAULT bg-bg-raised hover:bg-bg-overlay text-text-primary"
@@ -277,7 +246,7 @@ function KitsTab({ tenantId }: { tenantId: string }) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border-subtle overflow-hidden">
+      <div className="chamfer-8 border border-border-subtle overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-bg-raised text-text-muted text-xs">
             <tr>
@@ -298,7 +267,7 @@ function KitsTab({ tenantId }: { tenantId: string }) {
                 <td className="px-4 py-2 text-text-primary">{kit.data?.name}</td>
                 <td className="px-4 py-2 text-text-muted">{kit.data?.kit_type}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-0.5 rounded text-xs ${kit.data?.requires_seal ? "bg-amber-900/40 text-amber-400" : "bg-bg-overlay text-text-muted"}`}>
+                  <span className={`px-2 py-0.5 chamfer-4 text-xs ${kit.data?.requires_seal ? "bg-amber-900/40 text-amber-400" : "bg-bg-overlay text-text-muted"}`}>
                     {kit.data?.requires_seal ? "Yes" : "No"}
                   </span>
                 </td>
@@ -335,17 +304,17 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+      <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
         <h3 className="text-sm font-semibold text-text-primary mb-3">Create Unit Layout</h3>
         <div className="grid grid-cols-2 gap-3">
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500"
             placeholder="Unit ID (e.g. M12)"
             value={form.unit_id}
             onChange={(e) => setForm({ ...form, unit_id: e.target.value })}
           />
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500"
             placeholder="Unit name"
             value={form.unit_name}
             onChange={(e) => setForm({ ...form, unit_name: e.target.value })}
@@ -354,13 +323,13 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
         <button
           onClick={createLayout}
           disabled={saving || !form.unit_id}
-          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded text-sm font-medium transition-colors"
+          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
         >
           {saving ? "Creating…" : "Create Layout"}
         </button>
       </div>
 
-      <div className="rounded-lg border border-border-subtle overflow-hidden">
+      <div className="chamfer-8 border border-border-subtle overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-bg-raised text-text-muted text-xs">
             <tr>
@@ -379,7 +348,7 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
               <tr key={layout.id} className="hover:bg-bg-raised/50">
                 <td className="px-4 py-2 text-text-primary">{layout.data?.unit_name ?? layout.data?.unit_id}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-0.5 rounded text-xs ${layout.data?.status === "active" ? "bg-emerald-900/40 text-emerald-400" : "bg-bg-overlay text-text-muted"}`}>
+                  <span className={`px-2 py-0.5 chamfer-4 text-xs ${layout.data?.status === "active" ? "bg-emerald-900/40 text-emerald-400" : "bg-bg-overlay text-text-muted"}`}>
                     {layout.data?.status ?? "draft"}
                   </span>
                 </td>
@@ -388,7 +357,7 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
                     <button
                       onClick={() => publishLayout(layout.id)}
                       disabled={publishing === layout.id}
-                      className="px-3 py-1 bg-emerald-700 hover:bg-emerald-600 rounded text-xs transition-colors"
+                      className="px-3 py-1 bg-emerald-700 hover:bg-emerald-600 chamfer-4 text-xs transition-colors"
                     >
                       {publishing === layout.id ? "Publishing…" : "Publish"}
                     </button>
@@ -429,11 +398,11 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+        <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
           <h3 className="text-sm font-semibold text-text-primary mb-3">AR Marker Builder</h3>
           <div className="space-y-3">
             <select
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary"
               value={form.entity_type}
               onChange={(e) => setForm({ ...form, entity_type: e.target.value })}
             >
@@ -442,13 +411,13 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
               <option value="stock_location">Stock Location</option>
             </select>
             <input
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500"
               placeholder="Entity ID"
               value={form.entity_id}
               onChange={(e) => setForm({ ...form, entity_id: e.target.value })}
             />
             <select
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary"
               value={form.format}
               onChange={(e) => setForm({ ...form, format: e.target.value })}
             >
@@ -458,24 +427,24 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
             <button
               onClick={generateMarker}
               disabled={generating || !form.entity_id}
-              className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded text-sm font-medium transition-colors"
+              className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
             >
               {generating ? "Generating…" : "Generate Marker"}
             </button>
           </div>
           {result && (
-            <div className="mt-3 p-3 bg-bg-raised rounded text-xs">
+            <div className="mt-3 p-3 bg-bg-raised chamfer-4 text-xs">
               <p className="text-emerald-400 font-mono">{result.marker_code}</p>
               <p className="text-text-muted mt-1">Status: {result.status}</p>
             </div>
           )}
         </div>
 
-        <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+        <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
           <h3 className="text-sm font-semibold text-text-primary mb-3">Test Marker Resolve</h3>
           <div className="space-y-3">
             <input
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500 font-mono"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-text-primary placeholder-gray-500 font-mono"
               placeholder="KL-XXXXXXXX"
               value={resolveCode}
               onChange={(e) => setResolveCode(e.target.value)}
@@ -483,13 +452,13 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
             <button
               onClick={resolveMarker}
               disabled={!resolveCode}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded text-sm font-medium transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
             >
               Resolve
             </button>
           </div>
           {resolveResult && (
-            <div className="mt-3 p-3 bg-bg-raised rounded text-xs space-y-1">
+            <div className="mt-3 p-3 bg-bg-raised chamfer-4 text-xs space-y-1">
               <p className="text-text-secondary">Entity: <span className="text-blue-400">{resolveResult.entity_type}</span></p>
               <p className="text-text-secondary">Status: <span className="text-emerald-400">{resolveResult.status}</span></p>
               <p className="text-text-secondary">Next steps:</p>
@@ -566,11 +535,11 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
 
 function ReportPanel({ title, count, items, renderItem }: { title: string; count: number | undefined; items: any[] | undefined; renderItem: (i: any) => React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-panel p-4">
+    <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
         {count !== undefined && (
-          <span className="px-2 py-0.5 bg-bg-overlay rounded-full text-xs text-text-secondary">{count}</span>
+          <span className="px-2 py-0.5 bg-bg-overlay chamfer-4 text-xs text-text-secondary">{count}</span>
         )}
       </div>
       {items?.length ? (

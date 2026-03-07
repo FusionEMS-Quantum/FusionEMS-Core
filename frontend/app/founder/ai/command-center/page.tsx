@@ -8,37 +8,42 @@ import { getAICommandMetrics } from '@/services/api';
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface RiskBreakdown {
-  restricted: number;
-  high_risk: number;
-  moderate_risk: number;
-  low_risk: number;
+  RESTRICTED: number;
+  HIGH_RISK: number;
+  MODERATE_RISK: number;
+  LOW_RISK: number;
 }
 
 interface ReviewEntry {
-  id: string;
+  review_id: string;
   workflow_id: string;
-  review_type: string;
+  correlation_id: string;
+  use_case_name: string;
+  domain: string;
   priority: string;
-  status: string;
+  summary: string | null;
   created_at: string;
 }
 
 interface GovernanceAction {
-  action: string;
-  domain: string;
-  urgency: string;
+  action_type: string;
+  title: string;
+  description: string;
+  severity: string;
+  target_id: string | null;
 }
 
 interface CommandMetrics {
   health_score: number;
   total_use_cases: number;
-  active_use_cases: number;
-  total_workflows_24h: number;
-  failed_workflows_24h: number;
-  pending_reviews: number;
-  risk_breakdown: RiskBreakdown;
-  review_queue: ReviewEntry[];
-  top_governance_actions: GovernanceAction[];
+  enabled_use_cases: number;
+  disabled_workflows: number;
+  low_confidence_count: number;
+  review_queue_count: number;
+  failed_runs_count: number;
+  risk_tier_breakdown: RiskBreakdown;
+  recent_reviews: ReviewEntry[];
+  top_actions: GovernanceAction[];
 }
 
 // ── Color helpers ────────────────────────────────────────────────────────────
@@ -59,10 +64,12 @@ function priorityColor(p: string): string {
   }
 }
 
-function urgencyColor(u: string): string {
-  switch (u) {
-    case 'high': return 'var(--color-brand-red)';
-    case 'medium': return 'var(--color-status-warning)';
+function severityColor(s: string): string {
+  switch (s) {
+    case 'RED': return 'var(--color-brand-red)';
+    case 'ORANGE': return 'var(--color-brand-orange)';
+    case 'YELLOW': return 'var(--color-status-warning)';
+    case 'GRAY': return 'var(--color-text-muted)';
     default: return 'var(--color-status-active)';
   }
 }
@@ -181,17 +188,17 @@ export default function AICommandCenterPage() {
         </motion.div>
 
         <div className="md:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiCard label="Active Use Cases" value={metrics.active_use_cases} />
-          <KpiCard label="Workflows (24h)" value={metrics.total_workflows_24h} />
+          <KpiCard label="Active Use Cases" value={metrics.enabled_use_cases} />
+          <KpiCard label="Disabled" value={metrics.disabled_workflows} />
           <KpiCard
-            label="Failed (24h)"
-            value={metrics.failed_workflows_24h}
-            color={metrics.failed_workflows_24h > 0 ? 'var(--color-brand-red)' : undefined}
+            label="Failed Runs"
+            value={metrics.failed_runs_count}
+            color={metrics.failed_runs_count > 0 ? 'var(--color-brand-red)' : undefined}
           />
           <KpiCard
             label="Pending Reviews"
-            value={metrics.pending_reviews}
-            color={metrics.pending_reviews > 0 ? 'var(--color-brand-orange)' : undefined}
+            value={metrics.review_queue_count}
+            color={metrics.review_queue_count > 0 ? 'var(--color-brand-orange)' : undefined}
           />
         </div>
       </div>
@@ -200,10 +207,10 @@ export default function AICommandCenterPage() {
       <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
         <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-4">Risk Tier Distribution</div>
         <div className="space-y-2.5">
-          <RiskBar label="Restricted" count={metrics.risk_breakdown.restricted} total={totalUseCases} color="var(--color-brand-red)" />
-          <RiskBar label="High Risk" count={metrics.risk_breakdown.high_risk} total={totalUseCases} color="var(--color-brand-orange)" />
-          <RiskBar label="Moderate" count={metrics.risk_breakdown.moderate_risk} total={totalUseCases} color="var(--color-status-warning)" />
-          <RiskBar label="Low Risk" count={metrics.risk_breakdown.low_risk} total={totalUseCases} color="var(--color-status-active)" />
+          <RiskBar label="Restricted" count={metrics.risk_tier_breakdown.RESTRICTED ?? 0} total={totalUseCases} color="var(--color-brand-red)" />
+          <RiskBar label="High Risk" count={metrics.risk_tier_breakdown.HIGH_RISK ?? 0} total={totalUseCases} color="var(--color-brand-orange)" />
+          <RiskBar label="Moderate" count={metrics.risk_tier_breakdown.MODERATE_RISK ?? 0} total={totalUseCases} color="var(--color-status-warning)" />
+          <RiskBar label="Low Risk" count={metrics.risk_tier_breakdown.LOW_RISK ?? 0} total={totalUseCases} color="var(--color-status-active)" />
         </div>
       </div>
 
@@ -217,15 +224,15 @@ export default function AICommandCenterPage() {
               View All →
             </Link>
           </div>
-          {metrics.review_queue.length === 0 ? (
+          {metrics.recent_reviews.length === 0 ? (
             <div className="text-xs text-[rgba(255,255,255,0.4)] py-6 text-center">No pending reviews</div>
           ) : (
             <div className="space-y-2">
-              {metrics.review_queue.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+              {metrics.recent_reviews.map((item: ReviewEntry) => (
+                <div key={item.review_id} className="flex items-center justify-between gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: priorityColor(item.priority) }} />
-                    <span className="text-xs text-text-secondary truncate">{item.review_type}</span>
+                    <span className="text-xs text-text-secondary truncate">{item.use_case_name} — {item.domain}</span>
                   </div>
                   <span className="text-[10px] uppercase tracking-wider shrink-0" style={{ color: priorityColor(item.priority) }}>
                     {item.priority}
@@ -239,19 +246,17 @@ export default function AICommandCenterPage() {
         {/* Governance Actions */}
         <div className="bg-bg-panel border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
           <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-4">Top Governance Actions</div>
-          {metrics.top_governance_actions.length === 0 ? (
+          {metrics.top_actions.length === 0 ? (
             <div className="text-xs text-[rgba(255,255,255,0.4)] py-6 text-center">No governance actions</div>
           ) : (
             <div className="space-y-2">
-              {metrics.top_governance_actions.map((ga, i) => (
+              {metrics.top_actions.map((ga: GovernanceAction, i: number) => (
                 <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-text-secondary truncate">{ga.action}</span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-text-primary truncate">{ga.title}</div>
+                    <div className="text-[10px] text-text-muted truncate">{ga.description}</div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider">{ga.domain}</span>
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: urgencyColor(ga.urgency) }} />
-                  </div>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: severityColor(ga.severity) }} />
                 </div>
               ))}
             </div>

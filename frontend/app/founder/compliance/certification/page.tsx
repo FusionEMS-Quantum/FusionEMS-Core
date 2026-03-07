@@ -25,9 +25,9 @@ export default function CertificationPage() {
           </div>
           <p className="text-sm text-text-muted mb-6 h-10">Federal EMS dispatch and ePCR data standard. 100% CI pass rate with active AI copilot.</p>
           <ul className="space-y-3 text-sm mb-6 text-text-primary">
-            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinelinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> XSD Validation Strict</li>
-            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinelinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> Schematron Rules Applied</li>
-            <li className="flex items-center gap-2"><svg className="text-orange w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinelinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Mapping Assistant Active</li>
+            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> XSD Validation Strict</li>
+            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> Schematron Rules Applied</li>
+            <li className="flex items-center gap-2"><svg className="text-orange w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Mapping Assistant Active</li>
           </ul>
           <Link href="/founder/compliance/nemsis" className="btn-quantum-primary w-full justify-center">
             View NEMSIS Audit
@@ -47,9 +47,9 @@ export default function CertificationPage() {
           </div>
           <p className="text-sm text-text-muted mb-6 h-10">National Fire Incident Reporting migration. Passing all state rules with active AI copilot.</p>
           <ul className="space-y-3 text-sm mb-6 text-text-primary">
-            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinelinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> NFIRS 5.0 to NERIS Mapping</li>
-            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinelinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> State-Specific Packages</li>
-            <li className="flex items-center gap-2"><svg className="text-orange w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinelinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Compliance Explainer Active</li>
+            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> NFIRS 5.0 to NERIS Mapping</li>
+            <li className="flex items-center gap-2"><svg className="text-green-500 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg> State-Specific Packages</li>
+            <li className="flex items-center gap-2"><svg className="text-orange w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Compliance Explainer Active</li>
           </ul>
           <Link href="/founder/compliance/neris" className="btn-quantum-primary w-full justify-center">
             View NERIS Audit

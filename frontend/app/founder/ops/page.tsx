@@ -83,7 +83,7 @@ interface OpsCommand {
   dispatch: { active_mission_count: number; unassigned_count: number; en_route_count: number; active_missions: unknown[]; unassigned_missions: unknown[] };
   crewlink: { escalated_page_count: number; late_page_count: number };
   fleet: { fleet_count: number; avg_readiness: number; units_ready: number; units_limited: number; units_no_go: number; active_fleet_alerts: number };
-  staffing: { available: number; assigned: number; fatigue_flags: number; active_conflicts: number; overall_readiness: string; gaps: unknown[] };
+  staffing: { available: number; assigned: number; unavailable: number; fatigue_flags: number; active_conflicts: number; overall_readiness: string; gaps: unknown[] };
   facility_requests: { pending_count: number };
   computed_at: string;
 }
@@ -148,9 +148,9 @@ function DeploymentRunsPanel() {
               </button>
               {expanded === id && steps.length > 0 && (
                 <div className="px-4 pb-3 border-t border-[rgba(255,255,255,0.05)] space-y-1 pt-2">
-                  {run.failure_reason && (
+                  {run.failure_reason ? (
                     <div className="text-[11px] text-red-400 mb-2">⚠ {String(run.failure_reason)}</div>
-                  )}
+                  ) : null}
                   {steps.map((step, i) => (
                     <div key={i} className="flex items-center gap-2 text-[10px]">
                       <span style={{ color: step.status === 'SUCCESS' ? '#4caf50' : step.status === 'FAILED' ? '#ef5350' : '#ffc107' }}>

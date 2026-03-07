@@ -73,4 +73,4 @@ async function api<T>(path: string, init: ApiInit = {}): Promise<T> {
   return data as T;
 }
 
-export default api;z
+export default api;

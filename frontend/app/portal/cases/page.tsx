@@ -1,5 +1,8 @@
 'use client';
 import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
+import { useToast } from '@/components/ui/ProductPolish';
+import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
+import { ModuleDashboardShell } from '@/components/shells/PageShells';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
@@ -63,42 +66,6 @@ interface CMSGateResult {
   [key: string]: unknown;
 }
 
-// ─── Toast ────────────────────────────────────────────────────────────────────
-
-interface ToastItem { id: number; msg: string; type: 'success' | 'error' }
-
-function Toast({ items }: { items: ToastItem[] }) {
-  if (!items.length) return null;
-  return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
-      {items.map((t) => (
-        <div
-          key={t.id}
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold shadow-lg"
-          style={{
-            background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
-            border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
-            color: t.type === 'success' ? 'var(--color-status-active)' : 'var(--color-brand-red)',
-          }}
-        >
-          {t.msg}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function useToast() {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const counter = useRef(0);
-  const push = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
-    const id = ++counter.current;
-    setToasts((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
-  }, []);
-  return { toasts, push };
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtTs(ts: string): string {
@@ -142,7 +109,7 @@ function statusColor(s: string): string {
 function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
   return (
     <span
-      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-sm whitespace-nowrap"
+      className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider chamfer-4 whitespace-nowrap"
       style={{ color, background: bg, border: `1px solid ${color}33` }}
     >
       {label}
@@ -153,7 +120,7 @@ function Badge({ label, color, bg }: { label: string; color: string; bg: string 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CasesPage() {
-  const { toasts, push } = useToast();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<TabId>('active');
 
   // ── Active Cases ──
@@ -207,11 +174,11 @@ export default function CasesPage() {
       const data = await r.json();
       setCases(Array.isArray(data) ? data : (data.cases ?? []));
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to load cases', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to load cases');
     } finally {
       setCasesBusy(false);
     }
-  }, [push]);
+  }, [toast]);
 
   useEffect(() => {
     if (activeTab === 'active') {
@@ -235,16 +202,16 @@ export default function CasesPage() {
       setCases((prev) =>
         prev.map((c) => c.case_id === caseId ? { ...c, status: toStatus } : c)
       );
-      push('Status updated');
+      toast.success('Status updated');
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to update status', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to update status');
     }
   }
 
   // ── Create new case ──
   async function submitNewCase() {
     if (!newCase.patient_name.trim() || !newCase.origin_address.trim()) {
-      push('Patient name and origin address are required', 'error'); return;
+      toast.error('Patient name and origin address are required'); return;
     }
     setNewCaseBusy(true);
     try {
@@ -270,9 +237,9 @@ export default function CasesPage() {
         origin_address: newCase.origin_address.trim(),
       }));
       setShowCmsAfterNew(true);
-      push('Case created — fill CMS gate below');
+      toast.success('Case created — fill CMS gate below');
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to create case', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to create case');
     } finally {
       setNewCaseBusy(false);
     }
@@ -280,7 +247,7 @@ export default function CasesPage() {
 
   // ── Evaluate CMS gate ──
   async function evaluateCms() {
-    if (!cmsCaseId.trim()) { push('Enter a case ID', 'error'); return; }
+    if (!cmsCaseId.trim()) { toast.error('Enter a case ID'); return; }
     setCmsBusy(true);
     setCmsResult(null);
     try {
@@ -292,7 +259,7 @@ export default function CasesPage() {
       if (!r.ok) throw new Error(await r.text());
       setCmsResult(await r.json());
     } catch (e: unknown) {
-      push(e instanceof Error ? e.message : 'Failed to evaluate CMS gate', 'error');
+      toast.error(e instanceof Error ? e.message : 'Failed to evaluate CMS gate');
     } finally {
       setCmsBusy(false);
     }
@@ -321,21 +288,19 @@ export default function CasesPage() {
             ] as { key: keyof CMSGate; label: string; type: string }[]
           ).map(({ key, label, type }) => (
             <div key={key} className="flex flex-col gap-1">
-              <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>
+              <label className="text-body text-text-muted">{label}</label>
               <input
                 type={type}
-                className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-text-primary outline-none"
                 value={cmsGate[key] as string}
                 onChange={(e) => setCmsGate((p) => ({ ...p, [key]: e.target.value }))}
               />
             </div>
           ))}
           <div className="flex flex-col gap-1">
-            <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Transport Level</label>
+            <label className="text-body text-text-muted">Transport Level</label>
             <select
-              className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-              style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+              className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-text-primary outline-none"
               value={cmsGate.transport_level}
               onChange={(e) => setCmsGate((p) => ({ ...p, transport_level: e.target.value as TransportLevel }))}
             >
@@ -365,7 +330,7 @@ export default function CasesPage() {
                 onChange={(e) => setCmsGate((p) => ({ ...p, [key]: e.target.checked }))}
                 className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
               />
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>{label}</span>
+              <span className="text-body text-text-secondary">{label}</span>
             </label>
           ))}
         </div>
@@ -374,44 +339,19 @@ export default function CasesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary">
-      <Toast items={toasts} />
+    <ModuleDashboardShell
+      title="Cases Dashboard"
+      subtitle="Transport case management and CMS gate evaluation"
+      toolbar={<TabBar tabs={TABS} activeTab={activeTab} onTabChange={(id) => setActiveTab(id as TabId)} />}
+    >
 
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-        <h1 className="text-sm font-semibold tracking-wide">Cases Dashboard</h1>
-        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Transport case management and CMS gate evaluation
-        </p>
-      </div>
-
-      {/* Tab Bar */}
-      <div className="flex border-b px-6" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className="px-4 py-2.5 text-xs font-semibold transition-colors"
-            style={{
-              color: activeTab === tab.id ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.4)',
-              borderBottom: activeTab === tab.id ? '2px solid var(--color-brand-orange)' : '2px solid transparent',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-6 py-5">
-
-        {/* ══ ACTIVE CASES TAB ══ */}
-        {activeTab === 'active' && (
-          <div>
+      <TabPanel tabId="active" activeTab={activeTab}>
+        <div>
             {casesBusy && cases.length === 0 && (
               <div className="p-6"><QuantumCardSkeleton /></div>
             )}
             {!casesBusy && cases.length === 0 && (
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No active cases.</p>
+              <p className="text-body text-text-muted">No active cases.</p>
             )}
             <div className="space-y-2">
               {cases.map((c) => {
@@ -423,8 +363,7 @@ export default function CasesPage() {
                 return (
                   <div
                     key={c.case_id}
-                    className="rounded-sm overflow-hidden"
-                    style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="chamfer-8 overflow-hidden border border-[var(--color-border-default)]"
                   >
                     {/* Row */}
                     <div
@@ -450,10 +389,10 @@ export default function CasesPage() {
                         color={c.priority === 'emergent' ? 'var(--color-brand-red)' : c.priority === 'urgent' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.5)'}
                         bg={c.priority === 'emergent' ? 'rgba(229,57,53,0.1)' : c.priority === 'urgent' ? 'rgba(255,152,0,0.1)' : 'rgba(255,255,255,0.06)'}
                       />
-                      <span className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      <span className="text-body ml-1 text-text-secondary">
                         {c.patient_name ?? '—'}
                       </span>
-                      <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      <span className="text-micro ml-auto text-text-muted">
                         {fmtTs(c.opened_at)}
                       </span>
                     </div>
@@ -462,38 +401,37 @@ export default function CasesPage() {
                     {isExpanded && (
                       <div
                         className="px-4 py-3 space-y-3"
-                        style={{ background: 'var(--color-bg-input)', borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                        style={{ background: 'var(--color-bg-input)', borderTop: '1px solid var(--color-border-default)' }}
                       >
                         {/* Linked IDs */}
                         <div className="flex flex-wrap gap-4">
                           {c.transport_request_id && (
                             <div>
-                              <p className="text-[10px] mb-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Transport Request ID</p>
-                              <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.65)' }}>{c.transport_request_id}</p>
+                              <p className="text-micro mb-0.5 text-text-muted">Transport Request ID</p>
+                              <p className="text-xs font-mono text-text-secondary">{c.transport_request_id}</p>
                             </div>
                           )}
                           {c.cad_call_id && (
                             <div>
-                              <p className="text-[10px] mb-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>CAD Call ID</p>
-                              <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.65)' }}>{c.cad_call_id}</p>
+                              <p className="text-micro mb-0.5 text-text-muted">CAD Call ID</p>
+                              <p className="text-xs font-mono text-text-secondary">{c.cad_call_id}</p>
                             </div>
                           )}
                           <div>
-                            <p className="text-[10px] mb-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Full Case ID</p>
-                            <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.65)' }}>{c.case_id}</p>
+                              <p className="text-micro mb-0.5 text-text-muted">Full Case ID</p>
+                              <p className="text-xs font-mono text-text-secondary">{c.case_id}</p>
                           </div>
                         </div>
 
                         {/* Timeline */}
                         {Array.isArray(c.timeline) && c.timeline.length > 0 && (
                           <div>
-                            <p className="text-[10px] mb-1.5 font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                            <p className="text-micro mb-1.5 font-label text-text-muted">
                               Timeline
                             </p>
                             <div className="relative pl-4 space-y-2">
                               <div
-                                className="absolute left-1 top-0 bottom-0 w-px"
-                                style={{ background: 'rgba(255,255,255,0.08)' }}
+                                className="absolute left-1 top-0 bottom-0 w-px bg-[var(--color-border-default)]"
                               />
                               {c.timeline.map((ev, i) => (
                                 <div key={i} className="relative">
@@ -501,10 +439,10 @@ export default function CasesPage() {
                                     className="absolute -left-[13px] top-1 w-2 h-2 rounded-full"
                                     style={{ background: 'var(--color-brand-orange)' }}
                                   />
-                                  <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                  <p className="text-micro text-text-muted">
                                     {fmtTs(ev.timestamp)}
                                   </p>
-                                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>{ev.event}</p>
+                                  <p className="text-body text-text-secondary">{ev.event}</p>
                                 </div>
                               ))}
                             </div>
@@ -515,7 +453,7 @@ export default function CasesPage() {
                         {nextStatus && (
                           <button
                             onClick={() => transitionStatus(c.case_id, nextStatus)}
-                            className="px-3 py-1 text-xs font-semibold rounded-sm"
+                            className="px-3 py-1 text-xs font-semibold chamfer-4"
                             style={{
                               color: statusColor(nextStatus),
                               background: `${statusColor(nextStatus)}18`,
@@ -532,24 +470,19 @@ export default function CasesPage() {
               })}
             </div>
           </div>
-        )}
+      </TabPanel>
 
-        {/* ══ NEW CASE TAB ══ */}
-        {activeTab === 'new' && (
+      <TabPanel tabId="new" activeTab={activeTab}>
           <div className="space-y-4">
-            <div
-              className="p-4 rounded-sm"
-              style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <div className="p-4 chamfer-8 bg-bg-panel border border-[var(--color-border-default)]">
+              <p className="text-body font-label mb-3 text-text-secondary">
                 New Transport Case
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Transport Mode</label>
+                <label className="text-body text-text-muted">Transport Mode</label>
                   <select
-                    className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                    style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                    className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-text-primary outline-none"
                     value={newCase.transport_mode}
                     onChange={(e) => setNewCase((p) => ({ ...p, transport_mode: e.target.value as TransportMode }))}
                   >
@@ -559,10 +492,9 @@ export default function CasesPage() {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Priority</label>
+                <label className="text-body text-text-muted">Priority</label>
                   <select
-                    className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                    style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                    className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-text-primary outline-none"
                     value={newCase.priority}
                     onChange={(e) => setNewCase((p) => ({ ...p, priority: e.target.value as CasePriority }))}
                   >
@@ -581,11 +513,10 @@ export default function CasesPage() {
                   ] as { key: keyof typeof newCase; label: string }[]
                 ).map(({ key, label }) => (
                   <div key={key} className="flex flex-col gap-1">
-                    <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>
+                    <label className="text-body text-text-muted">{label}</label>
                     <input
                       type="text"
-                      className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                      style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                      className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-text-primary outline-none"
                       value={newCase[key] as string}
                       onChange={(e) => setNewCase((p) => ({ ...p, [key]: e.target.value }))}
                     />
@@ -595,7 +526,7 @@ export default function CasesPage() {
               <button
                 onClick={submitNewCase}
                 disabled={newCaseBusy}
-                className="px-3 py-1.5 text-xs font-semibold rounded-sm disabled:opacity-40"
+                className="px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
                 style={{ background: 'var(--color-brand-orange)', color: 'var(--color-text-primary)' }}
               >
                 {newCaseBusy ? 'Creating...' : 'Create Case'}
@@ -604,14 +535,11 @@ export default function CasesPage() {
 
             {/* CMS gate shown immediately after creation */}
             {showCmsAfterNew && createdCaseId && (
-              <div
-                className="p-4 rounded-sm"
-                style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,107,26,0.2)' }}
-              >
-                <p className="text-xs font-semibold mb-1" style={{ color: 'var(--q-orange)' }}>
+              <div className="p-4 chamfer-8 bg-bg-panel border border-brand-orange/20">
+                <p className="text-body font-label mb-1 text-brand-orange">
                   CMS Gate — Case {createdCaseId}
                 </p>
-                <p className="text-[10px] mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                <p className="text-micro mb-3 text-text-muted">
                   Complete and evaluate the CMS gate for the newly created case.
                 </p>
                 <CmsForm />
@@ -621,7 +549,7 @@ export default function CasesPage() {
                     await evaluateCms();
                   }}
                   disabled={cmsBusy}
-                  className="mt-3 px-3 py-1.5 text-xs font-semibold rounded-sm disabled:opacity-40"
+                  className="mt-3 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
                   style={{ background: 'var(--color-brand-orange)', color: 'var(--color-text-primary)' }}
                 >
                   {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
@@ -630,25 +558,20 @@ export default function CasesPage() {
               </div>
             )}
           </div>
-        )}
+      </TabPanel>
 
-        {/* ══ CMS GATE TAB ══ */}
-        {activeTab === 'cms' && (
+      <TabPanel tabId="cms" activeTab={activeTab}>
           <div className="space-y-4">
-            <div
-              className="p-4 rounded-sm"
-              style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <div className="p-4 chamfer-8 bg-bg-panel border border-[var(--color-border-default)]">
+              <p className="text-body font-label mb-3 text-text-secondary">
                 CMS Gate Evaluation
               </p>
 
               <div className="flex flex-col gap-1 mb-4 max-w-xs">
-                <label className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Case ID</label>
+                <label className="text-body text-text-muted">Case ID</label>
                 <input
                   type="text"
-                  className="bg-bg-void rounded-sm px-2.5 py-1.5 text-xs text-text-primary outline-none"
-                  style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                  className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-text-primary outline-none"
                   placeholder="Enter case ID"
                   value={cmsCaseId}
                   onChange={(e) => setCmsCaseId(e.target.value)}
@@ -660,7 +583,7 @@ export default function CasesPage() {
               <button
                 onClick={evaluateCms}
                 disabled={cmsBusy}
-                className="mt-4 px-3 py-1.5 text-xs font-semibold rounded-sm disabled:opacity-40"
+                className="mt-4 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
                 style={{ background: 'var(--color-brand-orange)', color: 'var(--color-text-primary)' }}
               >
                 {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
@@ -669,10 +592,9 @@ export default function CasesPage() {
 
             {cmsResult && <CmsResultPanel result={cmsResult} />}
           </div>
-        )}
+      </TabPanel>
 
-      </div>
-    </div>
+    </ModuleDashboardShell>
   );
 }
 
@@ -684,7 +606,7 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
       {/* BS flag warning */}
       {result.bs_flag && (
         <div
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold"
           style={{
             background: 'rgba(229,57,53,0.1)',
             border: '1px solid rgba(229,57,53,0.35)',
@@ -698,7 +620,7 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
       {/* Hard block warning */}
       {result.hard_block && (
         <div
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold"
           style={{
             background: 'rgba(229,57,53,0.1)',
             border: '1px solid rgba(229,57,53,0.35)',
@@ -710,21 +632,18 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
       )}
 
       {/* Score + pass/fail */}
-      <div
-        className="p-4 rounded-sm"
-        style={{ background: 'var(--color-bg-base)', border: '1px solid rgba(255,255,255,0.08)' }}
-      >
+      <div className="p-4 chamfer-8 bg-bg-panel border border-[var(--color-border-default)]">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Score</span>
+          <span className="text-body text-text-muted">Score</span>
           <span
             className="text-lg font-bold tabular-nums"
             style={{ color: result.score >= 70 ? 'var(--color-status-active)' : result.score >= 40 ? 'var(--color-status-warning)' : 'var(--color-brand-red)' }}
           >
             {result.score}
           </span>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>/100</span>
+          <span className="text-body text-text-muted">/100</span>
           <span
-            className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded-sm"
+            className="px-2 py-0.5 text-micro font-semibold uppercase chamfer-4"
             style={{
               color: result.passed ? 'var(--color-status-active)' : 'var(--color-brand-red)',
               background: result.passed ? 'rgba(76,175,80,0.12)' : 'rgba(229,57,53,0.12)',
@@ -752,7 +671,7 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
         {/* Gates table */}
         {result.gates && result.gates.length > 0 && (
           <div>
-            <p className="text-[10px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>GATES</p>
+            <p className="text-micro font-label mb-2 text-text-muted">GATES</p>
             <table className="w-full text-xs">
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -770,11 +689,11 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
               <tbody>
                 {result.gates.map((g, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td className="py-1.5 pr-4" style={{ color: 'rgba(255,255,255,0.7)' }}>{g.name}</td>
-                    <td className="py-1.5 pr-4 tabular-nums" style={{ color: 'rgba(255,255,255,0.45)' }}>{g.weight}</td>
+                    <td className="py-1.5 pr-4 text-text-secondary">{g.name}</td>
+                    <td className="py-1.5 pr-4 tabular-nums text-text-muted">{g.weight}</td>
                     <td className="py-1.5">
                       <span
-                        className="px-1.5 py-0.5 text-[9px] font-semibold uppercase rounded-sm"
+                        className="px-1.5 py-0.5 text-[9px] font-semibold uppercase chamfer-4"
                         style={{
                           color: g.passed ? 'var(--color-status-active)' : 'var(--color-brand-red)',
                           background: g.passed ? 'rgba(76,175,80,0.1)' : 'rgba(229,57,53,0.1)',
@@ -793,12 +712,12 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
         {/* Issues list */}
         {result.issues && result.issues.length > 0 && (
           <div className="mt-3">
-            <p className="text-[10px] font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>ISSUES</p>
+            <p className="text-micro font-label mb-1.5 text-text-muted">ISSUES</p>
             <ul className="space-y-1">
               {result.issues.map((issue, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="mt-0.5 text-[10px]" style={{ color: 'var(--q-red)' }}>&#x25CF;</span>
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{issue}</span>
+                  <span className="text-body text-text-secondary">{issue}</span>
                 </li>
               ))}
             </ul>

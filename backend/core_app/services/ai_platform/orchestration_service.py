@@ -216,6 +216,21 @@ class AIOrchestrationService:
     def get_workflow(self, workflow_id: uuid.UUID) -> AIWorkflowRun:
         return self._get_run(workflow_id)
 
+    # ── Explainability ────────────────────────────────────────────────────────
+
+    def get_explanations(self, workflow_id: uuid.UUID) -> list[AIExplanationRecord]:
+        """Return all explanation records for a given workflow run."""
+        run = self._get_run(workflow_id)  # validates tenant + existence
+        return (
+            self._db.query(AIExplanationRecord)
+            .filter(
+                AIExplanationRecord.workflow_id == run.id,
+                AIExplanationRecord.tenant_id == self._user.tenant_id,
+            )
+            .order_by(AIExplanationRecord.created_at.desc())
+            .all()
+        )
+
     # ── Internal helpers ──────────────────────────────────────────────────────
 
     def _get_run(self, workflow_id: uuid.UUID) -> AIWorkflowRun:

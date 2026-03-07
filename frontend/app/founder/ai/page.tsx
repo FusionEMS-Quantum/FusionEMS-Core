@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const LINKS = [
+  { href: '/founder/ai/command-center', label: 'AI Command Center', desc: 'Real-time health score, risk posture, review queue, and governance overview', color: 'var(--color-brand-orange)' },
   { href: '/founder/ai/policies', label: 'AI Policies', desc: 'Configure AI behavior rules, guardrails, and output constraints', color: 'var(--color-system-compliance)' },
   { href: '/founder/ai/prompt-editor', label: 'Prompt Editor', desc: 'Edit and version system prompts for each AI use case', color: 'var(--color-system-compliance)' },
   { href: '/founder/ai/thresholds', label: 'Confidence Thresholds', desc: 'Set minimum confidence scores for AI auto-actions', color: 'var(--color-system-compliance)' },

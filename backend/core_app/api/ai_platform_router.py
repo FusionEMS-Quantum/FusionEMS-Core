@@ -13,7 +13,15 @@ from core_app.api.dependencies import (
 )
 from core_app.schemas.ai_platform import (
     AICommandCenterMetrics,
+    AIDomainCopilotResponse,
+    AIExplanationResponse,
+    AIGuardrailRuleResponse,
     AIHumanOverrideRequest,
+    AIInferenceResultRequest,
+    AIPromptTemplateCreate,
+    AIPromptTemplateResponse,
+    AIPromptTemplateUpdate,
+    AIProtectedActionResponse,
     AIReviewActionRequest,
     AIReviewItemResponse,
     AIUseCaseCreate,
@@ -114,6 +122,34 @@ def get_workflow(
     return svc.get_workflow(workflow_id)
 
 
+@router.post("/workflows/{workflow_id}/result", response_model=AIWorkflowRunResponse)
+def submit_inference_result(
+    workflow_id: uuid.UUID,
+    payload: AIInferenceResultRequest,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> AIWorkflowRunResponse:
+    svc = AIOrchestrationService(db, user)
+    return svc.record_result(
+        workflow_id=workflow_id,
+        provider_response=payload.provider_response,
+        explanation=payload.explanation,
+    )
+
+
+# ── EXPLAINABILITY ────────────────────────────────────────────────────────
+
+
+@router.get("/explainability/{workflow_id}", response_model=list[AIExplanationResponse])
+def get_explanations(
+    workflow_id: uuid.UUID,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> list:
+    svc = AIOrchestrationService(db, user)
+    return svc.get_explanations(workflow_id)
+
+
 # ── HUMAN OVERRIDE ────────────────────────────────────────────────────────────
 
 
@@ -175,6 +211,76 @@ def reject_review(
         reason=payload.reason or "Rejected",
         regenerate_requested=payload.regenerate_requested,
     )
+
+
+# ── GOVERNANCE ────────────────────────────────────────────────────────────────
+
+
+@router.get("/governance/guardrails", response_model=list[AIGuardrailRuleResponse])
+def list_guardrail_rules(
+    domain: str | None = Query(None),
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> list:
+    svc = AIGovernanceService(db, user)
+    return svc.list_guardrail_rules(domain=domain)
+
+
+@router.get("/governance/protected-actions", response_model=list[AIProtectedActionResponse])
+def list_protected_actions(
+    domain: str | None = Query(None),
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> list:
+    svc = AIGovernanceService(db, user)
+    return svc.list_protected_actions(domain=domain)
+
+
+# ── PROMPT TEMPLATES ────────────────────────────────────────────────────────
+
+
+@router.get("/prompt-templates", response_model=list[AIPromptTemplateResponse])
+def list_prompt_templates(
+    domain: str | None = Query(None),
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> list:
+    svc = AIRegistryService(db, user)
+    return svc.list_prompt_templates(domain=domain)
+
+
+@router.post("/prompt-templates", response_model=AIPromptTemplateResponse, status_code=201)
+def create_prompt_template(
+    payload: AIPromptTemplateCreate,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(require_role("founder", "agency_admin")),
+) -> dict:
+    svc = AIRegistryService(db, user)
+    return svc.create_prompt_template(payload)
+
+
+@router.patch("/prompt-templates/{template_id}", response_model=AIPromptTemplateResponse)
+def update_prompt_template(
+    template_id: uuid.UUID,
+    payload: AIPromptTemplateUpdate,
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(require_role("founder", "agency_admin")),
+) -> dict:
+    svc = AIRegistryService(db, user)
+    return svc.update_prompt_template(template_id, payload)
+
+
+# ── DOMAIN COPILOTS ───────────────────────────────────────────────────────────
+
+
+@router.get("/copilots", response_model=list[AIDomainCopilotResponse])
+def list_copilots(
+    domain: str | None = Query(None),
+    db: Session = Depends(db_session_dependency),
+    user: CurrentUser = Depends(get_current_user),
+) -> list:
+    svc = AIRegistryService(db, user)
+    return svc.list_copilots(domain=domain)
 
 
 # ── FOUNDER COMMAND CENTER ────────────────────────────────────────────────────

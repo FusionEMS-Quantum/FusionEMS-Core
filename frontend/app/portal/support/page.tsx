@@ -67,18 +67,18 @@ function formatTime(iso: string): string {
 function StatusBadge({ status }: { status: ThreadStatus }) {
   if (status === 'open')
     return (
-      <span className="text-[10px] px-1.5 py-0.5 rounded-sm border border-[rgba(34,211,238,0.3)] text-system-billing bg-[rgba(34,211,238,0.08)]">
+      <span className="text-micro px-1.5 py-0.5 chamfer-4 border border-[rgba(34,211,238,0.3)] text-system-billing bg-[rgba(34,211,238,0.08)]">
         open
       </span>
     );
   if (status === 'escalated')
     return (
-      <span className="text-[10px] px-1.5 py-0.5 rounded-sm border border-red-ghost text-red bg-[rgba(229,57,53,0.08)] animate-pulse">
+      <span className="text-micro px-1.5 py-0.5 chamfer-4 border border-red-ghost text-red bg-[rgba(229,57,53,0.08)] animate-pulse">
         escalated
       </span>
     );
   return (
-    <span className="text-[10px] px-1.5 py-0.5 rounded-sm border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.4)] bg-[rgba(255,255,255,0.04)]">
+    <span className="text-micro px-1.5 py-0.5 chamfer-4 border border-[var(--color-border-default)] text-text-muted bg-white/[0.04]">
       resolved
     </span>
   );
@@ -129,7 +129,7 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-bg-base border border-border-DEFAULT rounded-sm w-full max-w-md mx-4 p-6">
+      <div className="bg-bg-base border border-border-DEFAULT chamfer-8 w-full max-w-md mx-4 p-6">
         <h2 className="text-sm font-semibold text-text-primary tracking-widest uppercase mb-5">
           New Conversation
         </h2>
@@ -137,13 +137,13 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Type */}
           <div>
-            <label className="block text-[11px] text-[rgba(255,255,255,0.5)] uppercase tracking-wider mb-1.5">
+            <label className="block text-body text-text-muted uppercase tracking-wider mb-1.5">
               Type
             </label>
             <select
               value={threadType}
               onChange={(e) => setThreadType(e.target.value as ThreadType)}
-              className="w-full bg-bg-void border border-border-DEFAULT rounded-sm text-sm text-text-primary px-3 py-2 focus:outline-none focus:border-[rgba(255,107,26,0.4)]"
+              className="w-full bg-bg-void border border-border-DEFAULT chamfer-4 text-sm text-text-primary px-3 py-2 focus:outline-none focus:border-brand-orange/40"
             >
               {THREAD_TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -155,7 +155,7 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
 
           {/* Title */}
           <div>
-            <label className="block text-[11px] text-[rgba(255,255,255,0.5)] uppercase tracking-wider mb-1.5">
+            <label className="block text-body text-text-muted uppercase tracking-wider mb-1.5">
               Subject
             </label>
             <input
@@ -163,13 +163,13 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Brief description of your issue"
-              className="w-full bg-bg-void border border-border-DEFAULT rounded-sm text-sm text-text-primary px-3 py-2 placeholder-[rgba(255,255,255,0.2)] focus:outline-none focus:border-[rgba(255,107,26,0.4)]"
+              className="w-full bg-bg-void border border-border-DEFAULT chamfer-4 text-sm text-text-primary px-3 py-2 placeholder-text-text-muted focus:outline-none focus:border-brand-orange/40"
             />
           </div>
 
           {/* Initial message */}
           <div>
-            <label className="block text-[11px] text-[rgba(255,255,255,0.5)] uppercase tracking-wider mb-1.5">
+            <label className="block text-body text-text-muted uppercase tracking-wider mb-1.5">
               Message
             </label>
             <textarea
@@ -177,7 +177,7 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
               value={initialMessage}
               onChange={(e) => setInitialMessage(e.target.value)}
               placeholder="Describe your issue in detail…"
-              className="w-full bg-bg-void border border-border-DEFAULT rounded-sm text-sm text-text-primary px-3 py-2 placeholder-[rgba(255,255,255,0.2)] focus:outline-none focus:border-[rgba(255,107,26,0.4)] resize-none"
+              className="w-full bg-bg-void border border-border-DEFAULT chamfer-4 text-sm text-text-primary px-3 py-2 placeholder-text-text-muted focus:outline-none focus:border-brand-orange/40 resize-none"
             />
           </div>
 
@@ -189,14 +189,14 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="text-sm px-4 py-2 rounded-sm border border-border-DEFAULT text-[rgba(255,255,255,0.5)] hover:text-text-primary transition-colors"
+              className="text-sm px-4 py-2 chamfer-4 border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="text-sm px-4 py-2 rounded-sm bg-orange text-text-primary font-medium hover:bg-orange-dim transition-colors disabled:opacity-50"
+              className="text-sm px-4 py-2 chamfer-4 bg-orange text-text-primary font-medium hover:bg-orange-dim transition-colors disabled:opacity-50"
             >
               {loading ? 'Creating…' : 'Start Conversation'}
             </button>
@@ -350,12 +350,12 @@ export default function AgencySupportPage() {
       >
         {/* Header */}
         <div className="px-4 pt-5 pb-3 border-b border-border-DEFAULT">
-          <p className="text-[11px] font-semibold tracking-widest text-[rgba(255,255,255,0.4)] uppercase mb-3">
+          <p className="text-body font-label tracking-widest text-text-muted uppercase mb-3">
             Support
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="w-full text-sm py-2 rounded-sm bg-orange text-text-primary font-medium hover:bg-orange-dim transition-colors"
+            className="w-full text-sm py-2 chamfer-4 bg-orange text-text-primary font-medium hover:bg-orange-dim transition-colors"
           >
             + New Conversation
           </button>
@@ -366,7 +366,7 @@ export default function AgencySupportPage() {
           {THREAD_TYPES.map((t) => (
             <p
               key={t}
-              className="text-[11px] text-[rgba(255,255,255,0.3)] py-0.5"
+              className="text-body text-text-muted py-0.5"
             >
               {t}
             </p>
@@ -376,12 +376,12 @@ export default function AgencySupportPage() {
         {/* Thread list */}
         <div className="flex-1 overflow-y-auto">
           {loadingThreads && (
-            <p className="text-xs text-[rgba(255,255,255,0.3)] px-4 py-3">
+            <p className="text-body text-text-muted px-4 py-3">
               Loading…
             </p>
           )}
           {!loadingThreads && threads.length === 0 && (
-            <p className="text-xs text-[rgba(255,255,255,0.3)] px-4 py-3">
+            <p className="text-body text-text-muted px-4 py-3">
               No conversations yet.
             </p>
           )}
@@ -391,7 +391,7 @@ export default function AgencySupportPage() {
               <button
                 key={t.id}
                 onClick={() => handleSelectThread(t)}
-                className={`w-full text-left px-4 py-3 border-b border-[rgba(255,255,255,0.05)] transition-colors ${
+                className={`w-full text-left px-4 py-3 border-b border-[var(--color-border-default)] transition-colors ${
                   active
                     ? 'bg-orange-ghost'
                     : 'hover:bg-[rgba(255,255,255,0.03)]'
@@ -406,10 +406,10 @@ export default function AgencySupportPage() {
                   </span>
                   <StatusBadge status={t.status} />
                 </div>
-                <p className="text-[11px] text-[rgba(255,255,255,0.3)] truncate mb-1">
+                <p className="text-body text-text-muted truncate mb-1">
                   {t.last_message_preview}
                 </p>
-                <p className="text-[10px] text-[rgba(255,255,255,0.2)]">
+                <p className="text-micro text-text-muted">
                   {formatTime(t.last_message_at)}
                 </p>
               </button>
@@ -423,7 +423,7 @@ export default function AgencySupportPage() {
         {!selectedThread ? (
           // Empty state
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-[rgba(255,255,255,0.25)]">
+            <p className="text-sm text-text-muted">
               Select a conversation or start a new one
             </p>
           </div>
@@ -434,7 +434,7 @@ export default function AgencySupportPage() {
               <span className="text-sm font-semibold text-text-primary">
                 {selectedThread.title}
               </span>
-              <span className="text-[11px] text-[rgba(255,255,255,0.4)]">
+              <span className="text-body text-text-muted">
                 {selectedThread.thread_type}
               </span>
               <div className="ml-auto">
@@ -444,7 +444,7 @@ export default function AgencySupportPage() {
 
             {/* Escalation banner */}
             {selectedThread.status === 'escalated' && (
-              <div className="mx-6 mt-3 px-4 py-2.5 rounded-sm border border-[rgba(255,152,0,0.3)] bg-[rgba(255,152,0,0.08)] text-xs text-status-warning shrink-0">
+              <div className="mx-6 mt-3 px-4 py-2.5 chamfer-4 border border-[rgba(255,152,0,0.3)] bg-[rgba(255,152,0,0.08)] text-xs text-status-warning shrink-0">
                 This thread has been escalated to the FusionEMS team. A team
                 member will respond shortly.
               </div>
@@ -453,12 +453,12 @@ export default function AgencySupportPage() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-2">
               {loadingMessages && (
-                <p className="text-xs text-[rgba(255,255,255,0.3)] text-center py-6">
+                <p className="text-body text-text-muted text-center py-6">
                   Loading messages…
                 </p>
               )}
               {!loadingMessages && messages.length === 0 && (
-                <p className="text-xs text-[rgba(255,255,255,0.3)] text-center py-6">
+                <p className="text-body text-text-muted text-center py-6">
                   No messages yet.
                 </p>
               )}
@@ -478,27 +478,27 @@ export default function AgencySupportPage() {
                         isAgency ? 'flex-row-reverse' : ''
                       }`}
                     >
-                      <span className="text-[10px] text-[rgba(255,255,255,0.35)]">
+                      <span className="text-micro text-text-muted">
                         {msg.sender_label}
                       </span>
                       {isAI && (
-                        <span className="text-[9px] px-1 py-0.5 rounded-sm bg-[rgba(34,211,238,0.12)] border border-[rgba(34,211,238,0.25)] text-system-billing font-medium">
+                        <span className="text-[9px] px-1 py-0.5 chamfer-4 bg-[rgba(34,211,238,0.12)] border border-[rgba(34,211,238,0.25)] text-system-billing font-medium">
                           AI
                         </span>
                       )}
                     </div>
                     {/* Bubble */}
                     <div
-                      className={`px-3 py-2 rounded-sm text-sm text-text-primary max-w-[70%] ${
+                      className={`px-3 py-2 chamfer-4 text-sm text-text-primary max-w-[70%] ${
                         isAgency
-                          ? 'bg-[rgba(255,107,26,0.15)] border border-[rgba(255,107,26,0.2)]'
-                          : 'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT'
+                          ? 'bg-brand-orange/15 border border-brand-orange/20'
+                          : 'bg-white/5 border border-border-DEFAULT'
                       }`}
                     >
                       {msg.content}
                     </div>
                     {/* Timestamp */}
-                    <span className="text-[10px] text-[rgba(255,255,255,0.2)]">
+                    <span className="text-micro text-text-muted">
                       {formatTime(msg.created_at)}
                     </span>
                   </div>
@@ -514,7 +514,7 @@ export default function AgencySupportPage() {
                 <button
                   type="button"
                   title="Attach file"
-                  className="shrink-0 mb-0.5 p-2 rounded-sm border border-border-DEFAULT text-[rgba(255,255,255,0.3)] hover:text-text-primary hover:border-[rgba(255,255,255,0.2)] transition-colors"
+                  className="shrink-0 mb-0.5 p-2 chamfer-4 border border-border-DEFAULT text-text-muted hover:text-text-primary hover:border-[var(--color-border-default)] transition-colors"
                 >
                   <svg
                     width="16"
@@ -537,19 +537,19 @@ export default function AgencySupportPage() {
                   onKeyDown={handleKeyDown}
                   placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
                   disabled={selectedThread.status === 'resolved'}
-                  className="flex-1 bg-bg-base border border-border-DEFAULT rounded-sm text-sm text-text-primary px-3 py-2 placeholder-[rgba(255,255,255,0.2)] focus:outline-none focus:border-[rgba(255,107,26,0.4)] resize-none disabled:opacity-40"
+                  className="flex-1 bg-bg-base border border-border-DEFAULT chamfer-4 text-sm text-text-primary px-3 py-2 placeholder-text-text-muted focus:outline-none focus:border-brand-orange/40 resize-none disabled:opacity-40"
                 />
 
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending || selectedThread.status === 'resolved'}
-                  className="shrink-0 mb-0.5 px-4 py-2 rounded-sm bg-orange text-text-primary text-sm font-medium hover:bg-orange-dim transition-colors disabled:opacity-40"
+                  className="shrink-0 mb-0.5 px-4 py-2 chamfer-4 bg-orange text-text-primary text-sm font-medium hover:bg-orange-dim transition-colors disabled:opacity-40"
                 >
                   {sending ? '…' : 'Send'}
                 </button>
               </div>
               {selectedThread.status === 'resolved' && (
-                <p className="text-[11px] text-[rgba(255,255,255,0.3)] mt-1.5">
+                <p className="text-body text-text-muted mt-1.5">
                   This conversation is resolved. Start a new one if you need
                   further assistance.
                 </p>

@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { ModuleDashboardShell } from "@/components/shells/PageShells";
 
 const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-bg-panel border border-border-DEFAULT p-4"
-      style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">{label}</div>
+      className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+      <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>{value}</div>
-      {sub && <div className="text-[11px] text-[rgba(255,255,255,0.35)] mt-1">{sub}</div>}
+      {sub && <div className="text-body text-text-muted mt-1">{sub}</div>}
     </motion.div>
   );
 }
@@ -80,12 +80,12 @@ export default function MobileOpsPage() {
   const shortageColor = shortageRisk === "high" ? "var(--color-brand-red)" : shortageRisk === "medium" ? "var(--color-status-warning)" : "var(--color-status-active)";
 
   return (
-    <div className="p-5 space-y-6 min-h-screen">
-      <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">CATEGORY 9</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">PWA Deployment & Mobile Ops</h1>
-        <p className="text-xs text-text-muted mt-0.5">100-Feature Mobile Command · CrewLink · Scheduling · OCR · Push Notifications · Compliance</p>
-      </div>
+    <ModuleDashboardShell
+      title="PWA Deployment &amp; Mobile Ops"
+      subtitle="100-Feature Mobile Command · CrewLink · Scheduling · OCR · Push Notifications · Compliance"
+      accentColor="var(--color-system-fleet)"
+    >
+      <div className="space-y-6">
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
         <KpiCard label="PWA Deployments" value={fmtN(deployments.total)} color="var(--color-status-info)" />
@@ -100,60 +100,60 @@ export default function MobileOpsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Deployments */}
-        <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">PWA Deployments</div>
+        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">PWA Deployments</div>
           {deployments.deployments?.slice(0, 6).map((d, i) => (
-            <div key={i} className="flex items-center justify-between py-1.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
+            <div key={i} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
               <div className="flex items-center gap-2">
                 <StatusDot status={String(d.data ? (d.data as Record<string,unknown>).status : "")} />
-                <span className="text-xs text-[rgba(255,255,255,0.7)] truncate">{String(d.data ? (d.data as Record<string,unknown>).pwa_name ?? "PWA" : "PWA")}</span>
+                <span className="text-body text-text-secondary truncate">{String(d.data ? (d.data as Record<string,unknown>).pwa_name ?? "PWA" : "PWA")}</span>
               </div>
-              <span className="text-[10px] text-[rgba(255,255,255,0.35)]">v{String(d.data ? (d.data as Record<string,unknown>).version ?? "" : "")}</span>
+              <span className="text-micro text-text-muted">v{String(d.data ? (d.data as Record<string,unknown>).version ?? "" : "")}</span>
             </div>
           ))}
-          {!deployments.deployments?.length && <div className="text-xs text-[rgba(255,255,255,0.3)]">No deployments yet</div>}
+          {!deployments.deployments?.length && <div className="text-body text-text-muted">No deployments yet</div>}
         </div>
 
         {/* Version Adoption */}
-        <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Version Adoption · {fmtN(versionAdoption.total_devices)} Devices</div>
+        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Version Adoption · {fmtN(versionAdoption.total_devices)} Devices</div>
           {versionAdoption.version_adoption?.map(v => (
             <div key={v.version} className="mb-2">
-              <div className="flex justify-between text-[11px] mb-0.5">
-                <span className="text-[rgba(255,255,255,0.6)]">{v.version}</span>
-                <span className="font-semibold text-text-primary">{v.pct}%</span>
+              <div className="flex justify-between text-body mb-0.5">
+                <span className="text-text-secondary">{v.version}</span>
+                <span className="font-label text-text-primary">{v.pct}%</span>
               </div>
               <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
                 <motion.div className="h-full rounded-full bg-system-fleet" initial={{ width: 0 }} animate={{ width: `${v.pct}%` }} transition={{ duration: 0.8 }} />
               </div>
             </div>
           ))}
-          {!versionAdoption.version_adoption?.length && <div className="text-xs text-[rgba(255,255,255,0.3)]">No version data yet</div>}
+          {!versionAdoption.version_adoption?.length && <div className="text-body text-text-muted">No version data yet</div>}
         </div>
 
         {/* Compliance */}
-        <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Credential Compliance</div>
+        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Credential Compliance</div>
           {[
             { label: "Total Credentials", value: fmtN(credCompliance.total_credentials), color: "var(--color-text-primary)" },
             { label: "Compliant", value: fmtN(credCompliance.compliant), color: "var(--color-status-active)" },
             { label: "Expiring Soon", value: fmtN(credCompliance.expiring_soon), color: "var(--color-status-warning)" },
             { label: "Expired", value: fmtN(credCompliance.expired), color: "var(--color-brand-red)" },
           ].map(item => (
-            <div key={item.label} className="flex justify-between py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0 text-[11px]">
-              <span className="text-[rgba(255,255,255,0.5)]">{item.label}</span>
+            <div key={item.label} className="flex justify-between py-2 border-b border-[var(--color-border-default)] last:border-0 text-body">
+              <span className="text-text-muted">{item.label}</span>
               <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
             </div>
           ))}
           <div className="mt-3">
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">Sync Health</div>
+            <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-2">Sync Health</div>
             {[
               { label: "Pending Jobs", value: fmtN(syncHealth.pending), color: "var(--color-status-warning)" },
               { label: "Failed Jobs", value: fmtN(syncHealth.failed), color: "var(--color-brand-red)" },
               { label: "Completed", value: fmtN(syncHealth.completed), color: "var(--color-status-active)" },
             ].map(item => (
-              <div key={item.label} className="flex justify-between py-1 text-[11px]">
-                <span className="text-[rgba(255,255,255,0.5)]">{item.label}</span>
+              <div key={item.label} className="flex justify-between py-1 text-body">
+                <span className="text-text-muted">{item.label}</span>
                 <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
               </div>
             ))}
@@ -163,8 +163,8 @@ export default function MobileOpsPage() {
 
       {/* OCR + Field Mapping */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Mobile OCR Capture Engine</div>
+        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Mobile OCR Capture Engine</div>
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: "Facesheet Scan", icon: "📋", status: "active" },
@@ -176,17 +176,17 @@ export default function MobileOpsPage() {
               { label: "Lab Results", icon: "🧪", status: "active" },
               { label: "NEMSIS Mapping", icon: "🗺", status: "active" },
             ].map(item => (
-              <div key={item.label} className="flex items-center gap-2 p-2 bg-[rgba(59,130,246,0.05)] border border-[rgba(59,130,246,0.15)] rounded-sm">
+              <div key={item.label} className="flex items-center gap-2 p-2 bg-blue-500/5 border border-blue-500/15 chamfer-4">
                 <span className="text-sm">{item.icon}</span>
-                <span className="text-[10px] text-text-secondary">{item.label}</span>
+                <span className="text-micro text-text-secondary">{item.label}</span>
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-status-active" />
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">Push Notification Analytics</div>
+        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Push Notification Analytics</div>
           {[
             { label: "Total Notifications", value: fmtN(pushAnalytics.total), color: "var(--color-text-primary)" },
             { label: "Sent", value: fmtN(pushAnalytics.sent), color: "var(--color-system-fleet)" },
@@ -194,31 +194,32 @@ export default function MobileOpsPage() {
             { label: "Read", value: fmtN(pushAnalytics.read), color: "var(--color-status-active)" },
             { label: "Read Rate", value: fmtPct(pushAnalytics.read_rate_pct), color: "var(--color-status-info)" },
           ].map(item => (
-            <div key={item.label} className="flex justify-between py-2 border-b border-[rgba(255,255,255,0.05)] last:border-0 text-[11px]">
-              <span className="text-[rgba(255,255,255,0.5)]">{item.label}</span>
+            <div key={item.label} className="flex justify-between py-2 border-b border-[var(--color-border-default)] last:border-0 text-body">
+              <span className="text-text-muted">{item.label}</span>
               <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
             </div>
           ))}
-          <div className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">Staffing Shortage Predictor</div>
-          <div className="flex items-center gap-3 p-2 bg-[rgba(255,255,255,0.03)] border border-border-subtle rounded-sm">
+          <div className="mt-3 text-micro font-label uppercase tracking-widest text-text-muted mb-2">Staffing Shortage Predictor</div>
+          <div className="flex items-center gap-3 p-2 bg-white/[0.03] border border-border-subtle chamfer-4">
             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: shortageColor }} />
-            <span className="text-xs text-text-secondary">Shortage Risk: <strong style={{ color: shortageColor }}>{shortageRisk.toUpperCase() || "N/A"}</strong></span>
-            <span className="ml-auto text-[10px] text-[rgba(255,255,255,0.35)]">{fmtN(shortage.unfilled_shifts)} unfilled</span>
+            <span className="text-body text-text-secondary">Shortage Risk: <strong style={{ color: shortageColor }}>{shortageRisk.toUpperCase() || "N/A"}</strong></span>
+            <span className="ml-auto text-micro text-text-muted">{fmtN(shortage.unfilled_shifts)} unfilled</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-bg-panel border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-3">100 Active Mobile Features</div>
+      <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
+        <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">100 Active Mobile Features</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
           {FEATURES.map(f => (
-            <div key={f} className="flex items-center gap-1.5 text-[10px] text-[rgba(255,255,255,0.5)]">
+            <div key={f} className="flex items-center gap-1.5 text-micro text-text-muted">
               <span className="w-1 h-1 rounded-full bg-system-fleet flex-shrink-0" />
               <span className="truncate">{f}</span>
             </div>
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </ModuleDashboardShell>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useToast } from '@/components/ui/ProductPolish';
+import { ModuleDashboardShell } from '@/components/shells/PageShells';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -30,42 +32,6 @@ interface OnboardingStatus {
   completed_at?: string | null;
   wi_dsps_checklist?: Record<string, boolean>;
   golive_items?: string[];
-}
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-
-interface ToastItem { id: number; msg: string; type: 'success' | 'error' }
-
-function Toast({ items }: { items: ToastItem[] }) {
-  if (!items.length) return null;
-  return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
-      {items.map((t) => (
-        <div
-          key={t.id}
-          className="px-4 py-2.5 rounded-sm text-xs font-semibold shadow-lg"
-          style={{
-            background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
-            border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
-            color: t.type === 'success' ? 'var(--color-status-active)' : 'var(--color-brand-red)',
-          }}
-        >
-          {t.msg}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function useToast() {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const counter = useRef(0);
-  const push = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
-    const id = ++counter.current;
-    setToasts((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
-  }, []);
-  return { toasts, push };
 }
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
@@ -138,33 +104,33 @@ function Sidebar({
             <button
               key={step.id}
               onClick={() => onStepClick(step.id)}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.03)]"
-              style={isActive ? { background: 'rgba(255,107,26,0.08)' } : undefined}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-white/[0.03]"
+              style={isActive ? { background: 'rgba(255,107,26,0.08)' } : undefined}  // data-driven: keep inline
             >
               <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                 {step.status === 'complete' && (
-                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(76,175,80,0.2)', border: '1px solid rgba(76,175,80,0.4)' }}>
-                    <span className="text-[8px] text-status-active font-bold">✓</span>
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center bg-green-500/20 border border-green-500/40">
+                    <span className="text-micro text-status-active font-bold">✓</span>
                   </div>
                 )}
                 {step.status === 'in_progress' && (
                   <div className="w-3.5 h-3.5 rounded-full animate-pulse" style={{ background: 'var(--color-brand-orange)' }} />
                 )}
                 {step.status === 'skipped' && (
-                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                    <span className="text-[8px] text-[rgba(255,255,255,0.35)]">—</span>
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/[0.06] border border-white/[0.12]">
+                    <span className="text-micro text-text-muted">—</span>
                   </div>
                 )}
                 {step.status === 'pending' && (
-                  <div className="w-4 h-4 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'transparent' }} />
+                  <div className="w-4 h-4 rounded-full border border-white/20 bg-transparent" />
                 )}
               </div>
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)] mr-1">
+                <span className="text-micro uppercase tracking-wider text-text-muted mr-1">
                   {index + 1}.
                 </span>
                 <span
-                  className={`text-[11px] font-medium ${isActive ? 'text-[rgba(255,255,255,0.9)]' : 'text-[rgba(255,255,255,0.5)]'}`}
+                  className={`text-body font-medium ${isActive ? 'text-text-primary' : 'text-text-secondary'}`}
                 >
                   {step.label}
                 </span>
@@ -179,8 +145,8 @@ function Sidebar({
 
 // ─── Field helper ─────────────────────────────────────────────────────────────
 
-const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 rounded-sm outline-none focus:border-[rgba(255,107,26,0.4)] placeholder:text-[rgba(255,255,255,0.2)]";
-const labelClass = "block text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.4)] mb-1";
+const inputClass = "w-full bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-muted";
+const labelClass = "block text-micro uppercase tracking-wider text-text-muted mb-1";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -196,8 +162,7 @@ function PrimaryBtn({ onClick, disabled, children }: { onClick: () => void; disa
     <button
       onClick={onClick}
       disabled={disabled}
-      className="h-9 px-5 text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
-      style={{ background: 'rgba(255,107,26,0.2)', border: '1px solid rgba(255,107,26,0.4)', color: 'var(--q-orange)' }}
+      className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40 bg-brand-orange/20 border border-brand-orange/40 text-brand-orange"
     >
       {children}
     </button>
@@ -208,8 +173,7 @@ function SecondaryBtn({ onClick, children }: { onClick: () => void; children: Re
   return (
     <button
       onClick={onClick}
-      className="h-9 px-4 text-[11px] font-semibold uppercase tracking-wider rounded-sm"
-      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}
+      className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4 bg-white/[0.06] border border-white/10 text-text-muted"
     >
       {children}
     </button>
@@ -233,7 +197,7 @@ function Step1({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-lg">
-      <p className="text-xs text-[rgba(255,255,255,0.45)] leading-relaxed">
+      <p className="text-xs text-text-muted leading-relaxed">
         Enter your department&rsquo;s basic identity information. This will be used in all NERIS submissions.
       </p>
       <Field label="Department Name">
@@ -271,9 +235,9 @@ function Step2({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-lg">
-      <div className="p-4 rounded-sm" style={{ background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.2)' }}>
-        <p className="text-[10px] uppercase tracking-[0.15em] text-system-billing font-semibold mb-2">RMS Reporting (No CAD Integration)</p>
-        <p className="text-xs text-[rgba(255,255,255,0.6)] leading-relaxed">
+      <div className="p-4 chamfer-4 bg-cyan-500/[0.06] border border-cyan-500/20">
+        <p className="text-micro uppercase tracking-[0.15em] text-system-billing font-semibold mb-2">RMS Reporting (No CAD Integration)</p>
+        <p className="text-xs text-text-secondary leading-relaxed">
           Your department reports incidents directly through the Records Management System (RMS) without a Computer-Aided Dispatch (CAD) or 911 system integration.
           Incidents are manually entered by authorized personnel. This is the standard reporting mode for most Wisconsin fire departments using FusionEMS NERIS.
         </p>
@@ -287,16 +251,16 @@ function Step2({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
             className="hidden"
           />
           <div
-            className="w-4 h-4 rounded-sm flex items-center justify-center transition-all"
+            className="w-4 h-4 chamfer-4 flex items-center justify-center transition-all"
             style={{
               background: confirmed ? 'rgba(255,107,26,0.2)' : 'rgba(255,255,255,0.04)',
               border: `1px solid ${confirmed ? 'rgba(255,107,26,0.5)' : 'rgba(255,255,255,0.15)'}`,
             }}
           >
-            {confirmed && <span className="text-orange text-[10px] font-bold">✓</span>}
+            {confirmed && <span className="text-orange text-micro font-bold">✓</span>}
           </div>
         </div>
-        <span className="text-xs text-[rgba(255,255,255,0.7)] leading-relaxed">
+        <span className="text-xs text-text-primary leading-relaxed">
           Confirm: This department uses RMS-only reporting without CAD/911 integration
         </span>
       </label>
@@ -348,15 +312,15 @@ function Step3({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">Add all active fire stations for your department.</p>
+      <p className="text-xs text-text-muted">Add all active fire stations for your department.</p>
       {stations.map((station, i) => (
-        <div key={i} className="bg-[rgba(255,255,255,0.02)] border border-border-subtle rounded-sm p-4 space-y-3">
+        <div key={i} className="bg-white/[0.02] border border-border-subtle chamfer-4 p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wider text-[rgba(255,107,26,0.7)] font-semibold">Station {i + 1}</span>
+            <span className="text-micro uppercase tracking-wider text-brand-orange font-semibold">Station {i + 1}</span>
             {stations.length > 1 && (
               <button
                 onClick={() => removeStation(i)}
-                className="text-[10px] text-[rgba(229,57,53,0.7)] hover:text-red transition-colors"
+                className="text-micro text-red-500/70 hover:text-red transition-colors"
               >
                 Remove
               </button>
@@ -383,7 +347,7 @@ function Step3({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       ))}
       <button
         onClick={addStation}
-        className="h-8 px-4 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
         style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
       >
         + Add Station
@@ -429,13 +393,13 @@ function Step4({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">Enter all apparatus (fire vehicles/units) operated by your department.</p>
+      <p className="text-xs text-text-muted">Enter all apparatus (fire vehicles/units) operated by your department.</p>
       {apparatus.map((row, i) => (
-        <div key={i} className="bg-[rgba(255,255,255,0.02)] border border-border-subtle rounded-sm p-4">
+        <div key={i} className="bg-white/[0.02] border border-border-subtle chamfer-4 p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] uppercase tracking-wider text-[rgba(255,107,26,0.7)] font-semibold">Unit {i + 1}</span>
+            <span className="text-micro uppercase tracking-wider text-brand-orange font-semibold">Unit {i + 1}</span>
             {apparatus.length > 1 && (
-              <button onClick={() => removeRow(i)} className="text-[10px] text-[rgba(229,57,53,0.7)] hover:text-red transition-colors">Remove</button>
+              <button onClick={() => removeRow(i)} className="text-micro text-red-500/70 hover:text-red transition-colors">Remove</button>
             )}
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -462,7 +426,7 @@ function Step4({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       ))}
       <button
         onClick={addRow}
-        className="h-8 px-4 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
         style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
       >
         + Add Unit
@@ -504,7 +468,7 @@ function Step5({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">
+      <p className="text-xs text-text-muted">
         Optionally add personnel (firefighters, officers). You can skip this step and add personnel later.
       </p>
       {personnel.map((row, i) => (
@@ -520,13 +484,13 @@ function Step5({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
             </Field>
           </div>
           {personnel.length > 1 && (
-            <button onClick={() => removeRow(i)} className="mt-5 text-[10px] text-[rgba(229,57,53,0.7)] hover:text-red transition-colors">✕</button>
+            <button onClick={() => removeRow(i)} className="mt-5 text-micro text-red-500/70 hover:text-red transition-colors">✕</button>
           )}
         </div>
       ))}
       <button
         onClick={addRow}
-        className="h-8 px-4 text-[10px] font-semibold uppercase tracking-wider rounded-sm"
+        className="h-8 px-4 text-micro font-semibold uppercase tracking-wider chamfer-4"
         style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: 'var(--color-system-billing)' }}
       >
         + Add Person
@@ -583,19 +547,19 @@ function Step6({
   return (
     <div className="space-y-4 max-w-lg">
       {loading && !done && (
-        <div className="flex items-center gap-3 p-4 rounded-sm" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
+        <div className="flex items-center gap-3 p-4 chamfer-4 bg-brand-orange/[0.06] border border-brand-orange/20">
           <div className="w-4 h-4 rounded-full animate-pulse" style={{ background: 'var(--color-brand-orange)' }} />
-          <span className="text-xs text-[rgba(255,255,255,0.7)]">Auto-assigning active NERIS pack…</span>
+          <span className="text-xs text-text-primary">Auto-assigning active NERIS pack…</span>
         </div>
       )}
       {error && (
-        <div className="p-4 rounded-sm" style={{ background: 'rgba(255,152,0,0.08)', border: '1px solid rgba(255,152,0,0.25)' }}>
+        <div className="p-4 chamfer-4 bg-amber-500/[0.08] border border-amber-500/25">
           <p className="text-xs font-semibold" style={{ color: 'var(--q-yellow)' }}>Warning</p>
-          <p className="text-xs text-[rgba(255,255,255,0.6)] mt-1">{error}</p>
+          <p className="text-xs text-text-secondary mt-1">{error}</p>
         </div>
       )}
       {(done || assignedPackName) && packName && (
-        <div className="p-4 rounded-sm" style={{ background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)' }}>
+        <div className="p-4 chamfer-4" style={{ background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)' }}>
           <p className="text-xs font-semibold text-status-active">Pack Assigned Successfully</p>
           <p className="text-xs text-text-secondary mt-1 font-mono">{packName}</p>
         </div>
@@ -705,7 +669,7 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-xl">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">Create a sample incident to verify your NERIS configuration. The incident must pass validation (0 errors) to continue.</p>
+      <p className="text-xs text-text-muted">Create a sample incident to verify your NERIS configuration. The incident must pass validation (0 errors) to continue.</p>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Incident Number">
           <input type="text" value={form.incident_number} onChange={(e) => update('incident_number', e.target.value)} className={inputClass} placeholder="2025-001" />
@@ -740,7 +704,7 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
         <button
           onClick={handleCreateAndValidate}
           disabled={loading || !form.incident_number.trim() || !form.start_datetime}
-          className="h-9 px-5 text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all hover:brightness-110 disabled:opacity-40"
+          className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
           style={{ background: 'rgba(34,211,238,0.14)', border: '1px solid rgba(34,211,238,0.3)', color: 'var(--color-system-billing)' }}
         >
           {loading ? 'Working…' : 'Create & Validate'}
@@ -749,16 +713,16 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
       {validationDone && (
         <div className="space-y-3">
           {errorCount === 0 ? (
-            <div className="p-3 rounded-sm" style={{ background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)' }}>
+            <div className="p-3 chamfer-4" style={{ background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)' }}>
               <p className="text-xs font-semibold text-status-active">Validation Passed — 0 errors</p>
               {issues.length > 0 && (
-                <p className="text-[11px] text-[rgba(255,255,255,0.5)] mt-0.5">{issues.filter((i) => i.severity === 'warning').length} warning(s)</p>
+                <p className="text-body text-text-secondary mt-0.5">{issues.filter((i) => i.severity === 'warning').length} warning(s)</p>
               )}
             </div>
           ) : (
-            <div className="p-3 rounded-sm" style={{ background: 'rgba(229,57,53,0.07)', border: '1px solid rgba(229,57,53,0.2)' }}>
+            <div className="p-3 chamfer-4" style={{ background: 'rgba(229,57,53,0.07)', border: '1px solid rgba(229,57,53,0.2)' }}>
               <p className="text-xs font-semibold text-red">{errorCount} validation error{errorCount !== 1 ? 's' : ''}</p>
-              <p className="text-[11px] text-[rgba(255,255,255,0.45)] mt-1">Fix the errors below and re-validate.</p>
+              <p className="text-body text-text-muted mt-1">Fix the errors below and re-validate.</p>
             </div>
           )}
           {issues.length > 0 && (
@@ -766,7 +730,7 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
               {issues.map((issue, i) => (
                 <div
                   key={i}
-                  className="p-2.5 rounded-sm"
+                  className="p-2.5 chamfer-4"
                   style={{
                     background: issue.severity === 'error' ? 'rgba(229,57,53,0.06)' : 'rgba(255,152,0,0.06)',
                     border: `1px solid ${issue.severity === 'error' ? 'rgba(229,57,53,0.18)' : 'rgba(255,152,0,0.18)'}`,
@@ -775,9 +739,9 @@ function Step7({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
                   <span className="text-[9px] font-bold uppercase" style={{ color: issue.severity === 'error' ? 'var(--color-brand-red)' : 'var(--color-status-warning)' }}>
                     {issue.severity}
                   </span>
-                  {issue.field_label && <span className="ml-1.5 text-xs font-medium text-[rgba(255,255,255,0.75)]">{issue.field_label}</span>}
-                  <p className="text-[11px] text-[rgba(255,255,255,0.6)] mt-0.5">{issue.message}</p>
-                  {issue.suggested_fix && <p className="text-[10px] text-[rgba(255,255,255,0.35)] mt-0.5">{issue.suggested_fix}</p>}
+                  {issue.field_label && <span className="ml-1.5 text-xs font-medium text-text-primary">{issue.field_label}</span>}
+                  <p className="text-body text-text-secondary mt-0.5">{issue.message}</p>
+                  {issue.suggested_fix && <p className="text-micro text-text-muted mt-0.5">{issue.suggested_fix}</p>}
                 </div>
               ))}
             </div>
@@ -819,22 +783,22 @@ function Step8({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
   return (
     <div className="space-y-4 max-w-xl">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">Review and confirm all Wisconsin DSPS go-live requirements.</p>
+      <p className="text-xs text-text-muted">Review and confirm all Wisconsin DSPS go-live requirements.</p>
       <div className="space-y-2">
         {WI_CHECKLIST_ITEMS.map((item) => (
           <label key={item.id} className="flex items-start gap-3 cursor-pointer group">
             <div className="mt-0.5 flex-shrink-0" onClick={() => toggle(item.id)}>
               <div
-                className="w-4 h-4 rounded-sm flex items-center justify-center transition-all"
+                className="w-4 h-4 chamfer-4 flex items-center justify-center transition-all"
                 style={{
                   background: checked[item.id] ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.04)',
                   border: `1px solid ${checked[item.id] ? 'rgba(76,175,80,0.5)' : 'rgba(255,255,255,0.15)'}`,
                 }}
               >
-                {checked[item.id] && <span className="text-status-active text-[10px] font-bold">✓</span>}
+                {checked[item.id] && <span className="text-status-active text-micro font-bold">✓</span>}
               </div>
             </div>
-            <span className="text-xs text-[rgba(255,255,255,0.75)] leading-relaxed">{item.label}</span>
+            <span className="text-xs text-text-primary leading-relaxed">{item.label}</span>
           </label>
         ))}
       </div>
@@ -844,13 +808,13 @@ function Step8({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
         </PrimaryBtn>
         <button
           onClick={() => window.print()}
-          className="h-9 px-4 text-[11px] font-semibold uppercase tracking-wider rounded-sm"
+          className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}
         >
           Print
         </button>
         {!allChecked && (
-          <span className="text-[10px] text-[rgba(255,255,255,0.35)]">Check all items to complete</span>
+          <span className="text-micro text-text-muted">Check all items to complete</span>
         )}
       </div>
     </div>
@@ -861,21 +825,21 @@ function Step8({ onComplete }: { onComplete: (data: unknown) => Promise<void> })
 
 function CompleteBanner({ departmentName }: { departmentName?: string }) {
   return (
-    <div className="p-8 rounded-sm text-center space-y-4" style={{ background: 'rgba(76,175,80,0.07)', border: '1px solid rgba(76,175,80,0.3)' }}>
+    <div className="p-8 chamfer-4 text-center space-y-4" style={{ background: 'rgba(76,175,80,0.07)', border: '1px solid rgba(76,175,80,0.3)' }}>
       <div className="text-4xl">🏆</div>
       <div>
-        <p className="text-[10px] uppercase tracking-[0.25em] text-status-active font-bold mb-1">NERIS Onboarding Complete</p>
+        <p className="text-micro uppercase tracking-[0.25em] text-status-active font-bold mb-1">NERIS Onboarding Complete</p>
         <h2 className="text-xl font-black uppercase tracking-wider text-text-primary">READY FOR PRODUCTION</h2>
         {departmentName && (
-          <p className="text-sm text-[rgba(255,255,255,0.55)] mt-1">{departmentName}</p>
+          <p className="text-sm text-text-secondary mt-1">{departmentName}</p>
         )}
       </div>
-      <p className="text-xs text-[rgba(255,255,255,0.5)] max-w-sm mx-auto leading-relaxed">
+      <p className="text-xs text-text-secondary max-w-sm mx-auto leading-relaxed">
         Your department has completed all Wisconsin NERIS onboarding steps and is authorized to begin production incident reporting.
       </p>
       <button
         onClick={() => window.print()}
-        className="h-9 px-5 text-[11px] font-bold uppercase tracking-wider rounded-sm"
+        className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4"
         style={{ background: 'rgba(76,175,80,0.2)', border: '1px solid rgba(76,175,80,0.4)', color: 'var(--q-green)' }}
       >
         Print Summary
@@ -894,7 +858,7 @@ export default function NerisOnboardingPage() {
   const [startLoading, setStartLoading] = useState(false);
   const [currentStepId, setCurrentStepId] = useState(STEP_DEFS[0].id);
   const [allComplete, setAllComplete] = useState(false);
-  const { toasts, push: pushToast } = useToast();
+  const toast = useToast();
 
   const stepStates: StepState[] = STEP_DEFS.map((def) => ({
     id: def.id,
@@ -959,7 +923,7 @@ export default function NerisOnboardingPage() {
       setNotStarted(false);
       await fetchStatus();
     } catch {
-      pushToast('Failed to start onboarding', 'error');
+      toast.error('Failed to start onboarding');
     } finally {
       setStartLoading(false);
     }
@@ -974,10 +938,10 @@ export default function NerisOnboardingPage() {
     const json = await res.json();
     if (!res.ok) {
       const detail = json.detail ?? `HTTP ${res.status}`;
-      pushToast(`Step failed: ${detail}`, 'error');
+      toast.error(`Step failed: ${detail}`);
       throw new Error(detail);
     }
-    pushToast('Step completed', 'success');
+    toast.success('Step completed');
     // Optimistically advance
     setOnboardingStatus((prev) => {
       if (!prev) return prev;
@@ -993,7 +957,7 @@ export default function NerisOnboardingPage() {
   if (loadingStatus) {
     return (
       <div className="min-h-screen bg-bg-void flex items-center justify-center">
-        <div className="text-[rgba(255,255,255,0.3)] text-sm">Loading onboarding status…</div>
+        <div className="text-text-muted text-sm">Loading onboarding status…</div>
       </div>
     );
   }
@@ -1001,8 +965,7 @@ export default function NerisOnboardingPage() {
   if (notStarted) {
     return (
       <div className="min-h-screen bg-bg-void flex items-center justify-center p-6">
-        <Toast items={toasts} />
-        <div className="bg-bg-base border border-border-DEFAULT rounded-sm p-8 w-full max-w-md space-y-5">
+        <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-8 w-full max-w-md space-y-5">
           <div>
             <p className="text-[9px] uppercase tracking-[0.2em] text-orange-dim mb-1">Portal · NERIS</p>
             <h1 className="text-lg font-black uppercase tracking-wider text-text-primary">Start NERIS Onboarding</h1>
@@ -1027,7 +990,6 @@ export default function NerisOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-bg-void text-text-primary flex flex-col">
-      <Toast items={toasts} />
       {/* Header */}
       <div className="bg-bg-base border-b border-border-DEFAULT px-5 py-3 flex items-center gap-4 flex-shrink-0">
         <div>
@@ -1036,7 +998,7 @@ export default function NerisOnboardingPage() {
             {onboardingStatus?.department?.data?.name ?? 'NERIS Onboarding Wizard'}
           </h1>
         </div>
-        <span className="ml-auto text-[10px] text-[rgba(255,255,255,0.3)]">Wisconsin RMS-Only</span>
+        <span className="ml-auto text-micro text-text-muted">Wisconsin RMS-Only</span>
       </div>
       {/* Body */}
       <div className="flex flex-1 min-h-0">

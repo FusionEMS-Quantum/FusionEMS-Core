@@ -60,3 +60,18 @@ export async function getAIProtectedActions() {
   const res = await API.get('/api/v1/ai-platform/governance/protected-actions', { headers: aiHeaders() });
   return res.data;
 }
+
+export async function getAIPromptTemplates() {
+  const res = await API.get('/api/v1/ai-platform/prompt-templates', { headers: aiHeaders() });
+  return res.data;
+}
+
+export async function createAIPromptTemplate(payload: { template_key: string; domain: string; system_prompt: string; user_prompt_template: string }) {
+  const res = await API.post('/api/v1/ai-platform/prompt-templates', payload, { headers: aiHeaders() });
+  return res.data;
+}
+
+export async function updateAIPromptTemplate(templateId: string, payload: { system_prompt?: string; user_prompt_template?: string; is_active?: boolean }) {
+  const res = await API.patch(`/api/v1/ai-platform/prompt-templates/${templateId}`, payload, { headers: aiHeaders() });
+  return res.data;
+}

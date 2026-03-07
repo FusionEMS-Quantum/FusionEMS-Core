@@ -9,11 +9,18 @@ from sqlalchemy.orm import Session
 
 from core_app.core.errors import AppError
 from core_app.models.ai_platform import (
+    AIDomainCopilot,
+    AIPromptTemplate,
     AIUseCase,
     AIUseCaseAuditEvent,
     AIUseCaseVersion,
 )
-from core_app.schemas.ai_platform import AIUseCaseCreate, AIUseCaseUpdate
+from core_app.schemas.ai_platform import (
+    AIPromptTemplateCreate,
+    AIPromptTemplateUpdate,
+    AIUseCaseCreate,
+    AIUseCaseUpdate,
+)
 from core_app.schemas.auth import CurrentUser
 
 
@@ -146,3 +153,69 @@ class AIRegistryService:
             },
         )
         self._db.add(v)
+
+    # ── Prompt Templates ──────────────────────────────────────────────────────
+
+    def list_prompt_templates(self, *, domain: str | None = None) -> Sequence[AIPromptTemplate]:
+        q = self._db.query(AIPromptTemplate).filter(
+            AIPromptTemplate.tenant_id == self._user.tenant_id
+        )
+        if domain:
+            q = q.filter(AIPromptTemplate.domain == domain)
+        return q.order_by(AIPromptTemplate.template_key).all()
+
+    def create_prompt_template(self, payload: AIPromptTemplateCreate) -> AIPromptTemplate:
+        tpl = AIPromptTemplate(
+            tenant_id=self._user.tenant_id,
+            template_key=payload.template_key,
+            domain=payload.domain,
+            system_prompt=payload.system_prompt,
+            user_prompt_template=payload.user_prompt_template,
+            version=1,
+            is_active=True,
+        )
+        self._db.add(tpl)
+        self._db.commit()
+        self._db.refresh(tpl)
+        return tpl
+
+    # ── Domain Copilots ─────────────────────────────────────────────────────
+
+    def list_copilots(self, domain: str | None = None) -> list:
+        """Return domain copilots, optionally filtered by domain."""
+        q = self._db.query(AIDomainCopilot).filter(
+            AIDomainCopilot.tenant_id == self._user.tenant_id,
+        )
+        if domain:
+            q = q.filter(AIDomainCopilot.domain == domain)
+        return q.order_by(AIDomainCopilot.domain, AIDomainCopilot.name).all()
+
+    def update_prompt_template(
+        self, template_id: uuid.UUID, payload: AIPromptTemplateUpdate
+    ) -> AIPromptTemplate:
+        tpl = (
+            self._db.query(AIPromptTemplate)
+            .filter(
+                AIPromptTemplate.id == template_id,
+                AIPromptTemplate.tenant_id == self._user.tenant_id,
+            )
+            .first()
+        )
+        if not tpl:
+            raise AppError(
+                status_code=404,
+                code="AI_PROMPT_TEMPLATE_NOT_FOUND",
+                message="Prompt template not found.",
+            )
+
+        if payload.system_prompt is not None:
+            tpl.system_prompt = payload.system_prompt
+        if payload.user_prompt_template is not None:
+            tpl.user_prompt_template = payload.user_prompt_template
+        if payload.is_active is not None:
+            tpl.is_active = payload.is_active
+
+        tpl.version = tpl.version + 1
+        self._db.commit()
+        self._db.refresh(tpl)
+        return tpl

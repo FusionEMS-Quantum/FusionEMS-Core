@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { QuantumEmptyState } from '@/components/ui';
 import { QuantumCardSkeleton } from '@/components/ui';
+import { ModuleDashboardShell } from '@/components/shells/PageShells';
 
 interface PortalMetadata {
   stat_cards?: Array<{ label: string; value: number | string; href: string }>;
@@ -35,12 +36,10 @@ export default function PortalDashboardPage() {
   }, []);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold text-text-primary">Agency Dashboard</h1>
-        <p className="text-xs text-[rgba(255,255,255,0.4)] mt-0.5">Live real-time operational data</p>
-      </div>
-
+    <ModuleDashboardShell
+      title="Agency Dashboard"
+      subtitle="Live real-time operational data"
+    >
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <QuantumCardSkeleton />
@@ -60,9 +59,9 @@ export default function PortalDashboardPage() {
             <Link
               key={card.href}
               href={card.href}
-              className="group block bg-bg-void border border-border-DEFAULT rounded-sm p-5 hover:border-[rgba(255,107,26,0.35)] transition-colors"
+              className="group block bg-bg-void border border-[var(--color-border-default)] chamfer-8 p-5 hover:border-brand-orange/35 transition-colors"
             >
-              <div className="text-[10px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] mb-3 group-hover:text-[rgba(255,107,26,0.7)] transition-colors">
+              <div className="text-micro uppercase tracking-widest text-text-muted mb-3 group-hover:text-brand-orange/70 transition-colors">
                 {card.label}
               </div>
               <div className="text-3xl font-bold text-text-primary">{card.value}</div>
@@ -70,6 +69,6 @@ export default function PortalDashboardPage() {
           ))}
         </div>
       )}
-    </div>
+    </ModuleDashboardShell>
   );
 }
