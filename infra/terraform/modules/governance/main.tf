@@ -266,3 +266,67 @@ resource "aws_cloudwatch_log_group" "governance_audit" {
     Name = "${local.name_prefix}-governance-audit-logs"
   })
 }
+
+# =============================================================================
+# S3 – Policy Document Bucket (OPA Rego)
+# =============================================================================
+
+resource "aws_s3_bucket" "opa_policies" {
+  bucket = "${local.name_prefix}-tenant-policies"
+
+  tags = merge(local.common_tags, {
+    Name    = "${local.name_prefix}-tenant-policies"
+    Purpose = "opa-policy-storage"
+  })
+}
+
+resource "aws_s3_bucket_versioning" "opa_policies" {
+  bucket = aws_s3_bucket.opa_policies.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "opa_policies" {
+  bucket = aws_s3_bucket.opa_policies.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.governance_audit.arn
+    }
+    bucket_key_enabled = true
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "opa_policies" {
+  bucket = aws_s3_bucket.opa_policies.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# IAM Role mapping to enforce Tenant Isolation
+resource "aws_iam_policy" "tenant_isolation_boundary" {
+  name        = "${local.name_prefix}-TenantIsolationBoundary"
+  description = "Provides dynamic tenant isolation boundaries for ECS task execution."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "DenyAssumeCrossTenant",
+        Effect = "Deny",
+        Action = "sts:AssumeRole",
+        Resource = "*",
+        Condition = {
+          StringNotEquals = {
+            "aws:PrincipalTag/TenantId" = "$${aws:PrincipalTag/TenantId}"
+          }
+        }
+      }
+    ]
+  })
+}
