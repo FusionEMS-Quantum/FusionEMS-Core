@@ -73,6 +73,7 @@ function PatientPreferencesContent() {
   const [languagePreferences, setLanguagePreferences] = useState<LanguagePreference[]>([]);
   const [optOutEvents, setOptOutEvents] = useState<OptOutEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const patientId = useMemo(
     () => searchParams.get('patient_id') || searchParams.get('patientId') || '',
@@ -89,12 +90,15 @@ function PatientPreferencesContent() {
     }
 
     setLoading(true);
+    setLoadError(null);
+    let anyFailed = false;
     try {
       const [prefRes, langRes, optOutRes] = await Promise.all([
-        getPatientContactPreference(patientId).catch(() => null),
-        getPatientLanguagePreference(patientId).catch(() => null),
-        listOptOutEvents(patientId).catch(() => []),
+        getPatientContactPreference(patientId).catch((err) => { anyFailed = true; console.error('[Preferences] contact prefs failed:', err); return null; }),
+        getPatientLanguagePreference(patientId).catch((err) => { anyFailed = true; console.error('[Preferences] language prefs failed:', err); return null; }),
+        listOptOutEvents(patientId).catch((err) => { anyFailed = true; console.error('[Preferences] opt-out events failed:', err); return []; }),
       ]);
+      if (anyFailed) setLoadError('Some preference data failed to load. Displayed data may be incomplete.');
 
       const prefItems = normalizeList<ContactPreference>(prefRes);
       const languageItems = normalizeList<LanguagePreference>(langRes);
@@ -142,6 +146,12 @@ function PatientPreferencesContent() {
         />
       ) : (
         <div className="space-y-4">
+          {loadError && (
+            <div className="px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+              ⚠ {loadError}
+            </div>
+          )}
+
           <SimpleModeSummary
             screenName="Contact Preferences"
             domain="support"

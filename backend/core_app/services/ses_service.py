@@ -7,6 +7,7 @@ from typing import Any
 import boto3
 from botocore.exceptions import ClientError
 
+from core_app.core.brand import BrandIdentity, get_default_brand
 from core_app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -25,17 +26,23 @@ class EmailMessage:
 class SesService:
     def __init__(self) -> None:
         settings = get_settings()
+        self._default_brand = get_default_brand()
         self.from_email = settings.ses_from_email or "noreply@fusionemsquantum.com"
         self.configuration_set = settings.ses_configuration_set or ""
         self.region = settings.aws_region or "us-east-1"
         self._client = None
+
+    def _format_sender(self, brand: BrandIdentity | None = None) -> str:
+        """RFC 5322 formatted sender: 'Display Name <email>'."""
+        b = brand or self._default_brand
+        return f"{b.sender_email_display} <{b.sender_email}>"
 
     def _get_client(self):
         if self._client is None:
             self._client = boto3.client("ses", region_name=self.region)
         return self._client
 
-    def send(self, message: EmailMessage) -> dict[str, Any]:
+    def send(self, message: EmailMessage, brand: BrandIdentity | None = None) -> dict[str, Any]:
         client = self._get_client()
         body: dict[str, Any] = {
             "Html": {"Data": message.html_body, "Charset": "UTF-8"},
@@ -44,7 +51,7 @@ class SesService:
             body["Text"] = {"Data": message.text_body, "Charset": "UTF-8"}
 
         params: dict[str, Any] = {
-            "Source": self.from_email,
+            "Source": self._format_sender(brand),
             "Destination": {"ToAddresses": message.to_addresses},
             "Message": {
                 "Subject": {"Data": message.subject, "Charset": "UTF-8"},
@@ -71,11 +78,17 @@ class SesService:
             raise
 
     def send_patient_statement(
-        self, patient_email: str, patient_name: str, portal_url: str, amount_due: str
+        self,
+        patient_email: str,
+        patient_name: str,
+        portal_url: str,
+        amount_due: str,
+        brand: BrandIdentity | None = None,
     ) -> dict[str, Any]:
+        b = brand or self._default_brand
         html = f"""
         <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#1a365d;">Your FusionEMS Statement is Ready</h2>
+        <h2 style="color:#1a365d;">Your {b.display_name} Statement is Ready</h2>
         <p>Dear {patient_name},</p>
         <p>Your statement is available for viewing and payment.</p>
         <p><strong>Amount Due: {amount_due}</strong></p>
@@ -93,10 +106,11 @@ class SesService:
         return self.send(
             EmailMessage(
                 to_addresses=[patient_email],
-                subject="Your EMS Statement is Ready",
+                subject=f"Your {b.display_name} Statement is Ready",
                 html_body=html,
                 text_body=f"View your statement at: {portal_url} — Amount Due: {amount_due}",
-            )
+            ),
+            brand=b,
         )
 
     def send_credential_expiry_alert(
@@ -141,7 +155,14 @@ class SesService:
             )
         )
 
-    def send_otp(self, email: str, otp_code: str, expires_minutes: int = 10) -> dict[str, Any]:
+    def send_otp(
+        self,
+        email: str,
+        otp_code: str,
+        expires_minutes: int = 10,
+        brand: BrandIdentity | None = None,
+    ) -> dict[str, Any]:
+        b = brand or self._default_brand
         html = f"""
         <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
         <h2>Your Verification Code</h2>
@@ -153,10 +174,11 @@ class SesService:
         return self.send(
             EmailMessage(
                 to_addresses=[email],
-                subject="Your FusionEMS Verification Code",
+                subject=f"Your {b.display_name} Verification Code",
                 html_body=html,
                 text_body=f"Your verification code: {otp_code} (expires in {expires_minutes} minutes)",
-            )
+            ),
+            brand=b,
         )
 
 

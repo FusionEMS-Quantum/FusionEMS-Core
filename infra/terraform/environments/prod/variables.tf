@@ -211,3 +211,17 @@ variable "founder_billing_escalation_phone_e164" {
   type        = string
   default     = ""
 }
+
+# ─── Brand Identity ────────────────────────────────────────────────────────────
+
+variable "brand_display_name" {
+  description = "Platform brand display name for all outbound communications"
+  type        = string
+  default     = "FusionEMS Quantum"
+}
+
+variable "brand_domain" {
+  description = "Primary web domain for brand-linked emails and portal references"
+  type        = string
+  default     = "fusionemsquantum.com"
+}

@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency
 from core_app.core.config import get_settings
+from core_app.core.brand import get_default_brand
 from core_app.services.ai_assistant_service import AIAssistantService  # Use existing service
 from core_app.telnyx.client import TelnyxApiError, send_sms
 from core_app.telnyx.signature import verify_telnyx_webhook
@@ -503,12 +504,13 @@ async def telnyx_sms_webhook(
             return {"status": "opt_out_processed"}
 
         if context.get("is_central") and not tenant_id:
+            brand = get_default_brand()
             _send_reply(
                 api_key=settings.telnyx_api_key,
                 from_number=to_number,
                 to_number=from_number,
                 text_body=(
-                    "FusionEMS Billing here. Please reply with your statement or account number "
+                    f"{brand.sms_sender_name} Billing here. Please reply with your statement or account number "
                     "so I can route your request securely."
                 ),
                 messaging_profile_id=settings.telnyx_messaging_profile_id or None,

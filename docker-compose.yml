@@ -190,6 +190,10 @@ services:
         NEXT_PUBLIC_ROOT_DOMAIN: http://localhost:3000
         NEXT_PUBLIC_BILLING_PHONE: ${CENTRAL_BILLING_PHONE_E164:-}
         NEXT_PUBLIC_CNAM_DISPLAY_NAME: ${CNAM_DISPLAY_NAME:-FusionEMS Quantum}
+        NEXT_PUBLIC_BRAND_NAME: ${BRAND_NAME:-FusionEMS Quantum}
+        NEXT_PUBLIC_BRAND_DOMAIN: ${BRAND_DOMAIN:-fusionemsquantum.com}
+        NEXT_PUBLIC_BRAND_SUPPORT_EMAIL: ${BRAND_SUPPORT_EMAIL:-billing@fusionemsquantum.com}
+        NEXT_PUBLIC_BRAND_NOREPLY_EMAIL: ${BRAND_NOREPLY_EMAIL:-noreply@fusionemsquantum.com}
     container_name: fusionems-frontend
     restart: unless-stopped
     ports:

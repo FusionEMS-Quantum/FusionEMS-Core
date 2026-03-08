@@ -442,6 +442,10 @@ module "frontend_service" {
     { name = "NEXT_PUBLIC_COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
     { name = "NEXT_PUBLIC_BILLING_PHONE", value = module.telnyx_central_billing_line.phone_e164 },
     { name = "NEXT_PUBLIC_CNAM_DISPLAY_NAME", value = module.telnyx_central_billing_line.cnam_display_name },
+    { name = "NEXT_PUBLIC_BRAND_NAME", value = var.brand_display_name },
+    { name = "NEXT_PUBLIC_BRAND_DOMAIN", value = var.brand_domain },
+    { name = "NEXT_PUBLIC_BRAND_SUPPORT_EMAIL", value = "billing@${var.brand_domain}" },
+    { name = "NEXT_PUBLIC_BRAND_NOREPLY_EMAIL", value = "noreply@${var.brand_domain}" },
   ]
 
   secrets = []

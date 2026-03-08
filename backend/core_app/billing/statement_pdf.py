@@ -67,6 +67,7 @@ class StatementContext:
     amount_due_cents: int
     amount_paid_cents: int
     pay_url: str
+    brand_header_name: str = "FusionEMS QUANTUM"
     generated_at: datetime | None = None
 
     def __post_init__(self):
@@ -146,7 +147,7 @@ def _audit_footer(c: Any, ctx: StatementContext, pdf_hash: str, page_num: int) -
     c.line(0.5 * inch, footer_y + 7, PAGE_W - 0.5 * inch, footer_y + 7)
 
 
-def _header_plate(c: Any, agency_name: str) -> None:
+def _header_plate(c: Any, agency_name: str, brand_header_name: str = "FusionEMS QUANTUM") -> None:
     plate_h = 0.90 * inch
     plate_y = PAGE_H - plate_h - 0.30 * inch
     _chamfer_rect(
@@ -164,7 +165,7 @@ def _header_plate(c: Any, agency_name: str) -> None:
 
     c.setFillColor(ORANGE)
     c.setFont("Helvetica-Bold", 13)
-    c.drawString(0.65 * inch, plate_y + plate_h * 0.62, "FusionEMS QUANTUM")
+    c.drawString(0.65 * inch, plate_y + plate_h * 0.62, brand_header_name)
 
     c.setFillColor(OFF_WHITE)
     c.setFont("Helvetica", 8)
@@ -193,7 +194,7 @@ def _build_page1(c: Any, ctx: StatementContext, pdf_hash: str) -> None:
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
 
     # Header
-    _header_plate(c, ctx.agency_name)
+    _header_plate(c, ctx.agency_name, ctx.brand_header_name)
 
     # ── Address window safe-zone (Lob spec) ──────────────────────────────────
     # Lob requires page 1 address block at 0.75–4.75in x, 2.0–3.0in y (from bottom)
@@ -385,7 +386,7 @@ def _build_page2(c: Any, ctx: StatementContext, pdf_hash: str) -> None:
     c.setFillColor(OFF_WHITE)
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
 
-    _header_plate(c, ctx.agency_name)
+    _header_plate(c, ctx.agency_name, ctx.brand_header_name)
 
     # ── Payment instructions ─────────────────────────────────────────────────
     body_y = PAGE_H - 1.60 * inch
