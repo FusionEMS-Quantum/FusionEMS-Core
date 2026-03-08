@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ModuleDashboardShell } from "@/components/shells/PageShells";
+import { normalizeSeverity } from "@/lib/design-system/severity";
 
 const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
@@ -27,6 +28,21 @@ function ServiceRow({ service, status, metric, value }: { service: string; statu
       <span className="text-body font-bold" style={{ color: statusColor }}>{value}</span>
     </div>
   );
+}
+
+function alertSeverityColor(rawSeverity: string): string {
+  switch (normalizeSeverity(rawSeverity)) {
+    case "BLOCKING":
+      return "var(--color-brand-red)";
+    case "HIGH":
+      return "var(--color-brand-orange-bright)";
+    case "MEDIUM":
+      return "var(--color-status-warning)";
+    case "LOW":
+      return "var(--color-status-info)";
+    default:
+      return "var(--color-text-muted)";
+  }
 }
 
 const FEATURES = [
@@ -66,7 +82,6 @@ export default function SystemHealthPage() {
   const [ssl, setSsl] = useState<{ domains?: Array<{ domain: string; expires_in_days: number; status: string }> }>({});
   const [backups, setBackups] = useState<Record<string, unknown>>({});
   const [coverage, setCoverage] = useState<Record<string, unknown>>({});
-  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/api/v1/system-health/dashboard`).then(r => r.json()).then(setDash).catch((e: unknown) => { console.warn("[fetch error]", e); });
@@ -166,13 +181,14 @@ export default function SystemHealthPage() {
           <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Active Alerts · {alerts.total ?? 0}</div>
           {alerts.alerts?.slice(0, 8).map((alert, i) => {
             const d = alert.data as Record<string, unknown>;
-            const sevColor = String(d.severity) === "critical" ? "var(--color-brand-red)" : String(d.severity) === "error" ? "var(--color-brand-orange-bright)" : String(d.severity) === "warning" ? "var(--color-status-warning)" : "var(--color-text-muted)";
+            const alertSeverity = normalizeSeverity(String(d.severity ?? ""));
+            const sevColor = alertSeverityColor(alertSeverity);
             return (
               <div key={i} className="flex items-start gap-2 py-2 border-b border-[var(--color-border-default)] last:border-0">
                 <span className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0" style={{ background: sevColor }} />
                 <div className="flex-1 min-w-0">
                   <div className="text-body text-text-secondary truncate">{String(d.message ?? d.service ?? "Alert")}</div>
-                  <div className="text-micro" style={{ color: sevColor }}>{String(d.severity).toUpperCase()} · {String(d.service ?? "")}</div>
+                  <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "")}</div>
                 </div>
                 {String(d.status) === "active" && (
                   <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-green-500/30 text-status-active chamfer-4 hover:bg-green-500/10 transition-colors flex-shrink-0">

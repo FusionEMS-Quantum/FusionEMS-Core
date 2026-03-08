@@ -5,6 +5,8 @@ Revision ID: 20260310_0034
 Revises: ai_gap_tables_001, 20260308_0032, 20260309_0033
 Create Date: 2026-03-10
 """
+from typing import Any
+
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
@@ -16,6 +18,26 @@ depends_on = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    _original_create_table = op.create_table
+    _original_add_column = op.add_column
+
+    def _safe_create_table(table_name: str, *columns: Any, **kwargs: Any) -> Any:
+        if sa.inspect(bind).has_table(table_name):
+            return None
+        return _original_create_table(table_name, *columns, **kwargs)
+
+    def _safe_add_column(table_name: str, column: sa.Column, **kwargs: Any) -> Any:
+        inspector = sa.inspect(bind)
+        if inspector.has_table(table_name):
+            existing_columns = {col["name"] for col in inspector.get_columns(table_name)}
+            if column.name in existing_columns:
+                return None
+        return _original_add_column(table_name, column, **kwargs)
+
+    op.create_table = _safe_create_table  # type: ignore[assignment]
+    op.add_column = _safe_add_column  # type: ignore[assignment]
+
     # --- Tenant model extensions ---
     op.add_column("tenants", sa.Column("lifecycle_state", sa.String(64), nullable=True, server_default="TENANT_CREATED"))
     op.add_column("tenants", sa.Column("agency_type", sa.String(64), nullable=True))
@@ -24,7 +46,7 @@ def upgrade() -> None:
     op.execute("UPDATE tenants SET lifecycle_state = 'TENANT_CREATED' WHERE lifecycle_state IS NULL")
     op.alter_column("tenants", "lifecycle_state", nullable=False)
     op.alter_column("tenants", "environment_scope", nullable=False)
-    op.create_index("ix_tenants_lifecycle_state", "tenants", ["lifecycle_state"])
+    op.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_tenants_lifecycle_state ON tenants (lifecycle_state)"))
 
     # --- User model extension ---
     op.add_column("users", sa.Column("status", sa.String(32), nullable=True, server_default="active"))
@@ -535,6 +557,9 @@ def upgrade() -> None:
             (gen_random_uuid(), 'PRODUCTION', 'Production', 'operational', 'healthy', 1)
         ON CONFLICT DO NOTHING
     """)
+
+    op.add_column = _original_add_column  # type: ignore[assignment]
+    op.create_table = _original_create_table  # type: ignore[assignment]
 
 
 def downgrade() -> None:

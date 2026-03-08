@@ -43,33 +43,37 @@ _NEW_TABLES = [
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
     for table in _NEW_TABLES:
-        op.create_table(
-            table,
-            sa.Column(
-                "id",
-                postgresql.UUID(as_uuid=True),
-                primary_key=True,
-                server_default=sa.text("gen_random_uuid()"),
-            ),
-            sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
-            sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
-            sa.Column("data", postgresql.JSONB(), nullable=False, server_default="{}"),
-            sa.Column(
-                "created_at",
-                sa.DateTime(timezone=True),
-                nullable=False,
-                server_default=sa.text("now()"),
-            ),
-            sa.Column(
-                "updated_at",
-                sa.DateTime(timezone=True),
-                nullable=False,
-                server_default=sa.text("now()"),
-            ),
-        )
-        op.create_index(f"ix_{table}_tenant_id", table, ["tenant_id"])
-        op.create_index(f"ix_{table}_created_at", table, ["created_at"])
+        if not inspector.has_table(table):
+            op.create_table(
+                table,
+                sa.Column(
+                    "id",
+                    postgresql.UUID(as_uuid=True),
+                    primary_key=True,
+                    server_default=sa.text("gen_random_uuid()"),
+                ),
+                sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
+                sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
+                sa.Column("data", postgresql.JSONB(), nullable=False, server_default="{}"),
+                sa.Column(
+                    "created_at",
+                    sa.DateTime(timezone=True),
+                    nullable=False,
+                    server_default=sa.text("now()"),
+                ),
+                sa.Column(
+                    "updated_at",
+                    sa.DateTime(timezone=True),
+                    nullable=False,
+                    server_default=sa.text("now()"),
+                ),
+            )
+        op.execute(f'CREATE INDEX IF NOT EXISTS ix_{table}_tenant_id ON "{table}" (tenant_id)')
+        op.execute(f'CREATE INDEX IF NOT EXISTS ix_{table}_created_at ON "{table}" (created_at)')
 
     op.execute(
         "CREATE INDEX IF NOT EXISTS ix_ar_accounts_status ON ar_accounts USING gin((data->'status'));"

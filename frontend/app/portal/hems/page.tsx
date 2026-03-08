@@ -1,5 +1,4 @@
 'use client';
-import { QuantumCardSkeleton } from '@/components/ui';
 import { useToast } from '@/components/ui/ProductPolish';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
 
@@ -167,6 +166,24 @@ export default function HemsPage() {
   const [timeline, setTimeline] = useState<SafetyEvent[]>([]);
   const [timelineBusy, setTimelineBusy] = useState(false);
 
+  // ── Fetch Safety Timeline ───
+  const fetchTimeline = useCallback(async () => {
+    if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
+    setTimelineBusy(true);
+    try {
+      const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/safety-timeline`, {
+        headers: { Authorization: getToken() },
+      });
+      if (!r.ok) throw new Error(await r.text());
+      const data = await r.json();
+      setTimeline(Array.isArray(data) ? data : (data.events ?? []));
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch timeline');
+    } finally {
+      setTimelineBusy(false);
+    }
+  }, [missionId, toast]);
+
   // ── Fetch checklist template on mount ───
   useEffect(() => {
     fetch(`${API}/api/v1/hems/checklist-template`, {
@@ -222,7 +239,7 @@ export default function HemsPage() {
       if (removeHandler) removeHandler();
       clearInterval(pollInterval);
     };
-  }, [missionId, toast]);
+  }, [missionId, toast, fetchTimeline]);
 
   // ── Action Handlers ───
 
@@ -318,24 +335,6 @@ export default function HemsPage() {
       toast.error(e instanceof Error ? e.message : 'Failed to submit weather brief');
     } finally {
       setWxBusy(false);
-    }
-  }
-
-  // ── Fetch Safety Timeline ───
-  async function fetchTimeline() {
-    if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
-    setTimelineBusy(true);
-    try {
-      const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/safety-timeline`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setTimeline(Array.isArray(data) ? data : (data.events ?? []));
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Failed to fetch timeline');
-    } finally {
-      setTimelineBusy(false);
     }
   }
 

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { listPlatformImplementations, listPlatformBlockers } from '@/services/api';
+import { SeverityBadge } from '@/components/ui';
+import { normalizeSeverity } from '@/lib/design-system/severity';
 
 interface Implementation {
   id: string;
@@ -146,11 +148,11 @@ export default function ImplementationsPage() {
                 <div key={b.id} className="py-2 border-b border-white/5 last:border-0">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-text-primary">{b.title}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 font-semibold ${
-                      b.severity === 'CRITICAL' ? 'text-red-400 bg-red-400/10' :
-                      b.severity === 'HIGH' ? 'text-orange-400 bg-orange-400/10' :
-                      'text-yellow-400 bg-yellow-400/10'
-                    }`}>{b.severity}</span>
+                    <SeverityBadge
+                      severity={normalizeSeverity(b.severity)}
+                      size="sm"
+                      label={normalizeSeverity(b.severity)}
+                    />
                   </div>
                   <div className="text-[10px] text-text-muted mt-0.5">Status: {b.status} · {new Date(b.created_at).toLocaleDateString()}</div>
                 </div>

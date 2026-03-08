@@ -69,7 +69,7 @@ def upgrade() -> None:
                 "statement_channels",
                 postgresql.JSONB(astext_type=sa.Text()),
                 nullable=True,
-                server_default="'[\"mail\"]'::jsonb",
+                server_default=sa.text("'[\"mail\"]'::jsonb"),
             ),
         )
 

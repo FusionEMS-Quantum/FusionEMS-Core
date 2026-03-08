@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { clsx } from 'clsx';
+import type { StatusVariant } from '@/lib/design-system/tokens';
 
 const chipVariants = cva(
   [
@@ -30,6 +31,14 @@ const chipVariants = cva(
           'bg-[rgba(56,189,248,0.12)] text-status-info',
           'border border-[rgba(56,189,248,0.25)]',
         ],
+        review: [
+          'bg-[rgba(129,140,248,0.12)] text-[#818cf8]',
+          'border border-[rgba(129,140,248,0.3)]',
+        ],
+        override: [
+          'bg-orange-ghost text-orange',
+          'border border-orange/30',
+        ],
         neutral: [
           'bg-[rgba(255,255,255,0.04)] text-text-muted',
           'border border-border-subtle',
@@ -53,10 +62,10 @@ const dotColors: Record<StatusVariant, string> = {
   warning:  'var(--color-status-warning)',
   critical: 'var(--color-brand-red)',
   info:     'var(--color-status-info)',
+  review:   '#818cf8',
+  override: 'var(--q-orange)',
   neutral:  'var(--color-status-neutral)',
 };
-
-type StatusVariant = 'active' | 'warning' | 'critical' | 'info' | 'neutral';
 
 export interface StatusChipProps
   extends React.HTMLAttributes<HTMLSpanElement>,

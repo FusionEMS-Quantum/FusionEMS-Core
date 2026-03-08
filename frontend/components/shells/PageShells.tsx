@@ -230,7 +230,7 @@ export interface SettingsShellProps {
     readonly icon?: ReactNode;
   }[];
   readonly activeSection: string;
-  readonly onSectionChange: (id: string) => void;
+  readonly onSectionChange: (_id: string) => void;
   readonly children: ReactNode;
   readonly className?: string;
 }

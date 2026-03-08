@@ -1,158 +1,452 @@
 'use client';
 
-import React from 'react';
-import { MetricCard } from '@/components/ui/MetricCard';
-import { ModuleDashboardShell } from '@/components/shells/PageShells';
+import React, { useEffect, useState, useCallback } from 'react';
+import { QuantumTableSkeleton, QuantumEmptyState } from '@/components/ui';
+import {
+  getStaffingReadiness,
+  getStaffingAuditLog,
+  listShiftInstances,
+} from '@/services/api';
 
-const PANEL_STYLE = 'bg-bg-panel border border-[var(--color-border-default)] chamfer-8';
-const LABEL_STYLE = 'text-micro uppercase tracking-widest text-text-muted';
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-type Priority = 'HIGH' | 'MED' | 'LOW';
-
-interface Claim {
+interface CrewMember {
   id: string;
-  patientId: string;
-  dos: string;
-  payer: string;
-  amount: string;
-  priority: Priority;
+  name: string;
+  role: string;
+  certification_level: string;
+  station?: string;
+  on_duty: boolean;
+  fatigue_flagged?: boolean;
+  readiness_score?: number;
+  qualifications?: Qualification[];
 }
 
-interface Activity {
-  time: string;
-  text: string;
+interface Qualification {
+  id: string;
+  cert_type: string;
+  cert_number?: string;
+  issuing_body?: string;
+  issued_date?: string;
+  expiry_date?: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'EXPIRING_SOON' | 'PENDING';
 }
 
-const SAMPLE_CLAIMS: Claim[] = [
-  { id: 'CLM-88412', patientId: 'PT-***4821', dos: '02/14/2026', payer: 'BlueCross BS', amount: '$1,842.00', priority: 'HIGH' },
-  { id: 'CLM-88398', patientId: 'PT-***1193', dos: '02/13/2026', payer: 'Aetna', amount: '$3,210.50', priority: 'HIGH' },
-  { id: 'CLM-88375', patientId: 'PT-***7742', dos: '02/12/2026', payer: 'United Health', amount: '$970.00', priority: 'MED' },
-  { id: 'CLM-88361', patientId: 'PT-***3309', dos: '02/11/2026', payer: 'Cigna', amount: '$2,150.75', priority: 'MED' },
-  { id: 'CLM-88349', patientId: 'PT-***9954', dos: '02/10/2026', payer: 'Medicare', amount: '$680.00', priority: 'LOW' },
-  { id: 'CLM-88337', patientId: 'PT-***6618', dos: '02/09/2026', payer: 'Medicaid', amount: '$455.25', priority: 'LOW' },
-  { id: 'CLM-88321', patientId: 'PT-***2287', dos: '02/08/2026', payer: 'BlueCross BS', amount: '$5,320.00', priority: 'HIGH' },
-  { id: 'CLM-88308', patientId: 'PT-***8801', dos: '02/07/2026', payer: 'Humana', amount: '$1,090.00', priority: 'MED' },
-];
+interface ShiftInstance {
+  id: string;
+  unit_name?: string;
+  start_time: string;
+  end_time: string;
+  assigned_crew?: string[];
+  state: string;
+}
 
-const RECENT_ACTIVITY: Activity[] = [
-  { time: '09:42 AM', text: 'CLM-88412 submitted to BlueCross BS' },
-  { time: '09:28 AM', text: 'Denial worked on CLM-88276 — resubmitted' },
-  { time: '09:11 AM', text: 'Payment posted: CLM-88194 · $2,340.00' },
-  { time: '08:55 AM', text: 'Auth rep document approved — PT-***4821' },
-  { time: '08:39 AM', text: 'CLM-88398 flagged for additional documentation' },
-  { time: '08:22 AM', text: 'Batch upload completed: 14 claims processed' },
-];
+interface ReadinessData {
+  crew?: CrewMember[];
+  summary?: {
+    total_crew: number;
+    on_duty: number;
+    available: number;
+    fatigue_flagged: number;
+    expiring_credentials: number;
+  };
+}
 
-const PRIORITY_STYLE: Record<Priority, React.CSSProperties> = {
-  HIGH: {
-    background: 'rgba(220,38,38,0.15)',
-    border: '1px solid rgba(220,38,38,0.35)',
-    color: 'var(--color-brand-red)',
-  },
-  MED: {
-    background: 'rgba(234,179,8,0.12)',
-    border: '1px solid rgba(234,179,8,0.3)',
-    color: 'var(--color-status-warning)',
-  },
-  LOW: {
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: 'rgba(255,255,255,0.45)',
-  },
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-function PriorityChip({ priority }: { priority: Priority }) {
+function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
+}
+
+function CredentialChip({ qual }: { qual: Qualification }) {
+  const days = qual.expiry_date ? daysUntil(qual.expiry_date) : null;
+  const isExpired = days !== null && days <= 0;
+  const isWarning = days !== null && days > 0 && days <= 30;
+
   return (
-    <span
-      className="chamfer-4 text-body tracking-widest uppercase px-2 py-0.5 font-semibold inline-block"
-      style={{
-        ...PRIORITY_STYLE[priority],
-      }}
-    >
-      {priority}
-    </span>
+    <div className={`chamfer-4 border px-2 py-1 text-micro ${
+      isExpired ? 'bg-red-900/30 border-red-500/40 text-red-300' :
+      isWarning ? 'bg-yellow-900/30 border-yellow-500/40 text-yellow-300' :
+      qual.status === 'PENDING' ? 'bg-blue-900/30 border-blue-500/40 text-blue-300' :
+      'bg-green-900/20 border-green-500/30 text-green-400'
+    }`}>
+      <div className="font-bold">{qual.cert_type}</div>
+      {qual.expiry_date && (
+        <div className="opacity-80">
+          {isExpired ? `Expired ${Math.abs(days!)}d ago` :
+           isWarning ? `Expires in ${days}d` :
+           `Exp ${new Date(qual.expiry_date).toLocaleDateString()}`}
+        </div>
+      )}
+    </div>
   );
 }
 
-export default function StaffDashboardPage() {
+function ReadinessBar({ score }: { score: number }) {
+  const pct = Math.round(score * 100);
+  const color = pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500';
   return (
-    <ModuleDashboardShell
-      title="Staff Dashboard"
-      subtitle="Billing Specialist"
-    >
-      {/* Top stats */}
-      <div className="flex gap-3 mb-6 flex-wrap">
-        <MetricCard label="My Open Claims" value="34" domain="billing" compact />
-        <MetricCard label="Claims Due Today" value="7" domain="billing" compact />
-        <MetricCard label="Pending Authorizations" value="5" domain="billing" compact />
-        <MetricCard label="Flagged for Review" value="3" domain="billing" compact />
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
+      <span className="text-micro font-bold text-text-muted w-8">{pct}%</span>
+    </div>
+  );
+}
 
-      {/* Main content: queue + activity */}
-      <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '1fr 300px' }}>
-        {/* Claims queue */}
-        <div className={`${PANEL_STYLE} overflow-hidden`}>
-          <div className="px-5 py-4 border-b border-[var(--color-border-default)]">
-            <p className={LABEL_STYLE}>My Claims Queue</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-[var(--color-border-default)]">
-                  {['Claim ID', 'Patient ID', 'DOS', 'Payer', 'Amount', 'Priority', 'Action'].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-micro tracking-widest uppercase text-text-muted font-semibold whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
+// ── Roster Table ──────────────────────────────────────────────────────────────
+
+function RosterTable({ crew }: { crew: CrewMember[] }) {
+  const [search, setSearch] = useState('');
+
+  const filtered = crew.filter(c =>
+    !search || c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.role.toLowerCase().includes(search.toLowerCase()) ||
+    c.certification_level.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-3">
+      <input
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="w-full max-w-xs bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+        placeholder="Search name, role, or certification…"
+      />
+      <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-border-subtle">
+              {['Name','Role','Cert Level','Station','Status','Readiness','Credentials'].map(h => (
+                <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(member => {
+              const expiring = (member.qualifications || []).filter(q => {
+                const d = q.expiry_date ? daysUntil(q.expiry_date) : null;
+                return d !== null && d <= 30;
+              });
+              return (
+                <tr key={member.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {member.fatigue_flagged && (
+                        <span title="Fatigue flagged" className="text-orange-400 text-xs">⚠</span>
+                      )}
+                      <span className="text-sm font-semibold text-text-primary">{member.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-text-secondary">{member.role || '—'}</td>
+                  <td className="px-4 py-3 text-sm font-mono text-text-secondary">{member.certification_level || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-text-secondary">{member.station || '—'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-2 h-2 rounded-full ${member.on_duty ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
+                      <span className={`text-xs font-semibold ${member.on_duty ? 'text-green-400' : 'text-gray-500'}`}>
+                        {member.on_duty ? 'On Duty' : 'Off Duty'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 w-32">
+                    {member.readiness_score != null
+                      ? <ReadinessBar score={member.readiness_score} />
+                      : <span className="text-micro text-text-muted">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {expiring.length > 0 ? (
+                        expiring.map(q => <CredentialChip key={q.id} qual={q} />)
+                      ) : (member.qualifications || []).length > 0 ? (
+                        <span className="text-micro text-green-400">✓ {(member.qualifications || []).length} current</span>
+                      ) : (
+                        <span className="text-micro text-text-muted">—</span>
+                      )}
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {SAMPLE_CLAIMS.map((claim, i) => (
-                  <tr key={claim.id} className={`border-b border-[var(--color-border-default)] last:border-0 ${i % 2 === 1 ? 'bg-white/[0.015]' : ''}`}>
-                    <td className="px-4 py-3 text-text-primary text-sm font-medium whitespace-nowrap">{claim.id}</td>
-                    <td className="px-4 py-3 text-text-muted text-sm font-mono whitespace-nowrap">{claim.patientId}</td>
-                    <td className="px-4 py-3 text-text-secondary text-sm whitespace-nowrap">{claim.dos}</td>
-                    <td className="px-4 py-3 text-text-secondary text-sm whitespace-nowrap">{claim.payer}</td>
-                    <td className="px-4 py-3 text-text-primary text-sm font-semibold whitespace-nowrap">{claim.amount}</td>
-                    <td className="px-4 py-3 whitespace-nowrap"><PriorityChip priority={claim.priority} /></td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <button type="button" className="chamfer-4 bg-brand-orange/10 border border-brand-orange/25 text-brand-orange text-body tracking-wider uppercase px-3 py-1 cursor-pointer font-semibold">
-                        Work
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              );
+            })}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
+          <div className="text-center py-8 text-sm text-text-muted">
+            {search ? 'No crew members match your search.' : 'No crew members found.'}
           </div>
-        </div>
-
-        {/* Recent activity */}
-        <div className={`${PANEL_STYLE} overflow-hidden`}>
-          <div className="px-5 py-4 border-b border-[var(--color-border-default)]">
-            <p className={LABEL_STYLE}>Recent Activity</p>
-          </div>
-          <div className="py-2">
-            {RECENT_ACTIVITY.map((a, i) => (
-              <div key={i} className={`flex gap-3 px-[18px] py-3 items-start ${i < RECENT_ACTIVITY.length - 1 ? 'border-b border-[var(--color-border-default)]' : ''}`}>
-                <div className="w-1.5 h-1.5 rounded-full bg-brand-orange/60 mt-1.5 flex-shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-body text-text-secondary mb-0.5 leading-snug">{a.text}</p>
-                  <p className="text-micro text-text-muted">{a.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* Bottom stats */}
-      <div className="flex gap-3 mt-4 flex-wrap">
-        <MetricCard label="Claims Processed Today" value="18" domain="billing" compact />
-        <MetricCard label="Clean Claim Rate" value="91.2%" domain="billing" compact />
-        <MetricCard label="Avg Processing Time" value="2.4d" domain="billing" compact />
-        <MetricCard label="Denials Worked" value="6" domain="billing" compact />
-      </div>
-    </ModuleDashboardShell>
+    </div>
   );
 }
+
+// ── Shifts View ───────────────────────────────────────────────────────────────
+
+function ShiftsView({ shifts }: { shifts: ShiftInstance[] }) {
+  if (shifts.length === 0) {
+    return (
+      <QuantumEmptyState
+        title="No shifts scheduled"
+        description="Create shift templates and generate instances through the Scheduling module."
+        icon="calendar"
+      />
+    );
+  }
+
+  return (
+    <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-border-subtle">
+            {['Unit / Template','Start','End','Crew','State'].map(h => (
+              <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {shifts.map(shift => {
+            const start = new Date(shift.start_time);
+            const end = new Date(shift.end_time);
+            const durationHrs = Math.round((end.getTime() - start.getTime()) / 3600000);
+            return (
+              <tr key={shift.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
+                <td className="px-4 py-3 text-sm font-semibold text-text-primary">{shift.unit_name || shift.id.slice(0, 8)}</td>
+                <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                  {start.toLocaleDateString()} {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </td>
+                <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                  {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <span className="text-micro text-text-muted ml-1">({durationHrs}h)</span>
+                </td>
+                <td className="px-4 py-3 text-sm text-text-secondary">
+                  {(shift.assigned_crew || []).length > 0
+                    ? (shift.assigned_crew || []).join(', ')
+                    : <span className="text-text-muted text-micro italic">Unassigned</span>}
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`text-xs font-semibold px-2 py-0.5 chamfer-4 border ${
+                    shift.state === 'ACTIVE' ? 'bg-green-900/30 border-green-500/40 text-green-300' :
+                    shift.state === 'DRAFT' ? 'bg-gray-800/50 border-gray-600 text-gray-400' :
+                    'bg-blue-900/30 border-blue-500/40 text-blue-300'
+                  }`}>
+                    {shift.state}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── Credential Alert Banner ───────────────────────────────────────────────────
+
+function CredentialAlerts({ crew }: { crew: CrewMember[] }) {
+  const alerts: { name: string; cert: string; days: number }[] = [];
+
+  for (const member of crew) {
+    for (const qual of member.qualifications || []) {
+      if (qual.expiry_date) {
+        const days = daysUntil(qual.expiry_date);
+        if (days <= 60) {
+          alerts.push({ name: member.name, cert: qual.cert_type, days });
+        }
+      }
+    }
+  }
+
+  alerts.sort((a, b) => a.days - b.days);
+
+  if (alerts.length === 0) return null;
+
+  return (
+    <div className="bg-yellow-900/20 border border-yellow-500/30 chamfer-8 p-4 mb-5">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+        <span className="text-sm font-bold text-yellow-400">
+          {alerts.filter(a => a.days <= 0).length > 0
+            ? `⚠ ${alerts.filter(a => a.days <= 0).length} expired + ${alerts.filter(a => a.days > 0).length} expiring credentials`
+            : `${alerts.length} credentials expiring within 60 days`}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {alerts.slice(0, 8).map((a, i) => (
+          <div key={i} className={`chamfer-4 border px-3 py-1.5 text-xs ${
+            a.days <= 0 ? 'bg-red-900/30 border-red-500/40 text-red-300' :
+            a.days <= 14 ? 'bg-orange-900/30 border-orange-500/40 text-orange-300' :
+            'bg-yellow-900/30 border-yellow-500/40 text-yellow-300'
+          }`}>
+            <span className="font-bold">{a.name}</span>
+            <span className="mx-1 opacity-60">·</span>
+            <span>{a.cert}</span>
+            <span className="ml-1 font-mono">
+              {a.days <= 0 ? `(${Math.abs(a.days)}d expired)` : `(${a.days}d)`}
+            </span>
+          </div>
+        ))}
+        {alerts.length > 8 && (
+          <div className="chamfer-4 border border-yellow-500/30 px-3 py-1.5 text-xs text-yellow-400">
+            +{alerts.length - 8} more
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+type ActiveView = 'roster' | 'shifts' | 'audit';
+
+export default function StaffPage() {
+  const [readiness, setReadiness] = useState<ReadinessData | null>(null);
+  const [shifts, setShifts] = useState<ShiftInstance[]>([]);
+  const [auditLog, setAuditLog] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeView, setActiveView] = useState<ActiveView>('roster');
+
+  const refresh = useCallback(async () => {
+    try {
+      const [readData, shiftData] = await Promise.all([
+        getStaffingReadiness().catch(() => null),
+        listShiftInstances().catch(() => []),
+      ]);
+      setReadiness(readData || {});
+      setShifts(Array.isArray(shiftData) ? shiftData : shiftData?.shifts || []);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadAudit = useCallback(async () => {
+    try {
+      const data = await getStaffingAuditLog();
+      setAuditLog(Array.isArray(data) ? data : data?.events || []);
+    } catch {
+      setAuditLog([]);
+    }
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    if (activeView === 'audit') loadAudit();
+  }, [activeView, loadAudit]);
+
+  const crew = readiness?.crew || [];
+  const summary = readiness?.summary;
+
+  const onDuty = summary?.on_duty ?? crew.filter(c => c.on_duty).length;
+  const totalCrew = summary?.total_crew ?? crew.length;
+  const fatigueFlagged = summary?.fatigue_flagged ?? crew.filter(c => c.fatigue_flagged).length;
+  const expiringCreds = summary?.expiring_credentials ??
+    crew.reduce((n, c) => n + (c.qualifications || []).filter(q => q.expiry_date && daysUntil(q.expiry_date) <= 30).length, 0);
+
+  return (
+    <div className="flex flex-col bg-bg-void min-h-screen">
+      {/* Header */}
+      <div className="flex-shrink-0 border-b border-border-subtle bg-bg-panel/50 px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-xs font-black text-text-primary uppercase tracking-widest">Personnel & Credentials Hub</div>
+            <div className="text-micro text-text-muted">Roster management · Credential tracking · Shift coverage · Fatigue monitoring</div>
+          </div>
+          <div className="flex items-center gap-3">
+            {fatigueFlagged > 0 && (
+              <div className="flex items-center gap-1.5 bg-orange-900/30 border border-orange-500/40 chamfer-4 px-3 py-1.5">
+                <span className="text-micro font-bold text-orange-400">⚠ {fatigueFlagged} fatigue flag{fatigueFlagged > 1 ? 's' : ''}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Summary Metrics */}
+        <div className="grid grid-cols-4 gap-3 mt-4">
+          {[
+            { label: 'On Duty Now', value: `${onDuty} / ${totalCrew}`, color: 'text-green-400' },
+            { label: 'Active Shifts', value: shifts.filter(s => s.state === 'ACTIVE').length.toString(), color: 'text-blue-400' },
+            { label: 'Fatigue Flags', value: fatigueFlagged.toString(), color: fatigueFlagged > 0 ? 'text-orange-400' : 'text-text-muted' },
+            { label: 'Creds Expiring (30d)', value: expiringCreds.toString(), color: expiringCreds > 0 ? 'text-yellow-400' : 'text-text-muted' },
+          ].map(m => (
+            <div key={m.label} className="bg-bg-panel border border-border-subtle chamfer-8 px-4 py-3">
+              <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+              <div className="text-micro text-text-muted mt-0.5">{m.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* View Toggle */}
+        <div className="flex items-center gap-1 mt-4">
+          {(['roster','shifts','audit'] as const).map(v => (
+            <button
+              key={v}
+              onClick={() => setActiveView(v)}
+              className={`px-4 py-2 text-micro font-semibold capitalize border-b-2 transition-colors ${
+                activeView === v ? 'border-brand-orange text-brand-orange' : 'border-transparent text-text-muted hover:text-text-secondary'
+              }`}
+            >
+              {v === 'roster' ? 'Crew Roster' : v === 'shifts' ? 'Shift Schedule' : 'Audit Log'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 p-5">
+        {loading ? (
+          <QuantumTableSkeleton rows={6} />
+        ) : activeView === 'roster' ? (
+          <>
+            {crew.length > 0 && <CredentialAlerts crew={crew} />}
+            {crew.length === 0 ? (
+              <QuantumEmptyState
+                title="No crew members on file"
+                description="Crew members are added through user provisioning in tenant administration."
+                icon="users"
+              />
+            ) : (
+              <RosterTable crew={crew} />
+            )}
+          </>
+        ) : activeView === 'shifts' ? (
+          <ShiftsView shifts={shifts} />
+        ) : (
+          /* Audit Log */
+          auditLog.length === 0 ? (
+            <QuantumEmptyState title="No audit events" description="Staffing audit events will appear here." icon="document" />
+          ) : (
+            <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-border-subtle">
+                    {['Timestamp','Actor','Action','Target','Details'].map(h => (
+                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLog.slice(0, 100).map((event, i) => (
+                    <tr key={i} className="border-b border-border-subtle hover:bg-white/[0.02]">
+                      <td className="px-4 py-3 text-xs font-mono text-text-muted">
+                        {event.created_at ? new Date(event.created_at as string).toLocaleString() : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-text-secondary">{(event.actor as string) || '—'}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-brand-orange">{(event.action as string) || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-text-secondary">{(event.target as string) || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-text-muted max-w-xs truncate">
+                        {event.details ? JSON.stringify(event.details) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+

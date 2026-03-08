@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import json
 import logging
 import uuid
@@ -14,6 +15,7 @@ from sqlalchemy.orm import Session
 from core_app.api import voice_payment_helper
 from core_app.api.dependencies import db_session_dependency
 from core_app.core.config import get_settings
+from core_app.services.telephony_ai_worker import decide_next_action
 from core_app.telnyx.client import (
     TelnyxApiError,
     call_answer,
@@ -53,6 +55,18 @@ def _utcnow() -> str:
 
 
 def _resolve_tenant_by_did(db: Session, to_number: str) -> dict[str, Any] | None:
+    settings = get_settings()
+    central_phone = (settings.central_billing_phone_e164 or "").strip()
+    if central_phone and to_number == central_phone:
+        return {"tenant_id": None, "forward_to": settings.founder_billing_escalation_phone_e164 or None}
+
+    row = db.execute(
+        text("SELECT phone_e164 FROM central_billing_lines WHERE phone_e164 = :phone AND is_active = true LIMIT 1"),
+        {"phone": to_number},
+    ).fetchone()
+    if row:
+        return {"tenant_id": None, "forward_to": settings.founder_billing_escalation_phone_e164 or None}
+
     row = db.execute(
         text(
             "SELECT tenant_id, forward_to_phone_e164 "
@@ -73,16 +87,31 @@ def _resolve_tenant_by_did(db: Session, to_number: str) -> dict[str, Any] | None
 def _get_or_create_call(
     db: Session,
     call_control_id: str,
-    tenant_id: str,
+    tenant_id: str | None,
     from_phone: str,
     to_phone: str,
 ) -> dict[str, Any]:
     row = db.execute(
-        text("SELECT * FROM telnyx_calls WHERE call_control_id = :cid"),
+        text(
+            "SELECT call_control_id, tenant_id, from_phone, to_phone, state, attempts, statement_id, sms_phone "
+            "FROM telnyx_calls WHERE call_control_id = :cid"
+        ),
         {"cid": call_control_id},
     ).fetchone()
     if row:
-        return dict(row._mapping)
+        row_as_dict = row._asdict() if hasattr(row, "_asdict") else None
+        if isinstance(row_as_dict, dict):
+            return row_as_dict
+        return {
+            "call_control_id": getattr(row, "call_control_id", call_control_id),
+            "tenant_id": getattr(row, "tenant_id", tenant_id),
+            "from_phone": getattr(row, "from_phone", from_phone),
+            "to_phone": getattr(row, "to_phone", to_phone),
+            "state": getattr(row, "state", STATE_MENU),
+            "attempts": getattr(row, "attempts", 0),
+            "statement_id": getattr(row, "statement_id", None),
+            "sms_phone": getattr(row, "sms_phone", None),
+        }
     db.execute(
         text(
             "INSERT INTO telnyx_calls "
@@ -107,6 +136,190 @@ def _get_or_create_call(
     }
 
 
+def _ensure_voice_session(
+    db: Session,
+    *,
+    call_control_id: str,
+    from_phone: str,
+    to_phone: str,
+) -> None:
+    db.execute(
+        text(
+            """
+            INSERT INTO billing_voice_sessions (
+                session_id, call_control_id, caller_phone_number, central_line_phone,
+                state, verification_state, started_at, created_at, updated_at
+            ) VALUES (
+                :sid, :cid, :from_phone, :to_phone,
+                'CALL_RECEIVED', 'LOOKUP_PENDING', :now, :now, :now
+            )
+            ON CONFLICT (session_id) DO NOTHING
+            """
+        ),
+        {
+            "sid": call_control_id,
+            "cid": call_control_id,
+            "from_phone": from_phone,
+            "to_phone": to_phone,
+            "now": _utcnow(),
+        },
+    )
+    db.commit()
+
+
+def _update_voice_session(db: Session, call_control_id: str, **fields: Any) -> None:
+    if not fields:
+        return
+    set_parts = ", ".join(f"{k} = :{k}" for k in fields)
+    db.execute(
+        text(
+            f"UPDATE billing_voice_sessions SET {set_parts}, updated_at = :updated_at WHERE session_id = :sid"
+        ),
+        {
+            **fields,
+            "updated_at": _utcnow(),
+            "sid": call_control_id,
+        },
+    )
+    db.commit()
+
+
+def _log_voice_event(
+    db: Session,
+    *,
+    call_control_id: str,
+    tenant_id: str | None,
+    event_type: str,
+    event_data: dict[str, Any],
+    risk_level: str | None = None,
+) -> None:
+    db.execute(
+        text(
+            """
+            INSERT INTO voice_automation_audit_events (
+                session_id, tenant_id, event_type, event_data, risk_level, created_at
+            ) VALUES (
+                (SELECT id FROM billing_voice_sessions WHERE session_id = :sid),
+                :tenant_id::uuid, :event_type, :event_data::jsonb, :risk_level, :now
+            )
+            """
+        ),
+        {
+            "sid": call_control_id,
+            "tenant_id": tenant_id,
+            "event_type": event_type,
+            "event_data": json.dumps(event_data),
+            "risk_level": risk_level,
+            "now": _utcnow(),
+        },
+    )
+    db.commit()
+
+
+def _resolve_account_context(db: Session, lookup_key: str) -> dict[str, Any] | None:
+    sid = (lookup_key or "").strip()
+    if not sid:
+        return None
+
+    # 1) billing_cases.id text match
+    row = db.execute(
+        text(
+            "SELECT tenant_id, id::text AS account_id, id::text AS statement_id "
+            "FROM billing_cases WHERE id::text = :sid LIMIT 1"
+        ),
+        {"sid": sid},
+    ).fetchone()
+    if row:
+        return {
+            "tenant_id": str(row.tenant_id),
+            "account_id": str(row.account_id),
+            "statement_id": str(row.statement_id),
+        }
+
+    # 2) lob_letters.statement_id match
+    row2 = db.execute(
+        text(
+            "SELECT tenant_id, claim_id::text AS account_id, statement_id::text AS statement_id "
+            "FROM lob_letters WHERE statement_id::text = :sid LIMIT 1"
+        ),
+        {"sid": sid},
+    ).fetchone()
+    if row2:
+        return {
+            "tenant_id": str(row2.tenant_id),
+            "account_id": str(row2.account_id),
+            "statement_id": str(row2.statement_id),
+        }
+
+    return None
+
+
+def _get_billing_policy(db: Session, tenant_id: str | None) -> dict[str, Any]:
+    if not tenant_id:
+        return {}
+    row = db.execute(
+        text(
+            "SELECT policy_json, allow_ai_payment_link_resend, allow_ai_statement_resend, "
+            "allow_ai_payment_plan_intake, allow_ai_balance_inquiry "
+            "FROM billing_phone_policies WHERE tenant_id = :tid::uuid LIMIT 1"
+        ),
+        {"tid": tenant_id},
+    ).fetchone()
+    if not row:
+        return {}
+    base = dict(row.policy_json or {})
+    base.update(
+        {
+            "allow_ai_payment_link_resend": bool(row.allow_ai_payment_link_resend),
+            "allow_ai_statement_resend": bool(row.allow_ai_statement_resend),
+            "allow_ai_payment_plan_intake": bool(row.allow_ai_payment_plan_intake),
+            "allow_ai_balance_inquiry": bool(row.allow_ai_balance_inquiry),
+        }
+    )
+    return base
+
+
+def _create_escalation(
+    db: Session,
+    *,
+    call_control_id: str,
+    tenant_id: str | None,
+    caller_phone: str,
+    statement_id: str | None,
+    account_id: str | None,
+    reason: str,
+    ai_summary: str,
+) -> None:
+    db.execute(
+        text(
+            """
+            INSERT INTO billing_call_escalations (
+                session_id, tenant_id, caller_phone_number, statement_id, account_id,
+                ai_summary, escalation_reason, recommended_next_action,
+                status, created_at, updated_at
+            ) VALUES (
+                (SELECT id FROM billing_voice_sessions WHERE session_id = :sid),
+                :tenant_id::uuid, :caller_phone, :statement_id, :account_id,
+                :ai_summary, :reason, :next_action,
+                'awaiting_human', :now, :now
+            )
+            """
+        ),
+        {
+            "sid": call_control_id,
+            "tenant_id": tenant_id,
+            "caller_phone": caller_phone,
+            "statement_id": statement_id,
+            "account_id": account_id,
+            "ai_summary": ai_summary,
+            "reason": reason,
+            "next_action": "Founder takeover with full account context",
+            "now": _utcnow(),
+        },
+    )
+    db.commit()
+
+
 def _update_call(db: Session, call_control_id: str, **fields: Any) -> None:
     set_parts = ", ".join(f"{k} = :{k}" for k in fields)
     fields["cid"] = call_control_id
@@ -122,15 +335,18 @@ def _update_call(db: Session, call_control_id: str, **fields: Any) -> None:
 
 def _get_call(db: Session, call_control_id: str) -> dict[str, Any] | None:
     row = db.execute(
-        text("SELECT * FROM telnyx_calls WHERE call_control_id = :cid"),
+        text(
+            "SELECT call_control_id, tenant_id, from_phone, to_phone, state, attempts, statement_id, sms_phone "
+            "FROM telnyx_calls WHERE call_control_id = :cid"
+        ),
         {"cid": call_control_id},
     ).fetchone()
     if row is None:
         return None
-    data = dict(row._mapping)
-    if data:
-        return data
-    # Fallback for test mocks: _mapping may not iterate correctly
+    row_as_dict = row._asdict() if hasattr(row, "_asdict") else None
+    if isinstance(row_as_dict, dict):
+        return row_as_dict
+
     return {
         "state": getattr(row, "state", STATE_MENU),
         "attempts": getattr(row, "attempts", 0),
@@ -164,7 +380,8 @@ def _insert_event(
         },
     )
     db.commit()
-    return (result.rowcount or 0) > 0
+    rowcount = getattr(result, "rowcount", 0)
+    return int(rowcount or 0) > 0
 
 
 def _mark_event_processed(db: Session, event_id: str) -> None:
@@ -194,6 +411,8 @@ def _validate_statement(db: Session, tenant_id: str, statement_id_digits: str) -
 
 
 def _check_opt_out(db: Session, tenant_id: str, phone_e164: str) -> bool:
+    if not tenant_id:
+        return False
     row = db.execute(
         text(
             "SELECT 1 FROM telnyx_opt_outs WHERE tenant_id = :tid AND phone_e164 = :phone LIMIT 1"
@@ -204,6 +423,8 @@ def _check_opt_out(db: Session, tenant_id: str, phone_e164: str) -> bool:
 
 
 def _get_tenant_forward(db: Session, tenant_id: str) -> str | None:
+    if not tenant_id:
+        return None
     row = db.execute(
         text(
             "SELECT forward_to_phone_e164 FROM tenant_phone_numbers "
@@ -313,8 +534,8 @@ async def telnyx_voice_webhook(
 
     try:
         payload = json.loads(raw_body)
-    except Exception:
-        raise HTTPException(status_code=400, detail="invalid_json")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="invalid_json") from exc
 
     data = payload.get("data", {})
     event_id: str = data.get("id") or str(uuid.uuid4())
@@ -390,11 +611,20 @@ async def _dispatch_voice_event(
         return
 
     if event_type == "call.answered":
-        if not tenant_id:
-            logger.warning("ivr_no_tenant_for_did to=%s", to_number)
-            call_hangup(api_key=api_key, call_control_id=call_control_id)
-            return
         _get_or_create_call(db, call_control_id, tenant_id, from_number, to_number)
+        _ensure_voice_session(
+            db,
+            call_control_id=call_control_id,
+            from_phone=from_number,
+            to_phone=to_number,
+        )
+        _log_voice_event(
+            db,
+            call_control_id=call_control_id,
+            tenant_id=tenant_id,
+            event_type="call_answered",
+            event_data={"from": from_number, "to": to_number},
+        )
         _play_menu(api_key, call_control_id, call_control_id)
         return
 
@@ -439,7 +669,7 @@ async def _handle_gather(
     try:
         call_state_bytes = base64.b64decode(raw_client_state + "==")
         call_state = call_state_bytes.decode("utf-8")
-    except Exception:
+    except (ValueError, UnicodeDecodeError, binascii.Error):
         call_state = raw_client_state
 
     call_record = _get_call(db, call_control_id)
@@ -452,6 +682,23 @@ async def _handle_gather(
     )
 
     if status == "no_input" or not digits:
+        _update_voice_session(
+            db,
+            call_control_id,
+            state="HUMAN_HANDOFF_REQUIRED",
+            handoff_required=True,
+            handoff_reason="no_input",
+        )
+        _create_escalation(
+            db,
+            call_control_id=call_control_id,
+            tenant_id=tenant_id,
+            caller_phone=from_number,
+            statement_id=call_record.get("statement_id"),
+            account_id=None,
+            reason="no_input",
+            ai_summary="Caller provided no usable input; requires human follow-up.",
+        )
         _update_call(db, call_control_id, state=STATE_TRANSFER)
         _do_transfer(api_key, call_control_id, forward_to, from_number)
         return
@@ -471,12 +718,32 @@ async def _handle_gather(
 
     if current_state == STATE_COLLECT_STMT:
         attempts: int = call_record.get("attempts", 0)
+        tenant_for_validation = str(call_record.get("tenant_id") or tenant_id or "")
         if not digits or len(digits) < 6:
+            _update_voice_session(
+                db,
+                call_control_id,
+                state="HUMAN_HANDOFF_REQUIRED",
+                handoff_required=True,
+                handoff_reason="invalid_lookup_key",
+            )
             _update_call(db, call_control_id, state=STATE_TRANSFER)
             _do_transfer(api_key, call_control_id, forward_to, from_number)
             return
-        valid = _validate_statement(db, tenant_id or "", digits) if tenant_id else False
-        if not valid:
+        context = _resolve_account_context(db, digits)
+        statement_valid = bool(
+            tenant_for_validation
+            and _validate_statement(db, tenant_for_validation, digits)
+        )
+
+        if context is None and statement_valid:
+            context = {
+                "tenant_id": tenant_for_validation,
+                "statement_id": digits,
+                "account_id": digits,
+            }
+
+        if not context:
             if attempts < MAX_STMT_RETRIES:
                 _update_call(db, call_control_id, attempts=attempts + 1)
                 call_playback_start(
@@ -486,15 +753,53 @@ async def _handle_gather(
                 )
                 _play_collect_statement(api_key, call_control_id)
             else:
+                _update_voice_session(
+                    db,
+                    call_control_id,
+                    state="HUMAN_HANDOFF_REQUIRED",
+                    handoff_required=True,
+                    handoff_reason="lookup_not_found",
+                )
+                _create_escalation(
+                    db,
+                    call_control_id=call_control_id,
+                    tenant_id=tenant_id,
+                    caller_phone=from_number,
+                    statement_id=digits,
+                    account_id=None,
+                    reason="lookup_not_found",
+                    ai_summary="Statement/account lookup failed after retry.",
+                )
                 _update_call(db, call_control_id, state=STATE_TRANSFER)
                 _do_transfer(api_key, call_control_id, forward_to, from_number)
         else:
+            resolved_tenant_id = context["tenant_id"]
             _update_call(
                 db,
                 call_control_id,
                 state=STATE_COLLECT_PHONE,
-                statement_id=digits,
+                statement_id=context.get("statement_id") or digits,
+                tenant_id=resolved_tenant_id,
                 attempts=0,
+            )
+            _update_voice_session(
+                db,
+                call_control_id,
+                state="LOOKUP_RESOLVED",
+                verification_state="LOOKUP_RESOLVED",
+                tenant_id=resolved_tenant_id,
+                statement_id=context.get("statement_id") or digits,
+                account_id=context.get("account_id"),
+            )
+            _log_voice_event(
+                db,
+                call_control_id=call_control_id,
+                tenant_id=resolved_tenant_id,
+                event_type="lookup_resolved",
+                event_data={
+                    "statement_id": context.get("statement_id") or digits,
+                    "account_id": context.get("account_id"),
+                },
             )
             _play_collect_phone(api_key, call_control_id)
         return
@@ -510,8 +815,9 @@ async def _handle_gather(
             return
 
         phone_e164 = _normalize_e164_us(digits)
+        effective_tenant = call_record.get("tenant_id") or tenant_id
 
-        if _check_opt_out(db, tenant_id or "", phone_e164):
+        if _check_opt_out(db, str(effective_tenant or ""), phone_e164):
             logger.info("ivr_opted_out phone=%s tenant_id=%s", phone_e164, tenant_id)
             _update_call(db, call_control_id, state=STATE_TRANSFER)
             _do_transfer(api_key, call_control_id, forward_to, from_number)
@@ -519,14 +825,62 @@ async def _handle_gather(
 
         statement_id: str = call_record.get("statement_id", "")
 
+        policy = _get_billing_policy(db, effective_tenant)
+        decision = decide_next_action(
+            utterance="text me the payment link",
+            verification_ok=True,
+            policy=policy,
+        )
+
+        if decision.action == "escalate_to_founder":
+            _update_voice_session(
+                db,
+                call_control_id,
+                state="HUMAN_HANDOFF_REQUIRED",
+                handoff_required=True,
+                handoff_reason=decision.reason,
+                ai_intent=decision.intent,
+                ai_summary="AI policy engine blocked autonomous action; escalation required.",
+            )
+            _create_escalation(
+                db,
+                call_control_id=call_control_id,
+                tenant_id=effective_tenant,
+                caller_phone=from_number,
+                statement_id=statement_id,
+                account_id=None,
+                reason=decision.reason,
+                ai_summary="Policy-aware AI required human takeover before sending payment workflow.",
+            )
+            _update_call(db, call_control_id, state=STATE_TRANSFER)
+            _do_transfer(api_key, call_control_id, forward_to, from_number)
+            return
+
         await voice_payment_helper.send_payment_link_for_call(
             db=db,
             api_key=api_key,
             settings=settings,
-            tenant_id=tenant_id or "",
+            tenant_id=effective_tenant or "",
             statement_id=statement_id,
             phone_e164=phone_e164,
             from_number=to_number,
+        )
+
+        _update_voice_session(
+            db,
+            call_control_id,
+            state="ACTION_COMPLETED",
+            verification_state="VERIFIED",
+            ai_intent=decision.intent,
+            ai_summary="Payment link sent successfully by centralized AI billing workflow.",
+        )
+        _log_voice_event(
+            db,
+            call_control_id=call_control_id,
+            tenant_id=effective_tenant,
+            event_type="send_sms_link",
+            event_data={"statement_id": statement_id, "to_phone": phone_e164},
+            risk_level="low",
         )
 
         _update_call(db, call_control_id, state=STATE_DONE, sms_phone=phone_e164)

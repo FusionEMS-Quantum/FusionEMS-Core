@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState, useCallback } from 'react';
+import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface FilterOption {
@@ -15,10 +15,10 @@ export interface FilterBarProps {
     readonly label: string;
     readonly options: readonly FilterOption[];
     readonly value: string;
-    readonly onChange: (value: string) => void;
+    readonly onChange: (_value: string) => void;
   }[];
   readonly searchValue?: string;
-  readonly onSearchChange?: (value: string) => void;
+  readonly onSearchChange?: (_value: string) => void;
   readonly searchPlaceholder?: string;
   readonly actions?: ReactNode;
   readonly className?: string;
@@ -114,7 +114,7 @@ export interface TabItem {
 export interface TabBarProps {
   readonly tabs: readonly TabItem[];
   readonly activeTab: string;
-  readonly onTabChange: (tabId: string) => void;
+  readonly onTabChange: (_tabId: string) => void;
   readonly size?: 'sm' | 'md';
   readonly className?: string;
 }
@@ -280,7 +280,7 @@ export function RecordSummary({
 
 export interface SimpleModeToggleProps {
   readonly isSimple: boolean;
-  readonly onToggle: (value: boolean) => void;
+  readonly onToggle: (_value: boolean) => void;
   readonly className?: string;
 }
 

@@ -1,6 +1,4 @@
 'use client';
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
@@ -208,9 +206,9 @@ function IncidentList({
   loading: boolean;
   selectedId: string | null;
   statusFilter: StatusFilter;
-  onSelect: (inc: Incident) => void;
+  onSelect: (_inc: Incident) => void;
   onNew: () => void;
-  onFilterChange: (f: StatusFilter) => void;
+  onFilterChange: (_f: StatusFilter) => void;
 }) {
   const filters: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -284,12 +282,10 @@ function IncidentList({
 // ─── Form Section Accordion ───────────────────────────────────────────────────
 
 function FormSection({
-  id,
   label,
   errorCount,
   children,
 }: {
-  id: string;
   label: string;
   errorCount: number;
   children: React.ReactNode;
@@ -362,8 +358,8 @@ function IncidentForm({
   packRules: PackRules | null;
   apparatus: ApparatusOption[];
   departmentId: string | null;
-  onSaved: (inc: Incident) => void;
-  pushToast: (msg: string, type: 'success' | 'error') => void;
+  onSaved: (_inc: Incident) => void;
+  pushToast: (_msg: string, _type: 'success' | 'error') => void;
 }) {
   const [form, setForm] = useState<IncidentForm>(makeEmptyForm());
   const [savingDraft, setSavingDraft] = useState(false);
@@ -569,7 +565,7 @@ function IncidentForm({
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
 
         {/* ── Section: Incident Basics ── */}
-        <FormSection id="incident_basics" label="Incident Basics" errorCount={sectionErrors('incident_basics')}>
+        <FormSection label="Incident Basics" errorCount={sectionErrors('incident_basics')}>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Incident Number" required error={fieldError('incident_number')}>
               <input
@@ -653,7 +649,7 @@ function IncidentForm({
         </FormSection>
 
         {/* ── Section: Property Information ── */}
-        <FormSection id="property_information" label="Property Information" errorCount={sectionErrors('property_information')}>
+        <FormSection label="Property Information" errorCount={sectionErrors('property_information')}>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Property Use Code" error={fieldError('property_use_code')}>
               <select
@@ -697,7 +693,7 @@ function IncidentForm({
         </FormSection>
 
         {/* ── Section: Units & Personnel ── */}
-        <FormSection id="units_personnel" label="Units & Personnel" errorCount={sectionErrors('units_personnel')}>
+        <FormSection label="Units & Personnel" errorCount={sectionErrors('units_personnel')}>
           <div className="space-y-3">
             {form.units.map((unit, i) => (
               <div key={i} className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] chamfer-4 p-3">
@@ -768,7 +764,7 @@ function IncidentForm({
         </FormSection>
 
         {/* ── Section: Actions Taken ── */}
-        <FormSection id="actions_taken" label="Actions Taken" errorCount={sectionErrors('actions_taken')}>
+        <FormSection label="Actions Taken" errorCount={sectionErrors('actions_taken')}>
           <div className="space-y-3">
             {form.actions.map((action, i) => (
               <div key={i} className="flex items-end gap-3">
@@ -840,7 +836,7 @@ function IncidentForm({
         </FormSection>
 
         {/* ── Section: Outcomes ── */}
-        <FormSection id="outcomes" label="Outcomes" errorCount={sectionErrors('outcomes')}>
+        <FormSection label="Outcomes" errorCount={sectionErrors('outcomes')}>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Civilian Injuries" error={fieldError('civilian_injuries')}>
               <input type="number" min={0} value={form.civilian_injuries} onChange={(e) => update('civilian_injuries', e.target.value)} className={getInputClass('civilian_injuries')} />

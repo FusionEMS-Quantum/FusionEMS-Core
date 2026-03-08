@@ -341,3 +341,172 @@ async def fatigue_report(
             }
         )
     return {"report": sorted(report, key=lambda x: x["hours_last_7d"], reverse=True)}
+
+
+# ── Shift Swap Endpoints ──────────────────────────────────────────────────
+
+
+@router.post("/swaps/request")
+async def request_swap(
+    payload: dict[str, Any],
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    svc = DominationService(db, get_event_publisher())
+    data = dict(payload)
+    data["requester_id"] = str(current.user_id)
+    data["state"] = "REQUESTED"
+    return await svc.create(
+        table="shift_swap_requests",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data=data,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+
+
+@router.post("/swaps/{swap_id}/approve")
+async def approve_swap(
+    swap_id: uuid.UUID,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "supervisor"])
+    svc = DominationService(db, get_event_publisher())
+    swap = svc.repo("shift_swap_requests").get(
+        tenant_id=current.tenant_id, record_id=swap_id
+    )
+    if swap is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="swap_not_found")
+    return await svc.update(
+        table="shift_swap_requests",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        record_id=swap_id,
+        expected_version=swap["version"],
+        patch={
+            "state": "APPROVED",
+            "approver_id": str(current.user_id),
+            "approved_at": _dt.datetime.now(tz=_dt.UTC).isoformat(),
+        },
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+
+
+@router.post("/swaps/{swap_id}/deny")
+async def deny_swap(
+    swap_id: uuid.UUID,
+    payload: dict[str, Any],
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "supervisor"])
+    svc = DominationService(db, get_event_publisher())
+    swap = svc.repo("shift_swap_requests").get(
+        tenant_id=current.tenant_id, record_id=swap_id
+    )
+    if swap is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="swap_not_found")
+    return await svc.update(
+        table="shift_swap_requests",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        record_id=swap_id,
+        expected_version=swap["version"],
+        patch={
+            "state": "DENIED",
+            "denied_reason": payload.get("reason", ""),
+        },
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+
+
+@router.get("/swaps")
+async def list_swaps(
+    state: str | None = None,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    svc = DominationService(db, get_event_publisher())
+    swaps = svc.repo("shift_swap_requests").list(
+        tenant_id=current.tenant_id, limit=200
+    )
+    if state:
+        swaps = [s for s in swaps if s.get("data", {}).get("state") == state]
+    return {"swaps": swaps}
+
+
+# ── Coverage Rules ────────────────────────────────────────────────────────
+
+
+@router.post("/coverage/rules")
+async def create_coverage_rule(
+    payload: dict[str, Any],
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin"])
+    svc = DominationService(db, get_event_publisher())
+    return await svc.create(
+        table="coverage_rules",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data=payload,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+
+
+@router.get("/coverage/rules")
+async def list_coverage_rules(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    svc = DominationService(db, get_event_publisher())
+    return svc.repo("coverage_rules").list(tenant_id=current.tenant_id, limit=100)
+
+
+# ── Fatigue Assessment ────────────────────────────────────────────────────
+
+
+@router.post("/fatigue/assess")
+async def assess_fatigue(
+    payload: dict[str, Any],
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    svc = DominationService(db, get_event_publisher())
+    hours_on = float(payload.get("hours_on_duty", 0))
+    hours_awake = float(payload.get("hours_since_last_sleep", 0))
+    calls = int(payload.get("calls_this_shift", 0))
+
+    risk = "LOW"
+    fit = True
+    if hours_on >= 16 or hours_awake >= 24:
+        risk = "HIGH"
+        fit = False
+    elif hours_on >= 12 or calls >= 12:
+        risk = "MODERATE"
+
+    assessment_data = {
+        **payload,
+        "user_id": str(payload.get("user_id", current.user_id)),
+        "fatigue_risk_level": risk,
+        "fit_for_duty": fit,
+        "assessed_at": _dt.datetime.now(tz=_dt.UTC).isoformat(),
+    }
+    return await svc.create(
+        table="fatigue_assessments",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data=assessment_data,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )

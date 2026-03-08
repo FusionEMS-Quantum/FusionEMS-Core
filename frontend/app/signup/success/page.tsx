@@ -17,6 +17,24 @@ type ProvisioningStatus =
 interface StatusResponse {
   application_id: string;
   provisioning_status: ProvisioningStatus;
+  success_payload?: {
+    billing_mode?: string;
+    operational_mode?: string;
+    centralized_billing?: {
+      enabled?: boolean;
+      statement_prefix?: string | null;
+    };
+    export_pipeline?: {
+      enabled?: boolean;
+      mode?: string;
+    };
+    external_cad?: {
+      ingest_ready?: boolean;
+    };
+    hems?: {
+      aviation_profile_ready?: boolean;
+    };
+  };
   current_step?: string;
   step_detail?: string;
   progress_percent?: number;
@@ -176,6 +194,7 @@ export default function SuccessPage() {
 
   const currentStatus: ProvisioningStatus = statusData?.provisioning_status || 'pending';
   const progress = statusData?.progress_percent ?? (isComplete ? 100 : undefined);
+  const successPayload = statusData?.success_payload;
 
   return (
     <div
@@ -409,6 +428,46 @@ export default function SuccessPage() {
         >
           <span className="font-semibold">Provisioning Error: </span>
           {statusData.error_message}
+        </div>
+      )}
+
+      {isComplete && successPayload && (
+        <div
+          className="chamfer-4 border px-4 py-4 mb-5"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.02)',
+            borderColor: 'rgba(255,255,255,0.08)',
+          }}
+        >
+          <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            Mode-Aware Readiness
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            {successPayload.centralized_billing?.enabled && (
+              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(255,107,26,0.25)', backgroundColor: 'rgba(255,107,26,0.07)' }}>
+                <div className="font-semibold" style={{ color: 'var(--q-orange)' }}>Centralized RCM Enabled</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)' }}>Single billing number active. Statement prefix: {successPayload.centralized_billing.statement_prefix || 'FEM'}.</div>
+              </div>
+            )}
+            {successPayload.export_pipeline?.enabled && (
+              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(34,211,238,0.25)', backgroundColor: 'rgba(34,211,238,0.07)' }}>
+                <div className="font-semibold" style={{ color: 'var(--color-status-info)' }}>Third-Party Export Mode</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)' }}>Export handoff ready ({successPayload.export_pipeline.mode || 'sftp_api_handoff'}).</div>
+              </div>
+            )}
+            {successPayload.external_cad?.ingest_ready && (
+              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(76,175,80,0.25)', backgroundColor: 'rgba(76,175,80,0.07)' }}>
+                <div className="font-semibold" style={{ color: 'var(--color-status-active)' }}>External 911 CAD Ingest Ready</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)' }}>Webhook ingress endpoint generated for county CAD integration.</div>
+              </div>
+            )}
+            {successPayload.hems?.aviation_profile_ready && (
+              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(192,132,252,0.25)', backgroundColor: 'rgba(192,132,252,0.07)' }}>
+                <div className="font-semibold" style={{ color: '#c084fc' }}>HEMS Aviation Profile Ready</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)' }}>Tail/base aviation setup initialized for mission readiness workflows.</div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

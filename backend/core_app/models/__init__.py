@@ -1,4 +1,5 @@
 # Core Models
+from . import governance  # noqa: F401  # ensure governance tables register with metadata
 from .agency import (
     AgencyBillingPolicy,
     AgencyCollectionsPolicy,
@@ -94,11 +95,35 @@ from .billing import (
     PaymentLinkEvent,
     ReminderEvent,
 )
+
+# ── CAD Models ────────────────────────────────────────────────────────────────
+from .cad import (
+    CADCall,
+    CADCallPriority,
+    CADCallState,
+    CADTimelineEvent,
+    CADUnit,
+    CADUnitAssignment,
+    CADUnitState,
+    CADUnitStatusEvent,
+)
 from .communications import (
+    AddressVerificationRecord,
     AgencyPhoneNumber,
+    AIReplyDecision,
+    CommunicationAuditEvent,
+    CommunicationChannelStatus,
+    CommunicationDeliveryEvent,
     CommunicationMessage,
+    CommunicationPolicy,
+    CommunicationTemplate,
     CommunicationThread,
+    CommunicationThreadState,
+    FaxDeliveryRecord,
+    HumanTakeoverState,
     MailFulfillmentRecord,
+    PatientCommunicationConsent,
+    TelecomProvisioningRun,
 )
 from .contact_preference import (
     CommunicationOptOutEvent,
@@ -106,7 +131,18 @@ from .contact_preference import (
     ContactPreference,
     LanguagePreference,
 )
-from .crewlink import CrewMissionAssignment, CrewPagingAlert, CrewPagingRecipient, CrewPushDevice
+from .crewlink import (
+    AlertState,
+    CrewMissionAssignment,
+    CrewPagingAlert,
+    CrewPagingAuditEvent,
+    CrewPagingEscalationEvent,
+    CrewPagingEscalationRule,
+    CrewPagingRecipient,
+    CrewPagingResponse,
+    CrewPushDevice,
+    CrewStatusEvent,
+)
 
 # Customer Success Platform Models
 from .customer_success import (
@@ -158,7 +194,40 @@ from .facility import (
     FacilityRelationshipNote,
     FacilityServiceProfile,
 )
+
+# ── Fire / NERIS Models ──────────────────────────────────────────────────────
+from .fire import (
+    FireApparatusRecord,
+    FireHydrant,
+    FireIncident,
+    FireInspection,
+    FireInspectionStatus,
+    FirePersonnelAssignment,
+    FirePreplan,
+    NERISExportJob,
+    NERISExportState,
+    NERISIncidentType,
+)
+from .fire_rms import InspectionViolation
 from .incident import Incident
+from .integration_connectors import (
+    APIClientCredential,
+    APIClientQuota,
+    APIClientUsageWindow,
+    APIKeyState,
+    ConnectorCatalog,
+    ConnectorInstallState,
+    ConnectorProfile,
+    ConnectorSecretMaterialization,
+    ConnectorSyncJob,
+    ConnectorWebhookDelivery,
+    ConnectorWebhookEndpoint,
+    IntegrationAuditEvent,
+    SyncDeadLetter,
+    SyncJobState,
+    TenantConnectorInstall,
+    WebhookDeliveryState,
+)
 from .patient import Patient
 
 # Patient Identity + CRM Models
@@ -232,6 +301,26 @@ from .pricing import (
     SubscriptionPlan,
     UsageMeter,
 )
+from .records_media import (
+    ChainOfCustodyEvent,
+    ChainOfCustodyState,
+    ClinicalRecord,
+    CompliancePacket,
+    DocumentArtifact,
+    ExportDeliveryState,
+    LegalHold,
+    OCRConfidenceBand,
+    OCRProcessingResult,
+    QAException,
+    QAExceptionState,
+    RecordExport,
+    RecordLifecycleState,
+    RecordsAuditEvent,
+    RecordSection,
+    ReleaseAuthorization,
+    SignatureCapture,
+    SignatureState,
+)
 from .relationship_history import (
     FacilityWarningFlag,
     InternalAccountNote,
@@ -245,10 +334,53 @@ from .responsible_party import (
     ResponsibilityAuditEvent,
     ResponsibleParty,
 )
+
+# ── Scheduling Models ─────────────────────────────────────────────────────────
+from .scheduling import (
+    AvailabilityBlock,
+    CoverageRule,
+    CredentialState,
+    CrewCredential,
+    FatigueAssessment,
+    ShiftInstance,
+    ShiftSwapRequest,
+    ShiftSwapState,
+    ShiftTemplate,
+    TimeOffRequest,
+)
+from .specialty_ops import (
+    AirAsset,
+    DutyTimeFlag,
+    FireOpsAuditEvent,
+    FireOpsState,
+    FlightLegEvent,
+    FlightMission,
+    FlightOpsAuditEvent,
+    FlightOpsState,
+    HazardFlag,
+    HydrantReference,
+    LandingZoneRecord,
+    MissionFitScore,
+    MissionPacket,
+    MissionPacketAuditEvent,
+    MissionPacketDelivery,
+    MissionPacketSection,
+    MissionPacketState,
+    PremisePreplan,
+    SpecialtyEquipmentCheck,
+    SpecialtyMissionRequirement,
+    SpecialtyTransportAuditEvent,
+    SpecialtyTransportState,
+    WaterSupplyNote,
+)
 from .state_debt_setoff import (
     AgencyDebtSetoffEnrollment,
+    DebtSetoffEligibilityDecision,
     DebtSetoffExportBatch,
+    DebtSetoffNoticeRecord,
+    DebtSetoffRecoveryRecord,
     DebtSetoffResponseRecord,
+    DebtSetoffReversalRecord,
     DebtSetoffRulePack,
     DebtSetoffSubmissionRecord,
     StateDebtSetoffProfile,

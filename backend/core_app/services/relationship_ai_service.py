@@ -7,6 +7,7 @@ AI may NOT silently merge, rewrite identity, or infer financial responsibility.
 # pylint: disable=not-callable  # SQLAlchemy func.count() is a known pylint false positive
 from __future__ import annotations
 
+import datetime
 import logging
 
 from sqlalchemy import func, select
@@ -35,6 +36,8 @@ from core_app.schemas.relationship_command import (
     IdentityConfidenceScore,
     RelationshipAction,
     RelationshipCommandSummary,
+    RelationshipIssue,
+    RelationshipIssueList,
     ResponsiblePartyCompletion,
 )
 
@@ -425,3 +428,298 @@ class RelationshipAIService:
             ))
 
         return actions
+
+    # ── ISSUE GENERATION ──────────────────────────────────────────────────
+
+    async def generate_issues(
+        self, *, tenant_id: str
+    ) -> RelationshipIssueList:
+        """Generate structured relationship issues per directive Part 9 format.
+
+        AI rules enforced:
+        - never invent identity facts
+        - never auto-merge patients
+        - never assume financial responsibility
+        - never give false certainty
+        - distinguish hard fact from model judgment
+        """
+        issues: list[RelationshipIssue] = []
+
+        identity = await self._identity_confidence(tenant_id)
+        resp_party = await self._responsible_party_completion(tenant_id)
+        facility = await self._facility_health(tenant_id)
+        comm = await self._communication_completeness(tenant_id)
+        dup_count = await self._unresolved_duplicate_count(tenant_id)
+        contact_gaps = await self._facility_contact_gap_count(tenant_id)
+        freq_util = await self._frequent_utilizer_count(tenant_id)
+
+        # ── Duplicate candidates ──────────────────────────────────
+        if dup_count > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{dup_count} unresolved duplicate patient candidates",
+                severity="BLOCKING" if dup_count > 5 else "HIGH",
+                source="RULE",
+                what_is_wrong=(
+                    f"There are {dup_count} patient records flagged as potential "
+                    "duplicates that have not been reviewed."
+                ),
+                why_it_matters=(
+                    "Duplicate records cause billing errors, split clinical "
+                    "history, and compliance risk. Each unresolved duplicate "
+                    "is a data integrity liability."
+                ),
+                what_you_should_do=(
+                    "Open the Identity Manager, review each duplicate candidate, "
+                    "and either confirm as true duplicate or mark as false positive."
+                ),
+                relationship_context=(
+                    "Duplicate detection is rule-based on name, DOB, and external "
+                    "identifiers. Human review is mandatory before any merge."
+                ),
+                human_review="REQUIRED",
+                confidence="HIGH",
+                category="IDENTITY",
+            ))
+
+        # ── Pending merge requests ────────────────────────────────
+        if identity.merge_pending_count > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{identity.merge_pending_count} patient merge requests pending review",
+                severity="HIGH",
+                source="RULE",
+                what_is_wrong=(
+                    f"{identity.merge_pending_count} merge requests are awaiting "
+                    "approval. Patient records cannot be unified until reviewed."
+                ),
+                why_it_matters=(
+                    "Pending merges block billing continuity for affected patients "
+                    "and may cause duplicate claims."
+                ),
+                what_you_should_do=(
+                    "Review each pending merge request in the Identity Manager. "
+                    "Approve or reject based on matching criteria."
+                ),
+                relationship_context=(
+                    "Merge requests are created from duplicate candidates. "
+                    "No auto-merge is performed — human approval required."
+                ),
+                human_review="REQUIRED",
+                confidence="HIGH",
+                category="IDENTITY",
+            ))
+
+        # ── Disputed responsibility ───────────────────────────────
+        if resp_party.disputed_count > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{resp_party.disputed_count} disputed financial responsibility records",
+                severity="HIGH",
+                source="BILLING_EVENT",
+                what_is_wrong=(
+                    f"{resp_party.disputed_count} patient-responsible party links "
+                    "are in DISPUTED state."
+                ),
+                why_it_matters=(
+                    "Disputed responsibility blocks claim submission. The system "
+                    "cannot bill a responsible party whose identity or relationship "
+                    "is under dispute."
+                ),
+                what_you_should_do=(
+                    "Review each disputed record, verify the responsible party's "
+                    "identity and relationship, and resolve the dispute."
+                ),
+                relationship_context=(
+                    "Financial responsibility is never auto-assigned. Disputes "
+                    "must be resolved by billing staff or founder review."
+                ),
+                human_review="REQUIRED",
+                confidence="HIGH",
+                category="RESPONSIBILITY",
+            ))
+
+        # ── Unknown responsibility ────────────────────────────────
+        if resp_party.unknown_responsibility > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{resp_party.unknown_responsibility} patients with unknown financial responsibility",
+                severity="MEDIUM",
+                source="RULE",
+                what_is_wrong=(
+                    f"{resp_party.unknown_responsibility} patient links have "
+                    "responsibility state set to UNKNOWN."
+                ),
+                why_it_matters=(
+                    "Claims for these patients may be delayed because the "
+                    "financially responsible party cannot be determined."
+                ),
+                what_you_should_do=(
+                    "Identify the guarantor or subscriber for each patient "
+                    "and update their responsibility state."
+                ),
+                relationship_context=(
+                    "Responsibility starts as UNKNOWN by default. "
+                    "It must be explicitly verified — the system never guesses."
+                ),
+                human_review="RECOMMENDED",
+                confidence="MEDIUM",
+                category="RESPONSIBILITY",
+            ))
+
+        # ── High-friction facilities ──────────────────────────────
+        if facility.high_friction_count > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{facility.high_friction_count} high-friction facility relationships",
+                severity="HIGH",
+                source="FACILITY_EVENT",
+                what_is_wrong=(
+                    f"{facility.high_friction_count} facilities are in "
+                    "HIGH_FRICTION relationship state."
+                ),
+                why_it_matters=(
+                    "High-friction facilities cause operational delays, "
+                    "extended turnaround times, and crew frustration."
+                ),
+                what_you_should_do=(
+                    "Review friction flags for each facility. Address "
+                    "communication issues, billing disputes, or safety concerns."
+                ),
+                relationship_context=(
+                    "Friction flags are created by staff and tracked with "
+                    "category, resolution status, and audit trail."
+                ),
+                human_review="RECOMMENDED",
+                confidence="HIGH",
+                category="FACILITY",
+            ))
+
+        # ── Facility contact gaps ─────────────────────────────────
+        if contact_gaps > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{contact_gaps} facilities with no registered contacts",
+                severity="MEDIUM",
+                source="RULE",
+                what_is_wrong=(
+                    f"{contact_gaps} active facilities have zero intake or "
+                    "operational contacts on file."
+                ),
+                why_it_matters=(
+                    "Facilities without contacts cannot receive transport "
+                    "notifications, billing inquiries, or handoff communications."
+                ),
+                what_you_should_do=(
+                    "Add at least one intake coordinator or primary contact "
+                    "for each facility."
+                ),
+                relationship_context=(
+                    "Contacts are tracked per facility with role, "
+                    "preferred contact method, and active status."
+                ),
+                human_review="RECOMMENDED",
+                confidence="HIGH",
+                category="FACILITY",
+            ))
+
+        # ── Communication preference gaps ─────────────────────────
+        if comm.completeness_pct < 50:
+            issues.append(RelationshipIssue(
+                issue="Low patient communication preference coverage",
+                severity="MEDIUM",
+                source="RULE",
+                what_is_wrong=(
+                    f"Only {comm.completeness_pct}% of patients "
+                    f"({comm.with_preferences}/{comm.total_patients}) have "
+                    "contact preferences configured."
+                ),
+                why_it_matters=(
+                    "Without explicit preferences, billing communications "
+                    "default to system policy. This increases opt-out risk "
+                    "and compliance exposure."
+                ),
+                what_you_should_do=(
+                    "Capture contact preferences during intake. "
+                    "SMS/call/email/mail preferences should be explicit."
+                ),
+                relationship_context=(
+                    "Preferences are opt-in by default. Billing communications "
+                    "must respect preference state before sending."
+                ),
+                human_review="SAFE_TO_AUTO_PROCESS",
+                confidence="HIGH",
+                category="COMMUNICATION",
+            ))
+
+        # ── Frequent utilizers ────────────────────────────────────
+        if freq_util > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{freq_util} active frequent utilizer alerts",
+                severity="MEDIUM" if freq_util < 5 else "HIGH",
+                source="PATIENT_EVENT",
+                what_is_wrong=(
+                    f"{freq_util} patients are flagged as frequent utilizers "
+                    "with active warning flags."
+                ),
+                why_it_matters=(
+                    "Frequent utilizers may need care coordination, "
+                    "community paramedicine referrals, or proactive "
+                    "relationship management."
+                ),
+                what_you_should_do=(
+                    "Review each frequent utilizer flag. Consider outreach, "
+                    "care plan coordination, or community resource referral."
+                ),
+                relationship_context=(
+                    "Frequent utilizer flags are created based on trip "
+                    "frequency thresholds. Flags are auditable and can be "
+                    "resolved with notes."
+                ),
+                human_review="RECOMMENDED",
+                confidence="MEDIUM",
+                category="IDENTITY",
+            ))
+
+        # ── Facility review required ──────────────────────────────
+        if facility.review_required_count > 0:
+            issues.append(RelationshipIssue(
+                issue=f"{facility.review_required_count} facilities need relationship review",
+                severity="LOW",
+                source="FACILITY_EVENT",
+                what_is_wrong=(
+                    f"{facility.review_required_count} facilities are in "
+                    "REVIEW_REQUIRED state."
+                ),
+                why_it_matters=(
+                    "Facilities flagged for review may have outdated contacts, "
+                    "changed service capabilities, or relationship status changes."
+                ),
+                what_you_should_do=(
+                    "Review each facility's profile, contacts, and service "
+                    "notes. Update relationship state when satisfied."
+                ),
+                relationship_context=(
+                    "Facility relationship states transition through "
+                    "ACTIVE → LIMITED_RELATIONSHIP → HIGH_FRICTION → "
+                    "REVIEW_REQUIRED → INACTIVE."
+                ),
+                human_review="RECOMMENDED",
+                confidence="HIGH",
+                category="FACILITY",
+            ))
+
+        # ── Nominal ───────────────────────────────────────────────
+        if not issues:
+            issues.append(RelationshipIssue(
+                issue="All relationship systems nominal",
+                severity="INFORMATIONAL",
+                source="RULE",
+                what_is_wrong="No relationship issues detected.",
+                why_it_matters="System is operating within expected parameters.",
+                what_you_should_do="No action required.",
+                relationship_context="All metrics within healthy thresholds.",
+                human_review="SAFE_TO_AUTO_PROCESS",
+                confidence="HIGH",
+                category="STATUS",
+            ))
+
+        return RelationshipIssueList(
+            issues=issues,
+            generated_at=datetime.datetime.now(datetime.UTC).isoformat(),
+            tenant_id=tenant_id,
+        )

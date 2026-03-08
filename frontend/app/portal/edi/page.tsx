@@ -1,5 +1,5 @@
 'use client';
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
+import { QuantumTableSkeleton } from '@/components/ui';
 import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
 

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { listPlatformEnvironments, listPlatformReleases, listConfigDriftAlerts, createPlatformRelease } from '@/services/api';
+import { SeverityBadge } from '@/components/ui';
+import { normalizeSeverity } from '@/lib/design-system/severity';
 
 interface Environment {
   id: string;
@@ -166,9 +168,11 @@ export default function ReleasesPage() {
             <div key={d.id} className="bg-bg-panel border border-orange-400/30 p-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-text-primary">{d.drift_type}</span>
-                <span className={`text-[10px] px-1.5 font-semibold ${
-                  d.severity === 'HIGH' ? 'text-red-400' : 'text-yellow-400'
-                }`}>{d.severity}</span>
+                <SeverityBadge
+                  severity={normalizeSeverity(d.severity)}
+                  size="sm"
+                  label={normalizeSeverity(d.severity)}
+                />
               </div>
               <div className="text-[10px] text-text-muted mt-1">{d.description}</div>
               <div className="text-[10px] text-text-muted mt-0.5">

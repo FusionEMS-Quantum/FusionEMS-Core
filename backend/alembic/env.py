@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import sys
+from os.path import abspath, dirname
+
+sys.path.insert(0, dirname(dirname(abspath(__file__))))
+
 import os
 from logging.config import fileConfig
 

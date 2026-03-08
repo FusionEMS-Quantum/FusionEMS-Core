@@ -61,6 +61,9 @@ async def signup(
             "agency_type": payload.get("agency_type", ""),
             "annual_call_volume": payload.get("annual_call_volume"),
             "selected_modules": payload.get("modules", []),
+            "billing_mode": payload.get("billing_mode", "FUSION_RCM"),
+            "operational_mode": payload.get("operational_mode", "EMS_TRANSPORT"),
+            "npi_number": payload.get("npi_number"),
             "status": "pending_payment",
             "created_at": datetime.now(UTC).isoformat(),
         },
@@ -212,7 +215,9 @@ async def _handle_onboarding_payment(
         db.execute(
             text(
                 "SELECT id, agency_name, contact_email, agency_type, annual_call_volume, "
-                "selected_modules, legal_status, status, stripe_customer_id, stripe_subscription_id "
+                "selected_modules, legal_status, status, stripe_customer_id, stripe_subscription_id, "
+                "billing_mode, operational_mode, npi_number, primary_tail_number, base_icao, "
+                "statement_prefix, policy_flags "
                 "FROM onboarding_applications WHERE id = :app_id"
             ),
             {"app_id": application_id},

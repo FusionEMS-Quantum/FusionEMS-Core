@@ -1,6 +1,5 @@
 'use client';
 
-import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import type { StatusVariant } from '@/lib/design-system/tokens';
 import { STATUS_COLOR_MAP } from '@/lib/design-system/tokens';

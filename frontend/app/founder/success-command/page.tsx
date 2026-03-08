@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getFounderSuccessSummary, getImplementationHealth, getSupportQueueHealth, getTrainingCompletion } from '@/services/api';
+import { SeverityBadge } from '@/components/ui';
+import { normalizeSeverity } from '@/lib/design-system/severity';
 
 interface SuccessAction {
   domain: string;
@@ -44,12 +46,20 @@ interface TrainingSummary {
   verified_count: number;
 }
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: 'text-red-400 bg-red-400/10 border-red-400/30',
-  high: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
-  medium: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
-  low: 'text-green-400 bg-green-400/10 border-green-400/30',
-};
+function severityPanelClass(rawSeverity: string): string {
+  switch (normalizeSeverity(rawSeverity)) {
+    case 'BLOCKING':
+      return 'text-red-400 bg-red-400/10 border-red-400/30';
+    case 'HIGH':
+      return 'text-orange-400 bg-orange-400/10 border-orange-400/30';
+    case 'MEDIUM':
+      return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
+    case 'LOW':
+      return 'text-sky-400 bg-sky-400/10 border-sky-400/30';
+    default:
+      return 'text-text-muted bg-zinc-500/10 border-zinc-500/30';
+  }
+}
 
 export default function SuccessCommandPage() {
   const [summary, setSummary] = useState<SuccessSummary | null>(null);
@@ -176,10 +186,14 @@ export default function SuccessCommandPage() {
           <div className="space-y-2">
             {summary.top_actions.map((action, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
-                className={`border p-3 ${SEVERITY_COLORS[action.severity] || 'border-border-DEFAULT'}`}>
+                className={`border p-3 ${severityPanelClass(action.severity)}`}>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-micro font-bold uppercase">{action.domain}</span>
-                  <span className="text-micro font-bold uppercase opacity-60">{action.severity}</span>
+                  <SeverityBadge
+                    severity={normalizeSeverity(action.severity)}
+                    size="sm"
+                    label={normalizeSeverity(action.severity)}
+                  />
                 </div>
                 <div className="text-sm text-text-primary">{action.summary}</div>
                 <div className="text-xs text-text-muted mt-1">{action.recommended_action}</div>

@@ -1,8 +1,9 @@
 'use client';
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
+import { QuantumCardSkeleton, SeverityBadge, StatusChip } from '@/components/ui';
 import { useToast } from '@/components/ui/ProductPolish';
 import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
+import type { SeverityLevel, StatusVariant } from '@/lib/design-system/tokens';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
@@ -102,8 +103,33 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled:   'var(--color-brand-red)',
 };
 
+const CASE_STATUS_VARIANT_MAP: Record<string, StatusVariant> = {
+  created: 'review',
+  assigned: 'info',
+  en_route: 'warning',
+  on_scene: 'warning',
+  transporting: 'info',
+  arrived: 'active',
+  completed: 'active',
+  cancelled: 'critical',
+};
+
+const CASE_PRIORITY_SEVERITY_MAP: Record<CasePriority, SeverityLevel> = {
+  emergent: 'BLOCKING',
+  urgent: 'HIGH',
+  routine: 'LOW',
+};
+
 function statusColor(s: string): string {
   return STATUS_COLORS[s] ?? 'rgba(255,255,255,0.5)';
+}
+
+function statusVariant(s: string): StatusVariant {
+  return CASE_STATUS_VARIANT_MAP[s] ?? 'neutral';
+}
+
+function prioritySeverity(p: CasePriority): SeverityLevel {
+  return CASE_PRIORITY_SEVERITY_MAP[p] ?? 'INFORMATIONAL';
 }
 
 function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
@@ -356,7 +382,6 @@ export default function CasesPage() {
             <div className="space-y-2">
               {cases.map((c) => {
                 const tm = TRANSPORT_STYLE[c.transport_mode] ?? TRANSPORT_STYLE.ground;
-                const scol = statusColor(c.status);
                 const nextStatus = STATUS_FLOW[c.status];
                 const isExpanded = expandedId === c.case_id;
 
@@ -379,16 +404,10 @@ export default function CasesPage() {
                         {truncateId(c.case_id)}
                       </span>
                       <Badge label={tm.label} color={tm.color} bg={tm.bg} />
-                      <Badge
-                        label={c.status.toUpperCase()}
-                        color={scol}
-                        bg={`${scol}18`}
-                      />
-                      <Badge
-                        label={c.priority.toUpperCase()}
-                        color={c.priority === 'emergent' ? 'var(--color-brand-red)' : c.priority === 'urgent' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.5)'}
-                        bg={c.priority === 'emergent' ? 'rgba(229,57,53,0.1)' : c.priority === 'urgent' ? 'rgba(255,152,0,0.1)' : 'rgba(255,255,255,0.06)'}
-                      />
+                      <StatusChip status={statusVariant(c.status)} size="sm">
+                        {c.status.replace(/_/g, ' ').toUpperCase()}
+                      </StatusChip>
+                      <SeverityBadge severity={prioritySeverity(c.priority)} size="sm" label={c.priority.toUpperCase()} />
                       <span className="text-body ml-1 text-text-secondary">
                         {c.patient_name ?? '—'}
                       </span>

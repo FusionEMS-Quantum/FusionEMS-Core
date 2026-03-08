@@ -54,6 +54,16 @@ const COLLECTIONS_MODES = [
 
 const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 const AGENCY_TYPES = ['EMS', 'Fire EMS', 'Fire Dept', 'Air Medical', 'Transport'];
+const OPERATIONAL_MODES = [
+  { code: 'EMS_TRANSPORT', label: 'EMS Transport' },
+  { code: 'MEDICAL_TRANSPORT', label: 'Medical Transport' },
+  { code: 'HEMS_TRANSPORT', label: 'HEMS Transport' },
+  { code: 'EXTERNAL_911_CAD', label: 'External 911 CAD' },
+];
+const BILLING_MODES = [
+  { code: 'FUSION_RCM', label: 'FusionEMS AI Billing Center' },
+  { code: 'THIRD_PARTY_EXPORT', label: 'Internal / Third-Party Billing' },
+];
 
 const inputCls = 'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-text-primary placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-orange chamfer-4 w-full';
 const selectCls = 'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-orange chamfer-4 w-full appearance-none';
@@ -88,6 +98,18 @@ export default function SignupPage() {
   const [phone, setPhone] = useState('');
   const [agencyType, setAgencyType] = useState('');
   const [state, setState] = useState('Wisconsin');
+  const [npiNumber, setNpiNumber] = useState('');
+  const [operationalMode, setOperationalMode] = useState('EMS_TRANSPORT');
+  const [billingMode, setBillingMode] = useState('FUSION_RCM');
+  const [primaryTailNumber, setPrimaryTailNumber] = useState('');
+  const [baseIcao, setBaseIcao] = useState('');
+  const [billingContactName, setBillingContactName] = useState('');
+  const [billingContactEmail, setBillingContactEmail] = useState('');
+  const [implementationOwnerName, setImplementationOwnerName] = useState('');
+  const [implementationOwnerEmail, setImplementationOwnerEmail] = useState('');
+  const [identitySsoPreference, setIdentitySsoPreference] = useState('OIDC');
+  const [npiLookupLoading, setNpiLookupLoading] = useState(false);
+  const [npiLookupError, setNpiLookupError] = useState('');
 
   const fetchCatalog = useCallback(async () => {
     setCatalogLoading(true);
@@ -116,7 +138,31 @@ export default function SignupPage() {
 
   const selectedPlan = catalog?.plans.find(p => p.code === plan);
   const canProceed1 = !!plan && (plan !== 'SCHEDULING_ONLY' || !!tier);
-  const canProceed4 = agencyName && firstName && lastName && email && agencyType && state;
+  const hemsMode = operationalMode === 'HEMS_TRANSPORT';
+  const canProceed4 =
+    agencyName && firstName && lastName && email && agencyType && state &&
+    billingMode && operationalMode &&
+    (!hemsMode || (primaryTailNumber && baseIcao));
+
+  async function lookupNPI() {
+    if (!npiNumber.trim()) return;
+    setNpiLookupLoading(true);
+    setNpiLookupError('');
+    try {
+      const res = await fetch(`${API_BASE}/public/onboarding/nppes/lookup/${encodeURIComponent(npiNumber.trim())}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.detail || `Lookup failed (${res.status})`);
+      }
+      const data = await res.json();
+      if (!agencyName && data?.legal_organization_name) setAgencyName(data.legal_organization_name);
+      if (!state && data?.state) setState(data.state);
+    } catch (e: any) {
+      setNpiLookupError(e.message || 'NPI lookup failed');
+    } finally {
+      setNpiLookupLoading(false);
+    }
+  }
 
   async function submit() {
     setLoading(true); setError('');
@@ -124,6 +170,20 @@ export default function SignupPage() {
       const payload = {
         agency_name: agencyName, first_name: firstName, last_name: lastName,
         email, phone, agency_type: agencyType, state,
+        npi_number: npiNumber || null,
+        operational_mode: operationalMode,
+        billing_mode: billingMode,
+        primary_tail_number: primaryTailNumber || null,
+        base_icao: baseIcao || null,
+        billing_contact_name: billingContactName || null,
+        billing_contact_email: billingContactEmail || null,
+        implementation_owner_name: implementationOwnerName || null,
+        implementation_owner_email: implementationOwnerEmail || null,
+        identity_sso_preference: identitySsoPreference || null,
+        policy_flags: {
+          collections_mode: collectionsMode,
+          statement_channels: statementChannels,
+        },
         plan_code: plan,
         tier_code: tier || null,
         billing_tier_code: billingTier || null,
@@ -357,6 +417,64 @@ export default function SignupPage() {
                 </select>
               </div>
               <div>
+                <label className={labelCls}>NPI Number</label>
+                <div className="flex gap-2">
+                  <input value={npiNumber} onChange={e => setNpiNumber(e.target.value)} className={inputCls} placeholder="10-digit NPI" />
+                  <button type="button" onClick={lookupNPI} disabled={npiLookupLoading || !npiNumber.trim()} className="px-3 py-2 border border-border-strong text-xs font-semibold chamfer-4 disabled:opacity-40">
+                    {npiLookupLoading ? 'Looking…' : 'Lookup'}
+                  </button>
+                </div>
+                {npiLookupError && <div className="text-[11px] text-red-400 mt-1">{npiLookupError}</div>}
+              </div>
+              <div>
+                <label className={labelCls}>Operational Mode *</label>
+                <select value={operationalMode} onChange={e => setOperationalMode(e.target.value)} className={selectCls}>
+                  {OPERATIONAL_MODES.map(m => <option key={m.code} value={m.code}>{m.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Who handles billing? *</label>
+                <select value={billingMode} onChange={e => setBillingMode(e.target.value)} className={selectCls}>
+                  {BILLING_MODES.map(m => <option key={m.code} value={m.code}>{m.label}</option>)}
+                </select>
+              </div>
+              {hemsMode && (
+                <>
+                  <div>
+                    <label className={labelCls}>Primary Tail Number *</label>
+                    <input value={primaryTailNumber} onChange={e => setPrimaryTailNumber(e.target.value)} className={inputCls} placeholder="N123AB" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Base ICAO *</label>
+                    <input value={baseIcao} onChange={e => setBaseIcao(e.target.value.toUpperCase())} className={inputCls} placeholder="KMSP" />
+                  </div>
+                </>
+              )}
+              <div>
+                <label className={labelCls}>Billing Contact Name</label>
+                <input value={billingContactName} onChange={e => setBillingContactName(e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Billing Contact Email</label>
+                <input type="email" value={billingContactEmail} onChange={e => setBillingContactEmail(e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Implementation Owner Name</label>
+                <input value={implementationOwnerName} onChange={e => setImplementationOwnerName(e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Implementation Owner Email</label>
+                <input type="email" value={implementationOwnerEmail} onChange={e => setImplementationOwnerEmail(e.target.value)} className={inputCls} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelCls}>Identity / SSO Preference</label>
+                <select value={identitySsoPreference} onChange={e => setIdentitySsoPreference(e.target.value)} className={selectCls}>
+                  <option value="OIDC">OIDC / SSO (recommended)</option>
+                  <option value="SAML">SAML</option>
+                  <option value="LOCAL_TEMP">Local temporary login</option>
+                </select>
+              </div>
+              <div>
                 <label className={labelCls}>State *</label>
                 <select value={state} onChange={e => setState(e.target.value)} className={selectCls}>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -379,6 +497,8 @@ export default function SignupPage() {
                 { label: 'Plan', value: selectedPlan?.label || plan },
                 { label: 'Tier', value: catalog.scheduling_tiers.find(t => t.code === tier)?.label || tier || '—' },
                 { label: 'Add-ons', value: addons.length ? addons.map(ac => catalog.addons.find(a => a.code === ac)?.label || ac).join(', ') : 'None' },
+                  { label: 'Billing Model', value: BILLING_MODES.find(m => m.code === billingMode)?.label || billingMode },
+                  { label: 'Operational Mode', value: OPERATIONAL_MODES.find(m => m.code === operationalMode)?.label || operationalMode },
                 { label: 'Government entity', value: isGovEntity ? 'Yes' : 'No' },
                 { label: 'Collections', value: COLLECTIONS_MODES.find(m => m.code === collectionsMode)?.label || collectionsMode },
                 { label: 'Agency', value: `${agencyName} (${agencyType}, ${state})` },

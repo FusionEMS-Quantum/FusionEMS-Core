@@ -6,6 +6,7 @@ import secrets
 import string
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -369,3 +370,95 @@ async def upload_rep_document_multipart(
         correlation_id=getattr(request.state, "correlation_id", None),
     )
     return {"document_id": doc_row["id"], "status": "uploaded"}
+
+
+# ── Revocation & Consent ──────────────────────────────────────────────────
+
+
+class RevocationRequest(BaseModel):
+    rep_id: uuid.UUID
+    reason: str
+
+
+@router.post("/revoke")
+async def revoke_rep(
+    payload: RevocationRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    from core_app.services.auth_rep_service import AuthRepService
+
+    svc = AuthRepService(db, get_event_publisher())
+    result = await svc.revoke_authorization(
+        tenant_id=current.tenant_id,
+        rep_id=payload.rep_id,
+        actor_user_id=current.user_id,
+        reason=payload.reason,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+class ConsentLogRequest(BaseModel):
+    rep_id: uuid.UUID
+    consent_type: str
+    granted: bool
+    detail: dict[str, Any] | None = None
+
+
+@router.post("/consent")
+async def log_consent(
+    payload: ConsentLogRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    from core_app.services.auth_rep_service import AuthRepService
+
+    svc = AuthRepService(db, get_event_publisher())
+    return await svc.log_consent(
+        tenant_id=current.tenant_id,
+        rep_id=payload.rep_id,
+        actor_user_id=current.user_id,
+        consent_type=payload.consent_type,
+        granted=payload.granted,
+        detail=payload.detail,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+
+
+@router.get("/reps/{rep_id}/consent-events")
+async def list_consent_events(
+    rep_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    from core_app.services.auth_rep_service import AuthRepService
+
+    svc = AuthRepService(db, get_event_publisher())
+    events = await svc.list_consent_events(
+        tenant_id=current.tenant_id,
+        rep_id=rep_id,
+    )
+    return {"events": events}
+
+
+@router.get("/reps/{rep_id}/status")
+async def get_rep_status(
+    rep_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    from core_app.services.auth_rep_service import AuthRepService
+
+    svc = AuthRepService(db, get_event_publisher())
+    result = await svc.get_rep_status(
+        tenant_id=current.tenant_id,
+        rep_id=rep_id,
+    )
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result

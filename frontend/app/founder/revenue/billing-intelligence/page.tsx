@@ -54,26 +54,6 @@ const PRODUCTIVITY = [
   { label: 'Coder Productivity', value: '94.1%', sub: 'above baseline', color: 'var(--color-status-active)' },
 ];
 
-/* ─── Sub-components ────────────────────────────────────────────────── */
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        fontFamily: 'var(--font-label)',
-        fontSize: 'var(--text-label)',
-        fontWeight: 600,
-        letterSpacing: 'var(--tracking-label)',
-        textTransform: 'uppercase',
-        color: 'var(--color-text-muted)',
-        marginBottom: 14,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 function MetricRow({
   label,
   value,

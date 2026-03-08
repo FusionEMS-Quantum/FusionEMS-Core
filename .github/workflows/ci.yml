@@ -90,7 +90,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: pip install checkov
-      - run: checkov -d infra/terraform --config-file checkov.yml --quiet || true
+      - run: checkov -d infra/terraform --config-file checkov.yml --quiet
 
   frontend-lint:
     name: Frontend Lint & Type Check
@@ -105,10 +105,10 @@ jobs:
         run: npm ci
       - name: Type Check
         working-directory: frontend
-        run: npx tsc --noEmit || true
+        run: npx tsc --noEmit
       - name: Lint
         working-directory: frontend
-        run: npx next lint || true
+        run: npx next lint
 
   frontend-build:
     name: Frontend Build
@@ -126,10 +126,77 @@ jobs:
           NEXT_PUBLIC_API_BASE: "http://localhost:8000"
         run: npm run build
 
+  migration-validate:
+    name: Migration Validation
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Run migrations to head
+        working-directory: backend
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+          ENVIRONMENT: "test"
+        run: alembic upgrade head
+      - name: Verify no pending migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+          ENVIRONMENT: "test"
+        run: |
+          alembic check 2>&1 || {
+            echo "ERROR: Alembic detects unapplied model changes."
+            echo "Run 'alembic revision --autogenerate -m <msg>' locally."
+            exit 1
+          }
+
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+      - name: Run Tests
+        working-directory: frontend
+        run: npx vitest run
+
+  docker-build:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t fusionems-${{ matrix.service }}:ci ./${{ matrix.service }}
+
   deploy-gate:
     name: Deploy Gate
     runs-on: ubuntu-latest
-    needs: [backend-lint, backend-test, ci-gates, security-scan, frontend-build]
+    needs: [backend-lint, backend-test, ci-gates, security-scan, frontend-build, frontend-test, migration-validate, docker-build]
     if: github.ref == 'refs/heads/main'
     steps:
       - run: echo "All gates passed — deploy approved"

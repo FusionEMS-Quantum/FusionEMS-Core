@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { listSupportTickets } from '@/services/api';
+import { SeverityBadge } from '@/components/ui';
+import { normalizeSeverity } from '@/lib/design-system/severity';
 
 interface Ticket {
   id: string;
@@ -20,12 +22,14 @@ interface Ticket {
   created_at: string;
 }
 
-const SEVERITY_BADGE: Record<string, string> = {
-  CRITICAL: 'bg-red-500/20 text-red-400 border-red-500/40',
-  HIGH: 'bg-orange-500/20 text-orange-400 border-orange-500/40',
-  MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
-  LOW: 'bg-green-500/20 text-green-400 border-green-500/40',
-};
+const SEVERITY_FILTER_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: '', label: 'ALL' },
+  { value: 'CRITICAL', label: 'BLOCKING' },
+  { value: 'HIGH', label: 'HIGH' },
+  { value: 'MEDIUM', label: 'MEDIUM' },
+  { value: 'LOW', label: 'LOW' },
+  { value: 'INFO', label: 'INFORMATIONAL' },
+];
 
 const STATE_BADGE: Record<string, string> = {
   NEW: 'text-blue-400',
@@ -90,10 +94,10 @@ export default function SupportOpsPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-text-muted">Severity:</span>
-          {['', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map((s) => (
-            <button key={s} onClick={() => setSeverityFilter(s)}
-              className={`text-micro px-2 py-1 border ${severityFilter === s ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
-              {s || 'ALL'}
+          {SEVERITY_FILTER_OPTIONS.map((option) => (
+            <button key={option.value || 'ALL'} onClick={() => setSeverityFilter(option.value)}
+              className={`text-micro px-2 py-1 border ${severityFilter === option.value ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              {option.label}
             </button>
           ))}
         </div>
@@ -130,7 +134,11 @@ export default function SupportOpsPage() {
               </div>
               <div className={`col-span-2 font-bold ${STATE_BADGE[t.state] || 'text-text-muted'}`}>{t.state}</div>
               <div className="col-span-1">
-                <span className={`px-1.5 py-0.5 border text-micro font-bold ${SEVERITY_BADGE[t.severity] || ''}`}>{t.severity}</span>
+                <SeverityBadge
+                  severity={normalizeSeverity(t.severity)}
+                  size="sm"
+                  label={normalizeSeverity(t.severity)}
+                />
               </div>
               <div className="col-span-2 text-text-muted">{t.category}</div>
               <div className="col-span-1">

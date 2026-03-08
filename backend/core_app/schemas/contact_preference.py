@@ -120,3 +120,25 @@ class ContactPreferenceListResponse(BaseModel):
 class OptOutEventListResponse(BaseModel):
     items: list[OptOutEventResponse]
     total: int
+
+
+# ── CONTACT POLICY AUDIT EVENT ────────────────────────────────────────────────
+
+
+class ContactPolicyAuditEventResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    tenant_id: uuid.UUID
+    patient_id: uuid.UUID | None
+    facility_id: uuid.UUID | None
+    action: str
+    previous_state: dict
+    new_state: dict
+    actor_user_id: uuid.UUID
+    correlation_id: str | None
+    created_at: datetime
+
+
+class ContactPolicyAuditEventListResponse(BaseModel):
+    items: list[ContactPolicyAuditEventResponse]
+    total: int

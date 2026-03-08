@@ -45,14 +45,12 @@ function InsuranceSection({
   accent,
   data,
   onChange,
-  hasSecondary,
   onAdd,
 }: {
   title: string;
   accent: string;
   data: InsuranceFields | null;
-  onChange?: (field: keyof InsuranceFields, value: string) => void;
-  hasSecondary?: boolean;
+  onChange?: (_field: keyof InsuranceFields, _value: string) => void;
   onAdd?: () => void;
 }) {
   const isEmptySecondary = data === null;

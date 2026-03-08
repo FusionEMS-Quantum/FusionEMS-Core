@@ -18,36 +18,45 @@ depends_on = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
     # ------------------------------------------------------------------ #
     # CATEGORY 6 — TEMPLATE BUILDER SYSTEM                               #
     # ------------------------------------------------------------------ #
-    op.create_table(
-        "templates",
-        sa.Column(
-            "id",
-            postgresql.UUID(as_uuid=True),
-            primary_key=True,
-            server_default=sa.text("gen_random_uuid()"),
-        ),
-        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
-        sa.Column("data", postgresql.JSONB(), nullable=False, server_default="{}"),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-    )
-    op.create_index("ix_templates_tenant_id", "templates", ["tenant_id"])
-    op.create_index("ix_templates_data_category", "templates", [sa.text("(data->>'category')")])
-    op.create_index("ix_templates_data_status", "templates", [sa.text("(data->>'status')")])
+    templates_exists = inspector.has_table("templates")
+    if not templates_exists:
+        op.create_table(
+            "templates",
+            sa.Column(
+                "id",
+                postgresql.UUID(as_uuid=True),
+                primary_key=True,
+                server_default=sa.text("gen_random_uuid()"),
+            ),
+            sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
+            sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
+            sa.Column("data", postgresql.JSONB(), nullable=False, server_default="{}"),
+            sa.Column(
+                "created_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+            ),
+            sa.Column(
+                "updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+            ),
+        )
+    existing_template_indexes = {idx["name"] for idx in inspector.get_indexes("templates")}
+    if "ix_templates_tenant_id" not in existing_template_indexes:
+        op.create_index("ix_templates_tenant_id", "templates", ["tenant_id"])
+    if "ix_templates_data_category" not in existing_template_indexes:
+        op.create_index("ix_templates_data_category", "templates", [sa.text("(data->>'category')")])
+    if "ix_templates_data_status" not in existing_template_indexes:
+        op.create_index("ix_templates_data_status", "templates", [sa.text("(data->>'status')")])
 
     op.create_table(
         "template_versions",

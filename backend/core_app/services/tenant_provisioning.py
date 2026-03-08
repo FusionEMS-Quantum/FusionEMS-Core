@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 import logging
 import secrets
 import string
@@ -12,6 +13,13 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
+
+
+def _derive_statement_prefix(agency_name: str) -> str:
+    compact = "".join(ch for ch in (agency_name or "") if ch.isalnum()).upper()
+    if len(compact) >= 3:
+        return compact[:3]
+    return "FEM"
 
 
 def _generate_temp_password() -> str:
@@ -248,6 +256,12 @@ async def provision_tenant_from_application(
         "crewlink",
         "patient_portal",
     ]
+    billing_mode = str(application_row.get("billing_mode") or "FUSION_RCM").upper()
+    operational_mode = str(application_row.get("operational_mode") or "EMS_TRANSPORT").upper()
+    primary_tail_number = application_row.get("primary_tail_number")
+    base_icao = application_row.get("base_icao")
+    statement_prefix = application_row.get("statement_prefix") or _derive_statement_prefix(tenant_name)
+    policy_flags = application_row.get("policy_flags") or {}
     annual_call_volume = int(application_row.get("annual_call_volume") or 0)
 
     if annual_call_volume > 5000:
@@ -287,5 +301,103 @@ async def provision_tenant_from_application(
         aws_region=settings.aws_region or settings.cognito_region or "us-east-1",
         application_id=application_id,
     )
+
+    tenant_id = result.get("tenant_id")
+    if tenant_id:
+        db.execute(
+            text(
+                """
+                INSERT INTO tenant_billing_modes (
+                    tenant_id, billing_mode, operational_mode,
+                    centralized_voice_enabled, statement_prefix, created_at, updated_at
+                ) VALUES (
+                    :tenant_id, :billing_mode, :operational_mode,
+                    :voice_enabled, :statement_prefix, :now, :now
+                )
+                ON CONFLICT (tenant_id)
+                DO UPDATE SET
+                    billing_mode = EXCLUDED.billing_mode,
+                    operational_mode = EXCLUDED.operational_mode,
+                    centralized_voice_enabled = EXCLUDED.centralized_voice_enabled,
+                    statement_prefix = EXCLUDED.statement_prefix,
+                    updated_at = EXCLUDED.updated_at
+                """
+            ),
+            {
+                "tenant_id": tenant_id,
+                "billing_mode": billing_mode,
+                "operational_mode": operational_mode,
+                "voice_enabled": billing_mode == "FUSION_RCM",
+                "statement_prefix": statement_prefix,
+                "now": datetime.now(UTC).isoformat(),
+            },
+        )
+
+        db.execute(
+            text(
+                """
+                INSERT INTO billing_phone_policies (
+                    tenant_id, billing_mode,
+                    allow_ai_balance_inquiry, allow_ai_payment_link_resend,
+                    allow_ai_statement_resend, allow_ai_address_confirmation,
+                    allow_ai_payment_plan_intake, collections_enabled,
+                    debt_setoff_enabled, require_human_for_disputes,
+                    require_human_for_legal_threat, escalation_priority,
+                    policy_json, created_at, updated_at
+                ) VALUES (
+                    :tenant_id, :billing_mode,
+                    true, true,
+                    true, false,
+                    false, false,
+                    false, true,
+                    true, 'normal',
+                    :policy_json::jsonb, :now, :now
+                )
+                ON CONFLICT (tenant_id)
+                DO UPDATE SET
+                    billing_mode = EXCLUDED.billing_mode,
+                    policy_json = EXCLUDED.policy_json,
+                    updated_at = EXCLUDED.updated_at
+                """
+            ),
+            {
+                "tenant_id": tenant_id,
+                "billing_mode": billing_mode,
+                "policy_json": json.dumps(policy_flags),
+                "now": datetime.now(UTC).isoformat(),
+            },
+        )
+
+        db.execute(
+            text(
+                """
+                UPDATE onboarding_applications
+                SET statement_prefix = COALESCE(statement_prefix, :statement_prefix),
+                    provisioning_status = 'provisioning',
+                    provisioning_steps = COALESCE(provisioning_steps, '[]'::jsonb) ||
+                        :step::jsonb
+                WHERE id = :application_id
+                """
+            ),
+            {
+                "statement_prefix": statement_prefix,
+                "step": json.dumps([
+                    {
+                        "step": "tenant_policy_initialized",
+                        "status": "success",
+                        "billing_mode": billing_mode,
+                        "operational_mode": operational_mode,
+                    }
+                ]),
+                "application_id": application_id,
+            },
+        )
+        db.commit()
+
+    result["billing_mode"] = billing_mode
+    result["operational_mode"] = operational_mode
+    result["statement_prefix"] = statement_prefix
+    result["primary_tail_number"] = primary_tail_number
+    result["base_icao"] = base_icao
 
     return result

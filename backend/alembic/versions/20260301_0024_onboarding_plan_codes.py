@@ -53,7 +53,7 @@ def upgrade() -> None:
                 "addon_codes",
                 postgresql.JSONB(astext_type=sa.Text()),
                 nullable=True,
-                server_default="'[]'::jsonb",
+                server_default=sa.text("'[]'::jsonb"),
             ),
         )
 

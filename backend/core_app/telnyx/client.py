@@ -88,6 +88,45 @@ def call_gather_using_audio(
     return r.json()
 
 
+def call_gather_using_speak(
+    *,
+    api_key: str,
+    call_control_id: str,
+    payload: str,
+    voice: str = "female",
+    language: str = "en-US",
+    minimum_digits: int = 1,
+    maximum_digits: int = 1,
+    terminating_digit: str = "",
+    timeout_millis: int = 8000,
+    client_state: str = "",
+) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "payload": payload,
+        "voice": voice,
+        "language": language,
+        "minimum_digits": minimum_digits,
+        "maximum_digits": maximum_digits,
+        "timeout_millis": timeout_millis,
+        "inter_digit_timeout_millis": 4000,
+    }
+    if terminating_digit:
+        body["terminating_digit"] = terminating_digit
+    if client_state:
+        import base64
+
+        body["client_state"] = base64.b64encode(client_state.encode()).decode()
+
+    r = requests.post(
+        f"{TELNYX_API}/calls/{call_control_id}/actions/gather_using_speak",
+        headers=_headers(api_key),
+        json=body,
+        timeout=10,
+    )
+    _raise_for(r, "gather_using_speak")
+    return r.json()
+
+
 def call_playback_start(
     *,
     api_key: str,
@@ -108,6 +147,35 @@ def call_playback_start(
         timeout=10,
     )
     _raise_for(r, "playback_start")
+    return r.json()
+
+
+def call_speak(
+    *,
+    api_key: str,
+    call_control_id: str,
+    payload: str,
+    voice: str = "female",
+    language: str = "en-US",
+    client_state: str = "",
+) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "payload": payload,
+        "voice": voice,
+        "language": language,
+    }
+    if client_state:
+        import base64
+
+        body["client_state"] = base64.b64encode(client_state.encode()).decode()
+
+    r = requests.post(
+        f"{TELNYX_API}/calls/{call_control_id}/actions/speak",
+        headers=_headers(api_key),
+        json=body,
+        timeout=10,
+    )
+    _raise_for(r, "call_speak")
     return r.json()
 
 

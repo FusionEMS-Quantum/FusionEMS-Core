@@ -37,33 +37,38 @@ _TABLES = [
 
 
 def _standard_table(name: str) -> None:
-    op.create_table(
-        name,
-        sa.Column(
-            "id",
-            postgresql.UUID(as_uuid=True),
-            primary_key=True,
-            server_default=sa.text("gen_random_uuid()"),
-        ),
-        sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
-        sa.Column("data", postgresql.JSONB(), nullable=False, server_default="{}"),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
-    )
-    op.create_index(f"ix_{name}_tenant_id", name, ["tenant_id"])
-    op.create_index(f"ix_{name}_data", name, [sa.text("data")], postgresql_using="gin")
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+
+    if not inspector.has_table(name):
+        op.create_table(
+            name,
+            sa.Column(
+                "id",
+                postgresql.UUID(as_uuid=True),
+                primary_key=True,
+                server_default=sa.text("gen_random_uuid()"),
+            ),
+            sa.Column("tenant_id", postgresql.UUID(as_uuid=True), nullable=False),
+            sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
+            sa.Column("data", postgresql.JSONB(), nullable=False, server_default="{}"),
+            sa.Column(
+                "created_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+            ),
+            sa.Column(
+                "updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+            ),
+            sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
+        )
+
+    op.execute(f'CREATE INDEX IF NOT EXISTS ix_{name}_tenant_id ON "{name}" (tenant_id)')
+    op.execute(f'CREATE INDEX IF NOT EXISTS ix_{name}_data ON "{name}" USING gin (data)')
 
 
 def upgrade() -> None:
@@ -105,13 +110,19 @@ def upgrade() -> None:
         )
         """
     )
-    op.execute(
-        "CREATE INDEX IF NOT EXISTS ix_onboarding_apps_email "
-        "ON onboarding_applications(contact_email)"
-    )
-    op.execute(
-        "CREATE INDEX IF NOT EXISTS ix_onboarding_apps_status ON onboarding_applications(status)"
-    )
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    if inspector.has_table("onboarding_applications"):
+        onboarding_columns = {col["name"] for col in inspector.get_columns("onboarding_applications")}
+        if "contact_email" in onboarding_columns:
+            op.execute(
+                "CREATE INDEX IF NOT EXISTS ix_onboarding_apps_email "
+                "ON onboarding_applications(contact_email)"
+            )
+        if "status" in onboarding_columns:
+            op.execute(
+                "CREATE INDEX IF NOT EXISTS ix_onboarding_apps_status ON onboarding_applications(status)"
+            )
 
 
 def downgrade() -> None:

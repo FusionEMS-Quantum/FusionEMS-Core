@@ -632,7 +632,7 @@ class LegalService:
                     "ai_narrative": "AI-assisted clinical narrative generation with provider review workflow.",
                     "nemsis_export": "NEMSIS 3.5.1-compliant PCR export for state reporting requirements.",
                     "auto_appeals": "Automated insurance denial appeals with AI-generated appeal letters.",
-                    "fire_module": "Fire incident reporting, resource tracking, and NFIRS-compatible export.",
+                    "fire_module": "Fire incident reporting, resource tracking, and NERIS-compatible export.",
                     "cad_module": "CAD integration bridge for real-time dispatch data ingestion.",
                 }
                 for mod in modules if modules else []:

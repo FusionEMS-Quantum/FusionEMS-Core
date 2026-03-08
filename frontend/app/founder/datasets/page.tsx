@@ -83,7 +83,7 @@ export default function GodModeDatasets() {
 
   useEffect(() => {
     if (activeTab === 'exports' && !exportData) loadExports();
-  }, [activeTab]);
+  }, [activeTab, exportData]);
 
   useEffect(() => {
     if (showGhostMode) loadDevices();
@@ -166,7 +166,10 @@ export default function GodModeDatasets() {
                           </span>
                         </td>
                         <td className="py-4 text-right">
-                          <button className="bg-orange-600 hover:bg-orange-500 text-black font-bold text-xs px-4 py-2 rounded shadow shrink-0">
+                          <button
+                            onClick={() => startInfiltration(dev)}
+                            className="bg-orange-600 hover:bg-orange-500 text-black font-bold text-xs px-4 py-2 rounded shadow shrink-0"
+                          >
                             INFILTRATE
                           </button>
                         </td>
@@ -174,6 +177,21 @@ export default function GodModeDatasets() {
                     ))}
                   </tbody>
                 </table>
+
+                {infiltratedDevice && (
+                  <div className="mt-6 border border-orange-500/20 rounded-lg p-4 bg-black/40">
+                    <p className="text-xs font-mono text-orange-400 mb-2">
+                      Active Session: {infiltratedDevice.user} · {infiltratedDevice.ip}
+                    </p>
+                    <div className="space-y-1 max-h-36 overflow-y-auto">
+                      {infiltrationLogs.map((log) => (
+                        <p key={log} className="text-xs font-mono text-gray-300">
+                          {log}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -394,8 +412,8 @@ export default function GodModeDatasets() {
                 <span className="text-xs font-mono text-gray-400">nemsis_schematron_compiler.out</span>
               </div>
               <div className="p-6 flex-1 font-mono text-sm">
-                {!aiResult && !thinking && <p className="text-gray-600 italic">// Waiting for natural language input...</p>}
-                {thinking && <p className="text-yellow-500 animate-pulse">// Abstracting syntax tree and matching to NEMSIS v3.5.0 dictionary...</p>}
+                {!aiResult && !thinking && <p className="text-gray-600 italic">{"// Waiting for natural language input..."}</p>}
+                {thinking && <p className="text-yellow-500 animate-pulse">{"// Abstracting syntax tree and matching to NEMSIS v3.5.0 dictionary..."}</p>}
                 {aiResult && !thinking && (
                   <div className="space-y-6">
                     <div>

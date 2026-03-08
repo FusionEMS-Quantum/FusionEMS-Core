@@ -197,7 +197,6 @@ export default function OpsCommandPage() {
   }, [load]);
 
   const health = data?.ops_health ?? 'GRAY';
-  const hc = HEALTH_COLORS[health] ?? HEALTH_COLORS.GRAY;
 
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">

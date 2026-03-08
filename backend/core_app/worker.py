@@ -41,6 +41,7 @@ async def run_worker() -> None:
         asyncio.create_task(_heartbeat_loop(stop_event)),
         asyncio.create_task(_credential_alert_loop(stop_event)),
         asyncio.create_task(_executive_briefing_loop(stop_event)),
+        asyncio.create_task(_connector_sync_loop(stop_event)),
         asyncio.create_task(_dlq_processing_loop(stop_event)),
         asyncio.create_task(_epcr_retention_loop(stop_event)),
     ]
@@ -127,6 +128,20 @@ async def _dlq_processing_loop(stop: asyncio.Event) -> None:
         except Exception as e:
             logger.error("DLQ processing error: %s", e)
         await asyncio.sleep(30)
+
+
+async def _connector_sync_loop(stop: asyncio.Event) -> None:
+    await asyncio.sleep(20)
+    while not stop.is_set():
+        try:
+            from core_app.workers.connector_sync_worker import process_connector_sync_batch
+
+            processed = process_connector_sync_batch(limit=10)
+            if processed:
+                logger.info("Connector sync worker processed %d queued jobs", processed)
+        except Exception as e:
+            logger.error("Connector sync worker error: %s", e)
+        await asyncio.sleep(20)
 
 
 async def _generate_executive_briefing() -> None:

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,12 +12,17 @@ const NAV_LINKS = [
   { href: '/portal/fax-inbox', label: 'Fax Inbox' },
   { href: '/portal/edi', label: 'EDI' },
   { href: '/portal/support', label: 'Support' },
+  { href: '/portal/facilities', label: 'Facilities' },
   { href: '/portal/documents', label: 'Documents' },
   { href: '/portal/neris-onboarding', label: 'NERIS Onboarding' },
   { href: '/portal/incidents/fire', label: 'Fire Incidents' },
+  { href: '/portal/fire-rms', label: 'Fire RMS' },
   { href: '/portal/cases', label: 'Cases' },
+  { href: '/portal/cad', label: 'CAD Dispatch' },
+  { href: '/portal/epcr', label: 'ePCR Charts' },
   { href: '/portal/hems', label: 'HEMS Pilot' },
   { href: '/portal/fleet', label: 'Fleet Intelligence' },
+  { href: '/portal/staff', label: 'Personnel' },
   { href: '/portal/scheduling', label: 'Scheduling' },
   { href: '/portal/billing-ops', label: 'Billing Ops' },
   { href: '/portal/trip', label: 'TRIP (WI)' },

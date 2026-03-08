@@ -173,6 +173,27 @@ def _compute_acuity(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _as_timestamp(value: Any) -> str:
+    if value is None:
+        return ""
+    if hasattr(value, "isoformat"):
+        return value.isoformat()  # type: ignore[no-any-return]
+    return str(value)
+
+
+def _timeline_entry(kind: str, row: dict[str, Any]) -> dict[str, Any]:
+    payload = row.get("data", {}) or {}
+    ts = payload.get("ts") or payload.get("updated_at") or payload.get("created_at")
+    if ts is None:
+        ts = row.get("created_at")
+    return {
+        "type": kind,
+        "timestamp": _as_timestamp(ts),
+        "event_id": str(row.get("id")),
+        "payload": payload,
+    }
+
+
 @router.post("/calls")
 async def create_call(
     payload: dict[str, Any],
@@ -188,6 +209,30 @@ async def create_call(
         data=payload,
         correlation_id=getattr(request.state, "correlation_id", None),
     )
+
+
+@router.get("/calls")
+async def list_calls(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+    limit: int = 200,
+    offset: int = 0,
+):
+    svc = DominationService(db, get_event_publisher())
+    return svc.repo("calls").list(tenant_id=current.tenant_id, limit=limit, offset=offset)
+
+
+@router.get("/calls/{call_id}")
+async def get_call(
+    call_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    svc = DominationService(db, get_event_publisher())
+    rec = svc.repo("calls").get(tenant_id=current.tenant_id, record_id=call_id)
+    if rec is None:
+        return {"error": "call_not_found"}
+    return rec
 
 
 @router.post("/calls/{call_id}/intake/answer")
@@ -311,6 +356,63 @@ async def set_call_status(
             correlation_id=getattr(request.state, "correlation_id", None),
         )
     return updated
+
+
+@router.post("/calls/{call_id}/transition")
+async def transition_call(
+    call_id: uuid.UUID,
+    payload: dict[str, Any],
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    translated_payload = {
+        "status": payload.get("state") or payload.get("status"),
+        "expected_version": payload.get("expected_version", 0),
+    }
+    return await set_call_status(
+        call_id=call_id,
+        payload=translated_payload,
+        request=request,
+        current=current,
+        db=db,
+    )
+
+
+@router.get("/calls/{call_id}/timeline")
+async def get_call_timeline(
+    call_id: uuid.UUID,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    svc = DominationService(db, get_event_publisher())
+    call_value = str(call_id)
+    entries: list[dict[str, Any]] = []
+
+    call_rec = svc.repo("calls").get(tenant_id=current.tenant_id, record_id=call_id)
+    if call_rec:
+        entries.append(_timeline_entry("call", call_rec))
+
+    intake = svc.repo("call_intake_answers").list_raw_by_field(
+        "call_id", call_value, tenant_id=current.tenant_id, limit=200
+    )
+    decisions = svc.repo("dispatch_decisions").list_raw_by_field(
+        "call_id", call_value, tenant_id=current.tenant_id, limit=200
+    )
+    assignments = svc.repo("crew_assignments").list_raw_by_field(
+        "call_id", call_value, tenant_id=current.tenant_id, limit=200
+    )
+    status_events = svc.repo("schedule_audit_events").list_raw_by_field(
+        "call_id", call_value, tenant_id=current.tenant_id, limit=200
+    )
+
+    entries.extend(_timeline_entry("intake", row) for row in intake)
+    entries.extend(_timeline_entry("decision", row) for row in decisions)
+    entries.extend(_timeline_entry("assignment", row) for row in assignments)
+    entries.extend(_timeline_entry("status", row) for row in status_events)
+
+    entries.sort(key=lambda item: item.get("timestamp", ""))
+    return entries
 
 
 @router.get("/ops/board")

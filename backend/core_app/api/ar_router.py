@@ -33,6 +33,15 @@ def _check(current: CurrentUser) -> None:
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
+def _as_int(value: Any, default: int = 0) -> int:
+    try:
+        if value is None:
+            return default
+        return int(str(value).replace(",", "").strip())
+    except (TypeError, ValueError):
+        return default
+
+
 # ─── Accounts ────────────────────────────────────────────────────────────────
 
 
@@ -644,3 +653,110 @@ async def import_vendor_status(
 
                 logging.error(f"Error: {e}")
     return {"import_id": str(record["id"]), "rows_parsed": len(rows)}
+
+
+@router.post("/legacy/import")
+async def import_legacy_ar_csv(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Import legacy A/R rows into centralized AR accounts.
+
+    Accepts raw CSV in request body. Supported column aliases include:
+    - account_number | account_id | external_account_id
+    - patient_name
+    - balance_cents | balance | amount_due_cents
+    - statement_id
+    """
+    _check(current)
+    svc = _svc(db)
+    correlation_id = getattr(request.state, "correlation_id", None)
+
+    body = await request.body()
+    if not body:
+        raise HTTPException(status_code=422, detail="empty_csv_body")
+
+    reader = csv.DictReader(io.StringIO(body.decode("utf-8", errors="replace")))
+    rows = list(reader)
+    if not rows:
+        raise HTTPException(status_code=422, detail="no_rows_parsed")
+
+    imported = 0
+    skipped = 0
+
+    for row in rows:
+        account_ref = (
+            (row.get("account_number") or "").strip()
+            or (row.get("account_id") or "").strip()
+            or (row.get("external_account_id") or "").strip()
+        )
+        patient_name = (row.get("patient_name") or "").strip()
+        statement_id = (row.get("statement_id") or "").strip() or None
+        balance_cents = _as_int(
+            row.get("balance_cents")
+            or row.get("amount_due_cents")
+            or row.get("balance")
+            or 0,
+            default=0,
+        )
+
+        if not account_ref:
+            skipped += 1
+            continue
+
+        account = await svc.create(
+            table="ar_accounts",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            data={
+                "case_id": statement_id,
+                "external_account_ref": account_ref,
+                "patient_ref": {"display_name": patient_name},
+                "guarantor_ref": {},
+                "balance_cents": balance_cents,
+                "status": "past_due" if balance_cents > 0 else "closed",
+                "days_past_due": 0,
+                "source": "legacy_import",
+                "imported_at": datetime.now(UTC).isoformat(),
+            },
+            correlation_id=correlation_id,
+        )
+
+        await svc.create(
+            table="ar_charges",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            data={
+                "account_id": str(account["id"]),
+                "external_account_ref": account_ref,
+                "amount_cents": balance_cents,
+                "description": "Legacy AR import opening balance",
+                "statement_id": statement_id,
+                "source": "legacy_import",
+            },
+            correlation_id=correlation_id,
+        )
+
+        imported += 1
+
+    await svc.create(
+        table="ledger_entries",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data={
+            "entry_type": "ar.legacy_import.completed",
+            "at": datetime.now(UTC).isoformat(),
+            "rows_total": len(rows),
+            "rows_imported": imported,
+            "rows_skipped": skipped,
+        },
+        correlation_id=correlation_id,
+    )
+
+    return {
+        "status": "ok",
+        "rows_total": len(rows),
+        "rows_imported": imported,
+        "rows_skipped": skipped,
+    }

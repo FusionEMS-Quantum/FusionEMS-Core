@@ -27,7 +27,7 @@ function authHeaders(): HeadersInit {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
-function Badge({ label, active }: { label: string; active: boolean }) {
+function Badge({ active }: { active: boolean }) {
   return (
     <span className={`inline-flex items-center px-2 py-0.5 text-micro font-semibold uppercase tracking-widest border ${active ? 'border-green text-green bg-green/10' : 'border-red-500/40 text-red-400 bg-red-500/10'}`}>
       {active ? 'Active' : 'Revoked'}
@@ -86,6 +86,7 @@ export default function RoleBuilderPage() {
   const assignRole = async () => {
     if (!selectedRole || !assignUserId.trim()) return;
     setAssigning(true);
+    setError(null);
     try {
       const res = await fetch(`${API}/api/v1/roles/assignments`, {
         method: 'POST',
@@ -101,6 +102,7 @@ export default function RoleBuilderPage() {
       setAssignUserId('');
       showToast(`Role "${selectedRole.name}" assigned.`, true);
     } catch (e) {
+      setError(e instanceof Error ? e.message : 'Assignment failed');
       showToast(e instanceof Error ? e.message : 'Assignment failed', false);
     } finally {
       setAssigning(false);
@@ -109,6 +111,7 @@ export default function RoleBuilderPage() {
 
   const revokeAssignment = async (id: string) => {
     setRevoking(id);
+    setError(null);
     try {
       const res = await fetch(`${API}/api/v1/roles/assignments/${id}`, {
         method: 'DELETE',
@@ -118,6 +121,7 @@ export default function RoleBuilderPage() {
       setAssignments(prev => prev.filter(a => a.id !== id));
       showToast('Role assignment revoked.', true);
     } catch (e) {
+      setError(e instanceof Error ? e.message : 'Revoke failed');
       showToast(e instanceof Error ? e.message : 'Revoke failed', false);
     } finally {
       setRevoking(null);
@@ -218,7 +222,7 @@ export default function RoleBuilderPage() {
                 className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 items-center hover:bg-white/[0.02]">
                 <span className="col-span-4 text-micro font-mono text-text-secondary truncate">{a.user_id.slice(0, 8)}…</span>
                 <span className="col-span-3 text-xs font-semibold text-text-primary truncate">{a.role_name}</span>
-                <span className="col-span-2"><Badge label="" active={a.is_active} /></span>
+                <span className="col-span-2"><Badge active={a.is_active} /></span>
                 <span className="col-span-2 text-micro text-text-muted font-mono">
                   {new Date(a.created_at).toLocaleDateString()}
                 </span>

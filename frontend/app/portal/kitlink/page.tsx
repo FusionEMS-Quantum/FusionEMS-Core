@@ -1,5 +1,4 @@
 "use client";
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
 import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
 import { MetricCard } from '@/components/ui/MetricCard';
@@ -533,7 +532,7 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
   );
 }
 
-function ReportPanel({ title, count, items, renderItem }: { title: string; count: number | undefined; items: any[] | undefined; renderItem: (i: any) => React.ReactNode }) {
+function ReportPanel({ title, count, items, renderItem }: { title: string; count: number | undefined; items: any[] | undefined; renderItem: (_i: any) => React.ReactNode }) {
   return (
     <div className="chamfer-8 border border-border-subtle bg-bg-panel p-4">
       <div className="flex items-center justify-between mb-3">

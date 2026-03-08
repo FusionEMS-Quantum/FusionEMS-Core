@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getAICommandMetrics, updateAITenantSettings } from '@/services/api';
+import { SeverityBadge, SimpleModeToggle } from '@/components/ui';
+import type { SeverityLevel } from '@/lib/design-system/tokens';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,24 +70,36 @@ function healthColor(score: number): string {
   return 'var(--color-brand-red)';
 }
 
-function priorityColor(p: string): string {
+function prioritySeverity(p: string): SeverityLevel {
   switch (p) {
-    case 'CRITICAL': return 'var(--color-brand-red)';
-    case 'HIGH': return 'var(--color-brand-orange)';
-    case 'MEDIUM': return 'var(--color-status-warning)';
-    default: return 'var(--color-status-active)';
+    case 'CRITICAL':
+      return 'BLOCKING';
+    case 'HIGH':
+      return 'HIGH';
+    case 'MEDIUM':
+      return 'MEDIUM';
+    case 'LOW':
+      return 'LOW';
+    default:
+      return 'INFORMATIONAL';
   }
 }
 
-function severityColor(s: string): string {
+function actionSeverity(s: string): SeverityLevel {
   switch (s) {
-    case 'RED': return 'var(--color-brand-red)';
-    case 'ORANGE': return 'var(--color-brand-orange)';
-    case 'YELLOW': return 'var(--color-status-warning)';
-    case 'BLUE': return 'var(--color-status-info)';
-    case 'GREEN': return 'var(--color-status-active)';
-    case 'GRAY': return 'var(--color-text-muted)';
-    default: return 'var(--color-status-active)';
+    case 'RED':
+      return 'BLOCKING';
+    case 'ORANGE':
+      return 'HIGH';
+    case 'YELLOW':
+      return 'MEDIUM';
+    case 'BLUE':
+      return 'LOW';
+    case 'GREEN':
+    case 'GRAY':
+      return 'INFORMATIONAL';
+    default:
+      return 'INFORMATIONAL';
   }
 }
 
@@ -252,17 +266,7 @@ export default function AICommandCenterPage() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {/* Simple Mode Toggle */}
-          <button
-            onClick={() => setSimpleMode(!simpleMode)}
-            className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border transition-colors"
-            style={{
-              color: simpleMode ? 'var(--color-brand-orange)' : 'var(--color-text-muted)',
-              borderColor: simpleMode ? 'rgba(255,107,26,0.5)' : 'var(--color-border-default)',
-              background: simpleMode ? 'rgba(255,107,26,0.08)' : 'transparent',
-            }}
-          >
-            {simpleMode ? 'SIMPLE MODE ON' : 'SIMPLE MODE'}
-          </button>
+          <SimpleModeToggle isSimple={simpleMode} onToggle={setSimpleMode} />
           {/* AI Master Toggle */}
           <button
             onClick={handleToggleAI}
@@ -381,12 +385,13 @@ export default function AICommandCenterPage() {
                   {metrics.recent_reviews.map((item: ReviewEntry) => (
                     <div key={item.review_id} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: priorityColor(item.priority) }} />
                         <span className="text-xs text-text-secondary truncate">{item.use_case_name} &mdash; {item.domain}</span>
                       </div>
-                      <span className="text-micro uppercase tracking-wider shrink-0" style={{ color: priorityColor(item.priority) }}>
-                        {item.priority}
-                      </span>
+                      <SeverityBadge
+                        severity={prioritySeverity(item.priority)}
+                        size="sm"
+                        label={item.priority}
+                      />
                     </div>
                   ))}
                 </div>
@@ -406,7 +411,11 @@ export default function AICommandCenterPage() {
                         <div className="text-xs font-bold text-text-primary truncate">{ga.title}</div>
                         <div className="text-micro text-text-muted truncate">{ga.description}</div>
                       </div>
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: severityColor(ga.severity) }} />
+                      <SeverityBadge
+                        severity={actionSeverity(ga.severity)}
+                        size="sm"
+                        label={ga.severity}
+                      />
                     </div>
                   ))}
                 </div>

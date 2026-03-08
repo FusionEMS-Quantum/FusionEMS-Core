@@ -156,3 +156,23 @@ variable "graph_founder_email" {
   sensitive   = true
   default     = ""
 }
+
+# ─── Centralized Billing Line (Telnyx) ─────────────────────────────────────
+
+variable "central_billing_desired_tollfree_prefix" {
+  description = "Preferred toll-free prefix for centralized billing number purchase"
+  type        = string
+  default     = "800"
+}
+
+variable "central_billing_existing_phone_e164" {
+  description = "Optional pre-provisioned centralized billing number in E.164; when set, purchase is skipped"
+  type        = string
+  default     = ""
+}
+
+variable "founder_billing_escalation_phone_e164" {
+  description = "Founder escalation phone destination for high-risk billing calls"
+  type        = string
+  default     = ""
+}

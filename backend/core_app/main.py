@@ -65,14 +65,26 @@ from core_app.api.fire_statements_router import router as fire_statements_router
 from core_app.api.fleet_intelligence_router import router as fleet_intelligence_router  # noqa: E402
 from core_app.api.fleet_router import router as fleet_router  # noqa: E402
 from core_app.api.founder_agents_router import router as founder_agents_router  # noqa: E402
+from core_app.api.founder_billing_voice_router import (
+    router as founder_billing_voice_router,  # noqa: E402
+)
 from core_app.api.founder_clinical_router import router as founder_clinical_router  # noqa: E402
 from core_app.api.founder_copilot_router import router as founder_copilot_router  # noqa: E402
 from core_app.api.founder_documents_router import router as founder_documents_router  # noqa: E402
 from core_app.api.founder_graph_router import router as founder_graph_router  # noqa: E402
+from core_app.api.founder_integration_command_router import (  # noqa: E402
+    router as founder_integration_command_router,
+)
 from core_app.api.founder_ops_command_router import (
     router as founder_ops_command_router,  # noqa: E402
 )
+from core_app.api.founder_records_command_router import (  # noqa: E402
+    router as founder_records_command_router,
+)
 from core_app.api.founder_router import router as founder_router  # noqa: E402
+from core_app.api.founder_specialty_ops_command_router import (  # noqa: E402
+    router as founder_specialty_ops_command_router,
+)
 from core_app.api.founder_success_command_router import (
     router as founder_success_command_router,  # noqa: E402
 )
@@ -116,6 +128,7 @@ from core_app.api.patient_identity_router import (
 from core_app.api.patient_identity_router import (  # noqa: E402
     router as patient_identity_router,
 )
+from core_app.api.patient_portal_router import router as patient_portal_router  # noqa: E402
 from core_app.api.patient_router import router as patient_router  # noqa: E402
 from core_app.api.payments_router import router as payments_router  # noqa: E402
 from core_app.api.platform_core_router import router as platform_core_router  # noqa: E402
@@ -265,9 +278,13 @@ app.include_router(fleet_intelligence_router)
 app.include_router(fleet_router)
 app.include_router(founder_agents_router)
 app.include_router(founder_copilot_router)
+app.include_router(founder_billing_voice_router)
 app.include_router(founder_documents_router)
 app.include_router(founder_graph_router)
 app.include_router(founder_router)
+app.include_router(founder_specialty_ops_command_router)
+app.include_router(founder_records_command_router)
+app.include_router(founder_integration_command_router)
 app.include_router(founder_ops_command_router)
 app.include_router(hems_router)
 app.include_router(icd10_router)
@@ -297,6 +314,7 @@ app.include_router(pricing_router)
 app.include_router(public_pricing_router)
 app.include_router(roi_funnel_router)
 app.include_router(scheduling_router)
+app.include_router(patient_portal_router)
 app.include_router(signatures_router)
 app.include_router(sms_webhook_router)
 app.include_router(statements_router)
@@ -334,6 +352,7 @@ app.include_router(relationship_command_router)
 # --- Customer Success Platform routers (self-prefixed) ---
 app.include_router(customer_success_router)
 app.include_router(founder_success_command_router)
+app.include_router(founder_copilot_router)
 
 # --- Platform Core Directive routers (self-prefixed) ---
 app.include_router(platform_core_router)

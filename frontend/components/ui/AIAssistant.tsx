@@ -1,9 +1,9 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { SeverityLevel, SystemDomain } from '@/lib/design-system/tokens';
-import { DOMAIN_LABEL, SEVERITY_COLOR_MAP } from '@/lib/design-system/tokens';
+import { DOMAIN_LABEL } from '@/lib/design-system/tokens';
 import { SeverityBadge } from './SeverityBadge';
 
 // ══════════════════════════════════════════════════════════════════
@@ -149,7 +149,7 @@ export interface AIContextPanelProps {
   readonly suggestions?: readonly AIExplanationCardProps[];
   readonly title?: string;
   readonly loading?: boolean;
-  readonly onAskAI?: (question: string) => void;
+  readonly onAskAI?: (_question: string) => void;
   readonly className?: string;
 }
 

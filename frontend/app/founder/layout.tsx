@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import FounderCopilotPanel from '@/components/founder/copilot/FounderCopilotPanel';
+import { Bot } from 'lucide-react';
 
 const NAV_DOMAINS = [
   {
@@ -67,9 +69,7 @@ const NAV_DOMAINS = [
       { href: '/founder/compliance/certification', label: 'Certification Monitor' },
       { href: '/founder/compliance/niers', label: 'NIERS Manager' },
       { href: '/founder/compliance/neris', label: 'NERIS Compliance Studio' },
-      { href: '/founder/compliance/hems', label: 'HEMS Safety Audit' },
       { href: '/founder/compliance/packs', label: 'Compliance Packs' },
-      { href: '/founder/compliance/cms-gate', label: 'CMS Gate Monitor' },
     ],
   },
   {
@@ -156,16 +156,15 @@ const NAV_DOMAINS = [
     color: 'var(--color-system-billing)',
     links: [
       { href: '/founder/ops', label: '⚡ Ops Command Center' },
+      { href: '/founder/specialty-ops', label: 'Specialty Ops Command' },
+      { href: '/founder/records-command', label: 'Records Command Center' },
+      { href: '/founder/integration-command', label: 'Integration Command Center' },
       { href: '/founder/ops/cad', label: 'CAD / Dispatch' },
       { href: '/founder/ops/crewlink', label: 'CrewLink Paging' },
       { href: '/founder/ops/fleet', label: 'Fleet & Telemetry' },
       { href: '/founder/ops/staffing', label: 'Staffing Readiness' },
       { href: '/founder/ops/transportlink', label: 'TransportLink' },
       { href: '/portal/cases', label: 'Cases (Cross-Portal)' },
-      { href: '/founder/ops/fleet-intelligence', label: 'Fleet Intelligence' },
-      { href: '/founder/ops/readiness', label: 'Readiness Monitor' },
-      { href: '/founder/ops/hems', label: 'HEMS Overview' },
-      { href: '/founder/ops/scheduling-ai', label: 'AI Scheduling Studio' },
     ],
   },
   {
@@ -247,7 +246,7 @@ function SidebarSection({
   );
 }
 
-function TopBar({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void }) {
+function TopBar({ sidebarOpen, setSidebarOpen, onCopilotToggle }: { sidebarOpen: boolean; setSidebarOpen: (_v: boolean) => void; onCopilotToggle: () => void; }) {
   const [search, setSearch] = useState('');
   const [aiInput, setAiInput] = useState('');
   return (
@@ -283,33 +282,20 @@ function TopBar({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolean; setSide
           className="w-48 h-7 bg-orange-ghost border border-[rgba(255,107,26,0.25)] px-3 text-xs text-text-primary placeholder-[rgba(255,107,26,0.45)] focus:outline-none focus:border-orange rounded-sm"
         />
       </div>
-
-      <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-        <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-status-active animate-pulse" />
-          <span className="text-[10px] text-status-active font-semibold uppercase tracking-wider">LIVE</span>
-        </div>
-        <div className="text-xs text-[rgba(255,255,255,0.55)] hidden md:block">
-          <span className="text-[rgba(255,255,255,0.3)]">REV TODAY</span>{' '}
-          <span className="text-text-primary font-semibold">—</span>
-        </div>
-        <button className="relative w-7 h-7 flex items-center justify-center text-[rgba(255,255,255,0.5)] hover:text-text-primary">
-          <span className="text-sm">🔔</span>
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-orange" />
-        </button>
-        <div className="w-7 h-7 rounded-full bg-[rgba(255,107,26,0.2)] border border-[rgba(255,107,26,0.4)] flex items-center justify-center text-[10px] font-bold text-orange">
-          FD
-        </div>
-        <button className="h-6 px-2 bg-red text-[10px] font-bold uppercase tracking-widest text-text-primary rounded-sm hover:bg-red-bright transition-colors">
-          INCIDENT
-        </button>
-      </div>
+      <button onClick={onCopilotToggle} className="ml-4 text-blue-400 hover:text-blue-300 transition-colors p-1 rounded-full hover:bg-blue-500/10">
+        <Bot className="w-5 h-5" />
+      </button>
     </header>
   );
 }
 
 function AIContextPanel() {
   const [collapsed, setCollapsed] = useState(false);
+  const urgencyDotClass: Record<'HIGH' | 'INFORMATIONAL' | 'LOW', string> = {
+    HIGH: 'bg-status-warning',
+    INFORMATIONAL: 'bg-status-info',
+    LOW: 'bg-status-active',
+  };
   if (collapsed) {
     return (
       <aside className="w-8 border-l border-border-subtle bg-bg-base flex flex-col items-center pt-3">
@@ -329,15 +315,13 @@ function AIContextPanel() {
         <div>
           <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)] mb-1.5">Suggested Actions</div>
           {[
-            { text: 'Review 3 pending denial appeals', urgency: 'warning' },
-            { text: 'Approve 1 AI review queue item', urgency: 'info' },
-            { text: 'Check export failures (0 today)', urgency: 'ok' },
-            { text: '2 credential expirations in 30d', urgency: 'warning' },
+            { text: 'Review 3 pending denial appeals', urgency: 'HIGH' as const },
+            { text: 'Approve 1 AI review queue item', urgency: 'INFORMATIONAL' as const },
+            { text: 'Check export failures (0 today)', urgency: 'LOW' as const },
+            { text: '2 credential expirations in 30d', urgency: 'HIGH' as const },
           ].map((item, i) => (
             <div key={i} className={`flex items-start gap-2 py-1.5 border-b border-border-subtle last:border-0`}>
-              <span className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                item.urgency === 'warning' ? 'bg-status-warning' : item.urgency === 'info' ? 'bg-status-info' : 'bg-status-active'
-              }`} />
+              <span className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${urgencyDotClass[item.urgency]}`} />
               <span className="text-xs text-text-secondary">{item.text}</span>
             </div>
           ))}
@@ -381,6 +365,7 @@ function AIContextPanel() {
 export default function FounderLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [copilotOpen, setCopilotOpen] = useState(false);
   const [openDomains, setOpenDomains] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     NAV_DOMAINS.forEach((d) => {
@@ -396,7 +381,7 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex flex-col h-screen bg-bg-void text-text-primary overflow-hidden">
-      <TopBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <TopBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onCopilotToggle={() => setCopilotOpen(v => !v)} />
       <div className="flex flex-1 overflow-hidden">
         {sidebarOpen && (
           <aside className="w-52 flex-shrink-0 border-r border-border-subtle bg-bg-void overflow-y-auto">
@@ -416,6 +401,7 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
         <main className="flex-1 overflow-y-auto bg-bg-base">
           {children}
         </main>
+        <FounderCopilotPanel isOpen={copilotOpen} onClose={() => setCopilotOpen(false)} />
         <AIContextPanel />
       </div>
     </div>

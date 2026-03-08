@@ -314,7 +314,7 @@ async def fire_incident_normalization(
     return {
         "normalized": True,
         "incident_id": d.get("incident_id"),
-        "nfirs_type": d.get("type", "STRUCTURE_FIRE"),
+        "neris_type": d.get("type", "STRUCTURE_FIRE"),
         "normalized_at": d.get("normalized_at"),
         "changes": d.get("changes", []),
     }
@@ -1231,7 +1231,7 @@ async def fire_classification_validator(
         actor_user_id=current.user_id,
         data={
             "type": "fire_classify",
-            "nfirs_code": payload.get("nfirs_code"),
+            "neris_code": payload.get("neris_code"),
             "validated_at": _now(),
             **payload,
         },
@@ -1240,7 +1240,7 @@ async def fire_classification_validator(
     d = _data(record)
     return {
         "valid": d.get("valid", True),
-        "nfirs_code": d.get("nfirs_code"),
+        "neris_code": d.get("neris_code"),
         "category": d.get("category", ""),
         "sub_category": d.get("sub_category", ""),
         "warnings": d.get("warnings", []),
@@ -3015,7 +3015,7 @@ async def national_reporting_readiness_engine(
         "grade": grade,
         "nemsis_compliant": score >= 90,
         "niers_compliant": score >= 90,
-        "nfirs_compliant": score >= 90,
+        "neris_compliant": score >= 90,
         "states_covered": len(states),
         "incidents_reportable": ready,
         "incidents_not_ready": failed,

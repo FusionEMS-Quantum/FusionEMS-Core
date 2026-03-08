@@ -1,6 +1,5 @@
 'use client';
 
-import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import type { SystemDomain } from '@/lib/design-system/tokens';
 import { DOMAIN_COLOR_MAP, DOMAIN_LABEL } from '@/lib/design-system/tokens';

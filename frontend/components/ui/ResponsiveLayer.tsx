@@ -21,7 +21,7 @@ interface ViewportState {
   readonly isWidescreen: boolean;
   readonly isUltraWide: boolean;
   readonly density: DensityMode;
-  readonly setDensity: (mode: DensityMode) => void;
+  readonly setDensity: (_mode: DensityMode) => void;
 }
 
 const ViewportContext = createContext<ViewportState>({

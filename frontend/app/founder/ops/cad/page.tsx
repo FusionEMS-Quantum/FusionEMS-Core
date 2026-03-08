@@ -235,7 +235,6 @@ export default function CadDispatchPage() {
         {filtered.map(m => {
           const d = m.data ?? {};
           const isSelected = selected?.id === m.id;
-          const stateColor = STATE_COLORS[d.state] ?? { bg: 'rgba(120,130,140,0.1)', text: '#78909c' };
           const priorityColor = PRIORITY_COLORS[d.priority] ?? '#78909c';
 
           return (

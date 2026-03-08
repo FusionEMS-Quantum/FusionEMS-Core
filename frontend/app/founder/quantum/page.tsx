@@ -9,13 +9,8 @@ import {
   DollarSign,
   Fingerprint,
   FileText,
-  Activity,
   TerminalSquare,
   Network,
-  Lock,
-  Download,
-  Eye,
-  FileBadge2
 } from "lucide-react";
 import { getQuantumStrategies, uploadQuantumCSV, getQuantumVaultDocuments } from "@/services/api";
 

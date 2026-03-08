@@ -48,6 +48,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    _original_create_table = op.create_table
+
+    def _safe_create_table(table_name: str, *columns: object, **kwargs: object) -> object:
+        if sa.inspect(bind).has_table(table_name):
+            return None
+        return _original_create_table(table_name, *columns, **kwargs)
+
+    op.create_table = _safe_create_table  # type: ignore[assignment]
+
     # ── PATIENT ALIASES ───────────────────────────────────────────────
     op.create_table(
         "patient_aliases",
@@ -78,7 +88,12 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False),
     )
-    op.create_index("ix_patient_identifiers_source_value", "patient_identifiers", ["source", "identifier_value"])
+    op.execute(
+        sa.text(
+            "CREATE INDEX IF NOT EXISTS ix_patient_identifiers_source_value "
+            "ON patient_identifiers (source, identifier_value)"
+        )
+    )
 
     # ── PATIENT DUPLICATE CANDIDATES ──────────────────────────────────
     op.create_table(
@@ -470,6 +485,8 @@ def upgrade() -> None:
         sa.Column("correlation_id", sa.String(64), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
+
+    op.create_table = _original_create_table  # type: ignore[assignment]
 
 
 def downgrade() -> None:

@@ -15,9 +15,18 @@ interface CadLiveMapProps {
   className?: string;
 }
 
+const STATUS_COLORS: Record<string, string> = {
+  available: 'var(--color-status-active)',
+  dispatched: 'var(--color-status-warning)',
+  on_scene: 'var(--color-brand-orange)',
+  transport: 'var(--color-system-fleet)',
+  at_hospital: 'var(--color-system-compliance)',
+};
+
 export function CadLiveMap({ units = [], className = '' }: CadLiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<unknown>(null);
+  const markersLayer = useRef<unknown>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -36,27 +45,7 @@ export function CadLiveMap({ units = [], className = '' }: CadLiveMapProps) {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19,
       }).addTo(map);
-
-      const statusColors: Record<string, string> = {
-        available: 'var(--color-status-active)',
-        dispatched: 'var(--color-status-warning)',
-        on_scene: 'var(--color-brand-orange)',
-        transport: 'var(--color-system-fleet)',
-        at_hospital: 'var(--color-system-compliance)',
-      };
-
-      units.forEach((unit) => {
-        const color = statusColors[unit.status] || 'var(--color-text-muted)';
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 6px ${color}"></div>`,
-          iconSize: [12, 12],
-          iconAnchor: [6, 6],
-        });
-        L.marker([unit.lat, unit.lng], { icon })
-          .addTo(map)
-          .bindPopup(`<b>${unit.unit_number}</b><br>Status: ${unit.status}`);
-      });
+      markersLayer.current = L.layerGroup().addTo(map);
 
       mapInstance.current = map;
     });
@@ -65,9 +54,35 @@ export function CadLiveMap({ units = [], className = '' }: CadLiveMapProps) {
       if (mapInstance.current) {
         (mapInstance.current as { remove: () => void }).remove();
         mapInstance.current = null;
+        markersLayer.current = null;
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!mapInstance.current || !markersLayer.current) return;
+
+    import('leaflet').then((L) => {
+      if (!markersLayer.current) return;
+      const layer = markersLayer.current as { clearLayers: () => void; addLayer: (_layer: unknown) => void };
+      layer.clearLayers();
+
+      units.forEach((unit) => {
+        const color = STATUS_COLORS[unit.status] || 'var(--color-text-muted)';
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 6px ${color}"></div>`,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
+        });
+        const marker = L.marker([unit.lat, unit.lng], { icon }).bindPopup(
+          `<b>${unit.unit_number}</b><br>Status: ${unit.status}`
+        );
+        layer.addLayer(marker);
+      });
+    });
+  }, [units]);
 
   return (
     <div className={`rounded-2xl overflow-hidden border border-border ${className}`}>

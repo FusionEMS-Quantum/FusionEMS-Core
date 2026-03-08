@@ -2,7 +2,6 @@
 
 import { type ReactNode, useState, useCallback, createContext, useContext } from 'react';
 import { cn } from '@/lib/utils';
-import { CONFIRMATION, SUCCESS } from '@/lib/design-system/language';
 
 // ══════════════════════════════════════════════════════════════════
 // PRODUCT POLISH COMPONENTS
@@ -125,8 +124,8 @@ export interface Toast {
 
 interface ToastContextValue {
   readonly toasts: readonly Toast[];
-  readonly addToast: (variant: ToastVariant, message: string, duration?: number) => void;
-  readonly removeToast: (id: string) => void;
+  readonly addToast: (_variant: ToastVariant, _message: string, _duration?: number) => void;
+  readonly removeToast: (_id: string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -139,10 +138,10 @@ export function useToast() {
       toasts: [] as readonly Toast[],
       addToast: (_v: ToastVariant, _m: string) => {},
       removeToast: (_id: string) => {},
-      success: (msg: string) => {},
-      error: (msg: string) => {},
-      warning: (msg: string) => {},
-      info: (msg: string) => {},
+      success: (_msg: string) => {},
+      error: (_msg: string) => {},
+      warning: (_msg: string) => {},
+      info: (_msg: string) => {},
     };
   }
   return {
@@ -184,7 +183,7 @@ function ToastContainer({
   onDismiss,
 }: {
   readonly toasts: readonly Toast[];
-  readonly onDismiss: (id: string) => void;
+  readonly onDismiss: (_id: string) => void;
 }) {
   if (toasts.length === 0) return null;
 
@@ -219,7 +218,7 @@ function ToastItem({
   onDismiss,
 }: {
   readonly toast: Toast;
-  readonly onDismiss: (id: string) => void;
+  readonly onDismiss: (_id: string) => void;
 }) {
   return (
     <div

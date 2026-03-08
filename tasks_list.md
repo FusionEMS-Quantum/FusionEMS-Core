@@ -16,7 +16,7 @@ This document breaks down **every major step** required to build your FusionEMS 
 
 2. **Finalize project scope**
    - Confirm the list of modules and ensure no scope creep: TransportLink (EMS), CrewLink, Fire, CAD, Scheduling, Billing, Patient Portal, Authorization Rep, Overlay import, Founder OS, AI Layers.
-   - Decide which parts (scheduling/crew/fleet, fire/NFIRS, CAD) will be phase‑1 deliverables and which can be phased in later.
+  - Decide which parts (scheduling/crew/fleet, fire/NERIS, CAD) will be phase‑1 deliverables and which can be phased in later.
    - Document dependencies between modules (e.g., CrewLink must feed Scheduling; Billing depends on TransportLink completeness).
 
 ---
@@ -204,14 +204,14 @@ This document breaks down **every major step** required to build your FusionEMS 
 
 ---
 
-## Phase 8 – Fire Module (NFIRS & Preplans)
+## Phase 8 – Fire Module (NERIS & Preplans)
 
-- Define tables for Fire Incident (NFIRS fields), Structure Preplans, Inspections, Hydrants, and Equipment; support NFIRS v5 dataset.
-- Build input forms for fire incident reports; enforce required fields and NFIRS codes; store them in the same multi‑tenant DB but isolated by module.
+- Define tables for Fire Incident (NERIS fields), Structure Preplans, Inspections, Hydrants, and Equipment; support NERIS dataset.
+- Build input forms for fire incident reports; enforce required fields and NERIS codes; store them in the same multi‑tenant DB but isolated by module.
 - Provide a hydrant map using OpenStreetMap/Leaflet; allow adding and editing hydrant details.
 - Implement pre‑incident plan management: store building layouts, contacts, hazards; attach photos and documents.
 - Add inspection tracking: schedule, conduct, and store results; track deficiency corrections.
-- Support basic export of NFIRS incident data; prepare for eventual NFIRS 5 submission workflows.
+- Support basic export of NERIS incident data; prepare for eventual NERIS submission workflows.
 
 ---
 

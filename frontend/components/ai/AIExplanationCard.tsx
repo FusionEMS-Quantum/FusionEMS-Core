@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 export interface AIExplanation {
   title: string;
-  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+  severity: 'BLOCKING' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL' | 'CRITICAL' | 'INFO';
   source: 'AI_ENGINE' | 'GOVERNANCE' | 'HUMAN_OVERRIDE';
   what_is_wrong: string;
   why_it_matters: string;
@@ -27,10 +27,27 @@ export interface AIExplanationCardProps {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function severityStyle(s: string): { bg: string; border: string; text: string; label: string } {
+function normalizeSeverity(s: string): 'BLOCKING' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL' {
   switch (s) {
     case 'CRITICAL':
-      return { bg: 'rgba(255,45,45,0.08)', border: 'rgba(255,45,45,0.35)', text: 'var(--color-brand-red)', label: 'CRITICAL' };
+      return 'BLOCKING';
+    case 'INFO':
+      return 'INFORMATIONAL';
+    case 'BLOCKING':
+    case 'HIGH':
+    case 'MEDIUM':
+    case 'LOW':
+    case 'INFORMATIONAL':
+      return s;
+    default:
+      return 'INFORMATIONAL';
+  }
+}
+
+function severityStyle(s: string): { bg: string; border: string; text: string; label: string } {
+  switch (normalizeSeverity(s)) {
+    case 'BLOCKING':
+      return { bg: 'rgba(255,45,45,0.08)', border: 'rgba(255,45,45,0.35)', text: 'var(--color-brand-red)', label: 'BLOCKING' };
     case 'HIGH':
       return { bg: 'rgba(255,107,26,0.08)', border: 'rgba(255,107,26,0.35)', text: 'var(--color-brand-orange)', label: 'HIGH' };
     case 'MEDIUM':
@@ -38,7 +55,7 @@ function severityStyle(s: string): { bg: string; border: string; text: string; l
     case 'LOW':
       return { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.25)', text: 'var(--color-status-active)', label: 'LOW' };
     default:
-      return { bg: 'rgba(56,189,248,0.08)', border: 'rgba(56,189,248,0.25)', text: 'var(--color-status-info)', label: 'INFO' };
+      return { bg: 'rgba(156,163,175,0.10)', border: 'rgba(156,163,175,0.25)', text: 'var(--color-text-muted)', label: 'INFORMATIONAL' };
   }
 }
 

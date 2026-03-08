@@ -70,3 +70,30 @@ async def set_unit_status(
         data=event,
         correlation_id=getattr(request.state, "correlation_id", None),
     )
+
+
+@router.post("/units/{unit_id}/gps")
+async def set_unit_gps(
+    unit_id: uuid.UUID,
+    payload: dict[str, Any],
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    point = {
+        "lat": payload.get("lat"),
+        "lng": payload.get("lng"),
+        "ts": payload.get("ts"),
+    }
+    event = {
+        "unit_id": str(unit_id),
+        "points": [point],
+    }
+    svc = DominationService(db, get_event_publisher())
+    return await svc.create(
+        table="unit_locations",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data=event,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )

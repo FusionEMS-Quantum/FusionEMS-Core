@@ -5,7 +5,6 @@ import Link from 'next/link';
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
 
-const CERT_LEVELS = ['EMT', 'AEMT', 'Paramedic', 'Flight_Paramedic', 'Critical_Care_Paramedic'];
 const SERVICE_LEVELS = ['BLS', 'ALS', 'CCT', 'HEMS'];
 const CERT_FOR_LEVEL: Record<string, string> = { BLS: 'EMT', ALS: 'AEMT', CCT: 'Paramedic', HEMS: 'Flight_Paramedic' };
 
@@ -125,6 +124,12 @@ export default function StaffingPage() {
         </div>
         {summary && <StateBadge state={summary.overall_readiness} color={overallColor} />}
       </div>
+
+      {loading && (
+        <div className="p-3 chamfer-4-xl border border-white/[0.08] bg-white/[0.03] text-sm text-text-muted">
+          Loading staffing readiness…
+        </div>
+      )}
 
       {/* ── Hard Rules Notice ── */}
       <div className="p-3 chamfer-4-xl border border-amber-400/[0.3] bg-amber-400/[0.06]">

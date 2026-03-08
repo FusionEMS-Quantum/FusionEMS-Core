@@ -1,6 +1,8 @@
 'use client';
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
+import { QuantumTableSkeleton } from '@/components/ui';
+import { SeverityBadge } from '@/components/ui';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { SeverityLevel } from '@/lib/design-system/tokens';
 
 interface PackStatus {
   national_xsd: { active: boolean; name: string } | null;
@@ -32,6 +34,19 @@ interface AiExplanation {
 interface CertCheck {
   label: string;
   passed: boolean;
+}
+
+function validationSeverityToCanonical(severity: string): SeverityLevel {
+  switch (severity.toLowerCase()) {
+    case 'error':
+      return 'BLOCKING';
+    case 'warning':
+      return 'MEDIUM';
+    case 'info':
+      return 'INFORMATIONAL';
+    default:
+      return 'INFORMATIONAL';
+  }
 }
 
 export default function ComplianceStudioPage() {
@@ -195,8 +210,8 @@ export default function ComplianceStudioPage() {
     }
   };
 
-  const errorCount = validationResult?.issues.filter((i) => i.severity === 'error').length ?? 0;
-  const warnCount = validationResult?.issues.filter((i) => i.severity === 'warning').length ?? 0;
+  const blockingCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'BLOCKING').length ?? 0;
+  const mediumCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'MEDIUM').length ?? 0;
 
   return (
     <div className="p-5 space-y-6 min-h-screen bg-bg-void">
@@ -308,8 +323,8 @@ export default function ComplianceStudioPage() {
               >
                 {validationResult.valid ? 'VALID' : 'INVALID'}
               </span>
-              <span className="text-xs text-red-400">{errorCount} error{errorCount !== 1 ? 's' : ''}</span>
-              <span className="text-xs text-yellow-400">{warnCount} warning{warnCount !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-red-400">{blockingCount} blocking issue{blockingCount !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-yellow-400">{mediumCount} medium issue{mediumCount !== 1 ? 's' : ''}</span>
             </div>
             <button
               onClick={sendAllToAgent}
@@ -326,11 +341,11 @@ export default function ComplianceStudioPage() {
                 className="bg-bg-panel border border-border-DEFAULT p-4 space-y-2"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`text-micro font-bold px-2 py-0.5 uppercase ${issue.severity === 'error' ? 'bg-red-900 text-red-300' : 'bg-yellow-900 text-yellow-300'}`}
-                  >
-                    {issue.severity}
-                  </span>
+                  <SeverityBadge
+                    severity={validationSeverityToCanonical(issue.severity)}
+                    size="sm"
+                    label={validationSeverityToCanonical(issue.severity)}
+                  />
                   <span className="text-xs font-mono text-system-billing">{issue.element_id}</span>
                   {issue.ui_section && (
                     <span className="text-micro text-text-muted">{issue.ui_section}</span>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { listPlatformFeatureFlags, createPlatformFeatureFlag, listTenantFeatureStates, setTenantFeatureState } from '@/services/api';
+import { SeverityBadge } from '@/components/ui';
 
 interface FeatureFlag {
   id: string;
@@ -148,7 +149,9 @@ export default function FeatureFlagsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono font-semibold text-text-primary">{f.flag_key}</span>
-                {f.is_critical && <span className="text-[9px] px-1.5 py-0.5 bg-red-400/10 text-red-400 font-bold">CRITICAL</span>}
+                {f.is_critical && (
+                  <SeverityBadge severity="BLOCKING" size="sm" label="BLOCKING" />
+                )}
               </div>
               <span className={`text-[10px] px-2 py-0.5 font-semibold ${
                 f.default_state === 'ENABLED' ? 'text-green-400 bg-green-400/10' :

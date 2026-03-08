@@ -19,6 +19,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    if inspector.has_table('roles'):
+        return
+
     # Use execute to avoid string-enum restrictions
 
     op.create_table(

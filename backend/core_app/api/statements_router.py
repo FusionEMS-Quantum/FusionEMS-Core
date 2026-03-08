@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, field_validator
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import (
@@ -88,8 +89,6 @@ def _load_statement(
 
 
 def _load_tenant_stripe_account(db: Session, tenant_id: uuid.UUID) -> str:
-    from sqlalchemy import text
-
     row = (
         db.execute(
             text(
@@ -105,6 +104,35 @@ def _load_tenant_stripe_account(db: Session, tenant_id: uuid.UUID) -> str:
             status_code=422, detail="tenant_stripe_account_not_connected"
         )
     return row["acct"]
+
+
+def _resolve_statement_phone(
+    db: Session,
+    tenant_id: uuid.UUID,
+    requested_phone: str,
+) -> str:
+    """Return statement billing phone based on tenant billing mode.
+
+    FUSION_RCM tenants must always render the platform centralized billing line.
+    THIRD_PARTY_EXPORT tenants can use tenant-provided billing phone.
+    """
+    settings = get_settings()
+    mode_row = (
+        db.execute(
+            text(
+                "SELECT billing_mode FROM tenant_billing_modes "
+                "WHERE tenant_id = :tid LIMIT 1"
+            ),
+            {"tid": str(tenant_id)},
+        )
+        .mappings()
+        .first()
+    )
+    billing_mode = str((mode_row or {}).get("billing_mode") or "FUSION_RCM").upper()
+    central_phone = (settings.central_billing_phone_e164 or "").strip()
+    if billing_mode == "FUSION_RCM" and central_phone:
+        return central_phone
+    return requested_phone
 
 
 # ── POST /statements/{statement_id}/mail ─────────────────────────────────────
@@ -125,6 +153,7 @@ async def mail_statement(
     publisher = get_event_publisher()
     svc = DominationService(db, publisher)
     settings = get_settings()
+    statement_phone = _resolve_statement_phone(db, current.tenant_id, body.agency_phone)
 
     # Build pay URL (statement must already have a checkout link or we generate on-demand)
     pay_url = f"{settings.api_base_url}/api/v1/statements/{statement_id}/pay"
@@ -137,7 +166,7 @@ async def mail_statement(
         agency_name=body.agency_address.get("agency_name")
         or body.agency_address.get("name", ""),
         agency_address=body.agency_address,
-        agency_phone=body.agency_phone,
+        agency_phone=statement_phone,
         incident_date=body.incident_date,
         transport_date=body.transport_date,
         service_lines=body.service_lines,

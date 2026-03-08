@@ -43,6 +43,18 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = Field(default="")
     telnyx_api_key: str = Field(default="")
     telnyx_from_number: str = Field(default="")
+    central_billing_phone_e164: str = Field(
+        default="",
+        description="Single centralized FusionEMS billing phone number in E.164 format",
+    )
+    founder_billing_escalation_phone_e164: str = Field(
+        default="",
+        description="Founder/RCM escalation destination for high-risk billing calls",
+    )
+    telnyx_central_billing_number_id: str = Field(
+        default="",
+        description="Telnyx purchased phone number id for the centralized billing line",
+    )
     telnyx_messaging_profile_id: str = Field(default="")
     officeally_sftp_host: str = Field(default="")
     officeally_sftp_port: int = Field(default=22)
@@ -155,6 +167,7 @@ class Settings(BaseSettings):
                 ("lob_webhook_secret", "LOB_WEBHOOK_SECRET"),
                 ("telnyx_api_key", "TELNYX_API_KEY"),
                 ("telnyx_from_number", "TELNYX_FROM_NUMBER"),
+                ("central_billing_phone_e164", "CENTRAL_BILLING_PHONE_E164"),
                 ("telnyx_public_key", "TELNYX_PUBLIC_KEY"),
                 ("ivr_audio_base_url", "IVR_AUDIO_BASE_URL"),
                 ("fax_classify_queue_url", "FAX_CLASSIFY_QUEUE_URL"),

@@ -226,7 +226,7 @@ function PackDetailDrawer({
 }: {
   pack: NerisPack;
   onClose: () => void;
-  onAction: (type: 'compile' | 'activate', id: string) => void;
+  onAction: (_type: 'compile' | 'activate', _id: string) => void;
 }) {
   return (
     <div
@@ -583,7 +583,7 @@ function ValidateTab({
   onIssuesPersist,
 }: {
   activePackId: string | null;
-  onIssuesPersist: (issues: ValidationIssue[]) => void;
+  onIssuesPersist: (_issues: ValidationIssue[]) => void;
 }) {
   const [entityJson, setEntityJson] = useState('');
   const [incidentJson, setIncidentJson] = useState('');
@@ -789,6 +789,11 @@ function ValidateTab({
           >
             {loadingCopilot ? 'Analyzing…' : 'Explain with Copilot'}
           </button>
+        </div>
+      )}
+      {copilotError && (
+        <div className="p-3 chamfer-4 text-xs" style={{ background: 'rgba(229,57,53,0.08)', border: '1px solid rgba(229,57,53,0.25)', color: 'var(--q-red)' }}>
+          {copilotError}
         </div>
       )}
       {copilotResult && <CopilotResult result={copilotResult} />}

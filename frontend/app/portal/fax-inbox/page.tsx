@@ -1,6 +1,5 @@
 'use client';
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
-import { ModuleDashboardShell } from '@/components/shells/PageShells';
+import { QuantumTableSkeleton } from '@/components/ui';
 
 import { useEffect, useState, useCallback } from 'react';
 

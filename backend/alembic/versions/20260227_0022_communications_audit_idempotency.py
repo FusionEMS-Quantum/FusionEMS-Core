@@ -90,11 +90,13 @@ def upgrade() -> None:
                 server_default=sa.text("now()"),
             ),
         )
-        op.create_index(
-            "ix_document_audit_events_tenant_id", "document_audit_events", ["tenant_id"]
+        op.execute(
+            "CREATE INDEX IF NOT EXISTS ix_document_audit_events_tenant_id "
+            "ON document_audit_events (tenant_id)"
         )
-        op.create_index(
-            "ix_document_audit_events_entity_id", "document_audit_events", ["entity_id"]
+        op.execute(
+            "CREATE INDEX IF NOT EXISTS ix_document_audit_events_entity_id "
+            "ON document_audit_events (entity_id)"
         )
 
     if not _has_table(conn, "tenant_provisioning_idempotency"):
@@ -109,10 +111,9 @@ def upgrade() -> None:
                 server_default=sa.text("now()"),
             ),
         )
-        op.create_index(
-            "ix_tenant_provisioning_idempotency_tenant_id",
-            "tenant_provisioning_idempotency",
-            ["tenant_id"],
+        op.execute(
+            "CREATE INDEX IF NOT EXISTS ix_tenant_provisioning_idempotency_tenant_id "
+            "ON tenant_provisioning_idempotency (tenant_id)"
         )
 
 

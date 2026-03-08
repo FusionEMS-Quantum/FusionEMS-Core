@@ -4,6 +4,8 @@ import json
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
@@ -27,9 +29,75 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/public/onboarding", tags=["Onboarding"])
 
+ALLOWED_OPERATIONAL_MODES = {
+    "HEMS_TRANSPORT",
+    "EMS_TRANSPORT",
+    "MEDICAL_TRANSPORT",
+    "EXTERNAL_911_CAD",
+}
+ALLOWED_BILLING_MODES = {"FUSION_RCM", "THIRD_PARTY_EXPORT"}
+
 
 def _legal_svc(db: Session) -> LegalService:
     return LegalService(db, get_event_publisher())
+
+
+def _normalize_operational_mode(value: str) -> str:
+    val = (value or "").strip().upper()
+    if val in ALLOWED_OPERATIONAL_MODES:
+        return val
+    return "EMS_TRANSPORT"
+
+
+def _normalize_billing_mode(value: str) -> str:
+    val = (value or "").strip().upper()
+    if val in ALLOWED_BILLING_MODES:
+        return val
+    return "FUSION_RCM"
+
+
+@router.get("/nppes/lookup/{npi_number}")
+async def nppes_lookup(npi_number: str):
+    npi = "".join(ch for ch in npi_number if ch.isdigit())
+    if len(npi) < 10:
+        raise HTTPException(status_code=422, detail="npi_number must be 10 digits")
+
+    query = urlencode({"number": npi, "version": "2.1", "limit": 1})
+    url = f"https://npiregistry.cms.hhs.gov/api/?{query}"
+    try:
+        with urlopen(url, timeout=8) as resp:  # nosec B310
+            payload = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        logger.warning("NPPES lookup failed for NPI %s: %s", npi, exc)
+        raise HTTPException(status_code=502, detail="nppes_lookup_failed")
+
+    results = payload.get("results") or []
+    if not results:
+        raise HTTPException(status_code=404, detail="npi_not_found")
+
+    item = results[0]
+    basic = item.get("basic", {}) or {}
+    addresses = item.get("addresses", []) or []
+    taxonomies = item.get("taxonomies", []) or []
+    business_addr = next((a for a in addresses if a.get("address_purpose") == "LOCATION"), addresses[0] if addresses else {})
+    primary_taxonomy = next((t for t in taxonomies if t.get("primary") is True), taxonomies[0] if taxonomies else {})
+
+    org_name = (
+        basic.get("organization_name")
+        or basic.get("name")
+        or ""
+    )
+
+    return {
+        "npi_number": npi,
+        "legal_organization_name": org_name,
+        "address_line_1": business_addr.get("address_1"),
+        "city": business_addr.get("city"),
+        "state": business_addr.get("state"),
+        "postal_code": business_addr.get("postal_code"),
+        "taxonomy_code": primary_taxonomy.get("code"),
+        "taxonomy_desc": primary_taxonomy.get("desc"),
+    }
 
 
 def _get_stripe_price_ids(
@@ -65,6 +133,17 @@ async def onboarding_start(
     payer_mix = payload.get("payer_mix", {})
     level_mix = payload.get("level_mix", {})
     selected_modules = payload.get("selected_modules", [])
+    npi_number = str(payload.get("npi_number", "")).strip() or None
+    operational_mode = _normalize_operational_mode(str(payload.get("operational_mode", "EMS_TRANSPORT")))
+    billing_mode = _normalize_billing_mode(str(payload.get("billing_mode", "FUSION_RCM")))
+    primary_tail_number = str(payload.get("primary_tail_number", "")).strip() or None
+    base_icao = str(payload.get("base_icao", "")).strip().upper() or None
+    billing_contact_name = str(payload.get("billing_contact_name", "")).strip() or None
+    billing_contact_email = str(payload.get("billing_contact_email", "")).strip().lower() or None
+    implementation_owner_name = str(payload.get("implementation_owner_name", "")).strip() or None
+    implementation_owner_email = str(payload.get("implementation_owner_email", "")).strip().lower() or None
+    identity_sso_preference = str(payload.get("identity_sso_preference", "")).strip() or None
+    policy_flags = payload.get("policy_flags", {}) or {}
 
     if not email or not agency_name:
         raise HTTPException(
@@ -117,11 +196,23 @@ async def onboarding_start(
             INSERT INTO onboarding_applications (
                 contact_email, agency_name, zip_code, agency_type, annual_call_volume,
                 current_billing_percent, payer_mix, level_mix, selected_modules,
-                roi_snapshot_hash, status, legal_status
+                roi_snapshot_hash, status, legal_status,
+                npi_number, operational_mode, billing_mode,
+                primary_tail_number, base_icao,
+                billing_contact_name, billing_contact_email,
+                implementation_owner_name, implementation_owner_email,
+                identity_sso_preference, policy_flags,
+                provisioning_status, provisioning_steps
             ) VALUES (
                 :email, :agency, :zip, :atype, :vol, :pct,
                 :payer::jsonb, :level::jsonb, :mods::jsonb,
-                :h, 'started', 'pending'
+                :h, 'started', 'pending',
+                :npi, :operational_mode, :billing_mode,
+                :tail, :base_icao,
+                :billing_contact_name, :billing_contact_email,
+                :implementation_owner_name, :implementation_owner_email,
+                :identity_sso_preference, :policy_flags::jsonb,
+                'pending', '[]'::jsonb
             ) RETURNING id
             """
             ),
@@ -136,6 +227,17 @@ async def onboarding_start(
                 "level": json.dumps(level_mix),
                 "mods": json.dumps(selected_modules),
                 "h": roi_hash,
+                "npi": npi_number,
+                "operational_mode": operational_mode,
+                "billing_mode": billing_mode,
+                "tail": primary_tail_number,
+                "base_icao": base_icao,
+                "billing_contact_name": billing_contact_name,
+                "billing_contact_email": billing_contact_email,
+                "implementation_owner_name": implementation_owner_name,
+                "implementation_owner_email": implementation_owner_email,
+                "identity_sso_preference": identity_sso_preference,
+                "policy_flags": json.dumps(policy_flags),
             },
         )
         .mappings()
@@ -171,6 +273,17 @@ async def onboarding_apply(
     statement_channels = payload.get("statement_channels", ["mail"])
     collector_vendor_name = str(payload.get("collector_vendor_name", "") or "")
     placement_method = str(payload.get("placement_method", "portal_upload"))
+    npi_number = str(payload.get("npi_number", "")).strip() or None
+    operational_mode = _normalize_operational_mode(str(payload.get("operational_mode", "EMS_TRANSPORT")))
+    billing_mode = _normalize_billing_mode(str(payload.get("billing_mode", "FUSION_RCM")))
+    primary_tail_number = str(payload.get("primary_tail_number", "")).strip() or None
+    base_icao = str(payload.get("base_icao", "")).strip().upper() or None
+    billing_contact_name = str(payload.get("billing_contact_name", "")).strip() or None
+    billing_contact_email = str(payload.get("billing_contact_email", "")).strip().lower() or None
+    implementation_owner_name = str(payload.get("implementation_owner_name", "")).strip() or None
+    implementation_owner_email = str(payload.get("implementation_owner_email", "")).strip().lower() or None
+    identity_sso_preference = str(payload.get("identity_sso_preference", "")).strip() or None
+    policy_flags = payload.get("policy_flags", {}) or {}
 
     if not email or not agency_name:
         raise HTTPException(
@@ -197,14 +310,26 @@ async def onboarding_apply(
                 selected_modules, status, legal_status,
                 first_name, last_name, phone,
                 is_government_entity, collections_mode, statement_channels,
-                collector_vendor_name, placement_method
+                collector_vendor_name, placement_method,
+                npi_number, operational_mode, billing_mode,
+                primary_tail_number, base_icao,
+                billing_contact_name, billing_contact_email,
+                implementation_owner_name, implementation_owner_email,
+                identity_sso_preference, policy_flags,
+                provisioning_status, provisioning_steps
             ) VALUES (
                 :email, :agency, :atype, :zip,
                 :plan_code, :tier_code, :billing_tier_code, :addon_codes::jsonb,
                 :mods::jsonb, 'started', 'pending',
                 :first_name, :last_name, :phone,
                 :is_gov, :collections_mode, :statement_channels::jsonb,
-                :collector_vendor_name, :placement_method
+                :collector_vendor_name, :placement_method,
+                :npi, :operational_mode, :billing_mode,
+                :tail, :base_icao,
+                :billing_contact_name, :billing_contact_email,
+                :implementation_owner_name, :implementation_owner_email,
+                :identity_sso_preference, :policy_flags::jsonb,
+                'pending', '[]'::jsonb
             ) RETURNING id
             """
             ),
@@ -226,6 +351,17 @@ async def onboarding_apply(
                 "statement_channels": json.dumps(statement_channels),
                 "collector_vendor_name": collector_vendor_name,
                 "placement_method": placement_method,
+                "npi": npi_number,
+                "operational_mode": operational_mode,
+                "billing_mode": billing_mode,
+                "tail": primary_tail_number,
+                "base_icao": base_icao,
+                "billing_contact_name": billing_contact_name,
+                "billing_contact_email": billing_contact_email,
+                "implementation_owner_name": implementation_owner_name,
+                "implementation_owner_email": implementation_owner_email,
+                "identity_sso_preference": identity_sso_preference,
+                "policy_flags": json.dumps(policy_flags),
             },
         )
         .mappings()
@@ -557,7 +693,9 @@ async def onboarding_status(
     app_row = (
         db.execute(
             text(
-                "SELECT id, status, legal_status, tenant_id, provisioned_at "
+                "SELECT id, status, legal_status, tenant_id, provisioned_at, "
+                "billing_mode, operational_mode, provisioning_status, provisioning_steps, "
+                "provisioning_error, statement_prefix "
                 "FROM onboarding_applications WHERE id = :app_id"
             ),
             {"app_id": application_id},
@@ -573,6 +711,14 @@ async def onboarding_status(
     legal_status = app_row["legal_status"]
     provisioned = app_row["provisioned_at"] is not None
     tenant_id = str(app_row["tenant_id"]) if app_row["tenant_id"] else None
+    billing_mode = app_row.get("billing_mode") or "FUSION_RCM"
+    operational_mode = app_row.get("operational_mode") or "EMS_TRANSPORT"
+    provisioning_status = app_row.get("provisioning_status") or (
+        "complete" if provisioned else "processing"
+    )
+    provisioning_steps = app_row.get("provisioning_steps") or []
+    provisioning_error = app_row.get("provisioning_error")
+    statement_prefix = app_row.get("statement_prefix")
 
     next_step_map = {
         "started": "sign_legal",
@@ -586,11 +732,34 @@ async def onboarding_status(
     if status == "legal_pending" and legal_status == "signed":
         next_step = "complete_payment"
 
+    success_payload: dict[str, Any] = {
+        "billing_mode": billing_mode,
+        "operational_mode": operational_mode,
+    }
+    if billing_mode == "FUSION_RCM":
+        success_payload["centralized_billing"] = {
+            "enabled": True,
+            "statement_prefix": statement_prefix,
+        }
+    else:
+        success_payload["export_pipeline"] = {
+            "enabled": True,
+            "mode": "sftp_api_handoff",
+        }
+    if operational_mode == "EXTERNAL_911_CAD":
+        success_payload["external_cad"] = {"ingest_ready": True}
+    if operational_mode == "HEMS_TRANSPORT":
+        success_payload["hems"] = {"aviation_profile_ready": True}
+
     return {
         "application_id": application_id,
         "status": status,
         "legal_status": legal_status,
         "provisioned": provisioned,
+        "provisioning_status": provisioning_status,
+        "provisioning_steps": provisioning_steps,
+        "provisioning_error": provisioning_error,
         "tenant_id": tenant_id,
         "next_step": next_step,
+        "success_payload": success_payload,
     }

@@ -267,6 +267,19 @@ module "secrets" {
   tags        = local.common_tags
 }
 
+# ─── 12d. Centralized Billing Toll-Free Line (Telnyx) ──────────────────────
+
+module "telnyx_central_billing_line" {
+  source = "../../modules/telnyx-central-billing-line"
+
+  environment                 = var.environment
+  project                     = var.project
+  telnyx_api_key_secret_arn   = module.secrets.app_secret_arn
+  desired_tollfree_prefix     = var.central_billing_desired_tollfree_prefix
+  existing_phone_e164         = var.central_billing_existing_phone_e164
+  tags                        = local.common_tags
+}
+
 # ─── 12c. SQS Queues ─────────────────────────────────────────────────────────
 
 module "sqs" {
@@ -328,6 +341,9 @@ module "backend_service" {
     { name = "S3_DOCS_BUCKET", value = module.s3.docs_bucket_name },
     { name = "S3_EXPORTS_BUCKET", value = module.s3.exports_bucket_name },
     { name = "S3_PROPOSALS_BUCKET", value = module.s3.proposals_bucket_name },
+    { name = "CENTRAL_BILLING_PHONE_E164", value = module.telnyx_central_billing_line.phone_e164 },
+    { name = "TELNYX_CENTRAL_BILLING_NUMBER_ID", value = module.telnyx_central_billing_line.number_id },
+    { name = "FOUNDER_BILLING_ESCALATION_PHONE_E164", value = var.founder_billing_escalation_phone_e164 },
 
     # NERIS queues – inject directly so backend doesn't depend on Secrets Manager keys.
     { name = "NERIS_PACK_IMPORT_QUEUE_URL", value = module.sqs.queue_urls["neris-pack-import"] },

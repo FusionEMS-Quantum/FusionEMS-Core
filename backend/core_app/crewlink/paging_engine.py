@@ -18,10 +18,12 @@ HARD RULES:
 from __future__ import annotations
 
 import uuid
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from core_app.services.domination_service import DominationService
@@ -269,7 +271,15 @@ class CrewLinkPagingEngine:
             },
             correlation_id=correlation_id,
         )
-        return rec or {"recipient_id": recipient_id, "state": "SENT"}
+        return self._normalize_push_result(
+            rec=rec,
+            recipient_id=recipient_id,
+            state_fallback="SENT",
+            timestamp_field="sent_at",
+            timestamp_value=now,
+            push_message_id=push_message_id,
+            platform=platform,
+        )
 
     async def record_push_delivered(
         self,
@@ -293,7 +303,15 @@ class CrewLinkPagingEngine:
             data={"recipient_id": recipient_id, "push_message_id": push_message_id, "delivered_at": now},
             correlation_id=correlation_id,
         )
-        return rec or {"recipient_id": recipient_id, "state": "DELIVERED"}
+        return self._normalize_push_result(
+            rec=rec,
+            recipient_id=recipient_id,
+            state_fallback="DELIVERED",
+            timestamp_field="delivered_at",
+            timestamp_value=now,
+            push_message_id=push_message_id,
+            platform=None,
+        )
 
     # ── Crew Response ─────────────────────────────────────────────────────────
 
@@ -620,7 +638,7 @@ class CrewLinkPagingEngine:
                             "overdue_seconds": int((now - deadline).total_seconds()),
                             "mission_id": data.get("mission_id"),
                         })
-                except Exception:
+                except (TypeError, ValueError):
                     pass
 
         return needs_action
@@ -662,17 +680,72 @@ class CrewLinkPagingEngine:
         data: dict[str, Any],
         correlation_id: str | None,
     ) -> None:
+        payload: dict[str, Any] = {
+            "alert_id": alert_id,
+            "event_type": event_type,
+            "data": data,
+            "actor_user_id": str(self.actor_user_id) if self.actor_user_id else "SYSTEM",
+            "ts": datetime.now(UTC).isoformat(),
+            "correlation_id": correlation_id,
+        }
+
         await self.svc.create(
             table="crew_paging_audit_events",
             tenant_id=self.tenant_id,
             actor_user_id=self.actor_user_id,
-            data={
-                "alert_id": alert_id,
-                "event_type": event_type,
-                "data": data,
-                "actor_user_id": str(self.actor_user_id) if self.actor_user_id else "SYSTEM",
-                "ts": datetime.now(UTC).isoformat(),
-                "correlation_id": correlation_id,
-            },
+            data=payload,
             correlation_id=correlation_id,
         )
+
+        # Backward-compatible mirror for legacy consumers/tests that still read
+        # `crew_paging_audit_log`. This write is best-effort in environments
+        # where the legacy table may not exist.
+        with suppress(SQLAlchemyError, TypeError, ValueError):
+            await self.svc.create(
+                table="crew_paging_audit_log",
+                tenant_id=self.tenant_id,
+                actor_user_id=self.actor_user_id,
+                data=payload,
+                correlation_id=correlation_id,
+            )
+
+    def _normalize_push_result(
+        self,
+        *,
+        rec: dict[str, Any] | None,
+        recipient_id: str,
+        state_fallback: str,
+        timestamp_field: str,
+        timestamp_value: str,
+        push_message_id: str,
+        platform: str | None,
+    ) -> dict[str, Any]:
+        """Return a deterministic top-level payload for push status calls.
+
+        The repository response nests domain fields under `data`; tests and
+        callers expect operational fields like `state` and `recipient_id` at the
+        top level. This helper normalizes both paths.
+        """
+        if not rec:
+            result: dict[str, Any] = {
+                "recipient_id": recipient_id,
+                "state": state_fallback,
+                "push_message_id": push_message_id,
+                timestamp_field: timestamp_value,
+            }
+            if platform is not None:
+                result["platform"] = platform
+            return result
+
+        raw_data = rec.get("data")
+        data: dict[str, Any] = raw_data if isinstance(raw_data, dict) else {}
+        normalized: dict[str, Any] = {
+            "recipient_id": str(rec.get("id") or recipient_id),
+            "state": str(data.get("state") or state_fallback),
+            "push_message_id": str(data.get("push_message_id") or push_message_id),
+            timestamp_field: str(data.get(timestamp_field) or timestamp_value),
+            "record": rec,
+        }
+        if platform is not None:
+            normalized["platform"] = str(data.get("platform") or platform)
+        return normalized

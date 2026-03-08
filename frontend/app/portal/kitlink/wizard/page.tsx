@@ -1,5 +1,4 @@
 "use client";
-import { QuantumTableSkeleton, QuantumCardSkeleton } from '@/components/ui';
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -137,6 +136,12 @@ function WizardPageInner() {
         </div>
       )}
 
+      {wizardError && (
+        <div className="mx-6 mt-4 p-3 rounded-lg border border-red-700/50 bg-red-900/20 text-xs text-red-300">
+          {wizardError}
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row h-full">
         <div className="w-full md:w-64 border-r border-border-subtle p-4">
           <nav className="space-y-1">
@@ -185,8 +190,8 @@ function StepPanel({
   completed: boolean;
   submitting: boolean;
   stepData: any;
-  setStepData: (d: any) => void;
-  onComplete: (data?: object) => void;
+  setStepData: (_d: any) => void;
+  onComplete: (_data?: object) => void;
 }) {
   return (
     <div className="max-w-xl">
@@ -231,7 +236,7 @@ function StepPanel({
   );
 }
 
-function PackStep({ tenantId, stepData, setStepData }: { tenantId: string; stepData: any; setStepData: (d: any) => void }) {
+function PackStep({ tenantId, stepData, setStepData }: { tenantId: string; stepData: any; setStepData: (_d: any) => void }) {
   const [packs, setPacks] = useState<any[]>([]);
   const [activating, setActivating] = useState<string | null>(null);
 
@@ -286,7 +291,7 @@ function PackStep({ tenantId, stepData, setStepData }: { tenantId: string; stepD
   );
 }
 
-function UnitSetupStep({ stepData, setStepData }: { stepData: any; setStepData: (d: any) => void }) {
+function UnitSetupStep({ stepData, setStepData }: { stepData: any; setStepData: (_d: any) => void }) {
   return (
     <div className="space-y-3">
       <div>
@@ -314,7 +319,7 @@ function UnitSetupStep({ stepData, setStepData }: { stepData: any; setStepData: 
   );
 }
 
-function FormularyStep({ tenantId, stepData, setStepData }: { tenantId: string; stepData: any; setStepData: (d: any) => void }) {
+function FormularyStep({ tenantId, stepData: _stepData, setStepData: _setStepData }: { tenantId: string; stepData: any; setStepData: (_d: any) => void }) {
   const [form, setForm] = useState({ name: "", controlled_schedule: "", unit: "vial", is_fluid: false });
   const [added, setAdded] = useState<string[]>([]);
 
@@ -375,7 +380,7 @@ function FormularyStep({ tenantId, stepData, setStepData }: { tenantId: string; 
   );
 }
 
-function StarterTemplatesStep({ tenantId, stepData, setStepData }: { tenantId: string; stepData: any; setStepData: (d: any) => void }) {
+function StarterTemplatesStep({ tenantId, stepData: _stepData, setStepData: _setStepData }: { tenantId: string; stepData: any; setStepData: (_d: any) => void }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [cloned, setCloned] = useState<string[]>([]);
   const starters = [
