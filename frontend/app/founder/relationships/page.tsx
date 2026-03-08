@@ -239,7 +239,7 @@ export default function FounderRelationshipsPage() {
             className="chamfer-4"
             style={{
               fontSize: 11, fontWeight: 600, padding: '6px 12px',
-              background: 'var(--color-bg-panel)', border: '1px solid var(--color-border-default)',
+              background: '#0A0A0B', border: '1px solid var(--color-border-default)',
               color: 'var(--color-text-primary)',
             }}
           >

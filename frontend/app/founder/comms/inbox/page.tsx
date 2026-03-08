@@ -59,7 +59,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-[0_0_15px_rgba(0,0,0,0.6)]"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -254,29 +254,29 @@ export default function SupportInboxPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary flex flex-col">
+    <div className="min-h-screen bg-black text-zinc-100 flex flex-col">
       <Toast items={toasts} />
 
       {/* Page header */}
       <div className="px-5 pt-5 pb-4 border-b border-border-subtle">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-black uppercase tracking-[0.18em] text-text-primary">
+          <h1 className="text-sm font-black uppercase tracking-[0.18em] text-zinc-100">
             SUPPORT INBOX
           </h1>
           {unreadCount > 0 && (
             <span
               className="px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4"
-              style={{ background: 'rgba(255,107,26,0.18)', color: 'var(--q-orange)' }}
+              style={{ background: 'rgba(255,107,26,0.18)', color: '#FF4D00' }}
             >
               {unreadCount} unread
             </span>
           )}
           <div className="ml-auto flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-status-active animate-pulse" />
+            <span className="w-1.5 h-1.5  bg-status-active animate-pulse" />
             <span className="text-micro font-semibold uppercase tracking-wider text-status-active">LIVE</span>
           </div>
         </div>
-        <p className="text-body text-text-muted mt-0.5">
+        <p className="text-body text-zinc-500 mt-0.5">
           Agency support threads · real-time · AI assist
         </p>
       </div>
@@ -297,8 +297,8 @@ export default function SupportInboxPage() {
                 onClick={() => setFilter(tab.key)}
                 className="px-2.5 py-1.5 text-micro font-semibold uppercase tracking-wider transition-colors"
                 style={{
-                  color: filter === tab.key ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.38)',
-                  borderBottom: filter === tab.key ? '2px solid var(--color-brand-orange)' : '2px solid transparent',
+                  color: filter === tab.key ? '#FF4D00' : 'rgba(255,255,255,0.38)',
+                  borderBottom: filter === tab.key ? '2px solid #FF4D00' : '2px solid transparent',
                 }}
               >
                 {tab.label}
@@ -309,7 +309,7 @@ export default function SupportInboxPage() {
           {/* Thread list */}
           <div className="flex-1 overflow-y-auto">
             {filteredThreads.length === 0 && (
-              <div className="p-4 text-body text-text-muted text-center mt-8">
+              <div className="p-4 text-body text-zinc-500 text-center mt-8">
                 No threads in this view
               </div>
             )}
@@ -319,18 +319,18 @@ export default function SupportInboxPage() {
                 <button
                   key={thread.id}
                   onClick={() => setActiveThread(thread)}
-                  className="w-full text-left px-3 py-3 border-b border-white/5 transition-colors hover:bg-white/[0.03]"
+                  className="w-full text-left px-3 py-3 border-b border-white/5 transition-colors hover:bg-zinc-950/[0.03]"
                   style={{
                     background: isActive ? 'rgba(255,107,26,0.06)' : 'transparent',
-                    borderLeft: isActive ? '3px solid var(--color-brand-orange)' : '3px solid transparent',
+                    borderLeft: isActive ? '3px solid #FF4D00' : '3px solid transparent',
                   }}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold text-text-primary truncate flex-1">
+                    <span className="text-xs font-semibold text-zinc-100 truncate flex-1">
                       {agencyName(thread)}
                     </span>
                     {thread.unread && (
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--color-brand-orange)' }} />
+                      <span className="w-2 h-2  flex-shrink-0" style={{ background: '#FF4D00' }} />
                     )}
                     {(thread.escalated || thread.status === 'escalated') && (
                       <span
@@ -342,10 +342,10 @@ export default function SupportInboxPage() {
                     )}
                   </div>
                   <div className="flex items-end justify-between gap-2">
-                    <p className="text-body text-text-muted leading-snug flex-1 min-w-0 truncate">
+                    <p className="text-body text-zinc-500 leading-snug flex-1 min-w-0 truncate">
                       {lastPreview(thread)}
                     </p>
-                    <span className="text-micro text-text-muted whitespace-nowrap flex-shrink-0">
+                    <span className="text-micro text-zinc-500 whitespace-nowrap flex-shrink-0">
                       {relativeTime(thread.updated_at)}
                     </span>
                   </div>
@@ -361,7 +361,7 @@ export default function SupportInboxPage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
                 <div className="text-3xl text-white/[0.06]">{'\u25B8'}</div>
-                <p className="text-body text-text-muted uppercase tracking-wider">
+                <p className="text-body text-zinc-500 uppercase tracking-wider">
                   Select a thread
                 </p>
               </div>
@@ -371,7 +371,7 @@ export default function SupportInboxPage() {
               {/* Thread header */}
               <div className="px-4 py-3 border-b border-border-DEFAULT flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-sm font-bold text-text-primary truncate">
+                  <span className="text-sm font-bold text-zinc-100 truncate">
                     {agencyName(activeThread)}
                   </span>
                   <StatusBadge status={activeThread.status} />
@@ -421,12 +421,12 @@ export default function SupportInboxPage() {
                     <span className="text-micro font-semibold uppercase tracking-wider text-system-billing">
                       AI Summary
                     </span>
-                    <span className="text-micro text-text-muted">
+                    <span className="text-micro text-zinc-500">
                       {summaryOpen ? '▲ Collapse' : '▼ Expand'}
                     </span>
                   </button>
                   {summaryOpen && (
-                    <div className="px-4 pb-3 text-body text-text-primary leading-relaxed">
+                    <div className="px-4 pb-3 text-body text-zinc-100 leading-relaxed">
                       {summary}
                     </div>
                   )}
@@ -436,12 +436,12 @@ export default function SupportInboxPage() {
               {/* Messages list */}
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {loadingMessages && (
-                  <div className="text-center text-body text-text-muted py-8">
+                  <div className="text-center text-body text-zinc-500 py-8">
                     Loading messages…
                   </div>
                 )}
                 {!loadingMessages && messages.length === 0 && (
-                  <div className="text-center text-body text-text-muted py-8">
+                  <div className="text-center text-body text-zinc-500 py-8">
                     No messages yet
                   </div>
                 )}
@@ -465,7 +465,7 @@ export default function SupportInboxPage() {
                         {msg.content}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5 px-0.5">
-                        <span className="text-micro text-text-muted uppercase tracking-wider">
+                        <span className="text-micro text-zinc-500 uppercase tracking-wider">
                           {msg.sender_role}
                         </span>
                         <span className="text-micro text-text-disabled">
@@ -489,14 +489,14 @@ export default function SupportInboxPage() {
                     }}
                     placeholder="Type a reply… (Ctrl+Enter to send)"
                     rows={3}
-                    className="flex-1 bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none resize-none placeholder:text-text-disabled focus:border-brand-orange/40"
+                    className="flex-1 bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none resize-none placeholder:text-text-disabled focus:border-brand-orange/40"
                   />
                   <button
                     onClick={sendReply}
                     disabled={sendingReply || !replyText.trim()}
                     className="h-9 px-4 text-micro font-bold uppercase tracking-widest chamfer-4 transition-all"
                     style={{
-                      background: replyText.trim() && !sendingReply ? 'var(--color-brand-orange)' : 'rgba(255,107,26,0.2)',
+                      background: replyText.trim() && !sendingReply ? '#FF4D00' : 'rgba(255,107,26,0.2)',
                       color: replyText.trim() && !sendingReply ? 'black' : 'rgba(255,107,26,0.5)',
                     }}
                   >

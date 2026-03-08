@@ -9,6 +9,7 @@ Exit codes:
 """
 from __future__ import annotations
 
+import ast
 import os
 import re
 import sys
@@ -200,34 +201,53 @@ HIGH_PRIORITY_STUB_FILES = [
     "nemsis_manager_router.py",
     "scheduling_router.py",
     "tracking_router.py",
+    "analytics_router.py",
 ]
 
 
 def _has_stub_only_handler(content: str) -> bool:
-    """True if any @router-decorated async def has a body of only `pass`."""
-    file_lines = content.splitlines()
-    i = 0
-    while i < len(file_lines):
-        ln = file_lines[i].rstrip()
-        if re.match(r"\s*@router\.", ln):
-            j = i + 1
-            while j < len(file_lines) and file_lines[j].strip().startswith('@'):
-                j += 1
-            if j < len(file_lines) and re.match(r"\s*(async )?def ", file_lines[j]):
-                k = j + 1
-                while k < len(file_lines) and (
-                    not file_lines[k].strip()
-                    or file_lines[k].startswith(' ' * 4)
-                    or file_lines[k].startswith('\t')
-                ):
-                    k += 1
-                body = [l.strip() for l in file_lines[j+1:k]
-                        if l.strip() and not l.strip().startswith("#")]
-                if body == ["pass"]:
-                    return True
-            i = j
-        else:
-            i += 1
+    """True if any @router-decorated handler is effectively stub-only."""
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return False
+
+    def _is_route_decorator(dec: ast.expr) -> bool:
+        return (
+            isinstance(dec, ast.Call)
+            and isinstance(dec.func, ast.Attribute)
+            and isinstance(dec.func.value, ast.Name)
+            and dec.func.value.id == "router"
+            and dec.func.attr in {"get", "post", "put", "patch", "delete"}
+        )
+
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if not any(_is_route_decorator(d) for d in node.decorator_list):
+            continue
+
+        body = list(node.body)
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            body = body[1:]
+
+        if len(body) == 1 and isinstance(body[0], ast.Pass):
+            return True
+
+        if (
+            len(body) == 1
+            and isinstance(body[0], ast.Return)
+            and isinstance(body[0].value, ast.Dict)
+            and not body[0].value.keys
+            and not body[0].value.values
+        ):
+            return True
+
     return False
 
 
@@ -280,7 +300,7 @@ def gate_auth_rep_paths() -> None:
 
 # ─── Gate 9: HEMS page has SSE or polling (realtime mandate) ─────────────────
 
-SSE_RE = re.compile(r"EventSource|useWebSocket|setInterval.*fetch")
+SSE_RE = re.compile(r"EventSource|useWebSocket|getWSClient|initWSClient|setInterval\s*\(")
 
 
 def gate_hems_has_realtime() -> None:

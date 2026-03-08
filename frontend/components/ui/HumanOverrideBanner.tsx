@@ -24,7 +24,7 @@ export function HumanOverrideBanner({
   return (
     <div
       className={cn(
-        'border-l-4 border-orange bg-orange-ghost p-4 chamfer-4',
+        'border-l-4 border-orange bg-[#FF4D00]-ghost p-4 chamfer-4',
         className
       )}
       role="status"
@@ -32,7 +32,7 @@ export function HumanOverrideBanner({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <svg
-            className="w-5 h-5 text-orange flex-shrink-0 mt-0.5"
+            className="w-5 h-5 text-[#FF4D00] flex-shrink-0 mt-0.5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -47,24 +47,24 @@ export function HumanOverrideBanner({
           </svg>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-body text-orange font-medium">Human Override Applied</h4>
+              <h4 className="text-body text-[#FF4D00] font-medium">Human Override Applied</h4>
               {domain && (
-                <span className="text-micro font-label uppercase tracking-wider text-text-muted">
+                <span className="text-micro font-label uppercase tracking-wider text-zinc-500">
                   {domain}
                 </span>
               )}
             </div>
-            <p className="text-label text-text-secondary mt-0.5">
-              Overridden by <strong className="text-text-primary">{overriddenBy}</strong> at{' '}
-              <time className="text-text-muted">{timestamp}</time>
+            <p className="text-label text-zinc-400 mt-0.5">
+              Overridden by <strong className="text-zinc-100">{overriddenBy}</strong> at{' '}
+              <time className="text-zinc-500">{timestamp}</time>
             </p>
             {originalDecision && (
-              <p className="text-label text-text-muted mt-1">
+              <p className="text-label text-zinc-500 mt-1">
                 Original decision: <span className="line-through">{originalDecision}</span>
               </p>
             )}
             {reason && (
-              <p className="text-label text-text-secondary mt-1">
+              <p className="text-label text-zinc-400 mt-1">
                 Reason: {reason}
               </p>
             )}
@@ -74,8 +74,8 @@ export function HumanOverrideBanner({
           <button
             onClick={onViewAudit}
             className="flex-shrink-0 px-3 py-1.5 text-label font-label uppercase tracking-wider
-                       text-orange border border-orange/30 chamfer-4
-                       hover:bg-orange-ghost transition-colors duration-fast"
+                       text-[#FF4D00] border border-orange/30 chamfer-4
+                       hover:bg-[#FF4D00]-ghost transition-colors duration-fast"
             type="button"
           >
             View Audit →

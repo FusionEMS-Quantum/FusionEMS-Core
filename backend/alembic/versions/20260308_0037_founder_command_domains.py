@@ -4,6 +4,7 @@ Revision ID: 20260308_0037
 Revises: 20260312_0036
 Create Date: 2026-03-08
 """
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false
 
 from typing import Any, Sequence, Union
 
@@ -20,13 +21,24 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     bind = op.get_bind()
     _original_create_table = op.create_table
+    _original_create_index = op.create_index
 
     def _safe_create_table(table_name: str, *columns: Any, **kwargs: Any) -> Any:
         if sa.inspect(bind).has_table(table_name):
             return None
         return _original_create_table(table_name, *columns, **kwargs)
 
+    def _safe_create_index(index_name: str, table_name: str, columns: Sequence[str], *args: Any, **kwargs: Any) -> Any:
+        inspector = sa.inspect(bind)
+        if not inspector.has_table(table_name):
+            return None
+        existing_names = {index["name"] for index in inspector.get_indexes(table_name)}
+        if index_name in existing_names:
+            return None
+        return _original_create_index(index_name, table_name, columns, *args, **kwargs)
+
     op.create_table = _safe_create_table  # type: ignore[assignment]
+    op.create_index = _safe_create_index  # type: ignore[assignment]
 
     # Specialty Ops domain
     op.create_table(
@@ -734,9 +746,20 @@ def upgrade() -> None:
     op.create_index("ix_integration_audit_events_tenant_id", "integration_audit_events", ["tenant_id"])
 
     op.create_table = _original_create_table  # type: ignore[assignment]
+    op.create_index = _original_create_index  # type: ignore[assignment]
 
 
 def downgrade() -> None:
+    bind = op.get_bind()
+    _original_drop_table = op.drop_table
+
+    def _safe_drop_table(table_name: str, *args: Any, **kwargs: Any) -> Any:
+        if not sa.inspect(bind).has_table(table_name):
+            return None
+        return _original_drop_table(table_name, *args, **kwargs)
+
+    op.drop_table = _safe_drop_table  # type: ignore[assignment]
+
     op.drop_table("integration_audit_events")
     op.drop_table("api_client_usage_windows")
     op.drop_table("api_client_quotas")
@@ -782,3 +805,5 @@ def downgrade() -> None:
     op.drop_table("water_supply_notes")
     op.drop_table("hydrant_references")
     op.drop_table("premise_preplans")
+
+    op.drop_table = _original_drop_table  # type: ignore[assignment]

@@ -17,17 +17,17 @@ router = APIRouter(
 
 @router.get("/summary", response_model=RecordsCommandSummary)
 def get_records_command_summary(
-    current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = Depends(require_role("founder")),
     db: Session = Depends(db_session_dependency),
 ) -> RecordsCommandSummary:
     svc = FounderCommandDomainService(db)
-    return RecordsCommandSummary(**svc.get_records_command_summary())
+    return svc.get_records_command_summary()
 
 
 @router.get("/failed-exports", response_model=list[RecordExportResponse])
 def list_failed_exports(
     limit: int = Query(default=50, ge=1, le=250),
-    current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = Depends(require_role("founder")),
     db: Session = Depends(db_session_dependency),
 ) -> list[RecordExportResponse]:
     svc = FounderCommandDomainService(db)

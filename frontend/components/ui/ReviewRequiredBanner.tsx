@@ -52,12 +52,12 @@ export function ReviewRequiredBanner({
             <div className="flex items-center gap-2">
               <h4 className="text-body text-[#818cf8] font-medium">{title}</h4>
               {domain && (
-                <span className="text-micro font-label uppercase tracking-wider text-text-muted">
+                <span className="text-micro font-label uppercase tracking-wider text-zinc-500">
                   {domain}
                 </span>
               )}
             </div>
-            <p className="text-label text-text-secondary mt-0.5">{reason}</p>
+            <p className="text-label text-zinc-400 mt-0.5">{reason}</p>
           </div>
         </div>
         {onReview && (

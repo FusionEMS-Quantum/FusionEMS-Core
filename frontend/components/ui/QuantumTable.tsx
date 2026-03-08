@@ -32,7 +32,7 @@ export function QuantumTable<T extends Record<string, unknown>>({
 }: QuantumTableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className={clsx('flex items-center justify-center py-12 text-text-muted text-body', className)}>
+      <div className={clsx('flex items-center justify-center py-12 text-zinc-500 text-body', className)}>
         {emptyMessage}
       </div>
     );
@@ -74,7 +74,7 @@ export function QuantumTable<T extends Record<string, unknown>>({
                   className={clsx(
                     'px-[var(--density-cell-pad-x)]',
                     compact ? 'py-1.5' : 'py-[var(--density-cell-pad-y)]',
-                    'text-body text-text-primary',
+                    'text-body text-zinc-100',
                     col.align === 'center' && 'text-center',
                     col.align === 'right' && 'text-right',
                   )}

@@ -7,10 +7,10 @@ export default function BroadcastPage() {
     <div className="p-5 min-h-screen">
       <div className="hud-rail pb-3 mb-6">
         <div className="micro-caps mb-1">Communications</div>
-        <h1 className="text-h2 font-bold text-text-primary">Broadcast Center</h1>
-        <p className="text-body text-text-muted mt-1">Send targeted broadcasts to crews, patients, or agency contacts.</p>
+        <h1 className="text-h2 font-bold text-zinc-100">Broadcast Center</h1>
+        <p className="text-body text-zinc-500 mt-1">Send targeted broadcasts to crews, patients, or agency contacts.</p>
       </div>
-      <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 shadow-elevation-1">
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 shadow-elevation-1">
         <QuantumEmptyState
           title="Not Yet Configured"
           description="This module is scheduled for an upcoming release. Contact your account manager for early access."
@@ -24,7 +24,7 @@ export default function BroadcastPage() {
           action={
             <Link
               href="/founder"
-              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-orange hover:text-orange-bright transition-colors duration-fast"
+              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-[#FF4D00] hover:text-[#FF4D00]-bright transition-colors duration-fast"
             >
               &larr; Back to Command Center
             </Link>

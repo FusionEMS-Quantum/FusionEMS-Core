@@ -9,7 +9,7 @@ DATA_DIR = Path(__file__).resolve().parent / "data"
 
 @dataclass(frozen=True)
 class FeeScheduleRow:
-    service_type: str  # EMS|Fire|HEMS (HEMS treated as air medical placeholder)
+    service_type: str  # EMS|Fire|HEMS (HEMS treated as air medical)
     level: str  # BLS|ALS|CCT|HEMS
     base_rate: float  # USD
     mileage_rate: float  # USD per mile

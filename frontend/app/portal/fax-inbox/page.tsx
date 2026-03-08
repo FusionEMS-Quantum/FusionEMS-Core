@@ -62,7 +62,7 @@ function MatchChip({ fax }: { fax: FaxItem }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 chamfer-4 text-micro font-bold bg-white/10 text-text-primary/50 border border-white/10">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 chamfer-4 text-micro font-bold bg-zinc-950/10 text-zinc-100/50 border border-white/10">
       UNMATCHED
     </span>
   );
@@ -183,15 +183,15 @@ export default function FaxInboxPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary flex flex-col">
+    <div className="min-h-screen bg-black text-zinc-100 flex flex-col">
       <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 0px)' }}>
         {/* Left Panel */}
-        <div className="w-[340px] shrink-0 flex flex-col border-r border-border-DEFAULT bg-bg-base">
+        <div className="w-[340px] shrink-0 flex flex-col border-r border-border-DEFAULT bg-[#050505]">
           {/* Header */}
           <div className="px-4 pt-5 pb-3 border-b border-border-DEFAULT">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-widest text-text-primary/70 uppercase">Fax Inbox</span>
-              <span className="ml-1 bg-orange/20 text-orange border border-orange/30 text-micro font-bold px-2 py-0.5 rounded-full">
+              <span className="text-xs font-bold tracking-widest text-zinc-100/70 uppercase">Fax Inbox</span>
+              <span className="ml-1 bg-[#FF4D00]/20 text-[#FF4D00] border border-orange/30 text-micro font-bold px-2 py-0.5 ">
                 {faxes.length}
               </span>
             </div>
@@ -203,8 +203,8 @@ export default function FaxInboxPage() {
                   onClick={() => setFilter(t.key)}
                   className={`px-2.5 py-1 chamfer-4 text-body font-semibold transition-colors ${
                     filter === t.key
-                      ? 'bg-orange/20 text-orange border border-orange/40'
-                      : 'text-text-primary/40 hover:text-text-primary/70 border border-transparent'
+                      ? 'bg-[#FF4D00]/20 text-[#FF4D00] border border-orange/40'
+                      : 'text-zinc-100/40 hover:text-zinc-100/70 border border-transparent'
                   }`}
                 >
                   {t.label}
@@ -222,7 +222,7 @@ export default function FaxInboxPage() {
               <div className="m-4 p-3 chamfer-4 bg-red/10 border border-red/30 text-red text-xs">{error}</div>
             )}
             {!loading && !error && filteredFaxes.length === 0 && (
-              <div className="flex items-center justify-center h-32 text-text-primary/30 text-sm">No faxes</div>
+              <div className="flex items-center justify-center h-32 text-zinc-100/30 text-sm">No faxes</div>
             )}
             {!loading && filteredFaxes.map((fax) => {
               const isSelected = selected?.id === fax.id;
@@ -232,18 +232,18 @@ export default function FaxInboxPage() {
                   key={fax.id}
                   onClick={() => { setSelected(fax); setActionMsg(''); }}
                   className={`w-full text-left px-4 py-3 border-b border-border-subtle transition-colors flex gap-3 items-start ${
-                    isSelected ? 'bg-orange/10' : 'hover:bg-white/[0.03]'
+                    isSelected ? 'bg-[#FF4D00]/10' : 'hover:bg-zinc-950/[0.03]'
                   }`}
                 >
                   {/* Thumbnail */}
-                  <div className="w-12 h-16 shrink-0 chamfer-4 bg-white/10 border border-white/10 flex items-center justify-center text-text-primary/30">
+                  <div className="w-12 h-16 shrink-0 chamfer-4 bg-zinc-950/10 border border-white/10 flex items-center justify-center text-zinc-100/30">
                     <FaxIcon />
                   </div>
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-mono text-text-primary/80 truncate">{fax.from_number ?? 'N/A'}</div>
-                    <div className="text-micro text-text-primary/40 mt-0.5">{relativeTime(fax.received_at)}</div>
-                    <div className="text-micro text-text-primary/30 mt-0.5">{fax.page_count ?? 0} page{(fax.page_count ?? 0) !== 1 ? 's' : ''}</div>
+                    <div className="text-xs font-mono text-zinc-100/80 truncate">{fax.from_number ?? 'N/A'}</div>
+                    <div className="text-micro text-zinc-100/40 mt-0.5">{relativeTime(fax.received_at)}</div>
+                    <div className="text-micro text-zinc-100/30 mt-0.5">{fax.page_count ?? 0} page{(fax.page_count ?? 0) !== 1 ? 's' : ''}</div>
                     <div className="flex flex-wrap gap-1 mt-1.5 items-center">
                       <MatchChip fax={fax} />
                       {confidence != null && (
@@ -258,9 +258,9 @@ export default function FaxInboxPage() {
         </div>
 
         {/* Right Panel */}
-        <div className="flex-1 overflow-y-auto bg-bg-void p-6">
+        <div className="flex-1 overflow-y-auto bg-black p-6">
           {!selected ? (
-            <div className="flex flex-col items-center justify-center h-full text-text-primary/20">
+            <div className="flex flex-col items-center justify-center h-full text-zinc-100/20">
               <FaxIcon />
               <p className="mt-3 text-sm">Select a fax to view details</p>
             </div>
@@ -269,21 +269,21 @@ export default function FaxInboxPage() {
               {/* Header */}
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-text-primary">Fax Detail</h2>
-                  <p className="text-xs text-text-primary/40 font-mono mt-0.5">{selected.id}</p>
+                  <h2 className="text-base font-bold text-zinc-100">Fax Detail</h2>
+                  <p className="text-xs text-zinc-100/40 font-mono mt-0.5">{selected.id}</p>
                 </div>
                 <a
                   href={`${API}/api/v1/fax/${selected.id}/download`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-1.5 chamfer-4 bg-orange/20 border border-orange/40 text-orange text-xs font-semibold hover:bg-orange/30 transition-colors"
+                  className="px-4 py-1.5 chamfer-4 bg-[#FF4D00]/20 border border-orange/40 text-[#FF4D00] text-xs font-semibold hover:bg-[#FF4D00]/30 transition-colors"
                 >
                   Download
                 </a>
               </div>
 
               {/* Metadata */}
-              <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-4 grid grid-cols-2 gap-3">
+              <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-4 grid grid-cols-2 gap-3">
                 {[
                   ['From', selected.from_number ?? 'N/A'],
                   ['To', selected.to_number ?? 'N/A'],
@@ -291,8 +291,8 @@ export default function FaxInboxPage() {
                   ['Pages', String(selected.page_count ?? 'N/A')],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <p className="text-micro text-text-primary/40 uppercase tracking-wider">{label}</p>
-                    <p className="text-sm text-text-primary/80 font-mono mt-0.5">{value}</p>
+                    <p className="text-micro text-zinc-100/40 uppercase tracking-wider">{label}</p>
+                    <p className="text-sm text-zinc-100/80 font-mono mt-0.5">{value}</p>
                   </div>
                 ))}
               </div>
@@ -309,8 +309,8 @@ export default function FaxInboxPage() {
               )}
 
               {/* Match Section */}
-              <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-4 space-y-4">
-                <h3 className="text-xs font-bold tracking-widest text-text-primary/60 uppercase">Match</h3>
+              <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-4 space-y-4">
+                <h3 className="text-xs font-bold tracking-widest text-zinc-100/60 uppercase">Match</h3>
 
                 {(selected.document_match_status ?? selected.status) === 'matched' ? (
                   <div className="space-y-3">
@@ -322,8 +322,8 @@ export default function FaxInboxPage() {
                         ['Confidence', selected.data?.confidence != null ? `${Math.round(selected.data.confidence * 100)}%` : 'N/A'],
                       ].map(([label, value]) => (
                         <div key={label}>
-                          <p className="text-micro text-text-primary/40 uppercase tracking-wider">{label}</p>
-                          <p className="text-sm text-text-primary/80 font-mono mt-0.5">{value}</p>
+                          <p className="text-micro text-zinc-100/40 uppercase tracking-wider">{label}</p>
+                          <p className="text-sm text-zinc-100/80 font-mono mt-0.5">{value}</p>
                         </div>
                       ))}
                     </div>
@@ -350,19 +350,19 @@ export default function FaxInboxPage() {
                 {/* Match Suggestions */}
                 {(selected.data?.match_suggestions?.length ?? 0) > 0 && (
                   <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-                    <p className="text-micro text-text-primary/40 uppercase tracking-wider">Suggestions</p>
+                    <p className="text-micro text-zinc-100/40 uppercase tracking-wider">Suggestions</p>
                     {selected.data!.match_suggestions!.map((s, i) => {
                       const pct = s.score != null ? Math.round(s.score * 100) : null;
                       return (
-                        <div key={i} className="flex items-center gap-3 bg-white/[0.03] chamfer-4 p-3 border border-white/[0.06]">
+                        <div key={i} className="flex items-center gap-3 bg-zinc-950/[0.03] chamfer-4 p-3 border border-white/[0.06]">
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-mono text-text-primary/80 truncate">{s.claim_id}</p>
-                            <p className="text-micro text-text-primary/40 mt-0.5">{s.patient_name ?? 'N/A'}</p>
+                            <p className="text-xs font-mono text-zinc-100/80 truncate">{s.claim_id}</p>
+                            <p className="text-micro text-zinc-100/40 mt-0.5">{s.patient_name ?? 'N/A'}</p>
                             {pct != null && (
                               <div className="mt-1.5 flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                <div className="flex-1 h-1.5 bg-zinc-950/10  overflow-hidden">
                                   <div
-                                    className="h-full rounded-full bg-system-billing"
+                                    className="h-full  bg-system-billing"
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>

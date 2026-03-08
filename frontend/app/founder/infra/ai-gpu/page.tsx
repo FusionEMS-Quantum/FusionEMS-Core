@@ -6,9 +6,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
-        {sub && <span className="text-xs text-text-muted">{sub}</span>}
+        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
+        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
     </div>
   );
@@ -21,7 +21,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
       className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
-      <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
+      <span className="w-1 h-1 " style={{ background: c[status] }} />
       {label}
     </span>
   );
@@ -30,12 +30,12 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div
-      className="bg-bg-panel border border-border-DEFAULT p-4"
+      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -43,7 +43,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -54,9 +54,9 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+    <div className="h-1.5 bg-zinc-950/[0.06]  overflow-hidden">
       <motion.div
-        className="h-full rounded-full"
+        className="h-full "
         style={{ background: color }}
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
@@ -105,15 +105,15 @@ const MODEL_REGISTRY = [
 
 export default function AIGPUMonitorPage() {
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-8">
+    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-8">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <div className="text-micro font-bold font-mono text-orange-dim uppercase tracking-widest mb-1">
+          <div className="text-micro font-bold font-mono text-[#FF4D00]-dim uppercase tracking-widest mb-1">
             MODULE 10 · INFRASTRUCTURE
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">AI GPU Monitor</h1>
-          <p className="text-xs text-text-muted mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">AI GPU Monitor</h1>
+          <p className="text-xs text-zinc-500 mt-1">
             Model inference · throughput · memory · temperature · job queue
           </p>
         </div>
@@ -140,7 +140,7 @@ export default function AIGPUMonitorPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-text-muted uppercase tracking-widest text-micro">
+                <tr className="text-zinc-500 uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Job ID</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Type</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Model</th>
@@ -151,10 +151,10 @@ export default function AIGPUMonitorPage() {
               <tbody>
                 {JOBS.map((job) => (
                   <tr key={job.id} className="border-t border-border-subtle">
-                    <td className="py-2 pr-4 font-mono text-text-primary">{job.id}</td>
-                    <td className="py-2 pr-4 text-text-secondary">{job.type}</td>
-                    <td className="py-2 pr-4 text-text-primary">{job.model}</td>
-                    <td className="py-2 pr-4 font-mono text-text-secondary">{job.duration}</td>
+                    <td className="py-2 pr-4 font-mono text-zinc-100">{job.id}</td>
+                    <td className="py-2 pr-4 text-zinc-400">{job.type}</td>
+                    <td className="py-2 pr-4 text-zinc-100">{job.model}</td>
+                    <td className="py-2 pr-4 font-mono text-zinc-400">{job.duration}</td>
                     <td className="py-2"><Badge label={job.status} status={job.badge} /></td>
                   </tr>
                 ))}
@@ -172,7 +172,7 @@ export default function AIGPUMonitorPage() {
             {MODELS.map((m) => (
               <div key={m.name}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs text-text-primary">{m.name}</span>
+                  <span className="text-xs text-zinc-100">{m.name}</span>
                   <span className="text-body font-mono" style={{ color: m.color }}>{m.latency}ms avg latency</span>
                 </div>
                 <ProgressBar value={m.latency} max={m.max} color={m.color} />
@@ -199,12 +199,12 @@ export default function AIGPUMonitorPage() {
             {MEMORY_SEGMENTS.map((seg) => (
               <div key={seg.label} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 chamfer-4 flex-shrink-0" style={{ background: seg.color, border: '1px solid rgba(255,255,255,0.1)' }} />
-                <span className="text-body text-text-secondary">{seg.label}</span>
-                <span className="text-body font-mono text-text-primary">{seg.gb} GB</span>
+                <span className="text-body text-zinc-400">{seg.label}</span>
+                <span className="text-body font-mono text-zinc-100">{seg.gb} GB</span>
               </div>
             ))}
           </div>
-          <div className="mt-2 text-micro text-text-muted font-mono">Total: {TOTAL_GB.toFixed(1)} GB</div>
+          <div className="mt-2 text-micro text-zinc-500 font-mono">Total: {TOTAL_GB.toFixed(1)} GB</div>
         </Panel>
       </section>
 
@@ -223,7 +223,7 @@ export default function AIGPUMonitorPage() {
       <section>
         <SectionHeader number="6" title="Temperature History" sub="Last 12 hours" />
         <Panel>
-          <div className="text-micro text-text-muted uppercase tracking-widest mb-3">
+          <div className="text-micro text-zinc-500 uppercase tracking-widest mb-3">
             Last 12 hours — GPU temperature
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -247,7 +247,7 @@ export default function AIGPUMonitorPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-text-muted uppercase tracking-widest text-micro">
+                <tr className="text-zinc-500 uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Model</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Version</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Size</th>
@@ -258,11 +258,11 @@ export default function AIGPUMonitorPage() {
               <tbody>
                 {MODEL_REGISTRY.map((m) => (
                   <tr key={m.name} className="border-t border-border-subtle">
-                    <td className="py-2 pr-4 text-text-primary">{m.name}</td>
-                    <td className="py-2 pr-4 font-mono text-text-secondary">{m.version}</td>
-                    <td className="py-2 pr-4 font-mono text-text-secondary">{m.size}</td>
+                    <td className="py-2 pr-4 text-zinc-100">{m.name}</td>
+                    <td className="py-2 pr-4 font-mono text-zinc-400">{m.version}</td>
+                    <td className="py-2 pr-4 font-mono text-zinc-400">{m.size}</td>
                     <td className="py-2 pr-4"><Badge label={m.status} status="ok" /></td>
-                    <td className="py-2 text-text-muted">{m.updated}</td>
+                    <td className="py-2 text-zinc-500">{m.updated}</td>
                   </tr>
                 ))}
               </tbody>
@@ -273,7 +273,7 @@ export default function AIGPUMonitorPage() {
 
       {/* Back */}
       <div>
-        <Link href="/founder" className="text-xs text-system-cad hover:text-text-primary transition-colors">
+        <Link href="/founder" className="text-xs text-system-cad hover:text-zinc-100 transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

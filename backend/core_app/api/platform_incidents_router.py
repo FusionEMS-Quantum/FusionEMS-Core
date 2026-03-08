@@ -4,6 +4,7 @@ Provides CRUD + state machine transitions for platform incidents.
 """
 from __future__ import annotations
 
+# pylint: disable=raise-missing-from
 import logging
 from typing import Any
 
@@ -95,5 +96,5 @@ async def transition_incident(
             note=body.note,
         )
     except IncidentTransitionError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return updated.model_dump()

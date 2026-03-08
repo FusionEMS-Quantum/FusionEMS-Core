@@ -9,17 +9,17 @@ const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-      <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-2">{label}</div>
+      className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+      <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-1">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-1">{sub}</div>}
     </motion.div>
   );
 }
 
 function StatusDot({ status }: { status: string }) {
   const colors: Record<string, string> = { active: "var(--color-status-active)", healthy: "var(--color-status-active)", deployed: "var(--color-status-active)", logged_out: "var(--color-text-muted)", wiped: "var(--color-brand-red)", pending: "var(--color-status-warning)", failed: "var(--color-brand-red)" };
-  return <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: colors[status] ?? "var(--color-text-muted)" }} />;
+  return <span className="w-2 h-2  flex-shrink-0" style={{ background: colors[status] ?? "var(--color-text-muted)" }} />;
 }
 
 const FEATURES = [
@@ -100,40 +100,40 @@ export default function MobileOpsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Deployments */}
-        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">PWA Deployments</div>
+        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">PWA Deployments</div>
           {deployments.deployments?.slice(0, 6).map((d, i) => (
             <div key={i} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
               <div className="flex items-center gap-2">
                 <StatusDot status={String(d.data ? (d.data as Record<string,unknown>).status : "")} />
-                <span className="text-body text-text-secondary truncate">{String(d.data ? (d.data as Record<string,unknown>).pwa_name ?? "PWA" : "PWA")}</span>
+                <span className="text-body text-zinc-400 truncate">{String(d.data ? (d.data as Record<string,unknown>).pwa_name ?? "PWA" : "PWA")}</span>
               </div>
-              <span className="text-micro text-text-muted">v{String(d.data ? (d.data as Record<string,unknown>).version ?? "" : "")}</span>
+              <span className="text-micro text-zinc-500">v{String(d.data ? (d.data as Record<string,unknown>).version ?? "" : "")}</span>
             </div>
           ))}
-          {!deployments.deployments?.length && <div className="text-body text-text-muted">No deployments yet</div>}
+          {!deployments.deployments?.length && <div className="text-body text-zinc-500">No deployments yet</div>}
         </div>
 
         {/* Version Adoption */}
-        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Version Adoption · {fmtN(versionAdoption.total_devices)} Devices</div>
+        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Version Adoption · {fmtN(versionAdoption.total_devices)} Devices</div>
           {versionAdoption.version_adoption?.map(v => (
             <div key={v.version} className="mb-2">
               <div className="flex justify-between text-body mb-0.5">
-                <span className="text-text-secondary">{v.version}</span>
-                <span className="font-label text-text-primary">{v.pct}%</span>
+                <span className="text-zinc-400">{v.version}</span>
+                <span className="font-label text-zinc-100">{v.pct}%</span>
               </div>
-              <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
-                <motion.div className="h-full rounded-full bg-system-fleet" initial={{ width: 0 }} animate={{ width: `${v.pct}%` }} transition={{ duration: 0.8 }} />
+              <div className="h-1.5 bg-[rgba(255,255,255,0.06)]  overflow-hidden">
+                <motion.div className="h-full  bg-system-fleet" initial={{ width: 0 }} animate={{ width: `${v.pct}%` }} transition={{ duration: 0.8 }} />
               </div>
             </div>
           ))}
-          {!versionAdoption.version_adoption?.length && <div className="text-body text-text-muted">No version data yet</div>}
+          {!versionAdoption.version_adoption?.length && <div className="text-body text-zinc-500">No version data yet</div>}
         </div>
 
         {/* Compliance */}
-        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Credential Compliance</div>
+        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Credential Compliance</div>
           {[
             { label: "Total Credentials", value: fmtN(credCompliance.total_credentials), color: "var(--color-text-primary)" },
             { label: "Compliant", value: fmtN(credCompliance.compliant), color: "var(--color-status-active)" },
@@ -141,19 +141,19 @@ export default function MobileOpsPage() {
             { label: "Expired", value: fmtN(credCompliance.expired), color: "var(--color-brand-red)" },
           ].map(item => (
             <div key={item.label} className="flex justify-between py-2 border-b border-[var(--color-border-default)] last:border-0 text-body">
-              <span className="text-text-muted">{item.label}</span>
+              <span className="text-zinc-500">{item.label}</span>
               <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
             </div>
           ))}
           <div className="mt-3">
-            <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-2">Sync Health</div>
+            <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-2">Sync Health</div>
             {[
               { label: "Pending Jobs", value: fmtN(syncHealth.pending), color: "var(--color-status-warning)" },
               { label: "Failed Jobs", value: fmtN(syncHealth.failed), color: "var(--color-brand-red)" },
               { label: "Completed", value: fmtN(syncHealth.completed), color: "var(--color-status-active)" },
             ].map(item => (
               <div key={item.label} className="flex justify-between py-1 text-body">
-                <span className="text-text-muted">{item.label}</span>
+                <span className="text-zinc-500">{item.label}</span>
                 <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
               </div>
             ))}
@@ -163,8 +163,8 @@ export default function MobileOpsPage() {
 
       {/* OCR + Field Mapping */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Mobile OCR Capture Engine</div>
+        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Mobile OCR Capture Engine</div>
           <div className="grid grid-cols-2 gap-2">
             {[
               { label: "Facesheet Scan", icon: "📋", status: "active" },
@@ -178,15 +178,15 @@ export default function MobileOpsPage() {
             ].map(item => (
               <div key={item.label} className="flex items-center gap-2 p-2 bg-blue-500/5 border border-blue-500/15 chamfer-4">
                 <span className="text-sm">{item.icon}</span>
-                <span className="text-micro text-text-secondary">{item.label}</span>
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-status-active" />
+                <span className="text-micro text-zinc-400">{item.label}</span>
+                <span className="ml-auto w-1.5 h-1.5  bg-status-active" />
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">Push Notification Analytics</div>
+        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Push Notification Analytics</div>
           {[
             { label: "Total Notifications", value: fmtN(pushAnalytics.total), color: "var(--color-text-primary)" },
             { label: "Sent", value: fmtN(pushAnalytics.sent), color: "var(--color-system-fleet)" },
@@ -195,25 +195,25 @@ export default function MobileOpsPage() {
             { label: "Read Rate", value: fmtPct(pushAnalytics.read_rate_pct), color: "var(--color-status-info)" },
           ].map(item => (
             <div key={item.label} className="flex justify-between py-2 border-b border-[var(--color-border-default)] last:border-0 text-body">
-              <span className="text-text-muted">{item.label}</span>
+              <span className="text-zinc-500">{item.label}</span>
               <span className="font-bold" style={{ color: item.color }}>{item.value}</span>
             </div>
           ))}
-          <div className="mt-3 text-micro font-label uppercase tracking-widest text-text-muted mb-2">Staffing Shortage Predictor</div>
-          <div className="flex items-center gap-3 p-2 bg-white/[0.03] border border-border-subtle chamfer-4">
-            <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: shortageColor }} />
-            <span className="text-body text-text-secondary">Shortage Risk: <strong style={{ color: shortageColor }}>{shortageRisk.toUpperCase() || "N/A"}</strong></span>
-            <span className="ml-auto text-micro text-text-muted">{fmtN(shortage.unfilled_shifts)} unfilled</span>
+          <div className="mt-3 text-micro font-label uppercase tracking-widest text-zinc-500 mb-2">Staffing Shortage Predictor</div>
+          <div className="flex items-center gap-3 p-2 bg-zinc-950/[0.03] border border-border-subtle chamfer-4">
+            <span className="w-3 h-3  flex-shrink-0" style={{ background: shortageColor }} />
+            <span className="text-body text-zinc-400">Shortage Risk: <strong style={{ color: shortageColor }}>{shortageRisk.toUpperCase() || "N/A"}</strong></span>
+            <span className="ml-auto text-micro text-zinc-500">{fmtN(shortage.unfilled_shifts)} unfilled</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-        <div className="text-micro font-label uppercase tracking-widest text-text-muted mb-3">100 Active Mobile Features</div>
+      <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+        <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">100 Active Mobile Features</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
           {FEATURES.map(f => (
-            <div key={f} className="flex items-center gap-1.5 text-micro text-text-muted">
-              <span className="w-1 h-1 rounded-full bg-system-fleet flex-shrink-0" />
+            <div key={f} className="flex items-center gap-1.5 text-micro text-zinc-500">
+              <span className="w-1 h-1  bg-system-fleet flex-shrink-0" />
               <span className="truncate">{f}</span>
             </div>
           ))}

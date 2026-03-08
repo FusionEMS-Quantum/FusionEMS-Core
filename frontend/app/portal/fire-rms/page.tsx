@@ -74,7 +74,7 @@ const OCCUPANCY_TYPES = [
 ];
 const HYDRANT_COLORS: Record<string, { label: string; bg: string; border: string; text: string }> = {
   RED:    { label: 'Class AA  (<500 GPM)',    bg: 'bg-red-900/30',    border: 'border-red-500/50',    text: 'text-red-400'    },
-  ORANGE: { label: 'Class A   (500-999 GPM)', bg: 'bg-orange-900/30', border: 'border-orange-500/50', text: 'text-orange-400' },
+  ORANGE: { label: 'Class A   (500-999 GPM)', bg: 'bg-[rgba(255,77,0,0.3)]', border: 'border-orange-500/50', text: 'text-[#FF7A33]' },
   GREEN:  { label: 'Class B   (1000-1499 GPM)',bg: 'bg-green-900/30', border: 'border-green-500/50',  text: 'text-green-400'  },
   BLUE:   { label: 'Class C   (≥1500 GPM)',   bg: 'bg-blue-900/30',   border: 'border-blue-500/50',   text: 'text-blue-400'   },
 };
@@ -148,7 +148,7 @@ function PreplansTab() {
           value={filter}
           onChange={e => setFilter(e.target.value)}
           placeholder="Search by name or address…"
-          className="flex-1 max-w-xs bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand-orange/60"
+          className="flex-1 max-w-xs bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-brand-orange/60"
         />
         <button
           onClick={() => setShowForm(true)}
@@ -160,15 +160,15 @@ function PreplansTab() {
 
       {/* AI Insight Banner */}
       <div className="bg-brand-orange/5 border border-brand-orange/20 chamfer-8 p-3 flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-brand-orange/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-6 h-6  bg-brand-orange/20 flex items-center justify-center flex-shrink-0 mt-0.5">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-brand-orange">
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
           </svg>
         </div>
-        <div className="text-xs text-text-secondary">
+        <div className="text-xs text-zinc-400">
           <span className="text-brand-orange font-semibold">AI Analysis:</span> {plans.length} pre-plans on file.{' '}
           {plans.filter(p => !p.last_reviewed_at).length > 0 && (
-            <span className="text-orange-400">
+            <span className="text-[#FF7A33]">
               {plans.filter(p => !p.last_reviewed_at).length} plans have never been reviewed — recommend scheduling inspections.
             </span>
           )}
@@ -189,14 +189,14 @@ function PreplansTab() {
             <div
               key={plan.id}
               onClick={() => setSelected(plan)}
-              className="bg-bg-panel border border-border-subtle chamfer-8 p-4 cursor-pointer hover:border-brand-orange/40 hover:bg-brand-orange/[0.02] transition-all group"
+              className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 cursor-pointer hover:border-brand-orange/40 hover:bg-brand-orange/[0.02] transition-all group"
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <div className="text-sm font-semibold text-text-primary group-hover:text-brand-orange transition-colors">
+                  <div className="text-sm font-semibold text-zinc-100 group-hover:text-brand-orange transition-colors">
                     {plan.name}
                   </div>
-                  <div className="text-micro text-text-muted mt-0.5">{plan.address}</div>
+                  <div className="text-micro text-zinc-500 mt-0.5">{plan.address}</div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   {plan.sprinkler_system && (
@@ -208,18 +208,18 @@ function PreplansTab() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-1 mt-3">
-                <div className="text-micro text-text-muted">
-                  Type: <span className="text-text-secondary">{plan.occupancy_type || '—'}</span>
+                <div className="text-micro text-zinc-500">
+                  Type: <span className="text-zinc-400">{plan.occupancy_type || '—'}</span>
                 </div>
-                <div className="text-micro text-text-muted">
-                  Stories: <span className="text-text-secondary">{plan.stories ?? '—'}</span>
+                <div className="text-micro text-zinc-500">
+                  Stories: <span className="text-zinc-400">{plan.stories ?? '—'}</span>
                 </div>
-                <div className="text-micro text-text-muted">
-                  Construction: <span className="text-text-secondary">{plan.construction_type || '—'}</span>
+                <div className="text-micro text-zinc-500">
+                  Construction: <span className="text-zinc-400">{plan.construction_type || '—'}</span>
                 </div>
-                <div className="text-micro text-text-muted">
+                <div className="text-micro text-zinc-500">
                   Reviewed:{' '}
-                  <span className={plan.last_reviewed_at ? 'text-green-400' : 'text-orange-400'}>
+                  <span className={plan.last_reviewed_at ? 'text-green-400' : 'text-[#FF7A33]'}>
                     {plan.last_reviewed_at
                       ? new Date(plan.last_reviewed_at).toLocaleDateString()
                       : 'Never'}
@@ -227,7 +227,7 @@ function PreplansTab() {
                 </div>
               </div>
               {plan.notes && (
-                <div className="mt-2 text-micro text-text-muted line-clamp-2">{plan.notes}</div>
+                <div className="mt-2 text-micro text-zinc-500 line-clamp-2">{plan.notes}</div>
               )}
             </div>
           ))}
@@ -237,44 +237,44 @@ function PreplansTab() {
       {/* Create Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="bg-bg-void border border-brand-orange/30 chamfer-16 p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-black border border-brand-orange/30 chamfer-16 p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-text-primary">New Pre-Incident Plan</h2>
-              <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary transition-colors">✕</button>
+              <h2 className="text-base font-bold text-zinc-100">New Pre-Incident Plan</h2>
+              <button onClick={() => setShowForm(false)} className="text-zinc-500 hover:text-zinc-100 transition-colors">✕</button>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-micro text-text-muted mb-1">STRUCTURE NAME *</label>
+                <label className="block text-micro text-zinc-500 mb-1">STRUCTURE NAME *</label>
                 <input
                   value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                   placeholder="e.g., Riverside Industrial Complex"
                 />
               </div>
               <div>
-                <label className="block text-micro text-text-muted mb-1">ADDRESS *</label>
+                <label className="block text-micro text-zinc-500 mb-1">ADDRESS *</label>
                 <input
                   value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                  className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                   placeholder="Street address"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-micro text-text-muted mb-1">OCCUPANCY TYPE</label>
+                  <label className="block text-micro text-zinc-500 mb-1">OCCUPANCY TYPE</label>
                   <select
                     value={form.occupancy_type} onChange={e => setForm(f => ({ ...f, occupancy_type: e.target.value }))}
-                    className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                    className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                   >
                     <option value="">Select…</option>
                     {OCCUPANCY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-micro text-text-muted mb-1">CONSTRUCTION TYPE</label>
+                  <label className="block text-micro text-zinc-500 mb-1">CONSTRUCTION TYPE</label>
                   <select
                     value={form.construction_type} onChange={e => setForm(f => ({ ...f, construction_type: e.target.value }))}
-                    className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                    className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                   >
                     <option value="">Select…</option>
                     {CONSTRUCTION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -282,15 +282,15 @@ function PreplansTab() {
                 </div>
               </div>
               <div>
-                <label className="block text-micro text-text-muted mb-1">STORIES</label>
+                <label className="block text-micro text-zinc-500 mb-1">STORIES</label>
                 <input
                   type="number" min="1" value={form.stories}
                   onChange={e => setForm(f => ({ ...f, stories: e.target.value }))}
-                  className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                 />
               </div>
               <div className="border border-border-subtle chamfer-4 p-3 space-y-2">
-                <div className="text-micro text-text-muted uppercase tracking-wider mb-2">Fire Protection Systems</div>
+                <div className="text-micro text-zinc-500 uppercase tracking-wider mb-2">Fire Protection Systems</div>
                 {[
                   ['sprinkler_system', 'Sprinkler System Installed'],
                   ['standpipe', 'Standpipe System Present'],
@@ -307,16 +307,16 @@ function PreplansTab() {
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm text-text-secondary">{label}</span>
+                    <span className="text-sm text-zinc-400">{label}</span>
                   </label>
                 ))}
               </div>
               <div>
-                <label className="block text-micro text-text-muted mb-1">TACTICAL NOTES</label>
+                <label className="block text-micro text-zinc-500 mb-1">TACTICAL NOTES</label>
                 <textarea
                   value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                   rows={3}
-                  className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60 resize-none"
+                  className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60 resize-none"
                   placeholder="Access notes, hazards, key box locations, staging areas…"
                 />
               </div>
@@ -338,13 +338,13 @@ function PreplansTab() {
       {/* Detail Modal */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="bg-bg-void border border-border-subtle chamfer-16 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-black border border-border-subtle chamfer-16 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h2 className="text-base font-bold text-text-primary">{selected.name}</h2>
-                <div className="text-sm text-text-muted">{selected.address}</div>
+                <h2 className="text-base font-bold text-zinc-100">{selected.name}</h2>
+                <div className="text-sm text-zinc-500">{selected.address}</div>
               </div>
-              <button onClick={() => setSelected(null)} className="text-text-muted hover:text-text-primary transition-colors ml-4 flex-shrink-0">✕</button>
+              <button onClick={() => setSelected(null)} className="text-zinc-500 hover:text-zinc-100 transition-colors ml-4 flex-shrink-0">✕</button>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               {[
@@ -353,9 +353,9 @@ function PreplansTab() {
                 ['Stories', selected.stories?.toString() || '—'],
                 ['Last Reviewed', selected.last_reviewed_at ? new Date(selected.last_reviewed_at).toLocaleDateString() : 'Never'],
               ].map(([k, v]) => (
-                <div key={k} className="bg-bg-panel border border-border-subtle chamfer-4 p-3">
-                  <div className="text-micro text-text-muted uppercase tracking-wider">{k}</div>
-                  <div className="text-sm font-semibold text-text-primary mt-1">{v}</div>
+                <div key={k} className="bg-[#0A0A0B] border border-border-subtle chamfer-4 p-3">
+                  <div className="text-micro text-zinc-500 uppercase tracking-wider">{k}</div>
+                  <div className="text-sm font-semibold text-zinc-100 mt-1">{v}</div>
                 </div>
               ))}
             </div>
@@ -365,17 +365,17 @@ function PreplansTab() {
                 ['Standpipe', selected.standpipe],
                 ['Fire Alarm', selected.fire_alarm_system],
               ].map(([label, active]) => (
-                <div key={String(label)} className={`border chamfer-4 p-3 text-center ${active ? 'bg-green-900/20 border-green-500/30' : 'bg-bg-panel border-border-subtle'}`}>
-                  <div className={`text-sm font-semibold ${active ? 'text-green-400' : 'text-text-muted'}`}>
+                <div key={String(label)} className={`border chamfer-4 p-3 text-center ${active ? 'bg-green-900/20 border-green-500/30' : 'bg-[#0A0A0B] border-border-subtle'}`}>
+                  <div className={`text-sm font-semibold ${active ? 'text-green-400' : 'text-zinc-500'}`}>
                     {active ? '✓' : '✗'} {label}
                   </div>
                 </div>
               ))}
             </div>
             {selected.notes && (
-              <div className="bg-bg-panel border border-border-subtle chamfer-4 p-3">
-                <div className="text-micro text-text-muted uppercase tracking-wider mb-1">Tactical Notes</div>
-                <div className="text-sm text-text-secondary whitespace-pre-wrap">{selected.notes}</div>
+              <div className="bg-[#0A0A0B] border border-border-subtle chamfer-4 p-3">
+                <div className="text-micro text-zinc-500 uppercase tracking-wider mb-1">Tactical Notes</div>
+                <div className="text-sm text-zinc-400 whitespace-pre-wrap">{selected.notes}</div>
               </div>
             )}
           </div>
@@ -451,21 +451,21 @@ function HydrantsTab() {
     <div className="space-y-4">
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-3">
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 p-3 text-center">
-          <div className="text-2xl font-black text-text-primary">{hydrants.length}</div>
-          <div className="text-micro text-text-muted uppercase tracking-wider">Total Hydrants</div>
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-3 text-center">
+          <div className="text-2xl font-black text-zinc-100">{hydrants.length}</div>
+          <div className="text-micro text-zinc-500 uppercase tracking-wider">Total Hydrants</div>
         </div>
-        <div className={`bg-bg-panel border chamfer-8 p-3 text-center ${outOfService > 0 ? 'border-red-500/30' : 'border-border-subtle'}`}>
+        <div className={`bg-[#0A0A0B] border chamfer-8 p-3 text-center ${outOfService > 0 ? 'border-red-500/30' : 'border-border-subtle'}`}>
           <div className={`text-2xl font-black ${outOfService > 0 ? 'text-red-400' : 'text-green-400'}`}>{outOfService}</div>
-          <div className="text-micro text-text-muted uppercase tracking-wider">Out of Service</div>
+          <div className="text-micro text-zinc-500 uppercase tracking-wider">Out of Service</div>
         </div>
-        <div className={`bg-bg-panel border chamfer-8 p-3 text-center ${needingTest > 0 ? 'border-orange-500/30' : 'border-border-subtle'}`}>
-          <div className={`text-2xl font-black ${needingTest > 0 ? 'text-orange-400' : 'text-green-400'}`}>{needingTest}</div>
-          <div className="text-micro text-text-muted uppercase tracking-wider">Test Overdue</div>
+        <div className={`bg-[#0A0A0B] border chamfer-8 p-3 text-center ${needingTest > 0 ? 'border-orange-500/30' : 'border-border-subtle'}`}>
+          <div className={`text-2xl font-black ${needingTest > 0 ? 'text-[#FF7A33]' : 'text-green-400'}`}>{needingTest}</div>
+          <div className="text-micro text-zinc-500 uppercase tracking-wider">Test Overdue</div>
         </div>
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 p-3 text-center">
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-3 text-center">
           <div className="text-2xl font-black text-green-400">{hydrants.length - outOfService}</div>
-          <div className="text-micro text-text-muted uppercase tracking-wider">Operational</div>
+          <div className="text-micro text-zinc-500 uppercase tracking-wider">Operational</div>
         </div>
       </div>
 
@@ -483,7 +483,7 @@ function HydrantsTab() {
                     ? 'border-red-500/30 text-red-400 hover:border-red-500/60'
                     : HYDRANT_COLORS[f]
                       ? `${HYDRANT_COLORS[f].border} ${HYDRANT_COLORS[f].text} ${HYDRANT_COLORS[f].bg}`
-                      : 'border-border-subtle text-text-muted hover:border-brand-orange/30'
+                      : 'border-border-subtle text-zinc-500 hover:border-brand-orange/30'
               }`}
             >
               {f === 'OOS' ? 'Out of Service' : f}
@@ -496,13 +496,13 @@ function HydrantsTab() {
       </div>
 
       {/* ISO Color Code Legend */}
-      <div className="bg-bg-panel border border-border-subtle chamfer-8 p-3">
-        <div className="text-micro text-text-muted uppercase tracking-wider mb-2">ISO Color Classification</div>
+      <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-3">
+        <div className="text-micro text-zinc-500 uppercase tracking-wider mb-2">ISO Color Classification</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {Object.entries(HYDRANT_COLORS).map(([color, { label, bg, border, text }]) => (
             <div key={color} className={`${bg} border ${border} chamfer-4 p-2 flex items-center gap-2`}>
-              <div className={`w-3 h-3 rounded-full ${
-                color === 'RED' ? 'bg-red-500' : color === 'ORANGE' ? 'bg-orange-500' : color === 'GREEN' ? 'bg-green-500' : 'bg-blue-500'
+              <div className={`w-3 h-3  ${
+                color === 'RED' ? 'bg-red-500' : color === 'ORANGE' ? 'bg-[#FF4D00]' : color === 'GREEN' ? 'bg-green-500' : 'bg-blue-500'
               }`} />
               <span className={`text-micro ${text}`}>{label}</span>
             </div>
@@ -518,12 +518,12 @@ function HydrantsTab() {
           icon="droplet"
         />
       ) : (
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Hydrant #', 'GPS', 'Status', 'Class', 'Flow (GPM)', 'Pressure (PSI)', 'Last Test', 'Type'].map(h => (
-                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -531,9 +531,9 @@ function HydrantsTab() {
               {filtered.map(h => {
                 const color = HYDRANT_COLORS[h.color_code || ''];
                 return (
-                  <tr key={h.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                    <td className="px-4 py-3 text-sm font-bold text-text-primary">{h.hydrant_number}</td>
-                    <td className="px-4 py-3 text-micro text-text-muted font-mono">
+                  <tr key={h.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                    <td className="px-4 py-3 text-sm font-bold text-zinc-100">{h.hydrant_number}</td>
+                    <td className="px-4 py-3 text-micro text-zinc-500 font-mono">
                       {h.latitude.toFixed(4)}, {h.longitude.toFixed(4)}
                     </td>
                     <td className="px-4 py-3">
@@ -546,16 +546,16 @@ function HydrantsTab() {
                         <span className={`text-micro px-2 py-0.5 border ${color.bg} ${color.border} ${color.text}`}>
                           {h.color_code}
                         </span>
-                      ) : <span className="text-text-muted">—</span>}
+                      ) : <span className="text-zinc-500">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-text-secondary">{h.flow_rate_gpm ?? '—'}</td>
-                    <td className="px-4 py-3 text-sm text-text-secondary">{h.static_pressure_psi ?? '—'}</td>
-                    <td className="px-4 py-3 text-sm text-text-secondary">
+                    <td className="px-4 py-3 text-sm text-zinc-400">{h.flow_rate_gpm ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-zinc-400">{h.static_pressure_psi ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-zinc-400">
                       {h.last_tested_at ? new Date(h.last_tested_at).toLocaleDateString() : (
-                        <span className="text-orange-400">Never</span>
+                        <span className="text-[#FF7A33]">Never</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-text-secondary">{h.hydrant_type || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-zinc-400">{h.hydrant_type || '—'}</td>
                   </tr>
                 );
               })}
@@ -567,46 +567,46 @@ function HydrantsTab() {
       {/* Create Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="bg-bg-void border border-brand-orange/30 chamfer-16 p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-black border border-brand-orange/30 chamfer-16 p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-text-primary">Register Hydrant</h2>
-              <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary">✕</button>
+              <h2 className="text-base font-bold text-zinc-100">Register Hydrant</h2>
+              <button onClick={() => setShowForm(false)} className="text-zinc-500 hover:text-zinc-100">✕</button>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-micro text-text-muted mb-1">HYDRANT NUMBER *</label>
+                <label className="block text-micro text-zinc-500 mb-1">HYDRANT NUMBER *</label>
                 <input value={form.hydrant_number} onChange={e => setForm(f => ({ ...f, hydrant_number: e.target.value }))}
-                  className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                   placeholder="e.g., H-1042" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-micro text-text-muted mb-1">LATITUDE *</label>
+                  <label className="block text-micro text-zinc-500 mb-1">LATITUDE *</label>
                   <input type="number" step="0.0001" value={form.latitude} onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))}
-                    className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60" />
+                    className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60" />
                 </div>
                 <div>
-                  <label className="block text-micro text-text-muted mb-1">LONGITUDE *</label>
+                  <label className="block text-micro text-zinc-500 mb-1">LONGITUDE *</label>
                   <input type="number" step="0.0001" value={form.longitude} onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
-                    className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60" />
+                    className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-micro text-text-muted mb-1">FLOW RATE (GPM)</label>
+                  <label className="block text-micro text-zinc-500 mb-1">FLOW RATE (GPM)</label>
                   <input type="number" value={form.flow_rate_gpm} onChange={e => setForm(f => ({ ...f, flow_rate_gpm: e.target.value }))}
-                    className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60" />
+                    className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60" />
                 </div>
                 <div>
-                  <label className="block text-micro text-text-muted mb-1">STATIC PRESSURE (PSI)</label>
+                  <label className="block text-micro text-zinc-500 mb-1">SUPPLY PRESSURE (PSI)</label>
                   <input type="number" value={form.static_pressure_psi} onChange={e => setForm(f => ({ ...f, static_pressure_psi: e.target.value }))}
-                    className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60" />
+                    className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60" />
                 </div>
               </div>
               <div>
-                <label className="block text-micro text-text-muted mb-1">ISO COLOR CLASS</label>
+                <label className="block text-micro text-zinc-500 mb-1">ISO COLOR CLASS</label>
                 <select value={form.color_code} onChange={e => setForm(f => ({ ...f, color_code: e.target.value }))}
-                  className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60">
+                  className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60">
                   {Object.entries(HYDRANT_COLORS).map(([c, { label }]) => <option key={c} value={c}>{c} — {label}</option>)}
                 </select>
               </div>
@@ -615,7 +615,7 @@ function HydrantsTab() {
                   className={`w-4 h-4 border-2 flex items-center justify-center transition-colors ${form.in_service ? 'bg-green-500 border-green-500' : 'border-border-subtle'}`}>
                   {form.in_service && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
-                <span className="text-sm text-text-secondary">Currently In Service</span>
+                <span className="text-sm text-zinc-400">Currently In Service</span>
               </label>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowForm(false)} className="flex-1 quantum-btn-sm py-2">Cancel</button>
@@ -653,12 +653,12 @@ function InspectionsTab() {
         {[
           { label: 'Scheduled', value: statusCounts.scheduled, color: 'text-yellow-400', border: 'border-yellow-500/20' },
           { label: 'In Progress', value: statusCounts.in_progress, color: 'text-blue-400', border: 'border-blue-500/20' },
-          { label: 'Corrective Action', value: statusCounts.corrective, color: 'text-orange-400', border: 'border-orange-500/20' },
+          { label: 'Corrective Action', value: statusCounts.corrective, color: 'text-[#FF7A33]', border: 'border-orange-500/20' },
           { label: 'Failed', value: statusCounts.failed, color: 'text-red-400', border: 'border-red-500/20' },
         ].map(({ label, value, color, border }) => (
-          <div key={label} className={`bg-bg-panel border ${border || 'border-border-subtle'} chamfer-8 p-3 text-center`}>
+          <div key={label} className={`bg-[#0A0A0B] border ${border || 'border-border-subtle'} chamfer-8 p-3 text-center`}>
             <div className={`text-2xl font-black ${color}`}>{value}</div>
-            <div className="text-micro text-text-muted uppercase tracking-wider">{label}</div>
+            <div className="text-micro text-zinc-500 uppercase tracking-wider">{label}</div>
           </div>
         ))}
       </div>
@@ -670,23 +670,23 @@ function InspectionsTab() {
           icon="clipboard-check"
         />
       ) : (
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Structure', 'Scheduled', 'Completed', 'Status', 'Deficiencies'].map(h => (
-                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {inspections.map(i => (
-                <tr key={i.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 text-sm font-semibold text-text-primary">{i.preplan_id || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">
+                <tr key={i.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                  <td className="px-4 py-3 text-sm font-semibold text-zinc-100">{i.preplan_id || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400">
                     {i.scheduled_date ? new Date(i.scheduled_date).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">
+                  <td className="px-4 py-3 text-sm text-zinc-400">
                     {i.completed_date ? new Date(i.completed_date).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-sm font-semibold">
@@ -694,7 +694,7 @@ function InspectionsTab() {
                       {i.status.replace(/_/g, ' ')}
                     </StatusChip>
                   </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">
+                  <td className="px-4 py-3 text-sm text-zinc-400">
                     {i.deficiencies ? (i.deficiencies as unknown[]).length : 0}
                   </td>
                 </tr>
@@ -712,9 +712,9 @@ function InspectionsTab() {
 function ArsonTab() {
   return (
     <div className="space-y-4">
-      <div className="bg-orange-900/10 border border-orange-500/20 chamfer-8 p-4">
-        <div className="text-sm font-semibold text-orange-400 mb-1">Restricted Module</div>
-        <div className="text-sm text-text-secondary">
+      <div className="bg-[rgba(255,77,0,0.1)] border border-orange-500/20 chamfer-8 p-4">
+        <div className="text-sm font-semibold text-[#FF7A33] mb-1">Restricted Module</div>
+        <div className="text-sm text-zinc-400">
           Arson investigation case files are restricted to designated investigators.
           Access is fully audited. All case data is end-to-end encrypted at rest and in transit.
         </div>

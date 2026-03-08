@@ -3,6 +3,8 @@ CAD Domain Models
 =================
 Call intake, dispatch, unit management, and real-time tracking models.
 """
+# pylint: disable=not-callable
+
 from __future__ import annotations
 
 import enum

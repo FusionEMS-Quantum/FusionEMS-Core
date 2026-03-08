@@ -4,6 +4,8 @@ Scheduling Domain Models
 Shift templates, instances, availability, swap requests,
 credential tracking, fatigue compliance, and AI draft support.
 """
+# pylint: disable=not-callable
+
 from __future__ import annotations
 
 import enum

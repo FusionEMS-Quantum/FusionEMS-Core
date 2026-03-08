@@ -40,16 +40,16 @@ function RoleCard({ role, selected, onClick }: { role: Role; selected: boolean; 
     <motion.button
       whileHover={{ scale: 1.01 }}
       onClick={onClick}
-      className={`w-full text-left p-3 border transition-colors ${selected ? 'border-orange bg-orange/10' : 'border-border-DEFAULT hover:border-white/20 bg-bg-panel'}`}
+      className={`w-full text-left p-3 border transition-colors ${selected ? 'border-orange bg-[#FF4D00]/10' : 'border-border-DEFAULT hover:border-white/20 bg-[#0A0A0B]'}`}
       style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
     >
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-xs font-bold text-text-primary">{role.name}</span>
+        <span className="text-xs font-bold text-zinc-100">{role.name}</span>
         {role.is_system && (
-          <span className="px-1.5 py-0.5 text-[10px] bg-orange/20 text-orange border border-orange/30 uppercase tracking-widest">System</span>
+          <span className="px-1.5 py-0.5 text-[10px] bg-[#FF4D00]/20 text-[#FF4D00] border border-orange/30 uppercase tracking-widest">System</span>
         )}
       </div>
-      {role.description && <p className="text-micro text-text-muted">{role.description}</p>}
+      {role.description && <p className="text-micro text-zinc-500">{role.description}</p>}
     </motion.button>
   );
 }
@@ -148,12 +148,12 @@ export default function RoleBuilderPage() {
       {/* Header */}
       <div className="hud-rail pb-3 mb-6 flex items-end justify-between">
         <div>
-          <div className="micro-caps mb-1 text-text-muted">Security</div>
-          <h1 className="text-h2 font-bold text-text-primary">Role Builder</h1>
-          <p className="text-body text-text-muted mt-1">Manage role assignments with full audit trail.</p>
+          <div className="micro-caps mb-1 text-zinc-500">Security</div>
+          <h1 className="text-h2 font-bold text-zinc-100">Role Builder</h1>
+          <p className="text-body text-zinc-500 mt-1">Manage role assignments with full audit trail.</p>
         </div>
         <Link href="/founder/security"
-          className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors">
+          className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 transition-colors">
           ← Security
         </Link>
       </div>
@@ -163,14 +163,14 @@ export default function RoleBuilderPage() {
       <div className="grid grid-cols-12 gap-4">
         {/* Role list */}
         <div className="col-span-4">
-          <div className="text-micro uppercase tracking-widest text-text-muted mb-2">Roles ({roles.length})</div>
+          <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">Roles ({roles.length})</div>
           {loading ? (
-            <div className="text-text-muted text-sm py-8 text-center">Loading…</div>
+            <div className="text-zinc-500 text-sm py-8 text-center">Loading…</div>
           ) : (
             <div className="flex flex-col gap-1.5">
               <motion.button
                 onClick={() => setSelectedRole(null)}
-                className={`w-full text-left p-2.5 text-xs font-semibold uppercase tracking-widest border transition-colors ${!selectedRole ? 'border-orange text-orange bg-orange/10' : 'border-border-DEFAULT text-text-muted hover:border-white/20'}`}>
+                className={`w-full text-left p-2.5 text-xs font-semibold uppercase tracking-widest border transition-colors ${!selectedRole ? 'border-orange text-[#FF4D00] bg-[#FF4D00]/10' : 'border-border-DEFAULT text-zinc-500 hover:border-white/20'}`}>
                 All Roles
               </motion.button>
               {roles.map(r => (
@@ -182,48 +182,48 @@ export default function RoleBuilderPage() {
 
         {/* Assignments panel */}
         <div className="col-span-8">
-          <div className="text-micro uppercase tracking-widest text-text-muted mb-2">
+          <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">
             {selectedRole ? `Assignments — ${selectedRole.name}` : 'All Assignments'}
-            <span className="ml-2 text-orange">({filteredAssignments.length})</span>
+            <span className="ml-2 text-[#FF4D00]">({filteredAssignments.length})</span>
           </div>
 
           {/* Assign form */}
           {selectedRole && (
-            <div className="flex gap-2 mb-4 bg-bg-panel border border-border-DEFAULT p-3"
+            <div className="flex gap-2 mb-4 bg-[#0A0A0B] border border-border-DEFAULT p-3"
               style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
               <input
                 value={assignUserId} onChange={e => setAssignUserId(e.target.value)}
                 placeholder="User UUID…"
-                className="flex-1 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-orange font-mono" />
+                className="flex-1 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-orange font-mono" />
               <button onClick={assignRole} disabled={assigning || !assignUserId.trim()}
-                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-orange text-bg-page hover:bg-orange-bright transition-colors disabled:opacity-50">
+                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors disabled:opacity-50">
                 {assigning ? 'Assigning…' : 'Assign'}
               </button>
             </div>
           )}
 
-          <div className="bg-bg-panel border border-border-DEFAULT"
+          <div className="bg-[#0A0A0B] border border-border-DEFAULT"
             style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
             {/* Headers */}
-            <div className="grid grid-cols-12 gap-2 px-4 py-2 border-b border-white/10 bg-white/[0.02]">
-              <span className="col-span-4 text-micro uppercase tracking-widest text-text-muted">User ID</span>
-              <span className="col-span-3 text-micro uppercase tracking-widest text-text-muted">Role</span>
-              <span className="col-span-2 text-micro uppercase tracking-widest text-text-muted">Status</span>
-              <span className="col-span-2 text-micro uppercase tracking-widest text-text-muted">Created</span>
+            <div className="grid grid-cols-12 gap-2 px-4 py-2 border-b border-white/10 bg-zinc-950/[0.02]">
+              <span className="col-span-4 text-micro uppercase tracking-widest text-zinc-500">User ID</span>
+              <span className="col-span-3 text-micro uppercase tracking-widest text-zinc-500">Role</span>
+              <span className="col-span-2 text-micro uppercase tracking-widest text-zinc-500">Status</span>
+              <span className="col-span-2 text-micro uppercase tracking-widest text-zinc-500">Created</span>
               <span className="col-span-1" />
             </div>
 
             {filteredAssignments.length === 0 && !loading && (
-              <div className="px-4 py-10 text-center text-text-muted text-sm">No role assignments found.</div>
+              <div className="px-4 py-10 text-center text-zinc-500 text-sm">No role assignments found.</div>
             )}
 
             {filteredAssignments.map((a, i) => (
               <motion.div key={a.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 items-center hover:bg-white/[0.02]">
-                <span className="col-span-4 text-micro font-mono text-text-secondary truncate">{a.user_id.slice(0, 8)}…</span>
-                <span className="col-span-3 text-xs font-semibold text-text-primary truncate">{a.role_name}</span>
+                className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 items-center hover:bg-zinc-950/[0.02]">
+                <span className="col-span-4 text-micro font-mono text-zinc-400 truncate">{a.user_id.slice(0, 8)}…</span>
+                <span className="col-span-3 text-xs font-semibold text-zinc-100 truncate">{a.role_name}</span>
                 <span className="col-span-2"><Badge active={a.is_active} /></span>
-                <span className="col-span-2 text-micro text-text-muted font-mono">
+                <span className="col-span-2 text-micro text-zinc-500 font-mono">
                   {new Date(a.created_at).toLocaleDateString()}
                 </span>
                 <div className="col-span-1 flex justify-end">

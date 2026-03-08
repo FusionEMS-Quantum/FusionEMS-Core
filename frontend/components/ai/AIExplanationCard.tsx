@@ -49,7 +49,7 @@ function severityStyle(s: string): { bg: string; border: string; text: string; l
     case 'BLOCKING':
       return { bg: 'rgba(255,45,45,0.08)', border: 'rgba(255,45,45,0.35)', text: 'var(--color-brand-red)', label: 'BLOCKING' };
     case 'HIGH':
-      return { bg: 'rgba(255,107,26,0.08)', border: 'rgba(255,107,26,0.35)', text: 'var(--color-brand-orange)', label: 'HIGH' };
+      return { bg: 'rgba(255,107,26,0.08)', border: 'rgba(255,107,26,0.35)', text: '#FF4D00', label: 'HIGH' };
     case 'MEDIUM':
       return { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', text: 'var(--color-status-warning)', label: 'MEDIUM' };
     case 'LOW':
@@ -102,17 +102,17 @@ export function AIExplanationCard({ explanation, compact, className, onAction, a
           >
             {sev.label}
           </span>
-          <h3 className="text-sm font-bold text-text-primary truncate">{explanation.title}</h3>
+          <h3 className="text-sm font-bold text-zinc-100 truncate">{explanation.title}</h3>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: confidenceDot(explanation.confidence) }} />
-          <span className="text-[10px] uppercase tracking-wider text-text-muted">{explanation.confidence}</span>
+          <span className="w-1.5 h-1.5 " style={{ background: confidenceDot(explanation.confidence) }} />
+          <span className="text-[10px] uppercase tracking-wider text-zinc-500">{explanation.confidence}</span>
         </div>
       </div>
 
       {/* Source + Review badges */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] uppercase tracking-widest text-text-muted px-2 py-0.5 border border-border-DEFAULT chamfer-4">
+        <span className="text-[10px] uppercase tracking-widest text-zinc-500 px-2 py-0.5 border border-border-DEFAULT chamfer-4">
           {explanation.source.replace(/_/g, ' ')}
         </span>
         <span
@@ -133,12 +133,12 @@ export function AIExplanationCard({ explanation, compact, className, onAction, a
       )}
 
       {compact && explanation.simple_mode_summary && (
-        <p className="text-xs text-text-secondary leading-relaxed">{explanation.simple_mode_summary}</p>
+        <p className="text-xs text-zinc-400 leading-relaxed">{explanation.simple_mode_summary}</p>
       )}
 
       {/* Domain context */}
       {!compact && (
-        <div className="text-[10px] text-text-muted border-t border-[rgba(255,255,255,0.05)] pt-2 mt-2">
+        <div className="text-[10px] text-zinc-500 border-t border-[rgba(255,255,255,0.05)] pt-2 mt-2">
           <span className="uppercase tracking-widest font-semibold">Context:</span> {explanation.domain_context}
         </div>
       )}
@@ -148,7 +148,7 @@ export function AIExplanationCard({ explanation, compact, className, onAction, a
         <button
           onClick={onAction}
           className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 transition-colors hover:bg-[rgba(255,107,26,0.12)]"
-          style={{ color: 'var(--color-brand-orange)', borderColor: 'rgba(255,107,26,0.35)' }}
+          style={{ color: '#FF4D00', borderColor: 'rgba(255,107,26,0.35)' }}
         >
           {actionLabel || 'Take Action'}
         </button>
@@ -162,8 +162,8 @@ function ExplanationSection({ icon, title, body }: { icon: string; title: string
     <div className="flex gap-2">
       <span className="text-xs shrink-0 mt-0.5" aria-hidden>{icon}</span>
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-0.5">{title}</div>
-        <p className="text-xs text-text-secondary leading-relaxed">{body}</p>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-0.5">{title}</div>
+        <p className="text-xs text-zinc-400 leading-relaxed">{body}</p>
       </div>
     </div>
   );

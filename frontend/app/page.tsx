@@ -1,146 +1,484 @@
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
-import api from "../components/api";
-import AppShell, { StatusBadge, SystemStatus } from "../components/AppShell";
+import type { LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  ShieldCheck,
+  Database,
+  TerminalSquare,
+  Users,
+  LockKeyhole,
+  Server,
+  ScanLine,
+  Target,
+  Box,
+  PhoneCall,
+  Workflow,
+  ClipboardList,
+  Calculator,
+  Crosshair,
+  ArrowUpRight,
+  Zap,
+} from "lucide-react";
+import QuantumLogo from "@/components/branding/QuantumLogo";
 
-type SystemRow = {
-  system_key: string;
-  name: string;
-  description: string;
-  status: SystemStatus;
-  accent: string;
-};
-
-function accentFor(key: string): string {
-  const m: Record<string,string> = {
-    fusionbilling: "var(--color-status-info)",
-    fusionems: "var(--color-brand-orange-bright)",
-    fusionfire: "var(--color-brand-red)",
-    fusionhems: "var(--color-status-warning)",
-    fusionfleet: "var(--color-system-fleet)",
-    fusioncompliance: "var(--color-system-compliance)",
-    fusionai: "var(--color-text-primary)",
-    fusioncad: "var(--color-text-muted)"
-  };
-  return m[key] ?? "var(--color-text-muted)";
+function Logo() {
+  return (
+    <QuantumLogo size="lg" />
+  );
 }
 
-export default async function Page() {
-  let systems: SystemRow[] = [];
-  let systemsUnavailable = false;
-  try {
-    systems = await api<SystemRow[]>("/api/v1/systems");
-  } catch {
-    systemsUnavailable = true;
-  }
+// Upgraded Icon Wrapper for tactical/tech feel
+function TechIcon({ icon: Icon, color = "text-zinc-500", className = "" }: { icon: LucideIcon, color?: string, className?: string }) {
+  return (
+    <div className={`quantum-icon-frame relative flex items-center justify-center w-12 h-12 group-hover:border-orange/40 transition-colors ${className}`}>
+      {/* Tactical corners */}
+      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/50"></div>
+      <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-white/50"></div>
+      <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-white/50"></div>
+      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/50"></div>
+      
+      <div className="absolute inset-0 bg-[#FF4D00]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <Icon className={`quantum-icon ${color} relative z-10`} />
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const [transports, setTransports] = useState(25000);
+  const [privatePayRatio, setPrivatePayRatio] = useState(20);
+  const [collectionRate, setCollectionRate] = useState(45);
+
+  // ROI Math
+  const privPayTransports = transports * (privatePayRatio / 100);
+  const avgBill = 850;
+  const totalPrivBilled = privPayTransports * avgBill;
+  const currentCollected = totalPrivBilled * (collectionRate / 100);
+  const quantumCollected = totalPrivBilled * (Math.min(95, collectionRate + 28) / 100);
+  const lift = quantumCollected - currentCollected;
 
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <section className="rounded-2xl border border-border bg-panel p-8">
-          <div className="text-3xl font-semibold leading-tight">
-          FusionEMS Quantum — Unified Public Safety Operating System
-        </div>
-        <div className="mt-3 max-w-3xl text-sm text-muted">
-          Revenue. Operations. Compliance. Intelligence. Built as Infrastructure. Activated by Certification.
-        </div>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/billing/dashboard" className="rounded-xl bg-orange px-5 py-3 text-sm font-semibold text-text-inverse hover:bg-orange-bright transition-colors">
-            Enter Billing Command
-          </Link>
-          <Link href="/architecture" className="rounded-xl border border-border px-5 py-3 text-sm text-muted hover:text-text">
-            View System Architecture
-          </Link>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[#060608] text-gray-200 selection:bg-[#FF4D00]/20 selection:text-[#FF4D00]-bright overflow-x-hidden font-sans relative">
+      
+      {/* GLOBAL BACKGROUND SYSTEM */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(20,20,25,1)_0%,_rgba(6,6,8,1)_100%)]"></div>
+        {/* Tactical Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-70"></div>
+      </div>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-panel p-6">
-          <div className="text-sm font-semibold">Patient Access</div>
-          <div className="mt-2 text-xs text-muted">Secure, minimal, bank-grade patient actions.</div>
-          <div className="mt-4 grid gap-2">
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/patient/pay">Pay My Bill</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/patient/lookup">Look Up My Bill</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/patient/plan">Start a Payment Plan</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/patient/receipt">Download Receipt</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/patient/insurance">Update Insurance</Link>
+      {/* NAVIGATION */}
+      <nav className="relative z-50 border-b border-white/5 bg-[#060608]/80 backdrop-blur-md">
+        <div className="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
+          <Logo />
+          
+          <div className="hidden lg:flex items-center gap-8 text-[0.7rem] font-bold tracking-[0.15em] text-zinc-500 uppercase">
+            <Link href="/roi" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <Calculator className="w-3 h-3 text-[#FF4D00]" /> ROI Calc
+            </Link>
+            <Link href="/platform" className="hover:text-white transition-colors">Platform</Link>
+            <Link href="#modules" className="hover:text-white transition-colors">Modules</Link>
+            <Link href="/architecture" className="hover:text-white transition-colors">Architecture</Link>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link 
+              href="/patient-billing-login" 
+              className="group hidden sm:flex items-center gap-3 px-4 py-2.5 bg-zinc-950/[0.02] border border-white/10 hover:border-orange/40 hover:bg-[#FF4D00]/5 transition-all shadow-inner"
+            >
+              <div className="w-2 h-2  bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+              <div className="flex flex-col text-left">
+                <span className="text-[0.5rem] text-zinc-500 font-bold uppercase tracking-[0.2em] leading-none mb-0.5">Secure Gateway</span>
+                <span className="text-[0.7rem] font-bold tracking-[0.1em] text-gray-300 uppercase leading-none group-hover:text-white">Patient Bill Pay Login</span>
+              </div>
+            </Link>
+
+            <Link
+              href="/facility-transport-login"
+              className="text-[0.65rem] font-bold tracking-[0.13em] uppercase px-4 py-3 -none border border-white/25 bg-zinc-950/[0.03] hover:border-orange/60 hover:bg-[#FF4D00]/10 transition-all text-gray-200 hover:text-white"
+            >
+              Facility TransportLink Login
+            </Link>
+
+            <Link 
+              href="/founder-login" 
+              className="text-[0.7rem] font-bold tracking-[0.15em] uppercase px-6 py-3 -none border border-orange bg-[#FF4D00]/10 hover:bg-[#FF4D00] hover:text-black transition-all text-[#FF4D00] shadow-[0_0_15px_rgba(255,100,0,0.15)] flex items-center gap-2"
+            >
+              Founder Login <TerminalSquare className="w-4 h-4" />
+            </Link>
           </div>
         </div>
+      </nav>
 
-        <div className="rounded-2xl border border-border bg-panel p-6">
-          <div className="text-sm font-semibold">Authorized Representative Portal</div>
-          <div className="mt-2 text-xs text-muted">
-            Guardians, POA, insurance reps, executors. MFA required. Strictly scoped access.
-          </div>
-          <div className="mt-4 grid gap-2">
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/rep/login">Rep Login</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/rep/register">Register</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/rep/verify">Verify Authorization</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/rep/upload">Upload Authorization Doc</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/portal/rep/sign">Sign Billing Documents</Link>
-          </div>
-        </div>
+      <main className="relative z-10">
+        
+        {/* HERO SECTION */}
+        <section className="relative min-h-[85vh] flex items-center justify-center pt-20 pb-32 overflow-hidden border-b border-white/5">
+          <div className="max-w-[1400px] mx-auto px-6 relative z-20 text-center">
+            
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 -none border border-red-500/30 bg-red-500/10 mb-8 shadow-inner">
+              <Target className="w-3.5 h-3.5 text-red-500" />
+              <span className="text-[0.65rem] font-bold tracking-[0.2em] text-red-400 uppercase">Revenue integrity risk detected in legacy stack</span>
+            </div>
 
-        <div className="rounded-2xl border border-border bg-panel p-6">
-          <div className="text-sm font-semibold">Agency / Billing Staff Access</div>
-          <div className="mt-2 text-xs text-muted">Operational authority. Billing-first deployment.</div>
-          <div className="mt-4 grid gap-2">
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/billing/login">Billing Staff Login</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/billing/dashboard">Claims Dashboard</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/billing/reports">Revenue Analytics</Link>
-            <Link className="rounded-xl border border-border px-4 py-2 text-sm hover:border-orange hover:text-orange transition-colors" href="/billing/documents">Upload PCS Forms</Link>
-          </div>
-        </div>
-      </section>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tight mb-8 leading-[1.05] text-white drop-shadow-[0_0_15px_rgba(0,0,0,0.6)]">
+              Restore Revenue Performance with <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange via-red-500 to-orange bg-[length:200%_auto] animate-[pulse-glow_4s_ease-in-out_infinite]">Unified Mission-Critical Operations</span>
+            </h1>
+            
+            <p className="max-w-3xl mx-auto text-lg md:text-xl text-zinc-500 leading-relaxed mb-12 font-medium">
+              FusionEMS Quantum is the sovereign operating platform built to capture unrecovered cash. Before we deploy operations or fleet, we deploy <strong>Billing Command</strong> — an AI-powered infrastructure layer that stops the bleeding and forces revenue capture.
+            </p>
 
-      <section className="rounded-2xl border border-border bg-panel p-6">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold">System Architecture Matrix</div>
-            <div className="mt-1 text-xs text-muted">Rendered from the system registry (database-driven).</div>
-          </div>
-          <Link href="/systems" className="text-xs text-muted hover:text-text">Open full matrix →</Link>
-        </div>
-
-        {systemsUnavailable && (
-          <div className="mt-4 rounded-xl border border-[rgba(229,57,53,0.35)] bg-[rgba(229,57,53,0.08)] p-4 text-sm text-text">
-            <div className="font-semibold">System registry unavailable</div>
-            <div className="mt-1 text-xs text-muted">
-              The UI is running, but the backend registry endpoint could not be reached. Check API routing and service health.
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link 
+                href="/roi-funnel" 
+                className="group px-10 py-5 bg-[#FF4D00] text-black font-black text-xs tracking-[0.15em] uppercase -none hover:bg-[#ff7a00] transition-colors relative shadow-[0_0_30px_rgba(255,100,0,0.3)] hover:shadow-[0_0_40px_rgba(255,100,0,0.5)] flex items-center gap-3"
+              >
+                <div className="absolute inset-0 border border-white/30 pointer-events-none mix-blend-overlay"></div>
+                Calculate Your Unrecovered Yield <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </Link>
+              
+              <Link 
+                href="/platform" 
+                className="group px-8 py-5 bg-transparent border border-white/20 text-white font-bold text-xs tracking-[0.15em] uppercase -none hover:bg-zinc-950/5 hover:border-white/40 transition-all flex items-center gap-2"
+              >
+                View Platform Architecture
+              </Link>
             </div>
           </div>
-        )}
+        </section>
 
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {systems.map(s => (
-            <Link key={s.system_key} href={`/systems/${s.system_key}`} className="rounded-2xl border border-border bg-panel2 p-4 hover:bg-[rgba(255,255,255,0.04)]">
-              <div className="text-sm font-semibold">{s.name}</div>
-              <div className="mt-1 text-xs text-muted min-h-[34px]">{s.description}</div>
-              <div className="mt-3"><StatusBadge status={s.status} accent={s.accent || accentFor(s.system_key)} /></div>
-            </Link>
-          ))}
-        </div>
-      </section>
+        {/* SUPPORTING STRIP */}
+        <section className="border-b border-white/5 bg-[#030304] relative z-20 shadow-inner">
+          <div className="max-w-[1600px] mx-auto px-6 py-5 overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-center gap-6 min-w-[1000px] text-[0.65rem] font-bold tracking-[0.2em] text-gray-600 uppercase">
+              <div className="flex items-center gap-2 text-[#FF4D00] drop-shadow-[0_0_5px_rgba(255,100,0,0.5)]"><Zap className="w-3 h-3"/> Billing Command</div>
+              <span className="text-zinc-300">|</span>
+              <span>ePCR</span>
+              <span className="text-zinc-300">|</span>
+              <span>Fleet</span>
+              <span className="text-zinc-300">|</span>
+              <span>Scheduling</span>
+              <span className="text-zinc-300">|</span>
+              <span>Compliance</span>
+              <span className="text-zinc-300">|</span>
+              <span>Communications</span>
+              <span className="text-zinc-300">|</span>
+              <span className="text-zinc-500">Founder Command</span>
+            </div>
+          </div>
+        </section>
 
-      <section className="rounded-2xl border border-border bg-panel p-6">
-        <div className="text-sm font-semibold">Enterprise Security &amp; Compliance</div>
-        <div className="mt-3 text-sm text-muted">
-          Built with FedRAMP-aligned controls (NIST 800-53 patterns): zero static cloud credentials, centralized secrets, hardened CI/CD, WAF protection, encrypted data, and continuous vulnerability scanning.
-        </div>
-        <div className="mt-2 text-xs text-muted italic">
-          FedRAMP authorization not currently claimed.
-        </div>
-      </section>
+        {/* ROI CALCULATOR / WHY SWITCH SECTION */}
+        <section id="roi" className="py-32 relative z-20 border-b border-white/5 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(255,100,0,0.05)_0%,_transparent_50%)]">
+          <div className="max-w-[1400px] mx-auto px-6">
+            <div className="grid lg:grid-cols-[1fr_1.2fr] gap-16 items-center">
+              
+              {/* Marketing Hard / Why Me */}
+              <div className="space-y-8">
+                <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[#FF4D00] uppercase flex items-center gap-2">
+                  <ScanLine className="w-4 h-4" /> System Audit
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                  Why you must switch to FusionEMS Quantum.
+                </h2>
+                <div className="space-y-6 text-zinc-500 text-lg leading-relaxed">
+                  <p>
+                    Most EMS agencies have accepted a <strong className="text-white">sub-50% net collection rate</strong> on private-pay statements as &quot;the cost of doing business&quot;. That is a foundational failure of legacy software.
+                  </p>
+                  <p>
+                    You are losing revenue because patient communications are manual, callback workflows are invisible, and fragmented portals cause friction that prevents payments.
+                  </p>
+                  <ul className="space-y-4 pt-4 border-t border-white/10">
+                    <li className="flex gap-4">
+                      <Crosshair className="w-6 h-6 text-red-500 shrink-0" />
+                      <span className="text-base"><strong className="text-white">AI-Driven Capture.</strong> We automate patient billing touches with aggressive, intelligent follow-ups.</span>
+                    </li>
+                    <li className="flex gap-4">
+                      <Workflow className="w-6 h-6 text-red-500 shrink-0" />
+                      <span className="text-base"><strong className="text-white">Unified Extranet.</strong> TransportLink™ removes payer friction, dramatically increasing payment completion rates.</span>
+                    </li>
+                    <li className="flex gap-4">
+                      <LockKeyhole className="w-6 h-6 text-red-500 shrink-0" />
+                      <span className="text-base"><strong className="text-white">Complete Authority.</strong> Never wonder where a claim stalled. Every interaction is mapped, transcribed, and actionable.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
 
-      <section className="rounded-2xl border border-border bg-panel p-6">
-        <div className="text-sm font-semibold">Activation Roadmap</div>
-        <div className="mt-3 grid gap-2 text-sm text-muted">
-          <div>Phase I — Revenue Infrastructure (Active)</div>
-          <div>Phase II — Clinical Documentation Activation</div>
-          <div>Phase III — Fire Reporting Activation</div>
-          <div>Phase IV — Unified Multi-Agency Deployment</div>
+              {/* ROI Calculator Component */}
+              <div className="bg-[#0a0a0c] border border-white/10 p-8 md:p-12 shadow-[0_0_50px_rgba(255,100,0,0.05)] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF4D00]/10 blur-[50px]"></div>
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-orange to-transparent"></div>
+                
+                <h3 className="text-xl font-black uppercase tracking-widest text-white mb-2">Revenue Impact Analysis</h3>
+                <p className="text-xs text-zinc-500 font-mono tracking-widest uppercase mb-10">Live Diagnostic / Private-Pay Yield</p>
+
+                <div className="space-y-8 mb-10">
+                  {/* Slider 1 */}
+                  <div>
+                    <div className="flex justify-between text-sm font-bold text-gray-300 mb-4 tracking-wide">
+                      <span>Annual Transports</span>
+                      <span className="text-[#FF4D00]">{transports.toLocaleString()}</span>
+                    </div>
+                    <input 
+                      type="range" min="1000" max="100000" step="1000" value={transports} onChange={(e) => setTransports(Number(e.target.value))}
+                      className="w-full h-1 bg-zinc-900 -none appearance-none cursor-pointer accent-orange" 
+                    />
+                  </div>
+                  {/* Slider 2 */}
+                  <div>
+                    <div className="flex justify-between text-sm font-bold text-gray-300 mb-4 tracking-wide">
+                      <span>Private Pay / Co-Pay Ratio (%)</span>
+                      <span className="text-[#FF4D00]">{privatePayRatio}%</span>
+                    </div>
+                    <input 
+                      type="range" min="5" max="50" step="1" value={privatePayRatio} onChange={(e) => setPrivatePayRatio(Number(e.target.value))}
+                      className="w-full h-1 bg-zinc-900 -none appearance-none cursor-pointer accent-orange" 
+                    />
+                  </div>
+                  {/* Slider 3 */}
+                  <div>
+                    <div className="flex justify-between text-sm font-bold text-gray-300 mb-4 tracking-wide">
+                      <span>Current Collection Rate (%)</span>
+                      <span className="text-[#FF4D00]">{collectionRate}%</span>
+                    </div>
+                    <input 
+                      type="range" min="10" max="80" step="1" value={collectionRate} onChange={(e) => setCollectionRate(Number(e.target.value))}
+                      className="w-full h-1 bg-zinc-900 -none appearance-none cursor-pointer accent-orange" 
+                    />
+                  </div>
+                </div>
+
+                <div className="p-6 bg-black border border-white/5 flex flex-col items-center justify-center text-center relative pointer-events-none">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-950/5 border border-white/10 text-[0.55rem] tracking-[0.2em] uppercase text-green-400 font-bold -mt-3">
+                    Projected Added Lift
+                  </div>
+                  <div className="text-5xl md:text-6xl font-black tracking-tighter text-white mt-4 drop-shadow-[0_0_15px_rgba(0,0,0,0.6)]">
+                    <span className="text-green-500 mr-2">+</span>
+                    ${lift.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest mt-4">Unrecovered revenue captured unconditionally</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* FOUNDER STATEMENT SECTION */}
+        <section className="py-24 relative z-20 border-b border-white/5 bg-[#101014]">
+          <div className="max-w-[1200px] mx-auto px-6 grid md:grid-cols-[1fr_2fr] gap-12">
+            <div>
+              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[#FF4D00] uppercase mb-4">Founder’s Statement</div>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-6">Built from the field, not from assumptions</h2>
+            </div>
+            <div className="space-y-6 text-zinc-500 text-lg leading-relaxed border-l border-white/10 pl-8">
+              <p>
+                As a paramedic, I saw firsthand how often public safety agencies are forced to operate on systems that are slow, fragmented, unreliable, and overly dependent on ideal conditions. In the environments where this work actually happens, connectivity is not always stable, time is limited, and every layer of friction carries operational consequences.
+              </p>
+              <p>
+                That experience led me to build FusionEMS Quantum.
+              </p>
+              <p>
+                I designed, engineered, and built FusionEMS Quantum to deliver a modern platform that is faster, more intuitive, and more resilient than the legacy systems agencies have historically been forced to tolerate. The goal is straightforward: unify billing, operations, compliance, communication, scheduling, fleet, and clinical workflows into a single platform that performs reliably in real-world conditions and scales with the demands of modern public safety organizations.
+              </p>
+              <p className="font-bold text-gray-300">
+                FusionEMS Quantum represents my belief that mission-critical agencies deserve mission-critical infrastructure.
+              </p>
+              <div className="pt-6">
+                <p className="text-white font-black tracking-wide">— Joshua Wendorf</p>
+                <p className="text-sm text-zinc-500 uppercase tracking-widest mt-1">Founder, FusionEMS Quantum</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PLATFORM MODULES SECTION */}
+        <section id="modules" className="py-32 relative z-20 border-b border-white/5 bg-[#060608]">
+          <div className="max-w-[1600px] mx-auto px-6">
+            <div className="mb-20">
+              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-zinc-500 uppercase mb-4">Platform Modules</div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-6">A unified command platform across the entire agency</h2>
+              <p className="text-xl text-zinc-500 max-w-3xl">
+                FusionEMS Quantum is not a single-feature application. It is a modular platform built to bring the operational, financial, administrative, and clinical sides of the agency into one system.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              <Link href="/billing-command" className="group border border-orange/50 bg-black/50 p-8 flex flex-col justify-start relative overflow-hidden hover:border-orange/70 transition-colors">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF4D00]/5 blur-[30px]  group-hover:bg-[#FF4D00]/10 transition-colors"></div>
+                <TechIcon icon={Database} color="text-[#FF4D00]" className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 1 — Billing Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  <strong className="text-gray-200">Active Module.</strong> Centralized billing communications, patient support, callback workflows, AI-assisted collections infrastructure, and real-time revenue visibility. Designed to reduce friction and replace fragmented patient billing.
+                </p>
+              </Link>
+
+              <Link href="/epcr" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={ClipboardList} className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 2 — ePCR / Clinical Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Field documentation, chart readiness, QA workflows, AI-assisted narrative support, validation, and structured clinical visibility. Built for faster workflows and dependable charging.
+                </p>
+              </Link>
+
+              <Link href="/fleet" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={Box} className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 3 — Fleet Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Fleet readiness, maintenance tracking, inspections, defect visibility, unit state awareness, and long-term serviceability control. Replaces fragmented vehicle readiness processes.
+                </p>
+              </Link>
+
+              <Link href="/scheduling" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={Users} className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 4 — Scheduling Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Shift planning, staffing visibility, coverage gaps, qualification awareness, schedule management, and workforce readiness. Less manual overhead, more structured control.
+                </p>
+              </Link>
+
+              <Link href="/communications" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={PhoneCall} className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 5 — Comms Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Centralized billing communications, secure workflows, AI voice, SMS, voicemail, callback logic. Communications built as infrastructure, not scattered alerts.
+                </p>
+              </Link>
+
+              <Link href="/compliance" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={ShieldCheck} className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 6 — Compliance Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Auditability, reporting readiness, structured workflows, oversight, and architecture built for long-term public safety compliance evolution.
+                </p>
+              </Link>
+
+              <Link href="/platform" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={Target} className="mb-6" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 7 — Operations Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">
+                  Operational visibility, workflow control, role-based command surfaces, and future-ready dispatch and mission coordination infrastructure.
+                </p>
+              </Link>
+
+              <Link href="/founder-command" className="group border border-white/10 bg-[#101014] p-8 flex flex-col justify-start hover:border-white/25 transition-colors">
+                <TechIcon icon={TerminalSquare} className="mb-6 z-10" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2 z-10">Module 8 — Founder Command</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed z-10">
+                  Cross-platform visibility into revenue, communications, workflow risk, implementation, and command-level decision support for executive clarity.
+                </p>
+              </Link>
+
+            </div>
+          </div>
+        </section>
+
+        {/* SECURE ACCESS SECTION (TRANSPORTLINK HIGHLIGHT) */}
+        <section className="py-32 relative z-20 border-b border-white/5 bg-[#101014]">
+          <div className="max-w-[1400px] mx-auto px-6">
+            <div className="text-center mb-16">
+              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-zinc-500 uppercase mb-4">Portals</div>
+              <h2 className="text-4xl font-black tracking-tight text-white mb-4">Role-based access into the platform</h2>
+              <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
+                FusionEMS Quantum is designed around structured entry points. No more weak links losing patient data. Network perimeters divide patient access, reps, and agency command.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* TransportLink Patient Access */}
+              <div className="border border-green-500/30 bg-[#060608] p-8 flex flex-col relative overflow-hidden group shadow-[0_0_20px_rgba(34,197,94,0.05)]">
+                <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent pointer-events-none"></div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4 relative z-10">
+                  <span className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5  bg-green-500 shadow-[0_0_5px_#22c55e]"></div>
+                    TransportLink™ Extranet
+                  </span>
+                  <LockKeyhole className="w-4 h-4 text-green-500" />
+                </h3>
+                <p className="text-sm text-zinc-500 mb-8 flex-1 relative z-10">
+                  Bank-grade secure access for statement review, payment support, and guided billing communication. Built to convert, not to frustrate.
+                </p>
+                <Link href="/patient-billing-login" className="text-xs font-bold uppercase tracking-widest text-green-500 hover:text-green-400 transition-colors flex items-center gap-2 relative z-10">
+                  Patient Bill Pay Login <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              {/* Rep Access */}
+              <div className="border border-white/10 bg-[#060608] p-8 flex flex-col group">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4">
+                  Authorized Rep Gateway
+                  <ShieldCheck className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+                </h3>
+                <p className="text-sm text-zinc-500 mb-8 flex-1">
+                  Controlled access with MFA for approved parties, guardians, and POAs supporting patient billing workflows.
+                </p>
+                <Link href="/portal/rep/login" className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors flex items-center gap-2">
+                  Submit Credentials <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              {/* Staff Access */}
+              <div className="border border-orange/30 bg-[#060608] p-8 flex flex-col relative group">
+                <div className="absolute inset-0 bg-[#FF4D00]/5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4">
+                  Facility TransportLink
+                  <Server className="w-4 h-4 text-[#FF4D00]" />
+                </h3>
+                <p className="text-sm text-zinc-500 mb-8 flex-1">
+                  Dedicated login for hospital and assisted living teams to request and manage transport operations.
+                </p>
+                <Link href="/facility-transport-login" className="text-xs font-bold uppercase tracking-widest text-[#FF4D00] hover:text-[#ff7a00] transition-colors flex items-center gap-2">
+                  Facility Login <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* VISION SECTION */}
+        <section id="vision" className="py-32 relative z-20 border-b border-white/5 bg-[#060608]">
+          <div className="max-w-[1000px] mx-auto px-6 text-center">
+            <div className="text-[0.65rem] font-bold tracking-[0.2em] text-zinc-500 uppercase mb-4">The broader vision</div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-8">
+              A full operating system for modern public safety operations
+            </h2>
+            <div className="text-xl text-zinc-500 leading-relaxed space-y-6 font-medium">
+              <p>
+                FusionEMS Quantum begins with Billing Command, but the long-term vision is broader: a unified system that connects patient-facing revenue workflows, clinical documentation, operational oversight, fleet readiness, workforce scheduling, communications, compliance, and founder-level command into one modern platform.
+              </p>
+              <p className="text-white">
+                This is not a replacement for one small tool. It is an effort to replace the fragmentation that agencies have had to tolerate for years.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/10 bg-[#030304] py-12 relative z-20">
+        <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="text-[1rem] font-black tracking-[0.25em] text-white uppercase leading-none drop-shadow-[0_0_15px_rgba(0,0,0,0.6)]">
+              FUSIONEMS
+            </div>
+          </div>
+          <div className="text-xs font-bold tracking-[0.15em] text-gray-600 uppercase">
+            © {new Date().getFullYear()} FusionEMS Quantum. All rights reserved.
+          </div>
+          <div className="flex gap-8 text-[0.65rem] font-bold tracking-[0.15em] text-zinc-500 uppercase">
+            <Link href="/login" className="hover:text-white transition-colors">Core</Link>
+            <span className="text-white/10">|</span>
+            <span className="text-gray-700">Mission Critical Infrastructure</span>
+          </div>
         </div>
-      </section>
-      </div>
-    </AppShell>
+      </footer>
+    </div>
   );
 }

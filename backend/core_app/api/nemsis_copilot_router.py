@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+# pylint: disable=unused-argument
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, get_current_user
+from core_app.api.dependencies import get_current_user
 from core_app.nemsis.copilot import NEMSISCopilot
 from core_app.schemas.auth import CurrentUser
 
@@ -21,7 +21,6 @@ def _check_role(current: CurrentUser) -> None:
 async def explain_issues(
     payload: dict[str, Any],
     current: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(db_session_dependency),
 ):
     _check_role(current)
     issues = payload.get("issues", [])

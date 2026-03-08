@@ -1,11 +1,14 @@
 import logging
 import os
 
+# pylint: disable=broad-exception-caught
 import redis.asyncio as aioredis
 import sqlalchemy
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from redis.exceptions import RedisError
+from sqlalchemy.exc import SQLAlchemyError
 
 from core_app.core.config import get_settings
 from core_app.core.errors import AppError
@@ -380,7 +383,7 @@ async def healthz() -> JSONResponse:
         async with async_engine.connect() as conn:
             await conn.execute(sqlalchemy.text("SELECT 1"))
         checks["db"] = "ok"
-    except Exception:
+    except (SQLAlchemyError, OSError, TimeoutError):
         checks["db"] = "unreachable"
 
     # Redis check
@@ -391,7 +394,7 @@ async def healthz() -> JSONResponse:
                 await r.ping()
             redis_ok = True
             checks["redis"] = "ok"
-        except Exception:
+        except (RedisError, OSError, TimeoutError):
             checks["redis"] = "unreachable"
             warnings["redis"] = "unreachable"
     else:

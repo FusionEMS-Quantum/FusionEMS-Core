@@ -1,5 +1,9 @@
+# ruff: noqa: I001
+
 from datetime import datetime
 from enum import StrEnum
+
+# pylint: disable=unsubscriptable-object
 
 from sqlalchemy import Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID

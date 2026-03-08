@@ -24,11 +24,20 @@ function LoginPageInner() {
 
   useEffect(() => {
     const ssoError = searchParams.get('error');
-    if (ssoError === 'entra_denied') {
-      setError('Microsoft login was denied. Contact your administrator.');
-    } else if (ssoError === 'no_account') {
-      setError('No FusionEMS account is linked to that Microsoft identity.');
+    if (!ssoError) {
+      return;
     }
+
+    const ssoErrorMessages: Record<string, string> = {
+      entra_denied: 'Microsoft login was denied. Contact your administrator.',
+      no_account: 'No FusionEMS account is linked to that Microsoft identity.',
+      entra_not_configured: 'Microsoft login is temporarily unavailable. Your administrator must complete Entra configuration.',
+    };
+
+    setError(
+      ssoErrorMessages[ssoError]
+        ?? 'Microsoft login could not be completed. Please retry or contact your administrator.'
+    );
   }, [searchParams]);
 
   const handleTabChange = useCallback((key: TabKey) => {
@@ -71,13 +80,13 @@ function LoginPageInner() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: 'var(--color-bg-void)' }}
+      style={{ backgroundColor: '#000000' }}
     >
       {/* Login panel */}
       <div
         className="w-full max-w-md chamfer-12 border shadow-[var(--elevation-3)]"
         style={{
-          backgroundColor: 'var(--color-bg-panel)',
+          backgroundColor: '#0A0A0B',
           borderColor:     'var(--color-border-default)',
         }}
       >
@@ -90,7 +99,7 @@ function LoginPageInner() {
             <div
               className="chamfer-4 flex h-8 w-8 items-center justify-center"
               style={{
-                backgroundColor: 'var(--color-brand-orange)',
+                backgroundColor: '#FF4D00',
                 color:           'var(--color-text-inverse)',
                 fontFamily:      'var(--font-label)',
                 fontSize:        'var(--text-label)',
@@ -159,7 +168,7 @@ function LoginPageInner() {
                       className="absolute bottom-0 left-0 right-0"
                       style={{
                         height:          2,
-                        backgroundColor: 'var(--color-brand-orange)',
+                        backgroundColor: '#FF4D00',
                       }}
                     />
                   )}

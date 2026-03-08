@@ -10,7 +10,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
       <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-body text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-zinc-500">{sub}</p>}
     </div>
   );
 }
@@ -18,7 +18,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className}`}
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
       {children}
@@ -48,9 +48,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -58,9 +58,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
+    <div className="h-2  bg-zinc-950/[0.07] overflow-hidden w-full">
       <div
-        className="h-full rounded-full transition-all duration-700"
+        className="h-full  transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
       />
     </div>
@@ -105,14 +105,14 @@ const featureFlags = [
 
 export default function DeploymentPage() {
   return (
-    <div className="p-5 min-h-screen bg-bg-void">
+    <div className="p-5 min-h-screen bg-black">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
         <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">PWA Deployment Monitor</h1>
-        <p className="text-xs text-text-muted mt-1">Release pipeline · Version distribution · Device update tracking</p>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">PWA Deployment Monitor</h1>
+        <p className="text-xs text-zinc-500 mt-1">Release pipeline · Version distribution · Device update tracking</p>
       </motion.div>
 
       {/* MODULE 1 — Deployment Status */}
@@ -135,7 +135,7 @@ export default function DeploymentPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-text-muted border-b border-border-subtle">
+                <tr className="text-zinc-500 border-b border-border-subtle">
                   {['Version', 'Device Count', 'Percentage', 'Status'].map(h => (
                     <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
@@ -144,14 +144,14 @@ export default function DeploymentPage() {
               <tbody>
                 {versionDist.map((row, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-3 pr-6 text-text-primary font-bold font-mono">{row.version}</td>
-                    <td className="py-3 pr-6 text-text-primary">{row.devices} devices</td>
+                    <td className="py-3 pr-6 text-zinc-100 font-bold font-mono">{row.version}</td>
+                    <td className="py-3 pr-6 text-zinc-100">{row.devices} devices</td>
                     <td className="py-3 pr-6">
                       <div className="flex items-center gap-3">
                         <div className="w-24">
                           <ProgressBar value={parseFloat(row.pct)} max={100} color={badgeColors[row.status].color} />
                         </div>
-                        <span className="text-text-secondary">{row.pct}</span>
+                        <span className="text-zinc-400">{row.pct}</span>
                       </div>
                     </td>
                     <td className="py-3"><Badge label={row.status === 'ok' ? 'Current' : row.status === 'warn' ? 'Outdated' : 'Legacy'} status={row.status} /></td>
@@ -169,12 +169,12 @@ export default function DeploymentPage() {
         <Panel>
           <div className="relative">
             {/* connector line */}
-            <div className="absolute left-[15px] top-4 bottom-4 w-px bg-white/[0.08]" />
+            <div className="absolute left-[15px] top-4 bottom-4 w-px bg-zinc-950/[0.08]" />
             <div className="space-y-0">
               {pipeline.map((step, i) => (
                 <div key={i} className="flex items-start gap-4 py-3 border-b border-border-subtle last:border-0">
                   <div
-                    className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-micro font-black border-2 z-10"
+                    className="w-8 h-8  shrink-0 flex items-center justify-center text-micro font-black border-2 z-10"
                     style={{
                       background: 'var(--q-surface)',
                       borderColor: badgeColors[step.status].color,
@@ -185,11 +185,11 @@ export default function DeploymentPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-0.5">
-                      <span className="text-xs font-bold text-text-primary uppercase tracking-widest">{step.stage}</span>
+                      <span className="text-xs font-bold text-zinc-100 uppercase tracking-widest">{step.stage}</span>
                       <Badge label={step.status === 'ok' ? 'Passed' : step.status === 'warn' ? 'Warning' : 'Failed'} status={step.status} />
                     </div>
-                    <div className="text-micro text-text-muted">{step.note}</div>
-                    <div className="text-micro text-text-muted font-mono mt-0.5">{step.ts}</div>
+                    <div className="text-micro text-zinc-500">{step.note}</div>
+                    <div className="text-micro text-zinc-500 font-mono mt-0.5">{step.ts}</div>
                   </div>
                 </div>
               ))}
@@ -205,7 +205,7 @@ export default function DeploymentPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-text-muted border-b border-border-subtle">
+                <tr className="text-zinc-500 border-b border-border-subtle">
                   {['Device ID', 'Version', 'Last Seen', 'Update Status'].map(h => (
                     <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
@@ -214,9 +214,9 @@ export default function DeploymentPage() {
               <tbody>
                 {deviceUpdates.map((d, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-2.5 pr-6 text-text-primary font-mono font-bold">{d.id}</td>
-                    <td className="py-2.5 pr-6 text-text-primary font-mono">{d.version}</td>
-                    <td className="py-2.5 pr-6 text-text-secondary">{d.lastSeen}</td>
+                    <td className="py-2.5 pr-6 text-zinc-100 font-mono font-bold">{d.id}</td>
+                    <td className="py-2.5 pr-6 text-zinc-100 font-mono">{d.version}</td>
+                    <td className="py-2.5 pr-6 text-zinc-400">{d.lastSeen}</td>
                     <td className="py-2.5">
                       <Badge
                         label={d.updateStatus === 'ok' ? 'Up to date' : d.updateStatus === 'warn' ? 'Update available' : 'Needs update'}
@@ -237,7 +237,7 @@ export default function DeploymentPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {featureFlags.map((flag, i) => (
             <Panel key={i} className="flex items-center justify-between">
-              <span className="text-xs font-medium text-text-primary">{flag.name}</span>
+              <span className="text-xs font-medium text-zinc-100">{flag.name}</span>
               <Badge label={flag.enabled ? 'Enabled' : 'Disabled'} status={flag.enabled ? 'ok' : 'error'} />
             </Panel>
           ))}
@@ -254,7 +254,7 @@ export default function DeploymentPage() {
         </div>
       </motion.div>
 
-      <Link href="/founder" className="text-xs text-orange-dim hover:text-orange transition-colors">
+      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00] transition-colors">
         &larr; Back to Founder Command OS
       </Link>
     </div>

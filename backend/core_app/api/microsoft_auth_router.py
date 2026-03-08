@@ -37,52 +37,89 @@ _TOKEN_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
 _USERINFO_URL = "https://graph.microsoft.com/v1.0/me"
 _LOGOUT_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/logout"
 _SCOPES = "openid email profile User.Read"
+_ALLOWED_LOGIN_INTENTS: tuple[str, ...] = ("default", "founder")
 
 _STATE_TTL_SECONDS = 600
 
 
-def _sign_state(nonce: str) -> str:
+def _normalize_intent(intent: str) -> str:
+    normalized = intent.strip().lower()
+    if normalized not in _ALLOWED_LOGIN_INTENTS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported login intent '{intent}'",
+        )
+    return normalized
+
+
+def _sign_state(intent: str) -> str:
     s = get_settings()
-    payload = f"{nonce}|{int(__import__('time').time())}"
+    payload = f"{secrets.token_hex(16)}|{int(time.time())}|{intent}"
     sig = hmac.new(
         str(s.jwt_secret_key).encode(), payload.encode(), hashlib.sha256
     ).hexdigest()
     return f"{payload}|{sig}"
 
 
-def _verify_state(state: str) -> bool:
+def _verify_state(state: str) -> str | None:
     s = get_settings()
     parts = state.split("|")
-    if len(parts) != 3:
-        return False
-    nonce, ts_str, sig = parts
+    if len(parts) != 4:
+        return None
+    nonce, ts_str, intent, sig = parts
+    if intent not in _ALLOWED_LOGIN_INTENTS:
+        return None
     try:
         ts = int(ts_str)
     except ValueError:
-        return False
+        return None
     if abs(time.time() - ts) > _STATE_TTL_SECONDS:
-        return False
-    expected_payload = f"{nonce}|{ts_str}"
+        return None
+    expected_payload = f"{nonce}|{ts_str}|{intent}"
     expected_sig = hmac.new(
         str(s.jwt_secret_key).encode(), expected_payload.encode(), hashlib.sha256
     ).hexdigest()
-    return hmac.compare_digest(sig, expected_sig)
+    if not hmac.compare_digest(sig, expected_sig):
+        return None
+    return intent
 
 
-def _check_entra_configured() -> None:
+def _append_query_param(base_url: str, key: str, value: str) -> str:
+    parsed = urllib.parse.urlsplit(base_url)
+    query_pairs = [
+        (k, v)
+        for k, v in urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+        if k != key
+    ]
+    query_pairs.append((key, value))
+    updated_query = urllib.parse.urlencode(query_pairs)
+    return urllib.parse.urlunsplit(
+        (parsed.scheme, parsed.netloc, parsed.path, updated_query, parsed.fragment)
+    )
+
+
+def _is_entra_configured() -> bool:
     s = get_settings()
-    if not all([s.graph_tenant_id, s.graph_client_id, s.graph_client_secret]):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Microsoft Entra login is not configured",
-        )
+    return bool(all([s.graph_tenant_id, s.graph_client_id, s.graph_client_secret]))
+
+
+def _redirect_auth_unavailable(*, intent: str | None = None) -> RedirectResponse:
+    s = get_settings()
+    redirect_url = _append_query_param(s.microsoft_post_logout_url, "error", "entra_not_configured")
+    if intent:
+        redirect_url = _append_query_param(redirect_url, "intent", intent)
+    return RedirectResponse(url=redirect_url, status_code=302)
 
 
 @router.get("/login")
-def microsoft_login() -> RedirectResponse:
-    _check_entra_configured()
+def microsoft_login(intent: str = Query(default="default")) -> RedirectResponse:
+    normalized_intent = _normalize_intent(intent)
+    if not _is_entra_configured():
+        logger.warning("entra_login_unavailable reason=missing_configuration intent=%s", normalized_intent)
+        return _redirect_auth_unavailable(intent=normalized_intent)
+
     s = get_settings()
-    state = _sign_state(secrets.token_hex(16))
+    state = _sign_state(normalized_intent)
     params = {
         "client_id": s.graph_client_id,
         "response_type": "code",
@@ -169,7 +206,10 @@ def microsoft_callback(
     state: str = Query(default=""),
     db: Session = Depends(db_session_dependency),
 ) -> RedirectResponse:
-    _check_entra_configured()
+    if not _is_entra_configured():
+        logger.warning("entra_callback_unavailable reason=missing_configuration")
+        return _redirect_auth_unavailable()
+
     s = get_settings()
 
     if error:
@@ -186,7 +226,8 @@ def microsoft_callback(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code"
         )
 
-    if not _verify_state(state):
+    verified_intent = _verify_state(state)
+    if verified_intent is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired state parameter",
@@ -224,13 +265,21 @@ def microsoft_callback(
     jwt_token = create_access_token(str(user.id), str(user.tenant_id), user.role or "")
     logger.info("entra_login_success user_id=%s email=%s", user.id, email)
 
-    redirect_url = f"{s.microsoft_post_login_url}?token={jwt_token}"
+    post_login_target = (
+        s.microsoft_founder_post_login_url
+        if verified_intent == "founder"
+        else s.microsoft_post_login_url
+    )
+    redirect_url = _append_query_param(post_login_target, "token", jwt_token)
     return RedirectResponse(url=redirect_url, status_code=302)
 
 
 @router.get("/logout")
 def microsoft_logout() -> RedirectResponse:
-    _check_entra_configured()
+    if not _is_entra_configured():
+        logger.warning("entra_logout_unavailable reason=missing_configuration")
+        return _redirect_auth_unavailable()
+
     s = get_settings()
     params = {
         "post_logout_redirect_uri": s.microsoft_post_logout_url,

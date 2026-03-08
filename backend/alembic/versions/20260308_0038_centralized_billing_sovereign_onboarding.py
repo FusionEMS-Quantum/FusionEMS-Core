@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+# pylint: disable=no-member
 """centralized billing + sovereign onboarding schema
 
 Revision ID: 20260308_0038
@@ -7,8 +9,12 @@ Create Date: 2026-03-08
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import sqlalchemy as sa
-from alembic import op
+from alembic import op as alembic_op
+
+op = cast(Any, alembic_op)
 
 
 revision = "20260308_0038"

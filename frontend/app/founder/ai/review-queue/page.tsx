@@ -9,6 +9,7 @@ import {
   ErrorState,
   QuantumCardSkeleton,
   QuantumEmptyState,
+  QuantumModal,
   ReviewRequiredBanner,
   SeverityBadge,
   StatusChip,
@@ -60,6 +61,9 @@ export default function AiReviewQueuePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectReasonError, setRejectReasonError] = useState('');
 
   const fetchQueue = useCallback(() => {
     setLoading(true);
@@ -84,12 +88,36 @@ export default function AiReviewQueuePage() {
     }
   }
 
-  async function handleReject(id: string) {
-    const reason = prompt('Rejection reason:');
-    if (!reason) return;
-    setActionLoading(id);
+  function openRejectModal(id: string) {
+    setRejectTargetId(id);
+    setRejectReason('');
+    setRejectReasonError('');
+  }
+
+  function closeRejectModal(force = false) {
+    if (actionLoading && !force) {
+      return;
+    }
+    setRejectTargetId(null);
+    setRejectReason('');
+    setRejectReasonError('');
+  }
+
+  async function submitReject() {
+    if (!rejectTargetId) {
+      return;
+    }
+
+    const trimmedReason = rejectReason.trim();
+    if (trimmedReason.length < 5) {
+      setRejectReasonError('Please provide at least 5 characters for the rejection reason.');
+      return;
+    }
+
+    setActionLoading(rejectTargetId);
     try {
-      await rejectAIReview(id, reason);
+      await rejectAIReview(rejectTargetId, trimmedReason);
+      closeRejectModal(true);
       fetchQueue();
     } catch {
       setError('Failed to reject item.');
@@ -127,13 +155,13 @@ export default function AiReviewQueuePage() {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.03 }}
-          className="bg-bg-panel border border-[var(--color-border-default)] p-4 chamfer-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+          className="bg-[#0A0A0B] border border-[var(--color-border-default)] p-4 chamfer-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <SeverityBadge severity={prioritySeverity(item.priority)} size="sm" label={item.priority} />
             <div className="min-w-0">
-              <div className="text-sm font-bold text-text-primary truncate">{item.review_type}</div>
-              <div className="text-micro text-text-muted">
+              <div className="text-sm font-bold text-zinc-100 truncate">{item.review_type}</div>
+              <div className="text-micro text-zinc-500">
                 Workflow: <span className="font-mono">{item.workflow_id.slice(0, 8)}</span>
                 {' · '}
                 {new Date(item.created_at).toLocaleString()}
@@ -157,7 +185,7 @@ export default function AiReviewQueuePage() {
                   Approve
                 </button>
                 <button
-                  onClick={() => handleReject(item.id)}
+                  onClick={() => openRejectModal(item.id)}
                   disabled={actionLoading === item.id}
                   className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-red-500/10 disabled:opacity-50"
                   style={{ color: 'var(--color-brand-red)', borderColor: 'rgba(255,45,45,0.35)' }}
@@ -187,17 +215,67 @@ export default function AiReviewQueuePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={fetchQueue}
-              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-orange border-orange/30 hover:bg-orange-ghost transition-colors"
+              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-[#FF4D00] border-orange/30 hover:bg-[#FF4D00]-ghost transition-colors"
             >
               Refresh
             </button>
-            <Link href="/founder/ai" className="text-micro uppercase tracking-widest text-text-muted hover:text-orange">
+            <Link href="/founder/ai" className="text-micro uppercase tracking-widest text-zinc-500 hover:text-[#FF4D00]">
               Back to AI Governance
             </Link>
           </div>
         )}
         list={listContent}
       />
-      </div>
+
+      <QuantumModal
+        open={rejectTargetId !== null}
+        onClose={closeRejectModal}
+        title="Reject AI Review"
+        size="md"
+        footer={(
+          <>
+            <button
+              onClick={() => closeRejectModal()}
+              disabled={Boolean(actionLoading)}
+              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-zinc-500 border-border-DEFAULT hover:bg-bg-overlay transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={submitReject}
+              disabled={Boolean(actionLoading)}
+              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 disabled:opacity-50"
+              style={{ color: 'var(--color-brand-red)', borderColor: 'rgba(255,45,45,0.35)' }}
+            >
+              {actionLoading ? 'Rejecting...' : 'Confirm Reject'}
+            </button>
+          </>
+        )}
+      >
+        <div className="space-y-2">
+          <label className="text-micro uppercase tracking-widest text-zinc-500 block" htmlFor="reject-reason">
+            Rejection reason
+          </label>
+          <textarea
+            id="reject-reason"
+            value={rejectReason}
+            onChange={(event) => {
+              setRejectReason(event.target.value);
+              if (rejectReasonError) {
+                setRejectReasonError('');
+              }
+            }}
+            rows={4}
+            className="w-full bg-black border border-border-DEFAULT p-3 text-xs text-zinc-100 resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
+            placeholder="Describe why this AI decision is being rejected..."
+          />
+          {rejectReasonError && (
+            <p className="text-micro" style={{ color: 'var(--color-brand-red)' }}>
+              {rejectReasonError}
+            </p>
+          )}
+        </div>
+      </QuantumModal>
+    </div>
   );
 }

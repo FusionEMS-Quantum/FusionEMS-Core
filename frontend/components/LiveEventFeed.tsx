@@ -44,7 +44,7 @@ function EventBadge({ event }: EventBadgeProps) {
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: -40, scale: 0.95 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={`border-l-2 ${color} bg-panel rounded-lg px-3 py-2 flex items-start gap-3 text-sm`}
+      className={`border-l-2 ${color} bg-panel  px-3 py-2 flex items-start gap-3 text-sm`}
     >
       <span className="text-base mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
@@ -62,7 +62,7 @@ function EventBadge({ event }: EventBadgeProps) {
         initial={{ scale: 1.5, opacity: 1 }}
         animate={{ scale: 1, opacity: 0 }}
         transition={{ duration: 1.5, delay: 0.2 }}
-        className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0 mt-1.5"
+        className="w-1.5 h-1.5  bg-blue-400 flex-shrink-0 mt-1.5"
       />
     </motion.div>
   );
@@ -115,7 +115,7 @@ export function LiveEventFeed({
         <motion.div
           animate={{ scale: connected ? [1, 1.3, 1] : 1 }}
           transition={{ repeat: connected ? Infinity : 0, duration: 2 }}
-          className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}
+          className={`w-2 h-2  ${connected ? 'bg-green-500' : 'bg-red-500'}`}
         />
         <span className="text-xs text-slate-400">
           {connected ? 'Live' : 'Reconnecting...'}

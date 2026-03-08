@@ -1,3 +1,4 @@
+# pyright: reportGeneralTypeIssues=false
 """Platform Core Directive — Complete tenant lifecycle, user provisioning,
 implementation, feature flags, release/environment, system configuration tables.
 
@@ -5,6 +6,7 @@ Revision ID: 20260310_0034
 Revises: ai_gap_tables_001, 20260308_0032, 20260309_0033
 Create Date: 2026-03-10
 """
+# pylint: disable=no-member,not-callable
 from typing import Any
 
 from alembic import op

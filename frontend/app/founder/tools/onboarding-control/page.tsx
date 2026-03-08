@@ -55,7 +55,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-[0_0_15px_rgba(0,0,0,0.6)]"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -138,7 +138,7 @@ function ConfirmModal({
   title,
   message,
   confirmLabel,
-  confirmColor = 'var(--color-brand-orange)',
+  confirmColor = '#FF4D00',
   children,
   onConfirm,
   onCancel,
@@ -147,22 +147,22 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.6)' }}>
       <div
-        className="bg-bg-base border border-white/[0.12] chamfer-4 p-5 w-full max-w-sm shadow-2xl"
+        className="bg-[#050505] border border-white/[0.12] chamfer-4 p-5 w-full max-w-sm shadow-[0_0_15px_rgba(0,0,0,0.6)]"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.7)' }}
       >
-        <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary mb-2">{title}</h3>
-        <p className="text-body text-text-secondary mb-4 leading-relaxed">{message}</p>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-100 mb-2">{title}</h3>
+        <p className="text-body text-zinc-400 mb-4 leading-relaxed">{message}</p>
         {children && <div className="mb-4">{children}</div>}
         {title.toLowerCase().includes('revoke') && (
           <div className="mb-4">
-            <label className="text-micro uppercase tracking-wider text-text-muted block mb-1">
+            <label className="text-micro uppercase tracking-wider text-zinc-500 block mb-1">
               Reason (required)
             </label>
             <input
               value={extra}
               onChange={(e) => setExtra(e.target.value)}
               placeholder="Enter revocation reason…"
-              className="w-full bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-muted"
+              className="w-full bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-zinc-500"
             />
           </div>
         )}
@@ -224,19 +224,19 @@ function DetailDrawer({
       onClick={onClose}
     >
       <div
-        className="bg-bg-base border-l border-border-DEFAULT h-full overflow-y-auto flex flex-col"
+        className="bg-[#050505] border-l border-border-DEFAULT h-full overflow-y-auto flex flex-col"
         style={{ width: 400 }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer header */}
         <div className="px-5 py-4 border-b border-border-DEFAULT flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">Application Detail</h2>
-            <p className="text-micro text-text-muted mt-0.5">{app.agency_name}</p>
+            <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">Application Detail</h2>
+            <p className="text-micro text-zinc-500 mt-0.5">{app.agency_name}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary transition-colors text-lg leading-none"
+            className="text-zinc-500 hover:text-zinc-100 transition-colors text-lg leading-none"
           >
             ✕
           </button>
@@ -245,16 +245,16 @@ function DetailDrawer({
         <div className="flex-1 px-5 py-4 space-y-5">
           {/* Fields */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">
               Application Data
             </p>
             <div className="space-y-2.5">
               {fields.map(({ label, value }) => (
                 <div key={label} className="flex items-start justify-between gap-3">
-                  <span className="text-micro uppercase tracking-wider text-text-muted flex-shrink-0 mt-0.5">
+                  <span className="text-micro uppercase tracking-wider text-zinc-500 flex-shrink-0 mt-0.5">
                     {label}
                   </span>
-                  <span className="text-xs text-text-primary text-right font-mono break-all">
+                  <span className="text-xs text-zinc-100 text-right font-mono break-all">
                     {value}
                   </span>
                 </div>
@@ -265,24 +265,24 @@ function DetailDrawer({
           {/* Status */}
           <div className="flex items-center justify-between py-3 border-y border-border-subtle">
             <div className="flex flex-col gap-1.5">
-              <span className="text-micro uppercase tracking-wider text-text-muted">Status</span>
+              <span className="text-micro uppercase tracking-wider text-zinc-500">Status</span>
               <StatusBadge status={app.status} />
             </div>
             <div className="flex flex-col gap-1.5 items-end">
-              <span className="text-micro uppercase tracking-wider text-text-muted">Legal</span>
+              <span className="text-micro uppercase tracking-wider text-zinc-500">Legal</span>
               <LegalBadge legalStatus={app.legal_status} />
             </div>
           </div>
 
           {/* Sign Events Timeline */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">
               Legal Packet Sign Events
             </p>
             {loadingEvents ? (
-              <p className="text-body text-text-muted">Loading events…</p>
+              <p className="text-body text-zinc-500">Loading events…</p>
             ) : signEvents.length === 0 ? (
-              <p className="text-body text-text-muted">No sign events recorded</p>
+              <p className="text-body text-zinc-500">No sign events recorded</p>
             ) : (
               <div className="space-y-2">
                 {signEvents.map((ev, i) => (
@@ -292,8 +292,8 @@ function DetailDrawer({
                   >
                     <div className="flex flex-col items-center pt-1">
                       <span
-                        className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ background: i === 0 ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.2)' }}
+                        className="w-2 h-2  flex-shrink-0"
+                        style={{ background: i === 0 ? '#FF4D00' : 'rgba(255,255,255,0.2)' }}
                       />
                       {i < signEvents.length - 1 && (
                         <span
@@ -303,15 +303,15 @@ function DetailDrawer({
                       )}
                     </div>
                     <div className="pb-1">
-                      <p className="text-body font-semibold text-text-primary uppercase tracking-wide">
+                      <p className="text-body font-semibold text-zinc-100 uppercase tracking-wide">
                         {ev.event_type}
                       </p>
                       {ev.signer_name && (
-                        <p className="text-micro text-text-muted">
+                        <p className="text-micro text-zinc-500">
                           {ev.signer_name}{ev.signer_email ? ` · ${ev.signer_email}` : ''}
                         </p>
                       )}
-                      <p className="text-micro font-mono text-text-muted">
+                      <p className="text-micro font-mono text-zinc-500">
                         {new Date(ev.occurred_at).toLocaleString()}
                       </p>
                     </div>
@@ -323,7 +323,7 @@ function DetailDrawer({
 
           {/* Action buttons repeated */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">
               Actions
             </p>
             <div className="flex flex-wrap gap-2">
@@ -349,7 +349,7 @@ function DetailDrawer({
                 <button
                   onClick={() => onManualProvision(app)}
                   className="h-7 px-3 text-micro font-semibold uppercase tracking-wider chamfer-4"
-                  style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)', color: 'var(--q-orange)' }}
+                  style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF4D00' }}
                 >
                   Manual Provision
                 </button>
@@ -532,7 +532,7 @@ export default function OnboardingControlPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-5">
+    <div className="min-h-screen bg-black text-zinc-100 p-5">
       <Toast items={toasts} />
 
       {/* Confirm modal */}
@@ -545,7 +545,7 @@ export default function OnboardingControlPage() {
               : `Permanently revoke access for "${confirm.app.agency_name}"? This action cannot be undone.`
           }
           confirmLabel={confirm.type === 'provision' ? 'Provision' : 'Revoke'}
-          confirmColor={confirm.type === 'provision' ? 'var(--color-brand-orange)' : 'var(--color-brand-red)'}
+          confirmColor={confirm.type === 'provision' ? '#FF4D00' : 'var(--color-brand-red)'}
           onCancel={() => setConfirm(null)}
           onConfirm={(extra) => {
             if (!actionLoading) handleConfirm(extra);
@@ -569,13 +569,13 @@ export default function OnboardingControlPage() {
 
       {/* Page header */}
       <div className="mb-5">
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">
           FOUNDER TOOLS · ONBOARDING
         </div>
-        <h1 className="text-lg font-black uppercase tracking-wider text-text-primary">
+        <h1 className="text-lg font-black uppercase tracking-wider text-zinc-100">
           ONBOARDING CONTROL
         </h1>
-        <p className="text-xs text-text-muted mt-0.5">
+        <p className="text-xs text-zinc-500 mt-0.5">
           Application management · provisioning · legal · status control
         </p>
       </div>
@@ -590,9 +590,9 @@ export default function OnboardingControlPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-bg-base border border-border-DEFAULT chamfer-4 p-3"
+            className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-3"
           >
-            <div className="text-[9px] uppercase tracking-widest text-text-muted mb-1">
+            <div className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">
               {s.label}
             </div>
             <div className="text-2xl font-bold" style={{ color: s.color }}>
@@ -607,11 +607,11 @@ export default function OnboardingControlPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40"
+          className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40"
           style={{ minWidth: 150 }}
         >
           {STATUS_OPTS.map((o) => (
-            <option key={o.value} value={o.value} className="bg-bg-base">
+            <option key={o.value} value={o.value} className="bg-[#050505]">
               {o.label}
             </option>
           ))}
@@ -620,16 +620,16 @@ export default function OnboardingControlPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by email or agency…"
-          className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-disabled"
+          className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-disabled"
           style={{ minWidth: 220 }}
         />
-        <span className="text-micro text-text-muted ml-auto">
+        <span className="text-micro text-zinc-500 ml-auto">
           {apps.length} application{apps.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       {/* Table */}
-      <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-x-auto">
+      <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 overflow-x-auto">
         <table className="w-full text-xs min-w-[860px]">
           <thead>
             <tr className="border-b border-white/[0.07]">
@@ -645,7 +645,7 @@ export default function OnboardingControlPage() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="text-left py-2.5 px-3 text-[9px] uppercase tracking-wider text-text-muted font-semibold whitespace-nowrap"
+                  className="text-left py-2.5 px-3 text-[9px] uppercase tracking-wider text-zinc-500 font-semibold whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -655,14 +655,14 @@ export default function OnboardingControlPage() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-body text-text-muted">
+                <td colSpan={8} className="py-10 text-center text-body text-zinc-500">
                   Loading…
                 </td>
               </tr>
             )}
             {!loading && apps.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-body text-text-muted">
+                <td colSpan={8} className="py-10 text-center text-body text-zinc-500">
                   No applications found
                 </td>
               </tr>
@@ -671,18 +671,18 @@ export default function OnboardingControlPage() {
               apps.map((app) => (
                 <tr
                   key={app.id}
-                  className="border-b border-border-subtle hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-border-subtle hover:bg-zinc-950/[0.02] transition-colors"
                 >
-                  <td className="py-2.5 px-3 font-medium text-text-primary whitespace-nowrap">
+                  <td className="py-2.5 px-3 font-medium text-zinc-100 whitespace-nowrap">
                     {app.agency_name}
                   </td>
-                  <td className="py-2.5 px-3 text-text-secondary font-mono">
+                  <td className="py-2.5 px-3 text-zinc-400 font-mono">
                     {app.contact_email}
                   </td>
-                  <td className="py-2.5 px-3 text-text-secondary uppercase">
+                  <td className="py-2.5 px-3 text-zinc-400 uppercase">
                     {app.state}
                   </td>
-                  <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-zinc-400 whitespace-nowrap">
                     {app.plan}
                   </td>
                   <td className="py-2.5 px-3">
@@ -691,7 +691,7 @@ export default function OnboardingControlPage() {
                   <td className="py-2.5 px-3">
                     <LegalBadge legalStatus={app.legal_status} />
                   </td>
-                  <td className="py-2.5 px-3 font-mono text-text-muted whitespace-nowrap">
+                  <td className="py-2.5 px-3 font-mono text-zinc-500 whitespace-nowrap">
                     {new Date(app.created_at).toLocaleDateString()}
                   </td>
                   <td className="py-2.5 px-3">
@@ -727,7 +727,7 @@ export default function OnboardingControlPage() {
                         <Tooltip label="Manual Provision">
                           <IconBtn
                             onClick={() => doManualProvision(app)}
-                            color="var(--color-brand-orange)"
+                            color="#FF4D00"
                             bg="rgba(255,107,26,0.1)"
                             border="rgba(255,107,26,0.25)"
                           >

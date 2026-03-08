@@ -45,29 +45,29 @@ export function NextBestActionCard({
   return (
     <div
       className={cn(
-        'bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4',
+        'bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4',
         className
       )}
     >
-      <h3 className="font-label text-label uppercase tracking-wider text-text-secondary mb-3">
+      <h3 className="font-label text-label uppercase tracking-wider text-zinc-400 mb-3">
         {title}
         {actions.length > 0 && (
-          <span className="text-text-muted ml-2">({actions.length})</span>
+          <span className="text-zinc-500 ml-2">({actions.length})</span>
         )}
       </h3>
 
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2].map(i => (
-            <div key={i} className="animate-pulse p-3 bg-bg-base rounded space-y-2">
-              <div className="h-3 w-2/3 bg-bg-overlay rounded" />
-              <div className="h-2 w-1/2 bg-bg-overlay rounded" />
+            <div key={i} className="animate-pulse p-3 bg-[#050505]  space-y-2">
+              <div className="h-3 w-2/3 bg-bg-overlay " />
+              <div className="h-2 w-1/2 bg-bg-overlay " />
             </div>
           ))}
         </div>
       ) : visible.length === 0 ? (
         <div className="text-center py-6">
-          <p className="text-body text-text-muted">No actions required right now.</p>
+          <p className="text-body text-zinc-500">No actions required right now.</p>
           <p className="text-label text-text-disabled mt-1">You are up to date.</p>
         </div>
       ) : (
@@ -97,23 +97,23 @@ function NextActionItem({ action }: { readonly action: NextAction }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {action.icon}
-            <span className="text-body text-text-primary font-medium truncate">
+            <span className="text-body text-zinc-100 font-medium truncate">
               {action.title}
             </span>
           </div>
           {action.domain && (
-            <span className="text-micro font-label uppercase tracking-wider text-text-muted">
+            <span className="text-micro font-label uppercase tracking-wider text-zinc-500">
               {action.domain}
             </span>
           )}
           {action.explanation ? (
             <div className="mt-2 space-y-0.5">
-              <p className="text-label text-text-secondary">{action.explanation.what}</p>
-              <p className="text-label text-text-muted">{action.explanation.why}</p>
-              <p className="text-label text-text-primary font-medium mt-1">→ {action.explanation.next}</p>
+              <p className="text-label text-zinc-400">{action.explanation.what}</p>
+              <p className="text-label text-zinc-500">{action.explanation.why}</p>
+              <p className="text-label text-zinc-100 font-medium mt-1">→ {action.explanation.next}</p>
             </div>
           ) : (
-            <p className="text-label text-text-muted mt-1">
+            <p className="text-label text-zinc-500 mt-1">
               {SEVERITY_GUIDANCE[action.severity]}
             </p>
           )}

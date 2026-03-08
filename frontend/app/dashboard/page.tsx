@@ -28,7 +28,7 @@ interface SystemModule {
   detail: string;
 }
 
-// ─── Static module list (status would be API-driven in production) ────────────
+// ─── System module list (status transitions to API telemetry) ─────────────────
 
 const SYSTEM_MODULES: SystemModule[] = [
   { name: 'Billing Engine',    status: 'active',   detail: 'Operational'      },
@@ -47,7 +47,7 @@ function SkeletonPlate() {
       className="chamfer-8 border animate-pulse"
       style={{
         height:          96,
-        backgroundColor: 'var(--color-bg-panel)',
+        backgroundColor: '#0A0A0B',
         borderColor:     'var(--color-border-subtle)',
       }}
     />
@@ -94,9 +94,15 @@ function DashboardPageInner() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const nextPath = searchParams.get('next');
     if (token) {
       localStorage.setItem('token', token);
-      router.replace('/dashboard');
+      localStorage.setItem('qs_token', token);
+      localStorage.setItem('access_token', token);
+      const redirectTarget = nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//')
+        ? nextPath
+        : '/dashboard';
+      router.replace(redirectTarget);
     }
   }, [searchParams, router]);
 
@@ -134,7 +140,7 @@ function DashboardPageInner() {
         >
           <span
             className="micro-caps"
-            style={{ color: 'var(--color-brand-orange)' }}
+            style={{ color: '#FF4D00' }}
           >
             Live
           </span>

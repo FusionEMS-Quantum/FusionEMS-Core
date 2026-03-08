@@ -25,10 +25,10 @@ const STATUS_COLORS: Record<string, StatusColor> = {
     dot: 'bg-red-500',
   },
   ORANGE: {
-    bg: 'bg-orange-500/10',
+    bg: 'bg-[#FF4D00]-500/10',
     border: 'border-orange-500/40',
-    text: 'text-orange-400',
-    dot: 'bg-orange-500',
+    text: 'text-[#FF4D00]-400',
+    dot: 'bg-[#FF4D00]-500',
   },
   YELLOW: {
     bg: 'bg-yellow-500/10',
@@ -124,7 +124,7 @@ function normalizeSeverity(severity: string): SeverityLevel {
 function severityTextColor(severity: string): string {
   const normalized = normalizeSeverity(severity);
   if (normalized === 'BLOCKING') return 'text-red-400';
-  if (normalized === 'HIGH') return 'text-orange-400';
+  if (normalized === 'HIGH') return 'text-[#FF4D00]-400';
   if (normalized === 'MEDIUM') return 'text-yellow-400';
   if (normalized === 'LOW') return 'text-blue-400';
   return 'text-zinc-400';
@@ -193,14 +193,14 @@ export default function PlatformCommandCenterPage() {
     if (!health) return 'text-zinc-400';
     if (health.score >= 90) return 'text-green-400';
     if (health.score >= 70) return 'text-yellow-400';
-    if (health.score >= 50) return 'text-orange-400';
+    if (health.score >= 50) return 'text-[#FF4D00]-400';
     return 'text-red-400';
   }, [health]);
 
   if (loading && !health) {
     return (
       <div className="p-8 flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse" />
+        <div className="w-3 h-3  bg-[#FF4D00]-500 animate-pulse" />
         <span className="text-sm text-zinc-400">Loading platform command telemetry…</span>
       </div>
     );
@@ -305,7 +305,7 @@ export default function PlatformCommandCenterPage() {
                   return (
                     <div key={service.name} className={`flex justify-between items-center ${style.bg} p-2.5 border ${style.border} chamfer-4`}>
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                        <span className={`w-2 h-2  ${style.dot}`} />
                         <span className="text-xs text-white">{service.name}</span>
                       </div>
                       <span className="text-micro font-mono text-zinc-400">
@@ -361,8 +361,8 @@ export default function PlatformCommandCenterPage() {
         <div className="space-y-3">
           <div className="bg-zinc-900/60 border border-orange-500/30 chamfer-8 p-4 sticky top-5 space-y-3">
             <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <h3 className="text-xs font-bold text-orange-400 uppercase tracking-[0.15em]">Executive AI Analyst</h3>
+              <span className="w-2 h-2  bg-[#FF4D00]-500 animate-pulse" />
+              <h3 className="text-xs font-bold text-[#FF4D00]-400 uppercase tracking-[0.15em]">Executive AI Analyst</h3>
             </div>
 
             {assistantIssues.length === 0 ? (

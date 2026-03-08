@@ -36,11 +36,11 @@ const chipVariants = cva(
           'border border-[rgba(129,140,248,0.3)]',
         ],
         override: [
-          'bg-orange-ghost text-orange',
+          'bg-[#FF4D00]-ghost text-[#FF4D00]',
           'border border-orange/30',
         ],
         neutral: [
-          'bg-[rgba(255,255,255,0.04)] text-text-muted',
+          'bg-[rgba(255,255,255,0.04)] text-zinc-500',
           'border border-border-subtle',
         ],
       },
@@ -63,7 +63,7 @@ const dotColors: Record<StatusVariant, string> = {
   critical: 'var(--color-brand-red)',
   info:     'var(--color-status-info)',
   review:   '#818cf8',
-  override: 'var(--q-orange)',
+  override: '#FF4D00',
   neutral:  'var(--color-status-neutral)',
 };
 
@@ -104,7 +104,7 @@ export const StatusChip = React.forwardRef<HTMLSpanElement, StatusChipProps>(
           <span
             aria-hidden="true"
             className={clsx(
-              'shrink-0 rounded-full',
+              'shrink-0 ',
               pulse && 'animate-status-pulse'
             )}
             style={{

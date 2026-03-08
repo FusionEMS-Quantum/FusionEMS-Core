@@ -26,7 +26,7 @@ export function ErrorState({
       role="alert"
     >
       {/* Error icon */}
-      <div className="w-12 h-12 rounded-full bg-red-ghost flex items-center justify-center mb-4">
+      <div className="w-12 h-12  bg-red-ghost flex items-center justify-center mb-4">
         <svg
           className="w-6 h-6 text-red"
           fill="none"
@@ -39,14 +39,14 @@ export function ErrorState({
         </svg>
       </div>
 
-      <h3 className="text-h3 text-text-primary font-medium mb-1">{title}</h3>
-      <p className="text-body text-text-muted max-w-sm mb-4">{message}</p>
+      <h3 className="text-h3 text-zinc-100 font-medium mb-1">{title}</h3>
+      <p className="text-body text-zinc-500 max-w-sm mb-4">{message}</p>
 
       {onRetry && (
         <button
           onClick={onRetry}
-          className="px-4 py-2 bg-orange text-text-inverse font-label text-label uppercase 
-                     tracking-wider chamfer-4 hover:bg-orange-bright transition-colors duration-fast
+          className="px-4 py-2 bg-[#FF4D00] text-black font-label text-label uppercase 
+                     tracking-wider chamfer-4 hover:bg-[#FF4D00]-bright transition-colors duration-fast
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 
                      focus-visible:ring-offset-bg-base"
           type="button"

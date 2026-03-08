@@ -39,7 +39,7 @@ function enforcementColor(e: string): string {
 function riskColor(r: string): string {
   switch (r) {
     case 'RESTRICTED': return 'var(--color-brand-red)';
-    case 'HIGH_RISK': return 'var(--color-brand-orange)';
+    case 'HIGH_RISK': return '#FF4D00';
     case 'MODERATE_RISK': return 'var(--color-status-warning)';
     default: return 'var(--color-status-active)';
   }
@@ -71,9 +71,9 @@ export default function AiPoliciesPage() {
     <div className="p-5 min-h-screen space-y-6">
       {/* Header */}
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">AI Governance & Policies</h1>
-        <p className="text-xs text-text-muted mt-0.5">Guardrail rules · protected actions · enforcement levels</p>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">AI GOVERNANCE</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">AI Governance & Policies</h1>
+        <p className="text-xs text-zinc-500 mt-0.5">Guardrail rules · protected actions · enforcement levels</p>
       </div>
 
       {error && (
@@ -85,16 +85,16 @@ export default function AiPoliciesPage() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-bg-panel border border-border-DEFAULT h-16 chamfer-8" />
+            <div key={i} className="animate-pulse bg-[#0A0A0B] border border-border-DEFAULT h-16 chamfer-8" />
           ))}
         </div>
       ) : (
         <>
           {/* Guardrail Rules */}
           <section>
-            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Guardrail Rules</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">Guardrail Rules</div>
             {rules.length === 0 ? (
-              <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-6 text-center text-xs text-text-muted">
+              <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 p-6 text-center text-xs text-zinc-500">
                 No guardrail rules configured
               </div>
             ) : (
@@ -105,20 +105,20 @@ export default function AiPoliciesPage() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    className="bg-bg-panel border border-border-DEFAULT p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    className="bg-[#0A0A0B] border border-border-DEFAULT p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                     style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-bold text-text-primary">{rule.rule_name}</span>
+                        <span className="text-sm font-bold text-zinc-100">{rule.rule_name}</span>
                         {!rule.is_active && (
-                          <span className="text-micro uppercase tracking-widest text-text-muted px-1.5 py-0.5 border border-border-DEFAULT chamfer-4">
+                          <span className="text-micro uppercase tracking-widest text-zinc-500 px-1.5 py-0.5 border border-border-DEFAULT chamfer-4">
                             DISABLED
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-text-secondary">{rule.description}</div>
-                      <div className="text-micro text-text-muted mt-1">Domain: {rule.domain}</div>
+                      <div className="text-xs text-zinc-400">{rule.description}</div>
+                      <div className="text-micro text-zinc-500 mt-1">Domain: {rule.domain}</div>
                     </div>
                     <span
                       className="text-micro uppercase tracking-widest font-bold px-2 py-0.5 chamfer-4 shrink-0"
@@ -138,9 +138,9 @@ export default function AiPoliciesPage() {
 
           {/* Protected Actions */}
           <section>
-            <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">Protected Actions</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">Protected Actions</div>
             {actions.length === 0 ? (
-              <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-6 text-center text-xs text-text-muted">
+              <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 p-6 text-center text-xs text-zinc-500">
                 No protected actions configured
               </div>
             ) : (
@@ -151,13 +151,13 @@ export default function AiPoliciesPage() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    className="bg-bg-panel border border-border-DEFAULT p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    className="bg-[#0A0A0B] border border-border-DEFAULT p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                     style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
                   >
                     <div className="min-w-0">
-                      <div className="text-sm font-bold text-text-primary mb-0.5">{action.action_name}</div>
-                      <div className="text-xs text-text-secondary">{action.description}</div>
-                      <div className="text-micro text-text-muted mt-1">
+                      <div className="text-sm font-bold text-zinc-100 mb-0.5">{action.action_name}</div>
+                      <div className="text-xs text-zinc-400">{action.description}</div>
+                      <div className="text-micro text-zinc-500 mt-1">
                         Domain: {action.domain}
                         {action.requires_human && ' · Human review required'}
                       </div>
@@ -180,7 +180,7 @@ export default function AiPoliciesPage() {
         </>
       )}
 
-      <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-orange">← Back to AI Governance</Link>
+      <Link href="/founder/ai" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to AI Governance</Link>
     </div>
   );
 }

@@ -19,8 +19,8 @@ interface ComplianceItem {
 
 type TabKey = 'nemsis' | 'hipaa' | 'pcr' | 'billing' | 'accreditation';
 
-// ─── Static compliance data ───────────────────────────────────────────────────
-const STATIC_DATA: Record<TabKey, ComplianceItem[]> = {
+// ─── Compliance data set ──────────────────────────────────────────────────────
+const COMPLIANCE_DATA: Record<TabKey, ComplianceItem[]> = {
   nemsis: [
     {
       name:        'Schema Validation',
@@ -334,7 +334,7 @@ function ComplianceRow({ item }: { item: ComplianceItem }) {
 export default function CompliancePage() {
   const [activeTab, setActiveTab] = useState<TabKey>('nemsis');
 
-  const items = STATIC_DATA[activeTab];
+  const items = COMPLIANCE_DATA[activeTab];
 
   return (
     <AppShell>
@@ -435,7 +435,7 @@ export default function CompliancePage() {
                   className="absolute bottom-0 left-0 right-0"
                   style={{
                     height:          2,
-                    backgroundColor: 'var(--color-brand-orange)',
+                    backgroundColor: '#FF4D00',
                   }}
                 />
               )}

@@ -32,7 +32,7 @@ const STATUS_COLOR: Record<string, string> = {
   COMPLETED: 'text-green-400',
   VERIFIED: 'text-cyan-400',
   OVERDUE: 'text-red-400',
-  WAIVED: 'text-text-muted',
+  WAIVED: 'text-zinc-500',
 };
 
 export default function TrainingPage() {
@@ -78,27 +78,27 @@ export default function TrainingPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">SUCCESS · TRAINING</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Training & Enablement</h1>
-        <p className="text-xs text-text-muted mt-0.5">Tracks · assignments · completions · verifications</p>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · TRAINING</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Training & Enablement</h1>
+        <p className="text-xs text-zinc-500 mt-0.5">Tracks · assignments · completions · verifications</p>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Role:</span>
+          <span className="text-xs text-zinc-500">Role:</span>
           {['', 'MEDIC', 'DISPATCHER', 'SUPERVISOR', 'ADMIN', 'BILLING_SPECIALIST', 'PILOT'].map((r) => (
             <button key={r} onClick={() => setRoleFilter(r)}
-              className={`text-micro px-2 py-1 border ${roleFilter === r ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${roleFilter === r ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {r || 'ALL'}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Status:</span>
+          <span className="text-xs text-zinc-500">Status:</span>
           {['', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'OVERDUE'].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {s || 'ALL'}
             </button>
           ))}
@@ -108,11 +108,11 @@ export default function TrainingPage() {
       {loading ? (
         <div className="space-y-3 animate-pulse">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 bg-bg-panel rounded" />
+            <div key={i} className="h-24 bg-[#0A0A0B] " />
           ))}
         </div>
       ) : tracks.length === 0 ? (
-        <div className="bg-bg-panel border border-border-DEFAULT p-8 text-center text-text-muted text-sm">
+        <div className="bg-[#0A0A0B] border border-border-DEFAULT p-8 text-center text-zinc-500 text-sm">
           No training tracks found.
         </div>
       ) : (
@@ -124,24 +124,24 @@ export default function TrainingPage() {
 
             return (
               <motion.div key={track.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="bg-bg-panel border border-border-DEFAULT p-4">
+                className="bg-[#0A0A0B] border border-border-DEFAULT p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <div className="text-sm font-bold text-text-primary">{track.name}</div>
-                    <div className="text-xs text-text-muted mt-0.5">{track.description}</div>
+                    <div className="text-sm font-bold text-zinc-100">{track.name}</div>
+                    <div className="text-xs text-zinc-500 mt-0.5">{track.description}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-micro text-text-muted">{track.target_role} · {track.module_type}</div>
-                    <div className="text-micro text-text-muted">{track.estimated_duration_minutes} min</div>
+                    <div className="text-micro text-zinc-500">{track.target_role} · {track.module_type}</div>
+                    <div className="text-micro text-zinc-500">{track.estimated_duration_minutes} min</div>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 h-1.5 bg-bg-panel-muted rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-[#0A0A0B]-muted  overflow-hidden">
                     <div className="h-full bg-green-400 transition-all" style={{ width: `${completionRate}%` }} />
                   </div>
-                  <span className="text-micro text-text-muted">{completionRate.toFixed(0)}% ({completedCount}/{trackAssignments.length})</span>
+                  <span className="text-micro text-zinc-500">{completionRate.toFixed(0)}% ({completedCount}/{trackAssignments.length})</span>
                 </div>
 
                 {/* Assignments Table */}
@@ -149,11 +149,11 @@ export default function TrainingPage() {
                   <div className="space-y-1 mt-2">
                     {trackAssignments.map((a) => (
                       <div key={a.id} className="flex items-center justify-between text-xs border-t border-border-DEFAULT pt-1">
-                        <div className="text-text-muted">User: {a.user_id.slice(0, 8)}...</div>
+                        <div className="text-zinc-500">User: {a.user_id.slice(0, 8)}...</div>
                         <div className="flex items-center gap-3">
-                          <span className="text-text-muted">Progress: {a.progress_pct}%</span>
-                          {a.due_date && <span className="text-text-muted">Due: {new Date(a.due_date).toLocaleDateString()}</span>}
-                          <span className={`font-bold ${STATUS_COLOR[a.status] || 'text-text-muted'}`}>{a.status}</span>
+                          <span className="text-zinc-500">Progress: {a.progress_pct}%</span>
+                          {a.due_date && <span className="text-zinc-500">Due: {new Date(a.due_date).toLocaleDateString()}</span>}
+                          <span className={`font-bold ${STATUS_COLOR[a.status] || 'text-zinc-500'}`}>{a.status}</span>
                         </div>
                       </div>
                     ))}
@@ -165,7 +165,7 @@ export default function TrainingPage() {
         </div>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-orange-dim hover:text-orange">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

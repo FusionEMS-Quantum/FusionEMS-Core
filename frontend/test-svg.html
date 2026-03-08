@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #050505; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    </style>
+</head>
+<body>
+
+    <div class="flex flex-col items-center justify-center group cursor-default">
+      <!-- SVG Monogram based on the actual design -->
+      <div class="relative flex items-center justify-center drop-shadow-2xl mb-2">
+        <svg width="100" height="60" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+          <!-- F -->
+          <path d="M10 10 L50 10 L45 22 L25 22 L22 34 L38 34 L33 46 L18 46 L10 60 L0 60 L10 10Z" fill="url(#metalLight)" />
+          
+          <!-- Q Outer Frame -->
+          <path d="M55 10 C75 10 85 20 85 35 C85 50 75 60 55 60 L40 60 L45 46 L55 46 C62 46 65 42 65 35 C65 28 62 24 55 24 L45 24 L50 10 L55 10Z" fill="url(#metalDark)" />
+          
+          <!-- Q Tail -->
+          <path d="M65 45 L85 60 L70 60 L58 50 Z" fill="url(#metalLight)" />
+          
+          <!-- The Glowing Slash -->
+          <path d="M-5 55 L95 15 L100 20 L0 60 Z" fill="url(#orangeGlow)" />
+          
+          <!-- Slash bright core -->
+          <path d="M-2 54 L94 16" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+          
+          <defs>
+            <linearGradient id="metalLight" x1="0" y1="10" x2="50" y2="60" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#FFFFFF"/>
+              <stop offset="0.4" stopColor="#B0BEC5"/>
+              <stop offset="1" stopColor="#64748B"/>
+            </linearGradient>
+            <linearGradient id="metalDark" x1="40" y1="10" x2="85" y2="60" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#E2E8F0"/>
+              <stop offset="0.5" stopColor="#94A3B8"/>
+              <stop offset="1" stopColor="#334155"/>
+            </linearGradient>
+            <linearGradient id="orangeGlow" x1="-5" y1="55" x2="100" y2="15" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#FF2A00"/>
+              <stop offset="0.5" stopColor="#FF7300"/>
+              <stop offset="1" stopColor="#FFCC00"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- Glow behind the slash -->
+        <div class="absolute inset-0 bg-orange/30 blur-[20px] scale-125 z-[-1] opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+      </div>
+      
+      <!-- Wordmark -->
+      <div class="flex flex-col items-center">
+        <div class="text-[1.5rem] font-black tracking-[0.25em] text-transparent bg-clip-text bg-gradient-to-b from-gray-100 to-gray-500 uppercase leading-none drop-shadow-md">
+          FUSIONEMS
+        </div>
+        <div class="flex items-center gap-2 mt-2 w-full px-2">
+          <div class="flex-1 h-[2px] bg-gradient-to-r from-transparent via-[#ff6600] to-[#ff6600] opacity-80"></div>
+          <span class="text-[0.65rem] font-bold tracking-[0.4em] text-[#ff6600] uppercase leading-none drop-shadow-[0_0_8px_rgba(255,100,0,0.8)]">
+            Quantum
+          </span>
+          <div class="flex-1 h-[2px] bg-gradient-to-l from-transparent via-[#ff6600] to-[#ff6600] opacity-80"></div>
+        </div>
+      </div>
+    </div>
+
+</body>
+</html>

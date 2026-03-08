@@ -91,23 +91,38 @@ class BillingCommandService:
                 "denied": r.denied,
                 "revenue_cents": r.revenue_cents or 0,
                 "clean_claim_rate_pct": clean_pct,
-                "avg_days_to_payment": 14 # Static until lifecycle events are modeled with hard days
+                "avg_days_to_payment": None,
             })
 
         return {"payers": payers}
 
     def get_executive_summary(self, tenant_id: uuid.UUID) -> dict[str, Any]:
-        # Include MRR and total revenue
-        # Here we connect SaaS and Claims
         total_claims = self.db.query(func.count(Claim.id)).filter(Claim.tenant_id == tenant_id).scalar() or 0
         claim_rev = self.db.query(func.sum(Claim.insurance_paid_cents)).filter(
             Claim.tenant_id == tenant_id,
             Claim.status == ClaimState.PAID
         ).scalar() or 0
 
-        # Current subscription sum - assuming it's monthly
-        # Mocking MRR from SubscriptionPlan / Price logic for now since exact items query needs joins
-        mrr_cents = 0 # Future: actual sum across SubscriptionItems
+        active_plan_ids = [
+            plan_id
+            for (plan_id,) in self.db.query(SubscriptionPlan.id).filter(
+                SubscriptionPlan.tenant_id == tenant_id,
+                SubscriptionPlan.status == "active",
+            ).all()
+        ]
+
+        mrr_cents = 0
+        if active_plan_ids:
+            items = self.db.query(
+                SubscriptionItem, Price
+            ).join(Price, SubscriptionItem.price_id == Price.id).filter(
+                SubscriptionItem.plan_id.in_(active_plan_ids),
+                Price.interval == "month",
+            ).all()
+            mrr_cents = sum(
+                int(price.amount_cents or 0) * int(item.quantity or 1)
+                for item, price in items
+            )
 
         return {
             "total_claims": total_claims,

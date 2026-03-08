@@ -62,6 +62,19 @@ const nextConfig = {
     ];
   },
 
+  async redirects() {
+    return [
+      // Legacy marketing aliases -> canonical public routes
+      { source: "/founder/platform", destination: "/platform", permanent: false },
+      { source: "/founder/roi", destination: "/roi", permanent: false },
+      { source: "/founder/ops/staffing", destination: "/scheduling", permanent: false },
+      { source: "/founder/comms/phone-system", destination: "/communications", permanent: false },
+
+      // Legacy auth aliases -> canonical secure entry
+      { source: "/billing/login", destination: "/login", permanent: false },
+    ];
+  },
+
   async headers() {
     return [
       {

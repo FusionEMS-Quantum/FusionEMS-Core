@@ -11,7 +11,7 @@ const PANEL_STYLE = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-  background: 'var(--color-brand-orange)',
+  background: '#FF4D00',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
   fontSize: '0.9375rem',
@@ -144,7 +144,7 @@ export default function RepUploadPage() {
 
   return (
     <div
-      style={{ background: 'var(--color-bg-base, var(--color-bg-base))', minHeight: '100vh' }}
+      style={{ background: 'var(--color-bg-base, #050505)', minHeight: '100vh' }}
       className="flex items-center justify-center px-4 py-12"
     >
       <div style={{ width: '100%', maxWidth: '560px' }}>
@@ -163,7 +163,7 @@ export default function RepUploadPage() {
               marginBottom: '18px',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
@@ -259,7 +259,7 @@ export default function RepUploadPage() {
                 marginBottom: '20px',
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
               </svg>
@@ -334,7 +334,7 @@ export default function RepUploadPage() {
                   style={{
                     width: '6px',
                     height: '6px',
-                    background: 'var(--color-brand-orange)',
+                    background: '#FF4D00',
                     borderRadius: '50%',
                     marginTop: '6px',
                     flexShrink: 0,

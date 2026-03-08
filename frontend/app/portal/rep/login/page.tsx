@@ -32,7 +32,7 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-  background: 'var(--color-brand-orange)',
+  background: '#FF4D00',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
   fontSize: '0.9375rem',
@@ -87,7 +87,7 @@ export default function RepLoginPage() {
 
   return (
     <div
-      style={{ background: 'var(--color-bg-base, var(--color-bg-base))', minHeight: '100vh' }}
+      style={{ background: 'var(--color-bg-base, #050505)', minHeight: '100vh' }}
       className="flex items-center justify-center px-4 py-12"
     >
       <div style={{ width: '100%', maxWidth: '440px' }}>
@@ -106,7 +106,7 @@ export default function RepLoginPage() {
               marginBottom: '18px',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />

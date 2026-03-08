@@ -109,7 +109,7 @@ export default function PatientStatementsPage() {
   );
 
   if (fetchError) return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>Unable to load statements. Please try again later.</div>
     </div>
   );
@@ -118,7 +118,7 @@ export default function PatientStatementsPage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-base)',
+        background: '#050505',
         padding: '40px 16px',
       }}
     >
@@ -139,7 +139,7 @@ export default function PatientStatementsPage() {
               fontWeight: 600,
               letterSpacing: 'var(--tracking-micro)',
               textTransform: 'uppercase',
-              color: 'var(--color-brand-orange)',
+              color: '#FF4D00',
               marginBottom: 6,
             }}
           >
@@ -161,9 +161,9 @@ export default function PatientStatementsPage() {
         {totalDue > 0 && (
           <div
             style={{
-              background: 'var(--color-bg-panel)',
+              background: '#0A0A0B',
               border: '1px solid var(--color-border-default)',
-              borderLeft: '3px solid var(--color-brand-orange)',
+              borderLeft: '3px solid #FF4D00',
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
               padding: '14px 20px',
               marginBottom: 20,
@@ -192,7 +192,7 @@ export default function PatientStatementsPage() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: 'var(--text-h2)',
                   fontWeight: 700,
-                  color: 'var(--color-brand-orange)',
+                  color: '#FF4D00',
                 }}
               >
                 ${totalDue.toFixed(2)}
@@ -201,7 +201,7 @@ export default function PatientStatementsPage() {
             <Link
               href="/portal/patient/pay"
               style={{
-                background: 'var(--color-brand-orange)',
+                background: '#FF4D00',
                 color: '#000',
                 fontFamily: 'var(--font-label)',
                 fontSize: 'var(--text-label)',
@@ -239,7 +239,7 @@ export default function PatientStatementsPage() {
               <div
                 key={stmt.id}
                 style={{
-                  background: 'var(--color-bg-panel)',
+                  background: '#0A0A0B',
                   border: '1px solid var(--color-border-default)',
                   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
                   padding: '16px 20px',
@@ -307,7 +307,7 @@ export default function PatientStatementsPage() {
                     {
                       label: 'Balance Due',
                       value: `$${stmt.balance.toFixed(2)}`,
-                      color: stmt.balance > 0 ? 'var(--color-brand-orange)' : 'var(--color-text-muted)',
+                      color: stmt.balance > 0 ? '#FF4D00' : 'var(--color-text-muted)',
                     },
                   ].map((col) => (
                     <div key={col.label}>
@@ -362,7 +362,7 @@ export default function PatientStatementsPage() {
                     <Link
                       href="/portal/patient/pay"
                       style={{
-                        background: 'var(--color-brand-orange)',
+                        background: '#FF4D00',
                         color: '#000',
                         fontFamily: 'var(--font-label)',
                         fontSize: 'var(--text-micro)',
@@ -397,7 +397,7 @@ export default function PatientStatementsPage() {
             <a
               href="mailto:billing@fusionems.com"
               style={{
-                color: 'var(--color-brand-orange)',
+                color: '#FF4D00',
                 textDecoration: 'none',
               }}
             >

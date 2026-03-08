@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ async def provision_tenant(
                 },
             )
             db.commit()
-        except Exception as exc:
+        except SQLAlchemyError as exc:
             logger.warning(
                 "Could not write idempotency key for application %s: %s", application_id, exc
             )
@@ -173,10 +174,10 @@ async def provision_tenant(
                     logger.info(
                         "Cognito user already exists for %s, skipping creation.", contact_email
                     )
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.warning("Cognito admin user creation failed (non-blocking): %s", e)
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning("Cognito setup failed (non-blocking): %s", e)
 
         call_volume_tier = "standard"
@@ -242,7 +243,7 @@ async def provision_tenant_from_application(
     db: Session,
     application_id: str,
     application_row: dict,
-    stripe_event: dict,
+    _stripe_event: dict,
 ) -> dict[str, Any]:
     from core_app.core.config import get_settings
 
@@ -272,11 +273,9 @@ async def provision_tenant_from_application(
         billing_tier = "starter"
 
     if isinstance(selected_modules, str):
-        import json as _json
-
         try:
-            selected_modules = _json.loads(selected_modules)
-        except Exception:
+            selected_modules = json.loads(selected_modules)
+        except (json.JSONDecodeError, TypeError):
             selected_modules = ["billing", "transportlink", "crewlink", "patient_portal"]
 
     agency_type = application_row.get("agency_type", "EMS")

@@ -36,11 +36,11 @@ const STATE_BADGE: Record<string, string> = {
   TRIAGED: 'text-cyan-400',
   ASSIGNED: 'text-purple-400',
   IN_PROGRESS: 'text-yellow-400',
-  WAITING_ON_CUSTOMER: 'text-orange-400',
-  WAITING_ON_VENDOR: 'text-orange-300',
+  WAITING_ON_CUSTOMER: 'text-[#FF4D00]-400',
+  WAITING_ON_VENDOR: 'text-[#FF4D00]-300',
   ESCALATED: 'text-red-400',
   RESOLVED: 'text-green-400',
-  CLOSED: 'text-text-muted',
+  CLOSED: 'text-zinc-500',
   REOPENED: 'text-red-300',
 };
 
@@ -76,27 +76,27 @@ export default function SupportOpsPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">SUCCESS · SUPPORT</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Support Operations</h1>
-        <p className="text-xs text-text-muted mt-0.5">Ticket queue · SLA tracking · escalations · resolution</p>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · SUPPORT</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Support Operations</h1>
+        <p className="text-xs text-zinc-500 mt-0.5">Ticket queue · SLA tracking · escalations · resolution</p>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Status:</span>
+          <span className="text-xs text-zinc-500">Status:</span>
           {['', 'NEW', 'TRIAGED', 'ASSIGNED', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {s || 'ALL'}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted">Severity:</span>
+          <span className="text-xs text-zinc-500">Severity:</span>
           {SEVERITY_FILTER_OPTIONS.map((option) => (
             <button key={option.value || 'ALL'} onClick={() => setSeverityFilter(option.value)}
-              className={`text-micro px-2 py-1 border ${severityFilter === option.value ? 'border-orange-dim text-orange-dim bg-orange-dim/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${severityFilter === option.value ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {option.label}
             </button>
           ))}
@@ -106,17 +106,17 @@ export default function SupportOpsPage() {
       {loading ? (
         <div className="space-y-2 animate-pulse">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-14 bg-bg-panel rounded" />
+            <div key={i} className="h-14 bg-[#0A0A0B] " />
           ))}
         </div>
       ) : tickets.length === 0 ? (
-        <div className="bg-bg-panel border border-border-DEFAULT p-8 text-center text-text-muted text-sm">
+        <div className="bg-[#0A0A0B] border border-border-DEFAULT p-8 text-center text-zinc-500 text-sm">
           No tickets found.
         </div>
       ) : (
         <div className="space-y-1">
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-2 text-micro font-bold text-text-muted px-4 py-2 border-b border-border-DEFAULT">
+          <div className="grid grid-cols-12 gap-2 text-micro font-bold text-zinc-500 px-4 py-2 border-b border-border-DEFAULT">
             <div className="col-span-4">Subject</div>
             <div className="col-span-2">State</div>
             <div className="col-span-1">Sev</div>
@@ -127,12 +127,12 @@ export default function SupportOpsPage() {
 
           {tickets.map((t, i) => (
             <motion.div key={t.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-              className="grid grid-cols-12 gap-2 bg-bg-panel border border-border-DEFAULT px-4 py-3 hover:border-white/[0.18] transition-colors items-center text-xs">
+              className="grid grid-cols-12 gap-2 bg-[#0A0A0B] border border-border-DEFAULT px-4 py-3 hover:border-white/[0.18] transition-colors items-center text-xs">
               <div className="col-span-4">
-                <div className="text-text-primary font-bold truncate">{t.subject}</div>
-                <div className="text-text-muted truncate">{t.description.slice(0, 60)}{t.description.length > 60 ? '…' : ''}</div>
+                <div className="text-zinc-100 font-bold truncate">{t.subject}</div>
+                <div className="text-zinc-500 truncate">{t.description.slice(0, 60)}{t.description.length > 60 ? '…' : ''}</div>
               </div>
-              <div className={`col-span-2 font-bold ${STATE_BADGE[t.state] || 'text-text-muted'}`}>{t.state}</div>
+              <div className={`col-span-2 font-bold ${STATE_BADGE[t.state] || 'text-zinc-500'}`}>{t.state}</div>
               <div className="col-span-1">
                 <SeverityBadge
                   severity={normalizeSeverity(t.severity)}
@@ -140,23 +140,23 @@ export default function SupportOpsPage() {
                   label={normalizeSeverity(t.severity)}
                 />
               </div>
-              <div className="col-span-2 text-text-muted">{t.category}</div>
+              <div className="col-span-2 text-zinc-500">{t.category}</div>
               <div className="col-span-1">
                 {t.sla_response_met === null ? (
-                  <span className="text-text-muted">—</span>
+                  <span className="text-zinc-500">—</span>
                 ) : t.sla_response_met ? (
                   <span className="text-green-400 font-bold">✓</span>
                 ) : (
                   <span className="text-red-400 font-bold">✗</span>
                 )}
               </div>
-              <div className="col-span-2 text-text-muted">{new Date(t.created_at).toLocaleString()}</div>
+              <div className="col-span-2 text-zinc-500">{new Date(t.created_at).toLocaleString()}</div>
             </motion.div>
           ))}
         </div>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-orange-dim hover:text-orange">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

@@ -350,22 +350,22 @@ export default function HemsPage() {
       <div className="space-y-5">
 
         {/* ── Shared ID inputs ── */}
-        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
-          <p className="text-body font-label mb-3 text-text-secondary">Session IDs</p>
+        <div className="p-4 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8">
+          <p className="text-body font-label mb-3 text-zinc-400">Session IDs</p>
           <div className="flex flex-wrap gap-3">
             <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-              <label className="text-body text-text-muted">Aircraft ID</label>
+              <label className="text-body text-zinc-500">Aircraft ID</label>
               <input
-                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                 placeholder="e.g. N123HM"
                 value={aircraftId}
                 onChange={(e) => setAircraftId(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
-              <label className="text-body text-text-muted">Mission ID</label>
+              <label className="text-body text-zinc-500">Mission ID</label>
               <input
-                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                 placeholder="e.g. MSN-0001"
                 value={missionId}
                 onChange={(e) => setMissionId(e.target.value)}
@@ -375,21 +375,21 @@ export default function HemsPage() {
         </div>
 
         {/* ── 1. Aircraft Readiness Panel ── */}
-        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
+        <div className="p-4 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-body font-label text-text-secondary">Aircraft Readiness</p>
+            <p className="text-body font-label text-zinc-400">Aircraft Readiness</p>
             {readinessState && <ReadinessBadge state={readinessState} />}
           </div>
           {!readinessState && (
-            <p className="text-body mb-3 text-text-muted">
+            <p className="text-body mb-3 text-zinc-500">
               No readiness state recorded this session.
             </p>
           )}
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex flex-col gap-1">
-              <label className="text-body text-text-muted">New State</label>
+              <label className="text-body text-zinc-500">New State</label>
               <select
-                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                 value={newReadiness}
                 onChange={(e) => setNewReadiness(e.target.value as ReadinessState)}
               >
@@ -399,9 +399,9 @@ export default function HemsPage() {
               </select>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
-              <label className="text-body text-text-muted">Reason</label>
+              <label className="text-body text-zinc-500">Reason</label>
               <input
-                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                 placeholder="Optional reason"
                 value={readinessReason}
                 onChange={(e) => setReadinessReason(e.target.value)}
@@ -410,7 +410,7 @@ export default function HemsPage() {
             <button
               onClick={submitReadiness}
               disabled={readinessBusy}
-              className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-text-primary disabled:opacity-40 transition-opacity"
+              className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-zinc-100 disabled:opacity-40 transition-opacity"
             >
               {readinessBusy ? 'Saving...' : 'Set Readiness'}
             </button>
@@ -418,8 +418,8 @@ export default function HemsPage() {
         </div>
 
         {/* ── Mission Actions ── */}
-        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
-            <p className="text-body font-label mb-3 text-text-secondary">Mission Controls</p>
+        <div className="p-4 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8">
+            <p className="text-body font-label mb-3 text-zinc-400">Mission Controls</p>
             <div className="flex flex-wrap gap-2">
                 <button
                     onClick={() => performAction('acknowledge', { decision: 'accept' }, 'Mission Accepted')}
@@ -460,8 +460,8 @@ export default function HemsPage() {
         </div>
 
         {/* ── Mission Acceptance Checklist ── */}
-        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
-          <p className="text-body font-label mb-3 text-text-secondary">Mission Acceptance Checklist</p>
+        <div className="p-4 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8">
+          <p className="text-body font-label mb-3 text-zinc-400">Mission Acceptance Checklist</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 mb-4">
             {CHECKLIST_KEYS.map((key) => (
@@ -472,14 +472,14 @@ export default function HemsPage() {
                   onChange={(e) =>
                     setChecklistItems((prev) => ({ ...prev, [key]: e.target.checked }))
                   }
-                  className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
+                  className="w-3.5 h-3.5 accent-[#FF4D00] cursor-pointer"
                 />
-                <span className="text-body text-text-secondary">{CHECKLIST_LABELS[key]}</span>
+                <span className="text-body text-zinc-400">{CHECKLIST_LABELS[key]}</span>
               </label>
             ))}
           </div>
 
-          <p className="text-body font-label mb-2 text-text-muted">Risk Factors</p>
+          <p className="text-body font-label mb-2 text-zinc-500">Risk Factors</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 mb-4">
             {RISK_FACTOR_KEYS.map((key) => (
               <label key={key} className="flex items-center gap-2 cursor-pointer">
@@ -489,11 +489,11 @@ export default function HemsPage() {
                   onChange={(e) =>
                     setRiskFactors((prev) => ({ ...prev, [key]: e.target.checked }))
                   }
-                  className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
+                  className="w-3.5 h-3.5 accent-[#FF4D00] cursor-pointer"
                 />
-                <span className="text-body text-text-secondary">
+                <span className="text-body text-zinc-400">
                   {RISK_FACTOR_LABELS[key]}
-                  <span className="ml-1 text-text-muted">(+{RISK_WEIGHTS[key]})</span>
+                  <span className="ml-1 text-zinc-500">(+{RISK_WEIGHTS[key]})</span>
                 </span>
               </label>
             ))}
@@ -501,7 +501,7 @@ export default function HemsPage() {
 
           {/* Risk Score */}
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-body text-text-muted">Risk Score:</span>
+            <span className="text-body text-zinc-500">Risk Score:</span>
             <span
               className="text-sm font-bold tabular-nums"
               style={{ color: riskColor(score) }}
@@ -523,15 +523,15 @@ export default function HemsPage() {
           <button
             onClick={submitAcceptance}
             disabled={acceptanceBusy}
-            className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-text-primary disabled:opacity-40 transition-opacity"
+            className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-zinc-100 disabled:opacity-40 transition-opacity"
           >
             {acceptanceBusy ? 'Submitting...' : 'Submit Acceptance'}
           </button>
         </div>
 
         {/* ── Weather Brief ── */}
-        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
-          <p className="text-body font-label mb-3 text-text-secondary">Weather Brief</p>
+        <div className="p-4 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8">
+          <p className="text-body font-label mb-3 text-zinc-400">Weather Brief</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
             {(
               [
@@ -544,10 +544,10 @@ export default function HemsPage() {
               ] as { key: keyof typeof wx; label: string; type: string }[]
             ).map(({ key, label, type }) => (
               <div key={key} className="flex flex-col gap-1">
-                <label className="text-body text-text-muted">{label}</label>
+                <label className="text-body text-zinc-500">{label}</label>
                 <input
                   type={type}
-                  className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                  className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                   value={wx[key] as string}
                   onChange={(e) => setWx((prev) => ({ ...prev, [key]: e.target.value }))}
                 />
@@ -555,9 +555,9 @@ export default function HemsPage() {
             ))}
 
             <div className="flex flex-col gap-1">
-              <label className="text-body text-text-muted">Turbulence</label>
+              <label className="text-body text-zinc-500">Turbulence</label>
               <select
-                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                 value={wx.turbulence}
                 onChange={(e) => setWx((prev) => ({ ...prev, turbulence: e.target.value as TurbulenceLevel }))}
               >
@@ -569,9 +569,9 @@ export default function HemsPage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-body text-text-muted">Go / No-Go</label>
+              <label className="text-body text-zinc-500">Go / No-Go</label>
               <select
-                className="bg-bg-void chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-text-primary outline-none"
+                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-body text-zinc-100 outline-none"
                 value={wx.go_no_go}
                 onChange={(e) => setWx((prev) => ({ ...prev, go_no_go: e.target.value as GoNoGo }))}
               >
@@ -587,34 +587,34 @@ export default function HemsPage() {
                 type="checkbox"
                 checked={wx.precip}
                 onChange={(e) => setWx((prev) => ({ ...prev, precip: e.target.checked }))}
-                className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
+                className="w-3.5 h-3.5 accent-[#FF4D00] cursor-pointer"
               />
-              <span className="text-body text-text-secondary">Precipitation</span>
+              <span className="text-body text-zinc-400">Precipitation</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={wx.icing}
                 onChange={(e) => setWx((prev) => ({ ...prev, icing: e.target.checked }))}
-                className="w-3.5 h-3.5 accent-[var(--color-brand-orange)] cursor-pointer"
+                className="w-3.5 h-3.5 accent-[#FF4D00] cursor-pointer"
               />
-              <span className="text-body text-text-secondary">Icing</span>
+              <span className="text-body text-zinc-400">Icing</span>
             </label>
           </div>
 
           <button
             onClick={submitWeather}
             disabled={wxBusy}
-            className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-text-primary disabled:opacity-40 transition-opacity"
+            className="px-3 py-1.5 text-body font-label chamfer-4 bg-brand-orange text-zinc-100 disabled:opacity-40 transition-opacity"
           >
             {wxBusy ? 'Submitting...' : 'Submit Weather Brief'}
           </button>
         </div>
 
         {/* ── Safety Timeline ── */}
-        <div className="p-4 bg-bg-panel border border-[var(--color-border-default)] chamfer-8">
+        <div className="p-4 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-body font-label text-text-secondary">Safety Timeline</p>
+            <p className="text-body font-label text-zinc-400">Safety Timeline</p>
             <button
               onClick={fetchTimeline}
               disabled={timelineBusy}
@@ -625,7 +625,7 @@ export default function HemsPage() {
           </div>
 
           {timeline.length === 0 ? (
-            <p className="text-body text-text-muted">
+            <p className="text-body text-zinc-500">
               No events loaded. Enter a mission ID and click Fetch Timeline.
             </p>
           ) : (
@@ -634,11 +634,11 @@ export default function HemsPage() {
               <div className="space-y-3">
                 {timeline.map((ev, i) => (
                   <div key={i} className="relative">
-                    <div className="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-brand-orange" />
-                    <p className="text-micro mb-0.5 text-text-muted">{fmtTs(ev.timestamp)}</p>
-                    <p className="text-body font-label text-text-primary">{ev.event_type}</p>
+                    <div className="absolute -left-[13px] top-1 w-2 h-2  bg-brand-orange" />
+                    <p className="text-micro mb-0.5 text-zinc-500">{fmtTs(ev.timestamp)}</p>
+                    <p className="text-body font-label text-zinc-100">{ev.event_type}</p>
                     {ev.details && Object.keys(ev.details).length > 0 && (
-                      <p className="text-micro mt-0.5 text-text-muted">{JSON.stringify(ev.details)}</p>
+                      <p className="text-micro mt-0.5 text-zinc-500">{JSON.stringify(ev.details)}</p>
                     )}
                   </div>
                 ))}

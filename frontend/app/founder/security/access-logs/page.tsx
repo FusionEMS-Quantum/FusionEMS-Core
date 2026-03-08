@@ -35,7 +35,7 @@ interface SearchResponse {
 }
 
 const LEVEL_COLOR: Record<string, string> = {
-  auth_event: 'var(--color-brand-orange)',
+  auth_event: '#FF4D00',
   access_event: 'var(--color-status-info)',
   clinical_event: 'var(--color-status-active)',
   billing_event: '#a78bfa',
@@ -67,34 +67,34 @@ function LogRow({ log, index }: { log: AuditLog; index: number }) {
       className="border-b border-white/5 last:border-0"
     >
       <button
-        className="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors"
+        className="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-zinc-950/[0.03] transition-colors"
         onClick={() => setExpanded(e => !e)}
       >
-        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: c }} />
-        <span className="text-micro font-mono text-text-muted w-36 flex-shrink-0">{formatTs(log.created_at)}</span>
+        <span className="w-1.5 h-1.5  flex-shrink-0" style={{ background: c }} />
+        <span className="text-micro font-mono text-zinc-500 w-36 flex-shrink-0">{formatTs(log.created_at)}</span>
         <span className="text-xs font-semibold w-28 flex-shrink-0" style={{ color: c }}>
           {log.domain.replace(/_/g, ' ')}
         </span>
-        <span className="text-xs text-text-primary flex-1 truncate">{log.action}</span>
-        <span className="text-micro text-text-muted font-mono truncate w-32 flex-shrink-0">
+        <span className="text-xs text-zinc-100 flex-1 truncate">{log.action}</span>
+        <span className="text-micro text-zinc-500 font-mono truncate w-32 flex-shrink-0">
           {log.actor_email ?? log.actor_user_id.slice(0, 8) + '…'}
         </span>
-        <span className="text-micro text-text-muted font-mono">{log.ip_address ?? '—'}</span>
+        <span className="text-micro text-zinc-500 font-mono">{log.ip_address ?? '—'}</span>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"
           className={`flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}>
           <path d="M2 4l4 4 4-4" />
         </svg>
       </button>
       {expanded && (
-        <div className="px-4 pb-4 bg-white/[0.02]">
+        <div className="px-4 pb-4 bg-zinc-950/[0.02]">
           <div className="grid grid-cols-2 gap-2 mb-2 text-micro">
-            <div><span className="text-text-muted">Entity: </span><span className="font-mono text-text-secondary">{log.entity_name} / {log.entity_id?.slice(0, 8)}…</span></div>
-            <div><span className="text-text-muted">Correlation: </span><span className="font-mono text-text-secondary">{log.correlation_id ?? '—'}</span></div>
-            <div><span className="text-text-muted">Actor ID: </span><span className="font-mono text-text-secondary">{log.actor_user_id}</span></div>
-            <div><span className="text-text-muted">Tenant: </span><span className="font-mono text-text-secondary">{log.tenant_id?.slice(0, 8)}…</span></div>
+            <div><span className="text-zinc-500">Entity: </span><span className="font-mono text-zinc-400">{log.entity_name} / {log.entity_id?.slice(0, 8)}…</span></div>
+            <div><span className="text-zinc-500">Correlation: </span><span className="font-mono text-zinc-400">{log.correlation_id ?? '—'}</span></div>
+            <div><span className="text-zinc-500">Actor ID: </span><span className="font-mono text-zinc-400">{log.actor_user_id}</span></div>
+            <div><span className="text-zinc-500">Tenant: </span><span className="font-mono text-zinc-400">{log.tenant_id?.slice(0, 8)}…</span></div>
           </div>
           {Object.keys(log.metadata_json ?? {}).length > 0 && (
-            <pre className="bg-bg-page text-micro font-mono text-text-secondary p-2 rounded overflow-auto max-h-40">
+            <pre className="bg-bg-page text-micro font-mono text-zinc-400 p-2  overflow-auto max-h-40">
               {JSON.stringify(log.metadata_json, null, 2)}
             </pre>
           )}
@@ -171,19 +171,19 @@ export default function AccessLogsPage() {
       {/* Header */}
       <div className="hud-rail pb-3 mb-6 flex items-end justify-between">
         <div>
-          <div className="micro-caps mb-1 text-text-muted">Security</div>
-          <h1 className="text-h2 font-bold text-text-primary">Access Logs</h1>
-          <p className="text-body text-text-muted mt-1">
+          <div className="micro-caps mb-1 text-zinc-500">Security</div>
+          <h1 className="text-h2 font-bold text-zinc-100">Access Logs</h1>
+          <p className="text-body text-zinc-500 mt-1">
             Immutable audit trail — {total.toLocaleString()} total entries
           </p>
         </div>
         <div className="flex gap-2">
           <button onClick={exportCsv} disabled={logs.length === 0}
-            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-secondary hover:text-text-primary hover:border-orange transition-colors disabled:opacity-40">
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-400 hover:text-zinc-100 hover:border-orange transition-colors disabled:opacity-40">
             Export CSV
           </button>
           <Link href="/founder/security"
-            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-text-muted hover:text-text-primary transition-colors">
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 transition-colors">
             ← Security
           </Link>
         </div>
@@ -193,40 +193,40 @@ export default function AccessLogsPage() {
       <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
         {DOMAINS.map(d => (
           <button key={d} onClick={() => setDomain(d)}
-            className={`px-3 py-1 text-micro font-semibold uppercase tracking-widest whitespace-nowrap transition-colors border ${domain === d ? 'border-orange text-orange bg-orange/10' : 'border-border-DEFAULT text-text-muted hover:text-text-primary'}`}>
+            className={`px-3 py-1 text-micro font-semibold uppercase tracking-widest whitespace-nowrap transition-colors border ${domain === d ? 'border-orange text-[#FF4D00] bg-[#FF4D00]/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'}`}>
             {d === 'all' ? 'All' : d.replace(/_event$/, '').replace(/_/g, ' ')}
           </button>
         ))}
       </div>
 
       {/* Search bar */}
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4 bg-bg-panel border border-border-DEFAULT p-3"
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-4 bg-[#0A0A0B] border border-border-DEFAULT p-3"
         style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
         <input value={action} onChange={e => setAction(e.target.value)} placeholder="Action keyword…"
-          className="flex-1 min-w-0 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-orange" />
+          className="flex-1 min-w-0 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-orange" />
         <input value={actor} onChange={e => setActor(e.target.value)} placeholder="Actor user ID…"
-          className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-orange" />
+          className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-orange" />
         <input type="datetime-local" value={fromDt} onChange={e => setFromDt(e.target.value)}
-          className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-orange" />
+          className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-orange" />
         <input type="datetime-local" value={toDt} onChange={e => setToDt(e.target.value)}
-          className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-orange" />
+          className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-orange" />
         <button type="submit"
-          className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-orange text-bg-page hover:bg-orange-bright transition-colors">
+          className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors">
           Search
         </button>
       </form>
 
       {/* Table */}
-      <div className="bg-bg-panel border border-border-DEFAULT"
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT"
         style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
         {/* Column headers */}
-        <div className="flex items-center gap-3 px-4 py-2 border-b border-white/10 bg-white/[0.02]">
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-white/10 bg-zinc-950/[0.02]">
           <div className="w-1.5 flex-shrink-0" />
-          <span className="text-micro uppercase tracking-widest text-text-muted w-36 flex-shrink-0">Time</span>
-          <span className="text-micro uppercase tracking-widest text-text-muted w-28 flex-shrink-0">Domain</span>
-          <span className="text-micro uppercase tracking-widest text-text-muted flex-1">Action</span>
-          <span className="text-micro uppercase tracking-widest text-text-muted w-32 flex-shrink-0">Actor</span>
-          <span className="text-micro uppercase tracking-widest text-text-muted">IP</span>
+          <span className="text-micro uppercase tracking-widest text-zinc-500 w-36 flex-shrink-0">Time</span>
+          <span className="text-micro uppercase tracking-widest text-zinc-500 w-28 flex-shrink-0">Domain</span>
+          <span className="text-micro uppercase tracking-widest text-zinc-500 flex-1">Action</span>
+          <span className="text-micro uppercase tracking-widest text-zinc-500 w-32 flex-shrink-0">Actor</span>
+          <span className="text-micro uppercase tracking-widest text-zinc-500">IP</span>
           <div className="w-3 flex-shrink-0" />
         </div>
 
@@ -235,11 +235,11 @@ export default function AccessLogsPage() {
         )}
 
         {loading && !logs.length && (
-          <div className="px-4 py-12 text-center text-text-muted text-sm">Loading audit logs…</div>
+          <div className="px-4 py-12 text-center text-zinc-500 text-sm">Loading audit logs…</div>
         )}
 
         {!loading && !error && logs.length === 0 && (
-          <div className="px-4 py-12 text-center text-text-muted text-sm">No logs match the current filters.</div>
+          <div className="px-4 py-12 text-center text-zinc-500 text-sm">No logs match the current filters.</div>
         )}
 
         {logs.map((log, i) => <LogRow key={log.id} log={log} index={i} />)}
@@ -247,15 +247,15 @@ export default function AccessLogsPage() {
 
       {/* Pagination */}
       {total > LIMIT && (
-        <div className="flex items-center justify-between mt-4 text-micro text-text-muted">
+        <div className="flex items-center justify-between mt-4 text-micro text-zinc-500">
           <span>Showing {offset + 1}–{Math.min(offset + LIMIT, total)} of {total.toLocaleString()}</span>
           <div className="flex gap-2">
             <button disabled={offset === 0} onClick={() => { setOffset(o => Math.max(0, o - LIMIT)); fetchLogs(); }}
-              className="px-3 py-1 border border-border-DEFAULT hover:border-orange disabled:opacity-40 transition-colors text-text-secondary hover:text-text-primary">
+              className="px-3 py-1 border border-border-DEFAULT hover:border-orange disabled:opacity-40 transition-colors text-zinc-400 hover:text-zinc-100">
               ← Prev
             </button>
             <button disabled={offset + LIMIT >= total} onClick={() => { setOffset(o => o + LIMIT); fetchLogs(); }}
-              className="px-3 py-1 border border-border-DEFAULT hover:border-orange disabled:opacity-40 transition-colors text-text-secondary hover:text-text-primary">
+              className="px-3 py-1 border border-border-DEFAULT hover:border-orange disabled:opacity-40 transition-colors text-zinc-400 hover:text-zinc-100">
               Next →
             </button>
           </div>

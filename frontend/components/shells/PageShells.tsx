@@ -65,10 +65,10 @@ export function ModuleDashboardShell({
                   aria-hidden
                 />
               )}
-              <h1 className="text-h1 font-sans font-bold text-text-primary truncate">{title}</h1>
+              <h1 className="text-h1 font-sans font-bold text-zinc-100 truncate">{title}</h1>
             </div>
             {subtitle && (
-              <p className="text-body text-text-muted mt-1 ml-4">{subtitle}</p>
+              <p className="text-body text-zinc-500 mt-1 ml-4">{subtitle}</p>
             )}
           </div>
           {headerActions && (
@@ -190,8 +190,8 @@ export function ReviewQueueShell({
       <header className="flex-shrink-0 px-4 pt-4 pb-3 xl:px-6 border-b border-[var(--color-border-default)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-h2 font-sans font-bold text-text-primary">{title}</h1>
-            <span className="text-label font-label text-text-muted bg-bg-overlay px-2 py-0.5 chamfer-4">
+            <h1 className="text-h2 font-sans font-bold text-zinc-100">{title}</h1>
+            <span className="text-label font-label text-zinc-500 bg-bg-overlay px-2 py-0.5 chamfer-4">
               {count} item{count !== 1 ? 's' : ''}
             </span>
           </div>
@@ -246,7 +246,7 @@ export function SettingsShell({
   return (
     <div className={cn('flex flex-col h-full min-h-0', className)}>
       <header className="flex-shrink-0 px-4 pt-4 pb-3 xl:px-6 border-b border-[var(--color-border-default)]">
-        <h1 className="text-h1 font-sans font-bold text-text-primary">{title}</h1>
+        <h1 className="text-h1 font-sans font-bold text-zinc-100">{title}</h1>
       </header>
 
       <div className="flex-1 min-h-0 flex overflow-hidden">
@@ -259,8 +259,8 @@ export function SettingsShell({
               className={cn(
                 'w-full flex items-center gap-2 px-4 py-2.5 text-left text-body transition-colors duration-fast',
                 section.id === activeSection
-                  ? 'text-orange bg-orange-ghost border-r-2 border-orange'
-                  : 'text-text-muted hover:text-text-primary hover:bg-bg-overlay'
+                  ? 'text-[#FF4D00] bg-[#FF4D00]-ghost border-r-2 border-orange'
+                  : 'text-zinc-500 hover:text-zinc-100 hover:bg-bg-overlay'
               )}
               type="button"
             >

@@ -9,6 +9,7 @@ import logging
 import uuid
 from datetime import UTC, datetime
 from enum import StrEnum
+from functools import lru_cache
 
 from pydantic import BaseModel, Field
 
@@ -175,12 +176,6 @@ class IncidentService:
         return [i for i in self._incidents.values() if i.tenant_id == tenant_id]
 
 
-# Singleton for application lifetime. Production should be injected via DI.
-_incident_service: IncidentService | None = None
-
-
+@lru_cache(maxsize=1)
 def get_incident_service() -> IncidentService:
-    global _incident_service
-    if _incident_service is None:
-        _incident_service = IncidentService()
-    return _incident_service
+    return IncidentService()

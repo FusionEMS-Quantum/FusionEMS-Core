@@ -7,7 +7,7 @@ variable "project" {
 }
 
 variable "telnyx_api_key_secret_arn" {
-  type = string
+  type        = string
   description = "Secrets Manager ARN that contains TELNYX_API_KEY JSON key"
 }
 

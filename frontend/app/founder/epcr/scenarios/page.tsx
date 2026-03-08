@@ -89,13 +89,13 @@ export default function ScenariosPage() {
   };
 
   return (
-    <div className="p-5 space-y-6 min-h-screen bg-bg-void">
+    <div className="p-5 space-y-6 min-h-screen bg-black">
       <div>
         <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · TEST SCENARIOS
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Test Scenarios</h1>
-        <p className="text-xs text-text-muted mt-0.5">C&amp;S vendor test case browser and runner</p>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Test Scenarios</h1>
+        <p className="text-xs text-zinc-500 mt-0.5">C&amp;S vendor test case browser and runner</p>
       </div>
 
       <div className="flex items-center gap-3">
@@ -108,17 +108,17 @@ export default function ScenariosPage() {
         />
         <button
           onClick={() => uploadRef.current?.click()}
-          className="bg-bg-panel border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 hover:bg-cyan-500/[0.08] transition-colors"
+          className="bg-[#0A0A0B] border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 hover:bg-cyan-500/[0.08] transition-colors"
         >
           Upload Scenario File
         </button>
-        {uploadStatus && <span className="text-xs text-text-secondary">{uploadStatus}</span>}
+        {uploadStatus && <span className="text-xs text-zinc-400">{uploadStatus}</span>}
       </div>
 
       {loading ? (
         <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
       ) : scenarios.length === 0 ? (
-        <div className="text-xs text-text-muted">No scenarios uploaded yet</div>
+        <div className="text-xs text-zinc-500">No scenarios uploaded yet</div>
       ) : (
         <div className="space-y-3">
           {scenarios.map((scenario) => {
@@ -128,14 +128,14 @@ export default function ScenariosPage() {
             return (
               <div
                 key={scenario.id}
-                className="bg-bg-panel border border-border-DEFAULT p-4 space-y-3"
+                className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-sm font-bold text-text-primary">{d.name || 'Untitled Scenario'}</div>
+                    <div className="text-sm font-bold text-zinc-100">{d.name || 'Untitled Scenario'}</div>
                     {d.summary && (
-                      <div className="text-xs text-text-muted mt-0.5">{d.summary}</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">{d.summary}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -155,7 +155,7 @@ export default function ScenariosPage() {
                 {d.sections && d.sections.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {d.sections.map((s: string, i: number) => (
-                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-text-secondary px-2 py-0.5">
+                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-zinc-400 px-2 py-0.5">
                         {s}
                       </span>
                     ))}
@@ -166,11 +166,11 @@ export default function ScenariosPage() {
                   <button
                     onClick={() => runScenario(scenario.id)}
                     disabled={isRunning}
-                    className="text-xs bg-system-billing text-text-inverse font-bold px-4 py-1.5 hover:bg-system-billing disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="text-xs bg-system-billing text-black font-bold px-4 py-1.5 hover:bg-system-billing disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     {isRunning ? (
                       <span className="flex items-center gap-1.5">
-                        <span className="inline-block w-3 h-3 border-2 border-bg-void border-t-transparent rounded-full animate-spin" />
+                        <span className="inline-block w-3 h-3 border-2 border-bg-void border-t-transparent  animate-spin" />
                         Running...
                       </span>
                     ) : (
@@ -184,11 +184,11 @@ export default function ScenariosPage() {
                       >
                         {result.passed ? 'PASS' : 'FAIL'}
                       </span>
-                      <span className="text-xs text-text-muted">
+                      <span className="text-xs text-zinc-500">
                         {result.issue_count} issue{result.issue_count !== 1 ? 's' : ''}
                       </span>
                       {result.message && (
-                        <span className="text-xs text-text-muted">{result.message}</span>
+                        <span className="text-xs text-zinc-500">{result.message}</span>
                       )}
                     </div>
                   )}

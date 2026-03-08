@@ -7,9 +7,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
-        {sub && <span className="text-xs text-text-muted">{sub}</span>}
+        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
+        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
     </div>
   );
@@ -22,7 +22,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
       className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
-      <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
+      <span className="w-1 h-1 " style={{ background: c[status] }} />
       {label}
     </span>
   );
@@ -31,7 +31,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -82,21 +82,21 @@ export default function DocumentsVaultPage() {
   });
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-6">
+    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[#FF4D00]-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-100" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
           Documents Vault
         </h1>
-        <p className="text-xs text-text-muted mt-1">Contracts · BAAs · proposals · compliance certificates · legal</p>
+        <p className="text-xs text-zinc-500 mt-1">Contracts · BAAs · proposals · compliance certificates · legal</p>
       </motion.div>
 
       {/* MODULE 3 — Document Stats */}
@@ -109,7 +109,7 @@ export default function DocumentsVaultPage() {
             { label: 'Storage Used', value: '24 MB', status: 'ok' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-micro text-text-muted uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-zinc-500 uppercase tracking-wider">{s.label}</span>
               <span className="text-2xl font-bold" style={{ color: s.value === '2' || s.value === '1' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.9)' }}>
                 {s.value}
               </span>
@@ -129,18 +129,18 @@ export default function DocumentsVaultPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search documents..."
-              className="flex-1 bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
+              className="flex-1 bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-zinc-500"
             />
             <select
               value={catFilter}
               onChange={(e) => setCatFilter(e.target.value)}
-              className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+              className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
             >
               {['All', 'Contracts', 'BAA', 'Proposals', 'Certificates', 'Legal'].map((c) => (
-                <option key={c} value={c} className="bg-bg-panel">{c}</option>
+                <option key={c} value={c} className="bg-[#0A0A0B]">{c}</option>
               ))}
             </select>
-            <span className="text-body text-text-muted whitespace-nowrap">
+            <span className="text-body text-zinc-500 whitespace-nowrap">
               Showing {filtered.length} document{filtered.length !== 1 ? 's' : ''}
             </span>
           </div>
@@ -156,7 +156,7 @@ export default function DocumentsVaultPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Document', 'Category', 'Status', 'Date', 'Actions'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-text-muted font-semibold uppercase tracking-wider text-micro">
+                    <th key={h} className="text-left py-1.5 px-2 text-zinc-500 font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -164,9 +164,9 @@ export default function DocumentsVaultPage() {
               </thead>
               <tbody>
                 {filtered.map((doc, i) => (
-                  <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                    <td className="py-2 px-2 text-text-primary font-medium">{doc.name}</td>
-                    <td className="py-2 px-2 text-text-muted">{doc.category}</td>
+                  <tr key={i} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
+                    <td className="py-2 px-2 text-zinc-100 font-medium">{doc.name}</td>
+                    <td className="py-2 px-2 text-zinc-500">{doc.category}</td>
                     <td className="py-2 px-2">{statusBadge(doc.status)}</td>
                     <td className="py-2 px-2 font-mono text-brand-orange text-body">{doc.date}</td>
                     <td className="py-2 px-2">
@@ -177,7 +177,7 @@ export default function DocumentsVaultPage() {
                             className="text-micro font-semibold px-2 py-0.5 chamfer-4 transition-all hover:brightness-110"
                             style={{
                               background: a === 'View' ? 'rgba(41,182,246,0.1)' : 'rgba(255,107,26,0.1)',
-                              color: a === 'View' ? 'var(--color-status-info)' : 'var(--color-brand-orange)',
+                              color: a === 'View' ? 'var(--color-status-info)' : '#FF4D00',
                               border: `1px solid ${a === 'View' ? 'rgba(41,182,246,0.25)' : 'rgba(255,107,26,0.25)'}`,
                             }}
                           >
@@ -201,8 +201,8 @@ export default function DocumentsVaultPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
               <div>
-                <p className="text-xs font-semibold text-text-primary">Agency B Service Agreement</p>
-                <p className="text-micro text-text-muted mt-0.5">Sent Jan 22 · Waiting for client signature</p>
+                <p className="text-xs font-semibold text-zinc-100">Agency B Service Agreement</p>
+                <p className="text-micro text-zinc-500 mt-0.5">Sent Jan 22 · Waiting for client signature</p>
               </div>
               <button
                 className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
@@ -213,12 +213,12 @@ export default function DocumentsVaultPage() {
             </div>
             <div className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
               <div>
-                <p className="text-xs font-semibold text-text-primary">Agency E Renewal Agreement</p>
-                <p className="text-micro text-text-muted mt-0.5">Draft · Not yet sent</p>
+                <p className="text-xs font-semibold text-zinc-100">Agency E Renewal Agreement</p>
+                <p className="text-micro text-zinc-500 mt-0.5">Draft · Not yet sent</p>
               </div>
               <button
                 className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
-                style={{ background: 'var(--color-brand-orange)', color: '#000' }}
+                style={{ background: '#FF4D00', color: '#000' }}
               >
                 Send for Signature
               </button>
@@ -238,10 +238,10 @@ export default function DocumentsVaultPage() {
                 className="flex items-center justify-between p-3 chamfer-4"
                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
-                <span className="text-xs text-text-primary">{t}</span>
+                <span className="text-xs text-zinc-100">{t}</span>
                 <button
                   className="text-micro font-bold px-2 py-1 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110 ml-2 whitespace-nowrap"
-                  style={{ background: 'rgba(255,107,26,0.12)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.25)' }}
+                  style={{ background: 'rgba(255,107,26,0.12)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.25)' }}
                 >
                   Use Template
                 </button>
@@ -252,7 +252,7 @@ export default function DocumentsVaultPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

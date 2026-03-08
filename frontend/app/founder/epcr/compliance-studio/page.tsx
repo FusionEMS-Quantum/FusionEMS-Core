@@ -214,19 +214,19 @@ export default function ComplianceStudioPage() {
   const mediumCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'MEDIUM').length ?? 0;
 
   return (
-    <div className="p-5 space-y-6 min-h-screen bg-bg-void">
+    <div className="p-5 space-y-6 min-h-screen bg-black">
       <div>
         <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · COMPLIANCE STUDIO
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Compliance Studio</h1>
-        <p className="text-xs text-text-muted mt-0.5">
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Compliance Studio</h1>
+        <p className="text-xs text-zinc-500 mt-0.5">
           Turn-key visual certification — resource packs, validation, AI fix list
         </p>
       </div>
 
-      <div className="bg-bg-panel border border-border-DEFAULT p-4 space-y-2">
-        <div className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">Pack Status</div>
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-2">
+        <div className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Pack Status</div>
         {packLoading ? (
           <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
         ) : (
@@ -240,9 +240,9 @@ export default function ComplianceStudioPage() {
               return (
                 <div key={key} className="flex items-center gap-2 bg-bg-input border border-border-DEFAULT px-3 py-2">
                   <span
-                    className={`inline-block w-2 h-2 rounded-full ${pack?.active ? 'bg-green-400' : 'bg-red-500'}`}
+                    className={`inline-block w-2 h-2  ${pack?.active ? 'bg-green-400' : 'bg-red-500'}`}
                   />
-                  <span className="text-xs text-text-primary">{pack?.name || label}</span>
+                  <span className="text-xs text-zinc-100">{pack?.name || label}</span>
                   <span className={`text-micro font-bold ${pack?.active ? 'text-green-400' : 'text-red-400'}`}>
                     {pack?.active ? 'Active' : 'Missing'}
                   </span>
@@ -254,15 +254,15 @@ export default function ComplianceStudioPage() {
       </div>
 
       <div
-        className={`border-2 border-dashed chamfer-4 transition-colors ${isDragging ? 'border-cyan-400 bg-bg-input' : 'border-border-strong bg-bg-panel'} p-8 text-center`}
+        className={`border-2 border-dashed chamfer-4 transition-colors ${isDragging ? 'border-cyan-400 bg-bg-input' : 'border-border-strong bg-[#0A0A0B]'} p-8 text-center`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        <div className="text-text-secondary text-sm mb-2">
+        <div className="text-zinc-400 text-sm mb-2">
           Drop NEMSIS resource files here (XSD, Schematron, StateDataSet, ZIP)
         </div>
-        <div className="text-text-muted text-xs mb-4">or click to browse</div>
+        <div className="text-zinc-500 text-xs mb-4">or click to browse</div>
         <input
           ref={dropFileInputRef}
           type="file"
@@ -277,12 +277,12 @@ export default function ComplianceStudioPage() {
           Browse Files
         </button>
         {uploadStatus && (
-          <div className="mt-3 text-xs text-text-secondary">{uploadStatus}</div>
+          <div className="mt-3 text-xs text-zinc-400">{uploadStatus}</div>
         )}
       </div>
 
-      <div className="bg-bg-panel border border-border-DEFAULT p-4 space-y-3">
-        <div className="text-xs font-bold uppercase tracking-wider text-text-secondary">Validate XML File</div>
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3">
+        <div className="text-xs font-bold uppercase tracking-wider text-zinc-400">Validate XML File</div>
         <div className="flex items-center gap-3">
           <input
             ref={fileInputRef}
@@ -293,18 +293,18 @@ export default function ComplianceStudioPage() {
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="bg-bg-input border border-border-strong text-text-secondary text-xs px-3 py-2 hover:border-white/[0.3] transition-colors"
+            className="bg-bg-input border border-border-strong text-zinc-400 text-xs px-3 py-2 hover:border-white/[0.3] transition-colors"
           >
             {validationFile ? validationFile.name : 'Choose XML file'}
           </button>
           <button
             onClick={runValidation}
             disabled={!validationFile || validationLoading}
-            className="bg-system-billing text-text-inverse text-xs font-bold px-5 py-2 hover:bg-system-billing disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="bg-system-billing text-black text-xs font-bold px-5 py-2 hover:bg-system-billing disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {validationLoading ? (
               <span className="flex items-center gap-2">
-                <span className="inline-block w-3 h-3 border-2 border-bg-void border-t-transparent rounded-full animate-spin" />
+                <span className="inline-block w-3 h-3 border-2 border-bg-void border-t-transparent  animate-spin" />
                 Running...
               </span>
             ) : (
@@ -328,7 +328,7 @@ export default function ComplianceStudioPage() {
             </div>
             <button
               onClick={sendAllToAgent}
-              className="text-xs bg-bg-panel border border-cyan-500/[0.3] text-system-billing px-3 py-1.5 hover:bg-cyan-500/[0.08] transition-colors"
+              className="text-xs bg-[#0A0A0B] border border-cyan-500/[0.3] text-system-billing px-3 py-1.5 hover:bg-cyan-500/[0.08] transition-colors"
             >
               Send All to Agent
             </button>
@@ -338,7 +338,7 @@ export default function ComplianceStudioPage() {
             {validationResult.issues.map((issue, idx) => (
               <div
                 key={idx}
-                className="bg-bg-panel border border-border-DEFAULT p-4 space-y-2"
+                className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-2"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <SeverityBadge
@@ -348,19 +348,19 @@ export default function ComplianceStudioPage() {
                   />
                   <span className="text-xs font-mono text-system-billing">{issue.element_id}</span>
                   {issue.ui_section && (
-                    <span className="text-micro text-text-muted">{issue.ui_section}</span>
+                    <span className="text-micro text-zinc-500">{issue.ui_section}</span>
                   )}
                   {issue.rule_source && (
                     <span
-                      className={`text-micro font-bold px-2 py-0.5 ${issue.rule_source.toLowerCase().includes('wisconsin') ? 'bg-blue-900 text-blue-300' : 'bg-bg-raised text-text-secondary'}`}
+                      className={`text-micro font-bold px-2 py-0.5 ${issue.rule_source.toLowerCase().includes('wisconsin') ? 'bg-blue-900 text-blue-300' : 'bg-bg-raised text-zinc-400'}`}
                     >
                       {issue.rule_source}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-text-primary">{issue.plain_message}</p>
+                <p className="text-xs text-zinc-100">{issue.plain_message}</p>
                 {issue.fix_hint && (
-                  <p className="text-body text-text-muted italic">{issue.fix_hint}</p>
+                  <p className="text-body text-zinc-500 italic">{issue.fix_hint}</p>
                 )}
                 <div>
                   <button
@@ -379,13 +379,13 @@ export default function ComplianceStudioPage() {
                         {aiExplanations[idx]!.fix_type}
                       </span>
                     </div>
-                    <p className="text-xs text-text-primary">{aiExplanations[idx]!.plain_explanation}</p>
+                    <p className="text-xs text-zinc-100">{aiExplanations[idx]!.plain_explanation}</p>
                     {aiExplanations[idx]!.patch_task?.steps?.length > 0 && (
                       <div>
-                        <div className="text-micro text-text-muted mb-1 uppercase tracking-wider">Steps</div>
+                        <div className="text-micro text-zinc-500 mb-1 uppercase tracking-wider">Steps</div>
                         <ol className="space-y-1 list-decimal list-inside">
                           {aiExplanations[idx]!.patch_task.steps.map((step, si) => (
-                            <li key={si} className="text-body text-text-secondary">{step}</li>
+                            <li key={si} className="text-body text-zinc-400">{step}</li>
                           ))}
                         </ol>
                       </div>
@@ -398,14 +398,14 @@ export default function ComplianceStudioPage() {
         </div>
       )}
 
-      <div className="bg-bg-panel border border-border-DEFAULT p-4">
-        <div className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4">
+        <div className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">
           Certification Checklist
         </div>
         {certLoading ? (
           <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
         ) : certChecks.length === 0 ? (
-          <div className="text-xs text-text-muted">No checklist data available</div>
+          <div className="text-xs text-zinc-500">No checklist data available</div>
         ) : (
           <div className="space-y-1.5">
             {certChecks.map((check, idx) => (
@@ -413,7 +413,7 @@ export default function ComplianceStudioPage() {
                 <span className={`text-sm ${check.passed ? 'text-green-400' : 'text-red-400'}`}>
                   {check.passed ? '✓' : '✗'}
                 </span>
-                <span className="text-xs text-text-secondary">{check.label}</span>
+                <span className="text-xs text-zinc-400">{check.label}</span>
               </div>
             ))}
           </div>

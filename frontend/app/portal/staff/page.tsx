@@ -87,10 +87,10 @@ function ReadinessBar({ score }: { score: number }) {
   const color = pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+      <div className="flex-1 h-1.5 bg-zinc-950/10  overflow-hidden">
+        <div className={`h-full  transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-micro font-bold text-text-muted w-8">{pct}%</span>
+      <span className="text-micro font-bold text-zinc-500 w-8">{pct}%</span>
     </div>
   );
 }
@@ -111,15 +111,15 @@ function RosterTable({ crew }: { crew: CrewMember[] }) {
       <input
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className="w-full max-w-xs bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+        className="w-full max-w-xs bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
         placeholder="Search name, role, or certification…"
       />
-      <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+      <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-border-subtle">
               {['Name','Role','Cert Level','Station','Status','Readiness','Credentials'].map(h => (
-                <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
               ))}
             </tr>
           </thead>
@@ -130,22 +130,22 @@ function RosterTable({ crew }: { crew: CrewMember[] }) {
                 return d !== null && d <= 30;
               });
               return (
-                <tr key={member.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
+                <tr key={member.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {member.fatigue_flagged && (
-                        <span title="Fatigue flagged" className="text-orange-400 text-xs">⚠</span>
+                        <span title="Fatigue flagged" className="text-[#FF7A33] text-xs">⚠</span>
                       )}
-                      <span className="text-sm font-semibold text-text-primary">{member.name}</span>
+                      <span className="text-sm font-semibold text-zinc-100">{member.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">{member.role || '—'}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-text-secondary">{member.certification_level || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">{member.station || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400">{member.role || '—'}</td>
+                  <td className="px-4 py-3 text-sm font-mono text-zinc-400">{member.certification_level || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400">{member.station || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      <div className={`w-2 h-2 rounded-full ${member.on_duty ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-                      <span className={`text-xs font-semibold ${member.on_duty ? 'text-green-400' : 'text-gray-500'}`}>
+                      <div className={`w-2 h-2  ${member.on_duty ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
+                      <span className={`text-xs font-semibold ${member.on_duty ? 'text-green-400' : 'text-zinc-500'}`}>
                         {member.on_duty ? 'On Duty' : 'Off Duty'}
                       </span>
                     </div>
@@ -153,7 +153,7 @@ function RosterTable({ crew }: { crew: CrewMember[] }) {
                   <td className="px-4 py-3 w-32">
                     {member.readiness_score != null
                       ? <ReadinessBar score={member.readiness_score} />
-                      : <span className="text-micro text-text-muted">—</span>}
+                      : <span className="text-micro text-zinc-500">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
@@ -162,7 +162,7 @@ function RosterTable({ crew }: { crew: CrewMember[] }) {
                       ) : (member.qualifications || []).length > 0 ? (
                         <span className="text-micro text-green-400">✓ {(member.qualifications || []).length} current</span>
                       ) : (
-                        <span className="text-micro text-text-muted">—</span>
+                        <span className="text-micro text-zinc-500">—</span>
                       )}
                     </div>
                   </td>
@@ -172,7 +172,7 @@ function RosterTable({ crew }: { crew: CrewMember[] }) {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="text-center py-8 text-sm text-text-muted">
+          <div className="text-center py-8 text-sm text-zinc-500">
             {search ? 'No crew members match your search.' : 'No crew members found.'}
           </div>
         )}
@@ -195,12 +195,12 @@ function ShiftsView({ shifts }: { shifts: ShiftInstance[] }) {
   }
 
   return (
-    <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+    <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-border-subtle">
             {['Unit / Template','Start','End','Crew','State'].map(h => (
-              <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+              <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
             ))}
           </tr>
         </thead>
@@ -210,24 +210,24 @@ function ShiftsView({ shifts }: { shifts: ShiftInstance[] }) {
             const end = new Date(shift.end_time);
             const durationHrs = Math.round((end.getTime() - start.getTime()) / 3600000);
             return (
-              <tr key={shift.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                <td className="px-4 py-3 text-sm font-semibold text-text-primary">{shift.unit_name || shift.id.slice(0, 8)}</td>
-                <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+              <tr key={shift.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                <td className="px-4 py-3 text-sm font-semibold text-zinc-100">{shift.unit_name || shift.id.slice(0, 8)}</td>
+                <td className="px-4 py-3 text-sm font-mono text-zinc-400">
                   {start.toLocaleDateString()} {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </td>
-                <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                <td className="px-4 py-3 text-sm font-mono text-zinc-400">
                   {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  <span className="text-micro text-text-muted ml-1">({durationHrs}h)</span>
+                  <span className="text-micro text-zinc-500 ml-1">({durationHrs}h)</span>
                 </td>
-                <td className="px-4 py-3 text-sm text-text-secondary">
+                <td className="px-4 py-3 text-sm text-zinc-400">
                   {(shift.assigned_crew || []).length > 0
                     ? (shift.assigned_crew || []).join(', ')
-                    : <span className="text-text-muted text-micro italic">Unassigned</span>}
+                    : <span className="text-zinc-500 text-micro italic">Unassigned</span>}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`text-xs font-semibold px-2 py-0.5 chamfer-4 border ${
                     shift.state === 'ACTIVE' ? 'bg-green-900/30 border-green-500/40 text-green-300' :
-                    shift.state === 'DRAFT' ? 'bg-gray-800/50 border-gray-600 text-gray-400' :
+                    shift.state === 'DRAFT' ? 'bg-zinc-900/50 border-gray-600 text-zinc-500' :
                     'bg-blue-900/30 border-blue-500/40 text-blue-300'
                   }`}>
                     {shift.state}
@@ -265,7 +265,7 @@ function CredentialAlerts({ crew }: { crew: CrewMember[] }) {
   return (
     <div className="bg-yellow-900/20 border border-yellow-500/30 chamfer-8 p-4 mb-5">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+        <div className="w-2 h-2  bg-yellow-400 animate-pulse" />
         <span className="text-sm font-bold text-yellow-400">
           {alerts.filter(a => a.days <= 0).length > 0
             ? `⚠ ${alerts.filter(a => a.days <= 0).length} expired + ${alerts.filter(a => a.days > 0).length} expiring credentials`
@@ -276,7 +276,7 @@ function CredentialAlerts({ crew }: { crew: CrewMember[] }) {
         {alerts.slice(0, 8).map((a, i) => (
           <div key={i} className={`chamfer-4 border px-3 py-1.5 text-xs ${
             a.days <= 0 ? 'bg-red-900/30 border-red-500/40 text-red-300' :
-            a.days <= 14 ? 'bg-orange-900/30 border-orange-500/40 text-orange-300' :
+            a.days <= 14 ? 'bg-[rgba(255,77,0,0.3)] border-orange-500/40 text-[#FF9A66]' :
             'bg-yellow-900/30 border-yellow-500/40 text-yellow-300'
           }`}>
             <span className="font-bold">{a.name}</span>
@@ -345,18 +345,18 @@ export default function StaffPage() {
     crew.reduce((n, c) => n + (c.qualifications || []).filter(q => q.expiry_date && daysUntil(q.expiry_date) <= 30).length, 0);
 
   return (
-    <div className="flex flex-col bg-bg-void min-h-screen">
+    <div className="flex flex-col bg-black min-h-screen">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border-subtle bg-bg-panel/50 px-5 py-4">
+      <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs font-black text-text-primary uppercase tracking-widest">Personnel & Credentials Hub</div>
-            <div className="text-micro text-text-muted">Roster management · Credential tracking · Shift coverage · Fatigue monitoring</div>
+            <div className="text-xs font-black text-zinc-100 uppercase tracking-widest">Personnel & Credentials Hub</div>
+            <div className="text-micro text-zinc-500">Roster management · Credential tracking · Shift coverage · Fatigue monitoring</div>
           </div>
           <div className="flex items-center gap-3">
             {fatigueFlagged > 0 && (
-              <div className="flex items-center gap-1.5 bg-orange-900/30 border border-orange-500/40 chamfer-4 px-3 py-1.5">
-                <span className="text-micro font-bold text-orange-400">⚠ {fatigueFlagged} fatigue flag{fatigueFlagged > 1 ? 's' : ''}</span>
+              <div className="flex items-center gap-1.5 bg-[rgba(255,77,0,0.3)] border border-orange-500/40 chamfer-4 px-3 py-1.5">
+                <span className="text-micro font-bold text-[#FF7A33]">⚠ {fatigueFlagged} fatigue flag{fatigueFlagged > 1 ? 's' : ''}</span>
               </div>
             )}
           </div>
@@ -367,12 +367,12 @@ export default function StaffPage() {
           {[
             { label: 'On Duty Now', value: `${onDuty} / ${totalCrew}`, color: 'text-green-400' },
             { label: 'Active Shifts', value: shifts.filter(s => s.state === 'ACTIVE').length.toString(), color: 'text-blue-400' },
-            { label: 'Fatigue Flags', value: fatigueFlagged.toString(), color: fatigueFlagged > 0 ? 'text-orange-400' : 'text-text-muted' },
-            { label: 'Creds Expiring (30d)', value: expiringCreds.toString(), color: expiringCreds > 0 ? 'text-yellow-400' : 'text-text-muted' },
+            { label: 'Fatigue Flags', value: fatigueFlagged.toString(), color: fatigueFlagged > 0 ? 'text-[#FF7A33]' : 'text-zinc-500' },
+            { label: 'Creds Expiring (30d)', value: expiringCreds.toString(), color: expiringCreds > 0 ? 'text-yellow-400' : 'text-zinc-500' },
           ].map(m => (
-            <div key={m.label} className="bg-bg-panel border border-border-subtle chamfer-8 px-4 py-3">
+            <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
               <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
-              <div className="text-micro text-text-muted mt-0.5">{m.label}</div>
+              <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
             </div>
           ))}
         </div>
@@ -384,7 +384,7 @@ export default function StaffPage() {
               key={v}
               onClick={() => setActiveView(v)}
               className={`px-4 py-2 text-micro font-semibold capitalize border-b-2 transition-colors ${
-                activeView === v ? 'border-brand-orange text-brand-orange' : 'border-transparent text-text-muted hover:text-text-secondary'
+                activeView === v ? 'border-brand-orange text-brand-orange' : 'border-transparent text-zinc-500 hover:text-zinc-400'
               }`}
             >
               {v === 'roster' ? 'Crew Roster' : v === 'shifts' ? 'Shift Schedule' : 'Audit Log'}
@@ -417,25 +417,25 @@ export default function StaffPage() {
           auditLog.length === 0 ? (
             <QuantumEmptyState title="No audit events" description="Staffing audit events will appear here." icon="document" />
           ) : (
-            <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+            <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-border-subtle">
                     {['Timestamp','Actor','Action','Target','Details'].map(h => (
-                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {auditLog.slice(0, 100).map((event, i) => (
-                    <tr key={i} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 text-xs font-mono text-text-muted">
+                    <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                      <td className="px-4 py-3 text-xs font-mono text-zinc-500">
                         {event.created_at ? new Date(event.created_at as string).toLocaleString() : '—'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-text-secondary">{(event.actor as string) || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-zinc-400">{(event.actor as string) || '—'}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-brand-orange">{(event.action as string) || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-text-secondary">{(event.target as string) || '—'}</td>
-                      <td className="px-4 py-3 text-xs text-text-muted max-w-xs truncate">
+                      <td className="px-4 py-3 text-sm text-zinc-400">{(event.target as string) || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-zinc-500 max-w-xs truncate">
                         {event.details ? JSON.stringify(event.details) : '—'}
                       </td>
                     </tr>

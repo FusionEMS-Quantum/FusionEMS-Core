@@ -86,33 +86,33 @@ function InspectionPageInner() {
 
   if (phase === "setup") {
     return (
-      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#050505] text-zinc-100 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="mb-6 text-center">
-            <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-lg font-bold mx-auto mb-3">309</div>
-            <h1 className="text-xl font-bold text-text-primary">Trans 309 Inspection</h1>
-            <p className="text-sm text-text-muted mt-1">Wisconsin DOT Compliance Mode</p>
+            <div className="w-12 h-12  bg-blue-600 flex items-center justify-center text-lg font-bold mx-auto mb-3">309</div>
+            <h1 className="text-xl font-bold text-zinc-100">Trans 309 Inspection</h1>
+            <p className="text-sm text-zinc-500 mt-1">Wisconsin DOT Compliance Mode</p>
           </div>
 
-          <div className="rounded-xl border border-border-subtle bg-bg-panel p-5 space-y-4">
+          <div className=" border border-border-subtle bg-[#0A0A0B] p-5 space-y-4">
             {actionError && (
-              <div className="text-xs text-red-400 border border-red-900/40 bg-red-900/20 rounded p-2">
+              <div className="text-xs text-red-400 border border-red-900/40 bg-red-900/20  p-2">
                 {actionError}
               </div>
             )}
             <div>
-              <label className="text-xs text-text-muted block mb-1">Unit ID</label>
+              <label className="text-xs text-zinc-500 block mb-1">Unit ID</label>
               <input
-                className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+                className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100 placeholder-gray-500"
                 placeholder="e.g. M12"
                 value={unitId}
                 onChange={(e) => setUnitId(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-xs text-text-muted block mb-1">Unit Profile</label>
+              <label className="text-xs text-zinc-500 block mb-1">Unit Profile</label>
               <select
-                className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary"
+                className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100"
                 value={unitProfile}
                 onChange={(e) => setUnitProfile(e.target.value)}
               >
@@ -122,9 +122,9 @@ function InspectionPageInner() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-text-muted block mb-1">Compliance Pack</label>
+              <label className="text-xs text-zinc-500 block mb-1">Compliance Pack</label>
               <select
-                className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary"
+                className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100"
                 value={packKey}
                 onChange={(e) => setPackKey(e.target.value)}
               >
@@ -135,7 +135,7 @@ function InspectionPageInner() {
             <button
               onClick={startInspection}
               disabled={!unitId}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg text-sm font-semibold transition-colors"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50  text-sm font-semibold transition-colors"
             >
               Start Inspection
             </button>
@@ -147,12 +147,12 @@ function InspectionPageInner() {
 
   if (phase === "checklist") {
     return (
-      <div className="min-h-screen bg-bg-base text-text-primary p-4 max-w-lg mx-auto">
+      <div className="min-h-screen bg-[#050505] text-zinc-100 p-4 max-w-lg mx-auto">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => setPhase("setup")} className="text-text-muted hover:text-text-primary text-sm">← Back</button>
+          <button onClick={() => setPhase("setup")} className="text-zinc-500 hover:text-zinc-100 text-sm">← Back</button>
           <div>
-            <h1 className="text-lg font-bold text-text-primary">Unit {unitId} — {unitProfile}</h1>
-            <p className="text-xs text-text-muted">{packKey} · Inspection ID: {inspectionId?.slice(0, 8)}…</p>
+            <h1 className="text-lg font-bold text-zinc-100">Unit {unitId} — {unitProfile}</h1>
+            <p className="text-xs text-zinc-500">{packKey} · Inspection ID: {inspectionId?.slice(0, 8)}…</p>
           </div>
         </div>
 
@@ -173,7 +173,7 @@ function InspectionPageInner() {
           />
 
           <div className="pt-2 pb-1">
-            <p className="text-xs text-text-muted font-medium uppercase tracking-wider">Mandatory Equipment (10 items)</p>
+            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Mandatory Equipment (10 items)</p>
           </div>
 
           {MANDATORY_ITEMS.map((item) => (
@@ -190,7 +190,7 @@ function InspectionPageInner() {
           <button
             onClick={submitInspection}
             disabled={!allAnswered || submitting}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 rounded-xl text-sm font-semibold transition-colors"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40  text-sm font-semibold transition-colors"
           >
             {submitting ? "Submitting…" : allAnswered ? "Submit Inspection" : `Answer all items (${Object.values(responses).filter((v) => v !== null).length}/${Object.keys(responses).length})`}
           </button>
@@ -202,27 +202,27 @@ function InspectionPageInner() {
   if (phase === "result" && result) {
     const passed = result.result_status === "pass" || result.result_status === "pass_with_warnings";
     return (
-      <div className="min-h-screen bg-bg-base text-text-primary flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#050505] text-zinc-100 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className={`rounded-xl border p-6 text-center ${passed ? "border-emerald-700 bg-emerald-900/20" : "border-red-700 bg-red-900/20"}`}>
+          <div className={` border p-6 text-center ${passed ? "border-emerald-700 bg-emerald-900/20" : "border-red-700 bg-red-900/20"}`}>
             <div className={`text-5xl mb-3 ${passed ? "text-emerald-400" : "text-red-400"}`}>
               {passed ? "✓" : "✗"}
             </div>
-            <h2 className="text-xl font-bold text-text-primary mb-1">
+            <h2 className="text-xl font-bold text-zinc-100 mb-1">
               {result.result_status === "pass" ? "PASS" : result.result_status === "pass_with_warnings" ? "PASS WITH WARNINGS" : "FAIL"}
             </h2>
             {result.hard_fail && (
               <p className="text-sm text-red-400 mb-3">HARD FAIL — Expired medications or fluids found</p>
             )}
-            <p className="text-sm text-text-muted">Unit {unitId} · {new Date().toLocaleDateString()}</p>
+            <p className="text-sm text-zinc-500">Unit {unitId} · {new Date().toLocaleDateString()}</p>
 
             {result.findings?.length > 0 && (
               <div className="mt-4 text-left space-y-2">
-                <p className="text-xs text-text-muted font-medium uppercase tracking-wider">Findings ({result.findings.length})</p>
+                <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Findings ({result.findings.length})</p>
                 {result.findings.map((f: any) => (
                   <div key={f.id} className="flex items-start gap-2 text-xs">
                     <span className="mt-0.5 text-red-400">●</span>
-                    <span className="text-text-secondary">{f.rule_id}</span>
+                    <span className="text-zinc-400">{f.rule_id}</span>
                   </div>
                 ))}
               </div>
@@ -230,11 +230,11 @@ function InspectionPageInner() {
 
             {result.warnings?.length > 0 && (
               <div className="mt-3 text-left space-y-2">
-                <p className="text-xs text-text-muted font-medium uppercase tracking-wider">Warnings ({result.warnings.length})</p>
+                <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Warnings ({result.warnings.length})</p>
                 {result.warnings.map((w: any) => (
                   <div key={w.id} className="flex items-start gap-2 text-xs">
                     <span className="mt-0.5 text-amber-400">●</span>
-                    <span className="text-text-secondary">{w.rule_id}</span>
+                    <span className="text-zinc-400">{w.rule_id}</span>
                   </div>
                 ))}
               </div>
@@ -243,12 +243,12 @@ function InspectionPageInner() {
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button
                 onClick={() => { setPhase("setup"); setResult(null); setInspectionId(null); }}
-                className="py-2 border border-border-DEFAULT rounded-lg text-sm text-text-secondary hover:bg-bg-raised transition-colors"
+                className="py-2 border border-border-DEFAULT  text-sm text-zinc-400 hover:bg-bg-raised transition-colors"
               >
                 New Inspection
               </button>
               <button
-                className="py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors"
+                className="py-2 bg-blue-600 hover:bg-blue-500  text-sm font-medium transition-colors"
                 onClick={() => window.print()}
               >
                 Print Report
@@ -273,25 +273,25 @@ function CheckRow({
   onChange: (_v: boolean) => void;
 }) {
   return (
-    <div className={`rounded-lg border p-3 ${value === null ? "border-border-subtle bg-bg-panel" : value === true ? "border-emerald-800 bg-emerald-900/20" : "border-red-800 bg-red-900/20"}`}>
+    <div className={` border p-3 ${value === null ? "border-border-subtle bg-[#0A0A0B]" : value === true ? "border-emerald-800 bg-emerald-900/20" : "border-red-800 bg-red-900/20"}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <p className="text-sm text-text-primary font-medium">
+          <p className="text-sm text-zinc-100 font-medium">
             {label}
             {hardFail && <span className="ml-2 text-xs text-red-400 font-normal">hard fail if NO</span>}
           </p>
-          {sublabel && <p className="text-xs text-text-muted mt-0.5">{sublabel}</p>}
+          {sublabel && <p className="text-xs text-zinc-500 mt-0.5">{sublabel}</p>}
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <button
             onClick={() => onChange(true)}
-            className={`w-12 py-1 rounded text-xs font-semibold transition-colors ${value === true ? "bg-emerald-600 text-text-primary" : "bg-bg-raised text-text-muted hover:bg-emerald-900/40 hover:text-emerald-400"}`}
+            className={`w-12 py-1  text-xs font-semibold transition-colors ${value === true ? "bg-emerald-600 text-zinc-100" : "bg-bg-raised text-zinc-500 hover:bg-emerald-900/40 hover:text-emerald-400"}`}
           >
             YES
           </button>
           <button
             onClick={() => onChange(false)}
-            className={`w-12 py-1 rounded text-xs font-semibold transition-colors ${value === false ? "bg-red-600 text-text-primary" : "bg-bg-raised text-text-muted hover:bg-red-900/40 hover:text-red-400"}`}
+            className={`w-12 py-1  text-xs font-semibold transition-colors ${value === false ? "bg-red-600 text-zinc-100" : "bg-bg-raised text-zinc-500 hover:bg-red-900/40 hover:text-red-400"}`}
           >
             NO
           </button>
@@ -303,7 +303,7 @@ function CheckRow({
 
 export default function InspectionPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-bg-base flex items-center justify-center text-text-muted">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#050505] flex items-center justify-center text-zinc-500">Loading...</div>}>
       <InspectionPageInner />
     </Suspense>
   );

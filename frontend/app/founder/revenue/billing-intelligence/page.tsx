@@ -11,7 +11,7 @@ const REVENUE_METRICS = [
   { label: 'MoM Growth', value: '+8.4%', color: 'var(--color-status-active)', dir: '▲' },
   { label: 'QoQ Growth', value: '+22.1%', color: 'var(--color-status-active)', dir: '▲' },
   { label: 'YoY Growth', value: '+41.7%', color: 'var(--color-status-active)', dir: '▲' },
-  { label: 'Run Rate (ARR)', value: '$2.84M', color: 'var(--color-brand-orange)', dir: '' },
+  { label: 'Run Rate (ARR)', value: '$2.84M', color: '#FF4D00', dir: '' },
 ];
 
 const DENIAL_REASONS = [

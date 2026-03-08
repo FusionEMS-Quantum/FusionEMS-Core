@@ -284,7 +284,7 @@ class CADService:
         await self.update_unit_status(
             tenant_id=tenant_id,
             unit_id=unit_id,
-            new_state=CADUnitState.DISPATCHED.value,
+            new_state=CADUnitState.ASSIGNED.value,
             actor_user_id=actor_user_id,
             reason=f"Assigned to call {call_id}",
         )

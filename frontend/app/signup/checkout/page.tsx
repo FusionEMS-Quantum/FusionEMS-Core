@@ -67,13 +67,13 @@ export default function CheckoutPage() {
 
   return (
     <div
-      className="chamfer-4 border p-6 md:p-8"
+      className=" bg-zinc-950 border border-zinc-800 p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Header */}
       <div className="mb-6 border-b pb-5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <h1
-          className="text-xl font-bold uppercase tracking-wider text-text-primary"
+          className="text-2xl font-black tracking-[0.1em] text-white uppercase"
           style={{ fontFamily: "'Barlow Condensed', 'Barlow', sans-serif" }}
         >
           Checkout
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
 
       {/* Plan Summary Card */}
       <div
-        className="chamfer-4 border mb-7 overflow-hidden"
+        className=" border mb-7 overflow-hidden"
         style={{ borderColor: 'rgba(255,255,255,0.08)' }}
       >
         {/* Card header */}
@@ -98,7 +98,7 @@ export default function CheckoutPage() {
         >
           <span
             className="text-xs font-bold uppercase tracking-wider"
-            style={{ color: 'var(--q-orange)' }}
+            style={{ color: '#FF4D00' }}
           >
             Order Summary
           </span>
@@ -113,10 +113,10 @@ export default function CheckoutPage() {
             <div className="flex items-center gap-2 mb-0.5">
               {/* Hex icon */}
               <svg width="18" height="18" viewBox="0 0 36 36" fill="none">
-                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--color-brand-orange)" />
+                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#FF4D00" />
                 <text x="18" y="23" textAnchor="middle" fill="black" fontSize="11" fontWeight="900" fontFamily="'Barlow Condensed', sans-serif">FQ</text>
               </svg>
-              <span className="text-sm font-bold text-text-primary tracking-wide">
+              <span className="text-sm font-bold text-zinc-100 tracking-wide">
                 FusionEMS Quantum
               </span>
             </div>
@@ -173,8 +173,8 @@ export default function CheckoutPage() {
       {status === 'loading' && (
         <div className="flex flex-col items-center justify-center py-10 gap-4">
           <svg className="animate-spin h-10 w-10" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="var(--color-brand-orange)" strokeWidth="3" />
-            <path className="opacity-80" fill="var(--color-brand-orange)" d="M4 12a8 8 0 018-8v8z" />
+            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="3" />
+            <path className="opacity-80" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
           </svg>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
             Preparing your checkout session…
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
       {status === 'fallback' && (
         <div className="flex flex-col items-center gap-4 py-6">
           <div
-            className="chamfer-4 border px-4 py-3 text-sm w-full"
+            className=" border px-4 py-3 text-sm w-full"
             style={{
               backgroundColor: 'rgba(34,211,238,0.06)',
               borderColor: 'rgba(34,211,238,0.2)',
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
             href={checkoutUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4 inline-block"
+            className="bg-[#FF4D00] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all  inline-block"
           >
             Continue to Stripe Checkout →
           </a>
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
       {status === 'error' && (
         <div className="space-y-4">
           <div
-            className="chamfer-4 border px-4 py-3 text-sm"
+            className=" border px-4 py-3 text-sm"
             style={{
               backgroundColor: 'rgba(255,59,59,0.08)',
               borderColor: 'rgba(255,59,59,0.3)',
@@ -257,7 +257,7 @@ export default function CheckoutPage() {
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="bg-orange text-text-inverse font-bold px-4 py-2 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4"
+              className="bg-[#FF4D00] text-black font-bold px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#FF6A1A] transition-colors "
             >
               Retry
             </button>

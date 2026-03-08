@@ -87,7 +87,7 @@ export default function DocumentsPage() {
             </div>
             <div
               style={{
-                background: 'var(--color-bg-panel)',
+                background: '#0A0A0B',
                 clipPath: 'var(--chamfer-8)',
                 overflow: 'hidden',
                 boxShadow: 'var(--elevation-1)',
@@ -202,11 +202,11 @@ export default function DocumentsPage() {
             {/* Drop Zone */}
             <div
               style={{
-                background: 'var(--color-bg-panel)',
+                background: '#0A0A0B',
                 clipPath: 'var(--chamfer-8)',
                 padding: '32px 24px',
                 marginBottom: '12px',
-                border: `2px dashed ${dragOver ? 'var(--color-brand-orange)' : 'var(--color-border-strong)'}`,
+                border: `2px dashed ${dragOver ? '#FF4D00' : 'var(--color-border-strong)'}`,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -231,7 +231,7 @@ export default function DocumentsPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '20px',
-                  color: dragOver ? 'var(--color-brand-orange)' : 'var(--color-text-muted)',
+                  color: dragOver ? '#FF4D00' : 'var(--color-text-muted)',
                   transition: 'all var(--duration-fast)',
                 }}
                 aria-hidden="true"
@@ -242,7 +242,7 @@ export default function DocumentsPage() {
                 <div
                   style={{
                     fontSize: 'var(--text-body)',
-                    color: dragOver ? 'var(--color-brand-orange)' : 'var(--color-text-secondary)',
+                    color: dragOver ? '#FF4D00' : 'var(--color-text-secondary)',
                     fontWeight: 600,
                     marginBottom: '4px',
                   }}
@@ -258,7 +258,7 @@ export default function DocumentsPage() {
             {/* Supported Types */}
             <div
               style={{
-                background: 'var(--color-bg-panel)',
+                background: '#0A0A0B',
                 clipPath: 'var(--chamfer-8)',
                 padding: '16px',
                 marginBottom: '12px',
@@ -291,7 +291,7 @@ export default function DocumentsPage() {
             {/* Recent Uploads Count */}
             <div
               style={{
-                background: 'var(--color-bg-panel)',
+                background: '#0A0A0B',
                 clipPath: 'var(--chamfer-8)',
                 padding: '16px',
               }}

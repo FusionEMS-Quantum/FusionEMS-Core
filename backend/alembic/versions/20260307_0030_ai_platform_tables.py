@@ -13,6 +13,9 @@ Creates all AI platform tables for:
   - Domain copilots (ai_domain_copilots, ai_domain_policies, ai_copilot_action_boundaries, ai_copilot_audit_events)
 """
 
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false
+# pylint: disable=no-member,not-callable
+
 from __future__ import annotations
 
 from typing import Sequence, Union

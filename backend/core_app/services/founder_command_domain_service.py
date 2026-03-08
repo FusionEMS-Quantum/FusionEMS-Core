@@ -1,10 +1,15 @@
+# pyright: reportCallIssue=false
 """Service layer for founder command center domain aggregates."""
 from __future__ import annotations
+
+# ruff: noqa: I001
+
+# pylint: disable=not-callable
 
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core_app.core.errors import AppError
@@ -49,7 +54,12 @@ from core_app.models.specialty_ops import (
     PremisePreplan,
     SpecialtyTransportState,
 )
-from core_app.schemas.founder_command_domains import FounderCommandAction
+from core_app.schemas.founder_command_domains import (
+    FounderCommandAction,
+    IntegrationCommandSummary,
+    RecordsCommandSummary,
+    SpecialtyOpsSummary,
+)
 
 
 class FounderCommandDomainService:
@@ -66,35 +76,29 @@ class FounderCommandDomainService:
         actions.sort(key=lambda item: self._severity_rank(item.severity))
         return actions[:limit]
 
-    def get_specialty_ops_summary(self) -> dict[str, object]:
-        preplan_gaps = self.db.execute(
-            select(func.count(PremisePreplan.id)).where(
-                PremisePreplan.state.in_([
-                    FireOpsState.PREPLAN_MISSING,
-                    FireOpsState.COMMAND_REVIEW_REQUIRED,
-                ])
-            )
-        ).scalar_one()
+    def get_specialty_ops_summary(self) -> SpecialtyOpsSummary:
+        preplan_gaps = self.db.query(PremisePreplan).filter(
+            PremisePreplan.state.in_([
+                FireOpsState.PREPLAN_MISSING,
+                FireOpsState.COMMAND_REVIEW_REQUIRED,
+            ])
+        ).count()
 
-        active_hazard_flags = self.db.execute(
-            select(func.count(HazardFlag.id)).where(HazardFlag.is_active.is_(True))
-        ).scalar_one()
+        active_hazard_flags = self.db.query(HazardFlag).filter(HazardFlag.is_active.is_(True)).count()
 
-        pending_lz_confirmations = self.db.execute(
-            select(func.count(LandingZoneRecord.id)).where(LandingZoneRecord.state == FlightOpsState.LZ_PENDING)
-        ).scalar_one()
+        pending_lz_confirmations = self.db.query(LandingZoneRecord).filter(
+            LandingZoneRecord.state == FlightOpsState.LZ_PENDING
+        ).count()
 
-        duty_time_warnings = self.db.execute(
-            select(func.count(DutyTimeFlag.id)).where(DutyTimeFlag.is_active.is_(True))
-        ).scalar_one()
+        duty_time_warnings = self.db.query(DutyTimeFlag).filter(DutyTimeFlag.is_active.is_(True)).count()
 
-        specialty_missions_blocked = self.db.execute(
-            select(func.count(MissionFitScore.id)).where(MissionFitScore.state == SpecialtyTransportState.BLOCKED)
-        ).scalar_one()
+        specialty_missions_blocked = self.db.query(MissionFitScore).filter(
+            MissionFitScore.state == SpecialtyTransportState.BLOCKED
+        ).count()
 
-        mission_packet_failures = self.db.execute(
-            select(func.count(MissionPacket.id)).where(MissionPacket.state == MissionPacketState.FAILED)
-        ).scalar_one()
+        mission_packet_failures = self.db.query(MissionPacket).filter(
+            MissionPacket.state == MissionPacketState.FAILED
+        ).count()
 
         actions: list[FounderCommandAction] = []
         if preplan_gaps > 0:
@@ -152,56 +156,50 @@ class FounderCommandDomainService:
                 )
             )
 
-        return {
-            "preplan_gaps": preplan_gaps,
-            "active_hazard_flags": active_hazard_flags,
-            "pending_lz_confirmations": pending_lz_confirmations,
-            "duty_time_warnings": duty_time_warnings,
-            "specialty_missions_blocked": specialty_missions_blocked,
-            "mission_packet_failures": mission_packet_failures,
-            "top_actions": self._top_actions(actions),
-        }
+        return SpecialtyOpsSummary(
+            preplan_gaps=preplan_gaps,
+            active_hazard_flags=active_hazard_flags,
+            pending_lz_confirmations=pending_lz_confirmations,
+            duty_time_warnings=duty_time_warnings,
+            specialty_missions_blocked=specialty_missions_blocked,
+            mission_packet_failures=mission_packet_failures,
+            top_actions=self._top_actions(actions),
+        )
 
-    def get_records_command_summary(self) -> dict[str, object]:
-        draft_or_unsealed_records = self.db.execute(
-            select(func.count(ClinicalRecord.id)).where(
-                ClinicalRecord.lifecycle_state.in_([
-                    RecordLifecycleState.DRAFT,
-                    RecordLifecycleState.READY,
-                ])
-            )
-        ).scalar_one()
+    def get_records_command_summary(self) -> RecordsCommandSummary:
+        draft_or_unsealed_records = self.db.query(ClinicalRecord).filter(
+            ClinicalRecord.lifecycle_state.in_([
+                RecordLifecycleState.DRAFT,
+                RecordLifecycleState.READY,
+            ])
+        ).count()
 
-        signature_gaps = self.db.execute(
-            select(func.count(SignatureCapture.id)).where(SignatureCapture.signature_state != SignatureState.VERIFIED)
-        ).scalar_one()
+        signature_gaps = self.db.query(SignatureCapture).filter(
+            SignatureCapture.signature_state != SignatureState.VERIFIED
+        ).count()
 
-        low_confidence_ocr_results = self.db.execute(
-            select(func.count(OCRProcessingResult.id)).where(
-                OCRProcessingResult.confidence_band == OCRConfidenceBand.LOW
-            )
-        ).scalar_one()
+        low_confidence_ocr_results = self.db.query(OCRProcessingResult).filter(
+            OCRProcessingResult.confidence_band == OCRConfidenceBand.LOW
+        ).count()
 
-        chain_of_custody_anomalies = self.db.execute(
-            select(func.count(ChainOfCustodyEvent.id)).where(
-                ChainOfCustodyEvent.state.in_([
-                    ChainOfCustodyState.ANOMALY,
-                    ChainOfCustodyState.REVIEW_REQUIRED,
-                ])
-            )
-        ).scalar_one()
+        chain_of_custody_anomalies = self.db.query(ChainOfCustodyEvent).filter(
+            ChainOfCustodyEvent.state.in_([
+                ChainOfCustodyState.ANOMALY,
+                ChainOfCustodyState.REVIEW_REQUIRED,
+            ])
+        ).count()
 
-        pending_release_authorizations = self.db.execute(
-            select(func.count(ReleaseAuthorization.id)).where(ReleaseAuthorization.approved_at.is_(None))
-        ).scalar_one()
+        pending_release_authorizations = self.db.query(ReleaseAuthorization).filter(
+            ReleaseAuthorization.approved_at.is_(None)
+        ).count()
 
-        failed_record_exports = self.db.execute(
-            select(func.count(RecordExport.id)).where(RecordExport.state == ExportDeliveryState.FAILED)
-        ).scalar_one()
+        failed_record_exports = self.db.query(RecordExport).filter(
+            RecordExport.state == ExportDeliveryState.FAILED
+        ).count()
 
-        open_qa_exceptions = self.db.execute(
-            select(func.count(QAException.id)).where(QAException.state == QAExceptionState.OPEN)
-        ).scalar_one()
+        open_qa_exceptions = self.db.query(QAException).filter(
+            QAException.state == QAExceptionState.OPEN
+        ).count()
 
         actions: list[FounderCommandAction] = []
         if signature_gaps > 0:
@@ -250,61 +248,51 @@ class FounderCommandDomainService:
                 )
             )
 
-        return {
-            "draft_or_unsealed_records": draft_or_unsealed_records,
-            "signature_gaps": signature_gaps,
-            "low_confidence_ocr_results": low_confidence_ocr_results,
-            "chain_of_custody_anomalies": chain_of_custody_anomalies,
-            "pending_release_authorizations": pending_release_authorizations,
-            "failed_record_exports": failed_record_exports,
-            "open_qa_exceptions": open_qa_exceptions,
-            "top_actions": self._top_actions(actions),
-        }
+        return RecordsCommandSummary(
+            draft_or_unsealed_records=draft_or_unsealed_records,
+            signature_gaps=signature_gaps,
+            low_confidence_ocr_results=low_confidence_ocr_results,
+            chain_of_custody_anomalies=chain_of_custody_anomalies,
+            pending_release_authorizations=pending_release_authorizations,
+            failed_record_exports=failed_record_exports,
+            open_qa_exceptions=open_qa_exceptions,
+            top_actions=self._top_actions(actions),
+        )
 
-    def get_integration_command_summary(self) -> dict[str, object]:
+    def get_integration_command_summary(self) -> IntegrationCommandSummary:
         since = datetime.now(UTC) - timedelta(hours=24)
 
-        degraded_or_disabled_installs = self.db.execute(
-            select(func.count(TenantConnectorInstall.id)).where(
-                TenantConnectorInstall.install_state.in_([
-                    ConnectorInstallState.DEGRADED,
-                    ConnectorInstallState.DISABLED,
-                ])
-            )
-        ).scalar_one()
+        degraded_or_disabled_installs = self.db.query(TenantConnectorInstall).filter(
+            TenantConnectorInstall.install_state.in_([
+                ConnectorInstallState.DEGRADED,
+                ConnectorInstallState.DISABLED,
+            ])
+        ).count()
 
-        failed_sync_jobs_24h = self.db.execute(
-            select(func.count(ConnectorSyncJob.id)).where(
-                ConnectorSyncJob.state == SyncJobState.FAILED,
-                ConnectorSyncJob.created_at >= since,
-            )
-        ).scalar_one()
+        failed_sync_jobs_24h = self.db.query(ConnectorSyncJob).filter(
+            ConnectorSyncJob.state == SyncJobState.FAILED,
+            ConnectorSyncJob.created_at >= since,
+        ).count()
 
-        dead_letter_records_24h = self.db.execute(
-            select(func.count(SyncDeadLetter.id)).where(SyncDeadLetter.created_at >= since)
-        ).scalar_one()
+        dead_letter_records_24h = self.db.query(SyncDeadLetter).filter(
+            SyncDeadLetter.created_at >= since
+        ).count()
 
-        pending_webhook_retries = self.db.execute(
-            select(func.count(ConnectorWebhookDelivery.id)).where(
-                ConnectorWebhookDelivery.state == WebhookDeliveryState.RETRYING
-            )
-        ).scalar_one()
+        pending_webhook_retries = self.db.query(ConnectorWebhookDelivery).filter(
+            ConnectorWebhookDelivery.state == WebhookDeliveryState.RETRYING
+        ).count()
 
-        revoked_or_rotating_api_credentials = self.db.execute(
-            select(func.count(APIClientCredential.id)).where(
-                APIClientCredential.credential_state.in_([
-                    APIKeyState.ROTATING,
-                    APIKeyState.REVOKED,
-                ])
-            )
-        ).scalar_one()
+        revoked_or_rotating_api_credentials = self.db.query(APIClientCredential).filter(
+            APIClientCredential.credential_state.in_([
+                APIKeyState.ROTATING,
+                APIKeyState.REVOKED,
+            ])
+        ).count()
 
-        quota_denial_windows_24h = self.db.execute(
-            select(func.count(APIClientUsageWindow.id)).where(
-                APIClientUsageWindow.window_start >= since,
-                APIClientUsageWindow.denied_count > 0,
-            )
-        ).scalar_one()
+        quota_denial_windows_24h = self.db.query(APIClientUsageWindow).filter(
+            APIClientUsageWindow.window_start >= since,
+            APIClientUsageWindow.denied_count > 0,
+        ).count()
 
         actions: list[FounderCommandAction] = []
         if degraded_or_disabled_installs > 0:
@@ -362,15 +350,15 @@ class FounderCommandDomainService:
                 )
             )
 
-        return {
-            "degraded_or_disabled_installs": degraded_or_disabled_installs,
-            "failed_sync_jobs_24h": failed_sync_jobs_24h,
-            "dead_letter_records_24h": dead_letter_records_24h,
-            "pending_webhook_retries": pending_webhook_retries,
-            "revoked_or_rotating_api_credentials": revoked_or_rotating_api_credentials,
-            "quota_denial_windows_24h": quota_denial_windows_24h,
-            "top_actions": self._top_actions(actions),
-        }
+        return IntegrationCommandSummary(
+            degraded_or_disabled_installs=degraded_or_disabled_installs,
+            failed_sync_jobs_24h=failed_sync_jobs_24h,
+            dead_letter_records_24h=dead_letter_records_24h,
+            pending_webhook_retries=pending_webhook_retries,
+            revoked_or_rotating_api_credentials=revoked_or_rotating_api_credentials,
+            quota_denial_windows_24h=quota_denial_windows_24h,
+            top_actions=self._top_actions(actions),
+        )
 
     def list_pending_flight_missions(self, limit: int = 50) -> list[FlightMission]:
         stmt = (
@@ -429,6 +417,24 @@ class FounderCommandDomainService:
                 status_code=404,
             )
 
+        if install.install_state not in {
+            ConnectorInstallState.ACTIVE,
+            ConnectorInstallState.VALIDATED,
+        }:
+            raise AppError(
+                code="VALIDATION_ERROR",
+                message="Connector install must be ACTIVE or VALIDATED before queuing sync jobs",
+                status_code=400,
+            )
+
+        normalized_direction = direction.strip().upper()
+        if normalized_direction not in {"INBOUND", "OUTBOUND"}:
+            raise AppError(
+                code="VALIDATION_ERROR",
+                message="direction must be INBOUND or OUTBOUND",
+                status_code=400,
+            )
+
         try:
             normalized_state = SyncJobState(state)
         except ValueError as exc:
@@ -438,16 +444,30 @@ class FounderCommandDomainService:
                 status_code=400,
             ) from exc
 
+        if normalized_state != SyncJobState.QUEUED:
+            raise AppError(
+                code="VALIDATION_ERROR",
+                message="New sync jobs must be created in QUEUED state",
+                status_code=400,
+            )
+
+        if records_attempted != 0 or records_succeeded != 0 or records_failed != 0:
+            raise AppError(
+                code="VALIDATION_ERROR",
+                message="New sync jobs must start with zeroed record counters",
+                status_code=400,
+            )
+
         job = ConnectorSyncJob(
             tenant_id=tenant_id,
             tenant_connector_install_id=tenant_connector_install_id,
-            direction=direction,
-            state=normalized_state,
-            records_attempted=records_attempted,
-            records_succeeded=records_succeeded,
-            records_failed=records_failed,
+            direction=normalized_direction,
+            state=SyncJobState.QUEUED,
+            records_attempted=0,
+            records_succeeded=0,
+            records_failed=0,
             error_summary=error_summary,
-            started_at=datetime.now(UTC),
+            started_at=None,
         )
         self.db.add(job)
         self.db.flush()
@@ -459,11 +479,11 @@ class FounderCommandDomainService:
             event_type="SYNC_JOB_CREATED",
             actor_user_id=actor_user_id,
             event_payload={
-                "direction": direction,
-                "state": state,
-                "records_attempted": records_attempted,
-                "records_succeeded": records_succeeded,
-                "records_failed": records_failed,
+                "direction": normalized_direction,
+                "state": SyncJobState.QUEUED.value,
+                "records_attempted": 0,
+                "records_succeeded": 0,
+                "records_failed": 0,
             },
         )
         self.db.add(audit)

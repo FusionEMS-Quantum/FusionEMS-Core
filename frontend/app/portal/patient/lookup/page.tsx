@@ -53,7 +53,7 @@ export default function PatientLookupPage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-base)',
+        background: '#050505',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -70,7 +70,7 @@ export default function PatientLookupPage() {
               justifyContent: 'center',
               width: 48,
               height: 48,
-              background: 'var(--color-brand-orange)',
+              background: '#FF4D00',
               clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)',
               fontWeight: 900,
               fontSize: 14,
@@ -87,7 +87,7 @@ export default function PatientLookupPage() {
               fontWeight: 600,
               letterSpacing: 'var(--tracking-micro)',
               textTransform: 'uppercase',
-              color: 'var(--color-brand-orange)',
+              color: '#FF4D00',
               marginBottom: 8,
             }}
           >
@@ -117,7 +117,7 @@ export default function PatientLookupPage() {
         {/* Form card */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             border: '1px solid var(--color-border-default)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
             padding: 28,
@@ -219,7 +219,7 @@ export default function PatientLookupPage() {
               disabled={loading}
               style={{
                 marginTop: 6,
-                background: loading ? 'var(--color-brand-orange-dim)' : 'var(--color-brand-orange)',
+                background: loading ? 'var(--color-brand-orange-dim)' : '#FF4D00',
                 color: '#000',
                 fontFamily: 'var(--font-label)',
                 fontSize: 'var(--text-label)',

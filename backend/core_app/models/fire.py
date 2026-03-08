@@ -4,6 +4,8 @@ Fire/NERIS Domain Models
 NERIS 5.0 compliant models for fire incident reporting, preplans,
 hydrants, inspections, and export tracking.
 """
+# pylint: disable=not-callable
+
 from __future__ import annotations
 
 import enum

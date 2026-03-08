@@ -17,17 +17,17 @@ router = APIRouter(
 
 @router.get("/summary", response_model=SpecialtyOpsSummary)
 def get_specialty_ops_summary(
-    current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = Depends(require_role("founder")),
     db: Session = Depends(db_session_dependency),
 ) -> SpecialtyOpsSummary:
     svc = FounderCommandDomainService(db)
-    return SpecialtyOpsSummary(**svc.get_specialty_ops_summary())
+    return svc.get_specialty_ops_summary()
 
 
 @router.get("/pending-flight-missions", response_model=list[FlightMissionResponse])
 def list_pending_flight_missions(
     limit: int = Query(default=50, ge=1, le=250),
-    current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = Depends(require_role("founder")),
     db: Session = Depends(db_session_dependency),
 ) -> list[FlightMissionResponse]:
     svc = FounderCommandDomainService(db)

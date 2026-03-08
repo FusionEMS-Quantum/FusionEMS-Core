@@ -88,7 +88,7 @@ export default function BillingDashboardPage() {
             <div
               key={kpi.label}
               style={{
-                background: 'var(--color-bg-panel)',
+                background: '#0A0A0B',
                 clipPath: 'var(--chamfer-8)',
                 borderLeft: `3px solid ${kpi.accent}`,
                 padding: '20px',
@@ -129,7 +129,7 @@ export default function BillingDashboardPage() {
           </div>
           <div
             style={{
-              background: 'var(--color-bg-panel)',
+              background: '#0A0A0B',
               clipPath: 'var(--chamfer-8)',
               overflow: 'hidden',
               boxShadow: 'var(--elevation-1)',
@@ -171,7 +171,7 @@ export default function BillingDashboardPage() {
           </div>
           <div
             style={{
-              background: 'var(--color-bg-panel)',
+              background: '#0A0A0B',
               clipPath: 'var(--chamfer-8)',
               overflow: 'hidden',
               boxShadow: 'var(--elevation-1)',

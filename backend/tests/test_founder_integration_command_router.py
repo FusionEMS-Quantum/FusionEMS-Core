@@ -90,13 +90,13 @@ def test_create_sync_job_success_commits_and_scopes_tenant() -> None:
         tenant_id=tenant_id,
         tenant_connector_install_id=install_id,
         direction="OUTBOUND",
-        state="FAILED",
-        started_at=created,
+        state="QUEUED",
+        started_at=None,
         completed_at=None,
-        records_attempted=3,
-        records_succeeded=2,
-        records_failed=1,
-        error_summary={"reason": "timeout"},
+        records_attempted=0,
+        records_succeeded=0,
+        records_failed=0,
+        error_summary={"x12_payload_base64": "dGVzdA=="},
         created_at=created,
         updated_at=created,
     )
@@ -110,29 +110,29 @@ def test_create_sync_job_success_commits_and_scopes_tenant() -> None:
             json={
                 "tenant_connector_install_id": str(install_id),
                 "direction": "OUTBOUND",
-                "state": "FAILED",
-                "records_attempted": 3,
-                "records_succeeded": 2,
-                "records_failed": 1,
-                "error_summary": {"reason": "timeout"},
+                "state": "QUEUED",
+                "records_attempted": 0,
+                "records_succeeded": 0,
+                "records_failed": 0,
+                "error_summary": {"x12_payload_base64": "dGVzdA=="},
             },
         )
 
     assert response.status_code == 201
     body = response.json()
     assert body["tenant_id"] == str(tenant_id)
-    assert body["records_failed"] == 1
+    assert body["records_failed"] == 0
 
     svc.create_connector_sync_job.assert_called_once_with(
         tenant_id=tenant_id,
         actor_user_id=user_id,
         tenant_connector_install_id=install_id,
         direction="OUTBOUND",
-        state="FAILED",
-        records_attempted=3,
-        records_succeeded=2,
-        records_failed=1,
-        error_summary={"reason": "timeout"},
+        state="QUEUED",
+        records_attempted=0,
+        records_succeeded=0,
+        records_failed=0,
+        error_summary={"x12_payload_base64": "dGVzdA=="},
     )
     assert db_stub.commit_calls == 1
     assert db_stub.refreshed == [sync_job]

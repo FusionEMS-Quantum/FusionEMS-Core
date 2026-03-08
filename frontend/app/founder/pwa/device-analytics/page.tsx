@@ -10,7 +10,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
       <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-body text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-zinc-500">{sub}</p>}
     </div>
   );
 }
@@ -18,7 +18,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className}`}
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
       {children}
@@ -48,9 +48,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -58,9 +58,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
+    <div className="h-2  bg-zinc-950/[0.07] overflow-hidden w-full">
       <div
-        className="h-full rounded-full transition-all duration-700"
+        className="h-full  transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
       />
     </div>
@@ -135,14 +135,14 @@ const heatColor = (v: number, max: number) => {
 
 export default function DeviceAnalyticsPage() {
   return (
-    <div className="p-5 min-h-screen bg-bg-void">
+    <div className="p-5 min-h-screen bg-black">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
         <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Device Analytics</h1>
-        <p className="text-xs text-text-muted mt-1">Fleet telemetry · OS distribution · Performance &amp; health monitoring</p>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Device Analytics</h1>
+        <p className="text-xs text-zinc-500 mt-1">Fleet telemetry · OS distribution · Performance &amp; health monitoring</p>
       </motion.div>
 
       {/* MODULE 1 — Fleet Overview */}
@@ -167,11 +167,11 @@ export default function DeviceAnalyticsPage() {
               <div key={i}>
                 <div className="flex justify-between items-center mb-1.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ background: os.color }} />
-                    <span className="text-xs font-bold text-text-primary">{os.os}</span>
+                    <div className="w-2 h-2 " style={{ background: os.color }} />
+                    <span className="text-xs font-bold text-zinc-100">{os.os}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-body text-text-secondary">{os.count} devices</span>
+                    <span className="text-body text-zinc-400">{os.count} devices</span>
                     <span className="text-body font-bold w-10 text-right" style={{ color: os.color }}>{os.pct}%</span>
                   </div>
                 </div>
@@ -189,7 +189,7 @@ export default function DeviceAnalyticsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-text-muted border-b border-border-subtle">
+                <tr className="text-zinc-500 border-b border-border-subtle">
                   {['Device Type', 'Avg Load (ms)', 'Crash Rate', 'Sessions Today', 'Rating'].map(h => (
                     <th key={h} className="text-left pb-2 pr-5 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
@@ -198,12 +198,12 @@ export default function DeviceAnalyticsPage() {
               <tbody>
                 {perfByType.map((row, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-2.5 pr-5 text-text-primary font-medium">{row.type}</td>
+                    <td className="py-2.5 pr-5 text-zinc-100 font-medium">{row.type}</td>
                     <td className="py-2.5 pr-5 font-mono" style={{ color: row.avgLoad < 1000 ? 'var(--color-status-active)' : row.avgLoad < 1200 ? 'var(--color-status-warning)' : 'var(--color-brand-red)' }}>
                       {row.avgLoad}ms
                     </td>
-                    <td className="py-2.5 pr-5 text-text-primary font-mono">{row.crashRate}</td>
-                    <td className="py-2.5 pr-5 text-text-secondary">{row.sessions}</td>
+                    <td className="py-2.5 pr-5 text-zinc-100 font-mono">{row.crashRate}</td>
+                    <td className="py-2.5 pr-5 text-zinc-400">{row.sessions}</td>
                     <td className="py-2.5 font-bold" style={{ color: DOMAIN_COLOR }}>{row.rating}</td>
                   </tr>
                 ))}
@@ -219,9 +219,9 @@ export default function DeviceAnalyticsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {batteryEntries.map((d, i) => (
             <Panel key={i}>
-              <div className="text-body font-bold text-text-primary mb-2 leading-tight">{d.name}</div>
+              <div className="text-body font-bold text-zinc-100 mb-2 leading-tight">{d.name}</div>
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-micro text-text-muted">{d.charge}</span>
+                <span className="text-micro text-zinc-500">{d.charge}</span>
                 <span className="text-sm font-black" style={{ color: batteryColor(d.battery) }}>{d.battery}%</span>
               </div>
               <ProgressBar value={d.battery} max={100} color={batteryColor(d.battery)} />
@@ -240,11 +240,11 @@ export default function DeviceAnalyticsPage() {
           {connectivity.map((conn, i) => (
             <Panel key={i}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-3 h-3 rounded-full" style={{ background: conn.color }} />
-                <span className="text-xs font-bold text-text-primary uppercase tracking-widest">{conn.type}</span>
+                <div className="w-3 h-3 " style={{ background: conn.color }} />
+                <span className="text-xs font-bold text-zinc-100 uppercase tracking-widest">{conn.type}</span>
               </div>
               <div className="text-3xl font-black mb-1" style={{ color: conn.color }}>{conn.devices}</div>
-              <div className="text-micro text-text-muted mb-2">
+              <div className="text-micro text-zinc-500 mb-2">
                 devices ({Math.round((conn.devices / conn.total) * 100)}% of fleet)
               </div>
               <ProgressBar value={conn.devices} max={conn.total} color={conn.color} />
@@ -258,14 +258,14 @@ export default function DeviceAnalyticsPage() {
         <SectionHeader number="MOD 6" title="Crash &amp; Error Log" sub="Last 5 recorded crash events" />
         <Panel>
           {crashLog.length === 0 ? (
-            <div className="text-center py-8 text-text-muted text-xs uppercase tracking-widest">
+            <div className="text-center py-8 text-zinc-500 text-xs uppercase tracking-widest">
               No crashes in last 7 days
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-text-muted border-b border-border-subtle">
+                  <tr className="text-zinc-500 border-b border-border-subtle">
                     {['Timestamp', 'Device', 'Error Type', 'Version'].map(h => (
                       <th key={h} className="text-left pb-2 pr-5 font-bold uppercase tracking-widest text-micro">{h}</th>
                     ))}
@@ -274,8 +274,8 @@ export default function DeviceAnalyticsPage() {
                 <tbody>
                   {crashLog.map((row, i) => (
                     <tr key={i} className="border-b border-border-subtle last:border-0">
-                      <td className="py-2.5 pr-5 text-text-muted font-mono text-micro">{row.ts}</td>
-                      <td className="py-2.5 pr-5 text-text-primary">{row.device}</td>
+                      <td className="py-2.5 pr-5 text-zinc-500 font-mono text-micro">{row.ts}</td>
+                      <td className="py-2.5 pr-5 text-zinc-100">{row.device}</td>
                       <td className="py-2.5 pr-5"><span className="font-mono text-red">{row.error}</span></td>
                       <td className="py-2.5"><Badge label={row.version} status={row.version === 'v2.4.1' ? 'ok' : row.version === 'v2.4.0' ? 'warn' : 'error'} /></td>
                     </tr>
@@ -299,23 +299,23 @@ export default function DeviceAnalyticsPage() {
                   style={{ background: heatColor(v, maxHeat) }}
                   title={`${hour}:00 — ${v} sessions`}
                 >
-                  <span className="text-[9px] font-bold text-text-primary opacity-80">{v}</span>
+                  <span className="text-[9px] font-bold text-zinc-100 opacity-80">{v}</span>
                 </div>
-                <span className="text-[9px] text-text-muted font-mono leading-none">{String(hour).padStart(2, '0')}</span>
+                <span className="text-[9px] text-zinc-500 font-mono leading-none">{String(hour).padStart(2, '0')}</span>
               </div>
             ))}
           </div>
           <div className="flex items-center gap-3 mt-4">
-            <span className="text-micro text-text-muted">Low</span>
+            <span className="text-micro text-zinc-500">Low</span>
             {[0.08, 0.22, 0.42, 0.65, 0.90].map((op, i) => (
               <div key={i} className="w-6 h-3 chamfer-4" style={{ background: `rgba(59,130,246,${op})` }} />
             ))}
-            <span className="text-micro text-text-muted">High</span>
+            <span className="text-micro text-zinc-500">High</span>
           </div>
         </Panel>
       </motion.div>
 
-      <Link href="/founder" className="text-xs text-orange-dim hover:text-orange transition-colors">
+      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00] transition-colors">
         &larr; Back to Founder Command OS
       </Link>
     </div>

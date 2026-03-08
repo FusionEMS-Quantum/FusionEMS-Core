@@ -39,7 +39,7 @@ export default function SystemPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border bg-panel p-6">
+      <div className=" border border-border bg-panel p-6">
         <div className="text-lg font-semibold">{system?.name ?? String(systemKey)}</div>
         <div className="mt-2 text-sm text-muted">{system?.description ?? "System page."}</div>
         <div className="mt-4 text-xs text-muted">This page is certification-gated unless system status is ACTIVE.</div>

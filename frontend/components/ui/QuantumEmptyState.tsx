@@ -30,17 +30,17 @@ export function QuantumEmptyState({
       )}
     >
       {icon && (
-        <div className="mb-4 text-text-muted opacity-60" aria-hidden="true">
+        <div className="mb-4 text-zinc-500 opacity-60" aria-hidden="true">
           {icon}
         </div>
       )}
       <h3
-        className="font-label text-h3 font-semibold text-text-primary mb-2"
+        className="font-label text-h3 font-semibold text-zinc-100 mb-2"
       >
         {title}
       </h3>
       {description && (
-        <p className="text-body text-text-muted max-w-md mb-6">
+        <p className="text-body text-zinc-500 max-w-md mb-6">
           {description}
         </p>
       )}
@@ -48,7 +48,7 @@ export function QuantumEmptyState({
       {!action && actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="px-4 py-2 bg-brand-orange text-white text-label rounded chamfer-4 hover:opacity-90 transition-opacity"
+          className="px-4 py-2 bg-brand-orange text-white text-label  chamfer-4 hover:opacity-90 transition-opacity"
         >
           {actionLabel}
         </button>

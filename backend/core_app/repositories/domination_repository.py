@@ -49,6 +49,7 @@ TENANT_TABLES: set[str] = {
     "facilities",
     "facility_users",
     "facility_requests",
+    "facility_access_requests",
     "recurring_request_rules",
     "request_documents",
     "documents",

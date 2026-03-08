@@ -11,8 +11,15 @@ aws_region  = "us-west-2"
 vpc_cidr           = "10.3.0.0/16"
 availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
 
-public_subnet_cidrs  = ["10.3.1.0/24", "10.3.2.0/24", "10.3.3.0/24"]
-private_subnet_cidrs = ["10.3.11.0/24", "10.3.12.0/24", "10.3.13.0/24"]
+public_subnet_cidrs       = ["10.3.1.0/24", "10.3.2.0/24", "10.3.3.0/24"]
+private_app_subnet_cidrs  = ["10.3.11.0/24", "10.3.12.0/24", "10.3.13.0/24"]
+private_data_subnet_cidrs = ["10.3.21.0/24", "10.3.22.0/24", "10.3.23.0/24"]
+nat_gateway_mode          = "per_az"
+
+application         = "FusionEMS-Core"
+owner               = "platform-engineering"
+cost_center         = "fusionems-core"
+data_classification = "restricted"
 
 # ─── DNS ─────────────────────────────────────────────────────────────────────
 

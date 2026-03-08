@@ -34,9 +34,15 @@ type SyncJob = {
   updated_at: string;
 };
 
+type SyncJobFormState = {
+  tenantConnectorInstallId: string;
+  direction: 'INBOUND' | 'OUTBOUND';
+  errorSummaryJson: string;
+};
+
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+    <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
       <div className="text-xs uppercase tracking-wider text-white/50">{label}</div>
       <div className="mt-2 text-3xl font-black text-white">{value}</div>
     </div>
@@ -50,13 +56,9 @@ export default function FounderIntegrationCommandPage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [creatingSyncJob, setCreatingSyncJob] = useState(false);
   const [addingDeadLetterForJobId, setAddingDeadLetterForJobId] = useState<string | null>(null);
-  const [syncJobForm, setSyncJobForm] = useState({
+  const [syncJobForm, setSyncJobForm] = useState<SyncJobFormState>({
     tenantConnectorInstallId: '',
     direction: 'OUTBOUND',
-    state: 'QUEUED',
-    recordsAttempted: 0,
-    recordsSucceeded: 0,
-    recordsFailed: 0,
     errorSummaryJson: '{}',
   });
   const [deadLetterForm, setDeadLetterForm] = useState({
@@ -105,18 +107,15 @@ export default function FounderIntegrationCommandPage() {
       await createFounderSyncJob({
         tenant_connector_install_id: syncJobForm.tenantConnectorInstallId,
         direction: syncJobForm.direction,
-        state: syncJobForm.state,
-        records_attempted: Number(syncJobForm.recordsAttempted),
-        records_succeeded: Number(syncJobForm.recordsSucceeded),
-        records_failed: Number(syncJobForm.recordsFailed),
+        state: 'QUEUED',
+        records_attempted: 0,
+        records_succeeded: 0,
+        records_failed: 0,
         error_summary: errorSummary,
       });
       setActionMessage('Sync job created successfully.');
       setSyncJobForm((prev) => ({
         ...prev,
-        recordsAttempted: 0,
-        recordsSucceeded: 0,
-        recordsFailed: 0,
         errorSummaryJson: '{}',
       }));
       await load();
@@ -179,7 +178,7 @@ export default function FounderIntegrationCommandPage() {
   if (!summary) {
     return (
       <div className="mx-auto max-w-7xl p-6">
-        <div className="rounded border border-white/10 bg-white/[0.03] p-4 text-sm text-white/70">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4 text-sm text-white/70">
           {loadError || 'Loading integration command center…'}
         </div>
       </div>
@@ -189,15 +188,15 @@ export default function FounderIntegrationCommandPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-orange-400/80">Founder Command</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[#FF4D00]-400/80">Founder Command</div>
         <h1 className="text-2xl font-black text-white">Integration & Connectors Command Center</h1>
       </div>
 
       {loadError && (
-        <div className="rounded border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{loadError}</div>
+        <div className=" border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{loadError}</div>
       )}
       {actionMessage && (
-        <div className="rounded border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">{actionMessage}</div>
+        <div className=" border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">{actionMessage}</div>
       )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
@@ -209,7 +208,7 @@ export default function FounderIntegrationCommandPage() {
         <Stat label="Quota Denials (24h)" value={summary.quota_denial_windows_24h} />
       </div>
 
-      <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+      <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
         <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Create Connector Sync Job</div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
           <input
@@ -218,78 +217,41 @@ export default function FounderIntegrationCommandPage() {
               setSyncJobForm((prev) => ({ ...prev, tenantConnectorInstallId: event.target.value }))
             }
             placeholder="Tenant Connector Install UUID"
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
+            className=" border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
           />
           <select
             value={syncJobForm.direction}
-            onChange={(event) => setSyncJobForm((prev) => ({ ...prev, direction: event.target.value }))}
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
+            onChange={(event) => setSyncJobForm((prev) => ({ ...prev, direction: event.target.value as 'INBOUND' | 'OUTBOUND' }))}
+            className=" border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
           >
             <option value="OUTBOUND">OUTBOUND</option>
             <option value="INBOUND">INBOUND</option>
-          </select>
-          <select
-            value={syncJobForm.state}
-            onChange={(event) => setSyncJobForm((prev) => ({ ...prev, state: event.target.value }))}
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
-          >
-            <option value="QUEUED">QUEUED</option>
-            <option value="RUNNING">RUNNING</option>
-            <option value="COMPLETED">COMPLETED</option>
-            <option value="FAILED">FAILED</option>
           </select>
           <button
             type="button"
             onClick={handleCreateSyncJob}
             disabled={creatingSyncJob || !syncJobForm.tenantConnectorInstallId}
-            className="rounded border border-orange-400/60 bg-orange-500/20 px-3 py-2 text-sm font-semibold text-orange-200 disabled:opacity-50"
+            className=" border border-orange-400/60 bg-[#FF4D00]-500/20 px-3 py-2 text-sm font-semibold text-[#FF4D00]-200 disabled:opacity-50"
           >
             {creatingSyncJob ? 'Creating…' : 'Create Sync Job'}
           </button>
-          <input
-            type="number"
-            value={syncJobForm.recordsAttempted}
-            onChange={(event) =>
-              setSyncJobForm((prev) => ({ ...prev, recordsAttempted: Number(event.target.value) }))
-            }
-            placeholder="Records Attempted"
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
-          />
-          <input
-            type="number"
-            value={syncJobForm.recordsSucceeded}
-            onChange={(event) =>
-              setSyncJobForm((prev) => ({ ...prev, recordsSucceeded: Number(event.target.value) }))
-            }
-            placeholder="Records Succeeded"
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
-          />
-          <input
-            type="number"
-            value={syncJobForm.recordsFailed}
-            onChange={(event) =>
-              setSyncJobForm((prev) => ({ ...prev, recordsFailed: Number(event.target.value) }))
-            }
-            placeholder="Records Failed"
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
-          />
           <textarea
             value={syncJobForm.errorSummaryJson}
             onChange={(event) => setSyncJobForm((prev) => ({ ...prev, errorSummaryJson: event.target.value }))}
-            placeholder='Error Summary JSON (example: {"reason":"timeout"})'
-            className="rounded border border-white/15 bg-black/30 px-3 py-2 text-sm text-white md:col-span-2 lg:col-span-1"
+            placeholder='Sync Payload JSON (example: {"x12_payload_base64":"...","file_name":"batch-001.x12"})'
+            className=" border border-white/15 bg-black/30 px-3 py-2 text-sm text-white md:col-span-2 lg:col-span-2"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
           <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Top Actions</div>
           <div className="space-y-2">
             {summary.top_actions.length === 0 && <div className="text-sm text-white/60">No immediate integration actions.</div>}
             {summary.top_actions.map((action, idx) => (
-              <div key={`${action.summary}-${idx}`} className="rounded border border-white/10 bg-black/20 p-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-orange-300">{action.severity}</div>
+              <div key={`${action.summary}-${idx}`} className=" border border-white/10 bg-black/20 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]-300">{action.severity}</div>
                 <div className="mt-1 text-sm font-semibold text-white">{action.summary}</div>
                 <div className="mt-1 text-sm text-white/70">{action.recommended_action}</div>
               </div>
@@ -297,12 +259,12 @@ export default function FounderIntegrationCommandPage() {
           </div>
         </div>
 
-        <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
           <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Failed Sync Jobs</div>
           <div className="space-y-2">
             {failedJobs.length === 0 && <div className="text-sm text-white/60">No failed sync jobs.</div>}
             {failedJobs.map((job) => (
-              <div key={job.id} className="rounded border border-white/10 bg-black/20 p-3">
+              <div key={job.id} className=" border border-white/10 bg-black/20 p-3">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-white">{job.direction}</div>
                   <div className="text-xs uppercase tracking-wider text-red-300">{job.state}</div>
@@ -314,20 +276,20 @@ export default function FounderIntegrationCommandPage() {
                   <button
                     type="button"
                     onClick={() => openDeadLetterForm(job.id)}
-                    className="rounded border border-red-400/50 bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-300"
+                    className=" border border-red-400/50 bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-300"
                   >
                     Add Dead Letter
                   </button>
                 </div>
                 {deadLetterForm.syncJobId === job.id && (
-                  <div className="mt-3 space-y-2 rounded border border-white/10 bg-black/30 p-3">
+                  <div className="mt-3 space-y-2  border border-white/10 bg-black/30 p-3">
                     <input
                       value={deadLetterForm.externalRecordRef}
                       onChange={(event) =>
                         setDeadLetterForm((prev) => ({ ...prev, externalRecordRef: event.target.value }))
                       }
                       placeholder="External Record Reference"
-                      className="w-full rounded border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
+                      className="w-full  border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
                     />
                     <input
                       value={deadLetterForm.reason}
@@ -335,7 +297,7 @@ export default function FounderIntegrationCommandPage() {
                         setDeadLetterForm((prev) => ({ ...prev, reason: event.target.value }))
                       }
                       placeholder="Failure Reason"
-                      className="w-full rounded border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
+                      className="w-full  border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
                     />
                     <textarea
                       value={deadLetterForm.payloadJson}
@@ -343,7 +305,7 @@ export default function FounderIntegrationCommandPage() {
                         setDeadLetterForm((prev) => ({ ...prev, payloadJson: event.target.value }))
                       }
                       placeholder='Payload JSON (example: {"field":"value"})'
-                      className="w-full rounded border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
+                      className="w-full  border border-white/15 bg-black/40 px-3 py-2 text-xs text-white"
                     />
                     <button
                       type="button"
@@ -353,7 +315,7 @@ export default function FounderIntegrationCommandPage() {
                         !deadLetterForm.externalRecordRef ||
                         !deadLetterForm.reason
                       }
-                      className="rounded border border-red-400/60 bg-red-500/20 px-3 py-1.5 text-xs font-semibold text-red-200 disabled:opacity-50"
+                      className=" border border-red-400/60 bg-red-500/20 px-3 py-1.5 text-xs font-semibold text-red-200 disabled:opacity-50"
                     >
                       {addingDeadLetterForJobId === job.id ? 'Adding…' : 'Submit Dead Letter'}
                     </button>

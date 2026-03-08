@@ -28,12 +28,12 @@ import { clsx } from 'clsx';
 const inputVariants = cva(
   [
     'relative w-full',
-    'font-sans text-body text-text-primary',
+    'font-sans text-body text-zinc-100',
     'bg-bg-input',
     'border border-border-DEFAULT',
     'chamfer-4',
     'transition-all duration-fast ease-out',
-    'placeholder:text-text-muted',
+    'placeholder:text-zinc-500',
     'focus:outline-none focus:border-orange focus:shadow-focus',
     'disabled:opacity-40 disabled:cursor-not-allowed',
     'read-only:opacity-70 read-only:cursor-default',
@@ -56,7 +56,7 @@ const inputVariants = cva(
       hasError: {
         true: [
           'border-red focus:border-red',
-          '!shadow-[0_0_0_2px_var(--color-bg-base),0_0_0_4px_var(--color-brand-red)]',
+          '!shadow-[0_0_0_2px_#050505,0_0_0_4px_var(--color-brand-red)]',
         ],
         false: [],
       },
@@ -283,16 +283,16 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-invalid={hasError || undefined}
           className={clsx(
             'w-full px-3 py-2.5',
-            'font-sans text-body text-text-primary',
+            'font-sans text-body text-zinc-100',
             'bg-bg-input',
             'border border-border-DEFAULT',
             'chamfer-4',
             'transition-all duration-fast ease-out',
-            'placeholder:text-text-muted',
+            'placeholder:text-zinc-500',
             'focus:outline-none focus:border-orange focus:shadow-focus',
             'disabled:opacity-40 disabled:cursor-not-allowed',
             'resize-y',
-            hasError && 'border-red !shadow-[0_0_0_2px_var(--color-bg-base),0_0_0_4px_var(--color-brand-red)]',
+            hasError && 'border-red !shadow-[0_0_0_2px_#050505,0_0_0_4px_var(--color-brand-red)]',
             className
           )}
           {...props}

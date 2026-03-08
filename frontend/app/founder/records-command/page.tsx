@@ -34,7 +34,7 @@ type RecordExport = {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+    <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
       <div className="text-xs uppercase tracking-wider text-white/50">{label}</div>
       <div className="mt-2 text-3xl font-black text-white">{value}</div>
     </div>
@@ -63,7 +63,7 @@ export default function FounderRecordsCommandPage() {
   if (!summary) {
     return (
       <div className="mx-auto max-w-7xl p-6">
-        <div className="rounded border border-white/10 bg-white/[0.03] p-4 text-sm text-white/70">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4 text-sm text-white/70">
           Loading records command center…
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function FounderRecordsCommandPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-orange-400/80">Founder Command</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[#FF4D00]-400/80">Founder Command</div>
         <h1 className="text-2xl font-black text-white">Records & Media Command Center</h1>
       </div>
 
@@ -88,13 +88,13 @@ export default function FounderRecordsCommandPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
           <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Top Actions</div>
           <div className="space-y-2">
             {summary.top_actions.length === 0 && <div className="text-sm text-white/60">No blocking records actions.</div>}
             {summary.top_actions.map((action, idx) => (
-              <div key={`${action.summary}-${idx}`} className="rounded border border-white/10 bg-black/20 p-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-orange-300">{action.severity}</div>
+              <div key={`${action.summary}-${idx}`} className=" border border-white/10 bg-black/20 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]-300">{action.severity}</div>
                 <div className="mt-1 text-sm font-semibold text-white">{action.summary}</div>
                 <div className="mt-1 text-sm text-white/70">{action.recommended_action}</div>
               </div>
@@ -102,12 +102,12 @@ export default function FounderRecordsCommandPage() {
           </div>
         </div>
 
-        <div className="rounded border border-white/10 bg-white/[0.03] p-4">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
           <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Failed Record Exports</div>
           <div className="space-y-2">
             {failedExports.length === 0 && <div className="text-sm text-white/60">No failed exports.</div>}
             {failedExports.map((record) => (
-              <div key={record.id} className="rounded border border-white/10 bg-black/20 p-3">
+              <div key={record.id} className=" border border-white/10 bg-black/20 p-3">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-white">{record.destination_system}</div>
                   <div className="text-xs uppercase tracking-wider text-red-300">{record.state}</div>

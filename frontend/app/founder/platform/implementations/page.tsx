@@ -29,7 +29,7 @@ const STATE_COLORS: Record<string, string> = {
   NOT_STARTED: 'text-zinc-400 bg-zinc-400/10',
   DISCOVERY: 'text-blue-400 bg-blue-400/10',
   CONFIGURATION: 'text-yellow-400 bg-yellow-400/10',
-  INTEGRATION: 'text-orange-400 bg-orange-400/10',
+  INTEGRATION: 'text-[#FF4D00]-400 bg-[#FF4D00]-400/10',
   TESTING: 'text-purple-400 bg-purple-400/10',
   USER_ACCEPTANCE: 'text-cyan-400 bg-cyan-400/10',
   GO_LIVE_READY: 'text-green-400 bg-green-400/10',
@@ -71,7 +71,7 @@ export default function ImplementationsPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-text-muted animate-pulse">Loading implementations…</div>;
+    return <div className="p-6 text-zinc-500 animate-pulse">Loading implementations…</div>;
   }
   if (error) {
     return <div className="p-6 text-red-400 text-sm">{error}</div>;
@@ -85,15 +85,15 @@ export default function ImplementationsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="hud-rail pb-2">
-        <h1 className="text-h1 font-bold text-text-primary">Implementation Control</h1>
-        <p className="text-body text-text-muted mt-1">Track agency implementations from discovery to go-live</p>
+        <h1 className="text-h1 font-bold text-zinc-100">Implementation Control</h1>
+        <p className="text-body text-zinc-500 mt-1">Track agency implementations from discovery to go-live</p>
       </div>
 
       {/* State filter strip */}
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setFilterState('')}
-          className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${!filterState ? 'border-brand-orange/40 bg-brand-orange/10 text-brand-orange' : 'border-border-DEFAULT text-text-muted hover:text-text-secondary'}`}
+          className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${!filterState ? 'border-brand-orange/40 bg-brand-orange/10 text-brand-orange' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-400'}`}
         >
           ALL ({implementations.length})
         </button>
@@ -101,7 +101,7 @@ export default function ImplementationsPage() {
           <button
             key={state}
             onClick={() => setFilterState(state)}
-            className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${filterState === state ? 'border-brand-orange/40 bg-brand-orange/10 text-brand-orange' : 'border-border-DEFAULT text-text-muted hover:text-text-secondary'}`}
+            className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${filterState === state ? 'border-brand-orange/40 bg-brand-orange/10 text-brand-orange' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-400'}`}
           >
             {state.replace(/_/g, ' ')} ({count})
           </button>
@@ -111,7 +111,7 @@ export default function ImplementationsPage() {
       <div className="flex gap-6">
         {/* Implementation list */}
         <div className="flex-1 space-y-2">
-          {implementations.length === 0 && <div className="text-xs text-text-muted">No implementations found</div>}
+          {implementations.length === 0 && <div className="text-xs text-zinc-500">No implementations found</div>}
           {implementations.map((impl) => (
             <motion.button
               key={impl.id}
@@ -121,16 +121,16 @@ export default function ImplementationsPage() {
               className={`w-full text-left p-4 border transition-colors ${
                 selectedId === impl.id
                   ? 'border-brand-orange/40 bg-brand-orange/5'
-                  : 'border-border-DEFAULT bg-bg-panel hover:border-brand-orange/20'
+                  : 'border-border-DEFAULT bg-[#0A0A0B] hover:border-brand-orange/20'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-text-primary">{impl.project_name}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-sm font-semibold ${STATE_COLORS[impl.state] || 'text-text-muted bg-zinc-500/10'}`}>
+                <span className="text-sm font-semibold text-zinc-100">{impl.project_name}</span>
+                <span className={`text-[10px] px-2 py-0.5  font-semibold ${STATE_COLORS[impl.state] || 'text-zinc-500 bg-zinc-500/10'}`}>
                   {impl.state}
                 </span>
               </div>
-              <div className="text-[10px] text-text-muted mt-1 flex gap-3">
+              <div className="text-[10px] text-zinc-500 mt-1 flex gap-3">
                 <span>PM: {impl.assigned_pm || 'Unassigned'}</span>
                 {impl.target_go_live_date && <span>Go-Live: {new Date(impl.target_go_live_date).toLocaleDateString()}</span>}
               </div>
@@ -141,20 +141,20 @@ export default function ImplementationsPage() {
         {/* Blocker panel */}
         {selectedId && (
           <div className="w-96">
-            <div className="bg-bg-panel border border-border-DEFAULT p-4 max-h-[600px] overflow-y-auto">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-text-muted mb-3">Blockers</h3>
-              {blockers.length === 0 && <div className="text-xs text-text-muted">No blockers</div>}
+            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 max-h-[600px] overflow-y-auto">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-3">Blockers</h3>
+              {blockers.length === 0 && <div className="text-xs text-zinc-500">No blockers</div>}
               {blockers.map((b) => (
                 <div key={b.id} className="py-2 border-b border-white/5 last:border-0">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-primary">{b.title}</span>
+                    <span className="text-xs font-semibold text-zinc-100">{b.title}</span>
                     <SeverityBadge
                       severity={normalizeSeverity(b.severity)}
                       size="sm"
                       label={normalizeSeverity(b.severity)}
                     />
                   </div>
-                  <div className="text-[10px] text-text-muted mt-0.5">Status: {b.status} · {new Date(b.created_at).toLocaleDateString()}</div>
+                  <div className="text-[10px] text-zinc-500 mt-0.5">Status: {b.status} · {new Date(b.created_at).toLocaleDateString()}</div>
                 </div>
               ))}
             </div>

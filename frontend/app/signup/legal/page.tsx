@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 const inputClass =
-  'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-text-primary placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-orange chamfer-4 w-full';
+  'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-zinc-100 placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-orange  w-full';
 
 const MSA_SUMMARY = `MASTER SERVICE AGREEMENT — KEY TERMS SUMMARY
 
@@ -81,7 +81,7 @@ function processDocText(text: string): React.ReactNode[] {
   return text.split('\n').map((line, li) => {
     if (/^\d+\.\s+[A-Z]/.test(line)) {
       return (
-        <p key={li} className="mt-3 mb-1 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--q-orange)' }}>
+        <p key={li} className="mt-3 mb-1 text-xs font-bold uppercase tracking-wider" style={{ color: '#FF4D00' }}>
           {line}
         </p>
       );
@@ -229,12 +229,12 @@ export default function LegalPage() {
   if (initLoading) {
     return (
       <div
-        className="chamfer-4 border p-8 flex flex-col items-center justify-center gap-4"
+        className=" bg-[#050505] border border-zinc-800 p-12 flex flex-col items-center justify-center gap-6"
         style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)', minHeight: '300px' }}
       >
         <svg className="animate-spin h-8 w-8" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="var(--color-brand-orange)" strokeWidth="4" />
-          <path className="opacity-75" fill="var(--color-brand-orange)" d="M4 12a8 8 0 018-8v8z" />
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="4" />
+          <path className="opacity-75" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
         </svg>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
           Preparing your legal packet…
@@ -246,11 +246,11 @@ export default function LegalPage() {
   if (initError) {
     return (
       <div
-        className="chamfer-4 border p-8"
+        className=" bg-zinc-950 border border-zinc-800 p-8"
         style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
       >
         <div
-          className="chamfer-4 border px-4 py-3 text-sm"
+          className=" border px-4 py-3 text-sm"
           style={{
             backgroundColor: 'rgba(255,59,59,0.08)',
             borderColor: 'rgba(255,59,59,0.3)',
@@ -262,7 +262,7 @@ export default function LegalPage() {
         <button
           onClick={() => router.push('/signup')}
           className="mt-4 text-sm underline"
-          style={{ color: 'var(--q-orange)' }}
+          style={{ color: '#FF4D00' }}
         >
           ← Restart signup
         </button>
@@ -272,13 +272,13 @@ export default function LegalPage() {
 
   return (
     <div
-      className="chamfer-4 border p-6 md:p-8"
+      className=" bg-zinc-950 border border-zinc-800 p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Header */}
       <div className="mb-6 border-b pb-5" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <h1
-          className="text-xl font-bold uppercase tracking-wider text-text-primary"
+          className="text-2xl font-black tracking-[0.1em] text-white uppercase"
           style={{ fontFamily: "'Barlow Condensed', 'Barlow', sans-serif" }}
         >
           Legal Agreements
@@ -291,7 +291,7 @@ export default function LegalPage() {
       {/* Packet status badge */}
       <div className="mb-5 flex items-center gap-2">
         <div
-          className="chamfer-4 px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+          className=" px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
           style={{
             backgroundColor: 'rgba(34,211,238,0.1)',
             border: '1px solid rgba(34,211,238,0.25)',
@@ -316,7 +316,7 @@ export default function LegalPage() {
         </div>
         <div
           ref={msaRef}
-          className="chamfer-4 border p-4 overflow-y-auto"
+          className=" bg-[#050505] border border-zinc-900 p-5 overflow-y-auto"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -338,7 +338,7 @@ export default function LegalPage() {
         </div>
         <div
           ref={baaRef}
-          className="chamfer-4 border p-4 overflow-y-auto"
+          className=" bg-[#050505] border border-zinc-900 p-5 overflow-y-auto"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -352,7 +352,7 @@ export default function LegalPage() {
       {/* API Error Banner */}
       {apiError && (
         <div
-          className="mb-5 chamfer-4 border px-4 py-3 text-sm"
+          className="mb-5  border px-4 py-3 text-sm"
           style={{
             backgroundColor: 'rgba(255,59,59,0.08)',
             borderColor: 'rgba(255,59,59,0.3)',
@@ -366,7 +366,7 @@ export default function LegalPage() {
       <form onSubmit={handleSign} noValidate>
         {/* Checkboxes */}
         <div
-          className="chamfer-4 border p-4 mb-5 space-y-3"
+          className=" border p-4 mb-5 space-y-3"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -402,10 +402,10 @@ export default function LegalPage() {
                   disabled={signing}
                 />
                 <div
-                  className="w-4 h-4 chamfer-4 border flex items-center justify-center transition-colors"
+                  className="w-4 h-4  border flex items-center justify-center transition-colors"
                   style={{
-                    backgroundColor: item.checked ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.05)',
-                    borderColor: item.checked ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.2)',
+                    backgroundColor: item.checked ? '#FF4D00' : 'rgba(255,255,255,0.05)',
+                    borderColor: item.checked ? '#FF4D00' : 'rgba(255,255,255,0.2)',
                   }}
                 >
                   {item.checked && (
@@ -428,7 +428,7 @@ export default function LegalPage() {
             className="block text-xs font-semibold mb-1.5 uppercase tracking-wider"
             style={{ color: 'rgba(255,255,255,0.55)' }}
           >
-            Electronic Signature <span style={{ color: 'var(--q-orange)' }}>*</span>
+            Electronic Signature <span style={{ color: '#FF4D00' }}>*</span>
           </label>
           <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
             Type your full legal name exactly as it appears on your account to sign.
@@ -443,11 +443,11 @@ export default function LegalPage() {
           />
           {sigText && (
             <div
-              className="mt-2 px-3 py-2 chamfer-4 border text-sm italic"
+              className="mt-2 px-3 py-2  border text-sm italic"
               style={{
                 backgroundColor: 'rgba(255,107,26,0.04)',
                 borderColor: 'rgba(255,107,26,0.2)',
-                color: 'var(--color-brand-orange)',
+                color: '#FF4D00',
                 fontFamily: 'Georgia, serif',
                 fontSize: '15px',
               }}
@@ -460,7 +460,7 @@ export default function LegalPage() {
         {/* Validation error */}
         {sigError && (
           <div
-            className="mb-4 chamfer-4 border px-4 py-3 text-sm"
+            className="mb-4  border px-4 py-3 text-sm"
             style={{
               backgroundColor: 'rgba(255,59,59,0.08)',
               borderColor: 'rgba(255,59,59,0.3)',
@@ -480,7 +480,7 @@ export default function LegalPage() {
             type="button"
             onClick={() => router.push('/signup')}
             disabled={signing}
-            className="text-sm transition-colors disabled:opacity-40"
+            className="text-[11px] font-bold tracking-[0.2em] text-zinc-500 hover:text-white uppercase transition-colors disabled:opacity-40"
             style={{ color: 'rgba(255,255,255,0.4)' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
@@ -490,7 +490,7 @@ export default function LegalPage() {
           <button
             type="submit"
             disabled={signing}
-            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#FF4D00] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all  disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {signing ? (
               <span className="flex items-center gap-2">

@@ -102,22 +102,34 @@ class StripeWebhookHandler:
         customer_id = sub.get("customer")
         logger.info(f"Subscription {sub_id} created for customer {customer_id}. Triggering provisioning.")
 
-        # PROVISIONING LOGIC (Phase 1 Stub)
-        # 1. Check if tenant already provisioned.
-        # 2. If not, trigger:
-        #    - 1-800 Number purchase (Telnyx)
-        #    - Agency Record creation (if new)
-        #    - Send Welcome Email
+        provisioning_state = "not_configured"
+        provisioning_job_id: str | None = None
 
-        try:
-             # Placeholder for:
-             # self.provisioning_service.provision_new_subscription(sub_id)
-             pass
-        except Exception as e:
-            logger.error(f"Provisioning failed for subscription {sub_id}: {e}")
-            raise
+        if self._db and hasattr(self._db, "enqueue_subscription_provisioning"):
+            try:
+                provisioning_job_id = self._db.enqueue_subscription_provisioning(
+                    subscription_id=sub_id,
+                    customer_id=customer_id,
+                )
+                provisioning_state = "queued"
+            except Exception as exc:
+                logger.error(
+                    "Provisioning enqueue failed for subscription %s: %s", sub_id, exc
+                )
+                raise
+        else:
+            logger.warning(
+                "subscription_provisioning_not_configured subscription_id=%s", sub_id
+            )
 
-        return {"subscription_id": sub_id, "status": sub.get("status"), "provisioning": "triggered"}
+        return {
+            "subscription_id": sub_id,
+            "status": sub.get("status"),
+            "provisioning": {
+                "state": provisioning_state,
+                "job_id": provisioning_job_id,
+            },
+        }
 
     def _handle_subscription_updated(self, event: dict) -> dict:
         sub = event["data"]["object"]

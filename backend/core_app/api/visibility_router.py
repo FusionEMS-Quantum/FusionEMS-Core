@@ -1201,19 +1201,18 @@ async def role_simulation(
     }
 
 
-# ── Secure demo mode ──────────────────────────────────────────────────────────
+# ── Secure presentation mode ──────────────────────────────────────────────────
 
 
-@router.get("/demo-mode/config")
-async def demo_mode_config(
+@router.get("/presentation-mode/config")
+async def presentation_mode_config(
     current: CurrentUser = Depends(get_current_user),
 ):
     return {
-        "demo_mode": True,
-        "phi_replaced_with_synthetic": True,
-        "financial_data_zeroed": True,
-        "tenant_id_anonymized": True,
-        "safe_to_share_screen": True,
+        "available": False,
+        "deprecated": True,
+        "detail": "presentation_mode_removed_use_training_mode",
+        "requested_by": str(current.user_id),
     }
 
 
@@ -1226,7 +1225,7 @@ async def training_mode_config(
 ):
     return {
         "training_mode": True,
-        "uses_synthetic_data": True,
+        "uses_redaction_controls": True,
         "mutations_blocked": True,
         "exports_disabled": True,
         "watermark": "TRAINING DATA - NOT FOR CLINICAL USE",
@@ -1405,9 +1404,11 @@ async def integration_field_filter(
     payload: dict[str, Any],
     current: CurrentUser = Depends(get_current_user),
 ):
-    integration = payload.get("integration")
-    record = payload.get("record", {})
-    integration_allowed = {
+    _ = current
+    integration = str(payload.get("integration") or "").strip().lower()
+    record_raw = payload.get("record", {})
+    record: dict[str, Any] = record_raw if isinstance(record_raw, dict) else {}
+    integration_allowed: dict[str, set[str]] = {
         "stripe": {"amount", "currency", "status", "payment_intent_id"},
         "lob": {"address", "city", "state", "zip"},
         "telnyx": {"phone_number", "call_status"},

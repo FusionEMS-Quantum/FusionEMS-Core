@@ -30,14 +30,14 @@ export function HealthScoreCard({
   return (
     <div
       className={cn(
-        'bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4',
+        'bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4',
         className
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="font-label text-label uppercase tracking-wider text-text-secondary">
+          <h3 className="font-label text-label uppercase tracking-wider text-zinc-400">
             {domain ? `${domain} · ` : ''}{title}
           </h3>
         </div>
@@ -94,9 +94,9 @@ export function HealthScoreCard({
         {/* Explanation */}
         {showExplanation && (
           <div className="flex-1 min-w-0 space-y-1">
-            <p className="text-body text-text-primary leading-snug">{copy.what}</p>
-            <p className="text-label text-text-muted leading-snug">{copy.why}</p>
-            <p className="text-label text-text-secondary font-medium">{copy.next}</p>
+            <p className="text-body text-zinc-100 leading-snug">{copy.what}</p>
+            <p className="text-label text-zinc-500 leading-snug">{copy.why}</p>
+            <p className="text-label text-zinc-400 font-medium">{copy.next}</p>
           </div>
         )}
       </div>

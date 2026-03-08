@@ -109,20 +109,20 @@ export default function QuantumTaxShieldPage() {
           className="flex items-center justify-between border-b border-white/10 pb-6"
         >
           <div>
-            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-600 drop-shadow-sm flex items-center gap-4">
+            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-600 drop-shadow-[0_0_15px_rgba(0,0,0,0.6)] flex items-center gap-4">
               <Network className="w-10 h-10 text-cyan-400" />
               Quantum Founder Shield
             </h1>
-            <p className="text-gray-400 mt-2 text-lg">
+            <p className="text-zinc-500 mt-2 text-lg">
               Pre-Revenue State • Sec 195 Startup Capitalizer Active
             </p>
           </div>
           <div className="flex gap-4">
-            <div className="px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="px-4 py-2  bg-green-500/10 border border-green-500/30 flex items-center gap-2">
+              <div className="w-2 h-2  bg-green-500 animate-pulse" />
               <span className="text-green-400 font-mono text-sm">IRS Connection Secure</span>
             </div>
-            <div className="px-4 py-2 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center gap-2">
+            <div className="px-4 py-2  bg-indigo-500/10 border border-indigo-500/30 flex items-center gap-2">
               <Fingerprint className="w-4 h-4 text-indigo-400" />
               <span className="text-indigo-400 font-mono text-sm">Commingling Shield Active</span>
             </div>
@@ -134,7 +134,7 @@ export default function QuantumTaxShieldPage() {
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`px-6 py-3 font-semibold text-lg transition-colors border-b-2 ${
-                activeTab === 'dashboard' ? 'border-cyan-400 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                activeTab === 'dashboard' ? 'border-cyan-400 text-cyan-400' : 'border-transparent text-zinc-500 hover:text-gray-300'
               }`}
             >
               Command Center
@@ -142,7 +142,7 @@ export default function QuantumTaxShieldPage() {
             <button
               onClick={() => setActiveTab('vault')}
               className={`px-6 py-3 font-semibold text-lg transition-colors border-b-2 ${
-                activeTab === 'vault' ? 'border-indigo-400 text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                activeTab === 'vault' ? 'border-indigo-400 text-indigo-400' : 'border-transparent text-zinc-500 hover:text-gray-300'
               }`}
             >
               Document Vault
@@ -159,7 +159,7 @@ export default function QuantumTaxShieldPage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-8 relative overflow-hidden group"
+            className=" border border-white/10 bg-black/40 backdrop-blur-xl p-8 relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
               <Zap className="w-40 h-40 text-cyan-500" />
@@ -167,15 +167,15 @@ export default function QuantumTaxShieldPage() {
             <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
               Sec. 195 Capitalization Pool
             </h2>
-            <p className="text-gray-400 text-sm mb-8">Amortized pre-revenue startup deductions waiting for Stripe activation trigger.</p>
+            <p className="text-zinc-500 text-sm mb-8">Amortized pre-revenue startup deductions waiting for Stripe activation trigger.</p>
             
             <div className="flex items-end gap-2 text-6xl font-mono text-cyan-400 font-bold tracking-tight">
               $<span className="counter-tick">4,192</span><span className="text-3xl text-cyan-700">.45</span>
             </div>
-            <div className="w-full bg-gray-900 rounded-full h-3 mt-6 border border-gray-800">
-              <div className="bg-gradient-to-r from-cyan-600 to-cyan-400 h-3 rounded-full" style={{ width: '83%' }}></div>
+            <div className="w-full bg-zinc-900  h-3 mt-6 border border-gray-800">
+              <div className="bg-gradient-to-r from-cyan-600 to-cyan-400 h-3 " style={{ width: '83%' }}></div>
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-right">83% of $5,000 Instant Deduction Threshold</p>
+            <p className="text-xs text-zinc-500 mt-2 text-right">83% of $5,000 Instant Deduction Threshold</p>
           </motion.div>
 
           {/* S3 Vault Upload & Commingling Shield */}
@@ -183,7 +183,7 @@ export default function QuantumTaxShieldPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-2xl border border-indigo-500/20 bg-indigo-900/10 backdrop-blur-xl p-8 flex flex-col justify-between"
+            className=" border border-indigo-500/20 bg-indigo-900/10 backdrop-blur-xl p-8 flex flex-col justify-between"
           >
             <div>
               <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
@@ -197,11 +197,11 @@ export default function QuantumTaxShieldPage() {
             
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-indigo-500/40 hover:border-cyan-400/60 transition-colors rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer bg-black/50 group"
+              className="border-2 border-dashed border-indigo-500/40 hover:border-cyan-400/60 transition-colors  p-8 flex flex-col items-center justify-center cursor-pointer bg-black/50 group"
             >
               <input type="file" className="hidden" ref={fileInputRef} accept=".csv" onChange={handleCsvUpload} />
               {uploading ? (
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400" />
+                <div className="animate-spin  h-10 w-10 border-b-2 border-cyan-400" />
               ) : (
                 <>
                   <UploadCloud className="w-12 h-12 text-indigo-400 group-hover:text-cyan-400 transition-colors mb-3" />
@@ -229,21 +229,21 @@ export default function QuantumTaxShieldPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {loading ? (
-              <div className="col-span-2 h-40 border border-white/5 rounded-xl animate-pulse bg-gray-900/50" />
+              <div className="col-span-2 h-40 border border-white/5  animate-pulse bg-zinc-900/50" />
             ) : (
               strategies.map((strat, i) => (
-                <div key={i} className="relative group p-1 rounded-2xl bg-gradient-to-b from-white/10 to-transparent hover:from-cyan-500/30 transition-all duration-500">
-                  <div className="h-full bg-black/80 backdrop-blur-md rounded-xl p-6 border border-white/5 flex flex-col justify-between">
+                <div key={i} className="relative group p-1  bg-gradient-to-b from-white/10 to-transparent hover:from-cyan-500/30 transition-all duration-500">
+                  <div className="h-full bg-black/80 backdrop-blur-md  p-6 border border-white/5 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <h4 className="text-xl font-semibold text-white/90">{strat.name}</h4>
                         {strat.savings_estimate && typeof strat.savings_estimate === 'number' && (
-                          <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-mono border border-green-500/30">
+                          <span className="bg-green-500/20 text-green-400 px-3 py-1  text-sm font-mono border border-green-500/30">
                             Est. ${strat.savings_estimate.toLocaleString()}
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-400 text-sm leading-relaxed mb-6">{strat.description}</p>
+                      <p className="text-zinc-500 text-sm leading-relaxed mb-6">{strat.description}</p>
                     </div>
                     <div>
                       <div className="border-t border-white/10 pt-4">
@@ -269,17 +269,17 @@ export default function QuantumTaxShieldPage() {
            initial={{ opacity: 0, y: 20 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.4 }}
-           className="mt-12 bg-[#09090b] rounded-2xl border border-gray-800 shadow-2xl overflow-hidden"
+           className="mt-12 bg-[#09090b]  border border-gray-800 shadow-[0_0_15px_rgba(0,0,0,0.6)] overflow-hidden"
         >
           <div className="bg-[#18181b] border-b border-gray-800 px-4 py-3 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <TerminalSquare className="w-5 h-5 text-gray-400" />
+              <TerminalSquare className="w-5 h-5 text-zinc-500" />
               <h3 className="font-mono text-sm text-gray-300">quantum_efile_socket.exe</h3>
             </div>
             <button 
               onClick={startRealtimeTracking}
               disabled={isTracking}
-              className="bg-cyan-600 hover:bg-cyan-500 text-black px-4 py-1.5 rounded-md text-xs font-bold font-mono transition-colors disabled:opacity-50"
+              className="bg-cyan-600 hover:bg-cyan-500 text-black px-4 py-1.5  text-xs font-bold font-mono transition-colors disabled:opacity-50"
             >
               {isTracking ? "TRANSMITTING..." : "INITIATE WISCONSIN E-FILE"}
             </button>
@@ -302,14 +302,14 @@ export default function QuantumTaxShieldPage() {
                   animate={{ opacity: 1, x: 0 }}
                   className="flex items-start gap-4"
                 >
-                  <span className="text-gray-500">[{new Date().toLocaleTimeString()}]</span>
+                  <span className="text-zinc-500">[{new Date().toLocaleTimeString()}]</span>
                   <span className={log.status === "In Progress" ? "text-yellow-400" : log.status.includes("Success") ? "text-green-400" : "text-cyan-300"}>
                     {log.step.padEnd(30, ' ')} 
                     {log.status === "In Progress" && <span className="animate-pulse">...</span>}
                     {log.status !== "In Progress" && `[${log.status}]`}
                   </span>
                   {log.refund_est !== undefined && (
-                     <span className="text-green-300 ml-auto bg-green-900/30 px-2 rounded">
+                     <span className="text-green-300 ml-auto bg-green-900/30 px-2 ">
                        WI Liability / Refund: {log.refund_est === 0 ? "$0.00" : log.refund_est}
                      </span>
                   )}
@@ -331,26 +331,26 @@ export default function QuantumTaxShieldPage() {
             className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8"
           >
             {/* Sidebar list of documents */}
-            <div className="col-span-1 border border-indigo-500/20 bg-black/40 rounded-xl p-4 overflow-y-auto max-h-[600px]">
+            <div className="col-span-1 border border-indigo-500/20 bg-black/40  p-4 overflow-y-auto max-h-[600px]">
               <h3 className="text-xl font-bold text-indigo-400 mb-4 border-b border-indigo-500/20 pb-2">Generated Resolutions</h3>
               {vaultDocs.length === 0 ? (
-                <p className="text-gray-500 text-sm">No documents generated yet.</p>
+                <p className="text-zinc-500 text-sm">No documents generated yet.</p>
               ) : (
                 <div className="space-y-2">
                   {vaultDocs.map((doc) => (
                     <div 
                       key={doc.id}
                       onClick={() => setSelectedDocId(doc.id)}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors border ${
+                      className={`p-3  cursor-pointer transition-colors border ${
                         selectedDocId === doc.id 
                           ? 'bg-indigo-900/40 border-indigo-500' 
                           : 'bg-black/20 border-white/5 hover:border-white/20'
                       }`}
                     >
                       <p className="font-semibold text-white text-sm">{doc.doc_type.replace(/_/g, ' ').toUpperCase()}</p>
-                      <p className="text-xs text-gray-500 font-mono mt-1">{new Date(doc.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs text-zinc-500 font-mono mt-1">{new Date(doc.created_at).toLocaleDateString()}</p>
                       {doc.signature_status === "EXECUTED" && (
-                        <span className="inline-block mt-2 px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs rounded">Signed</span>
+                        <span className="inline-block mt-2 px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs ">Signed</span>
                       )}
                     </div>
                   ))}
@@ -359,7 +359,7 @@ export default function QuantumTaxShieldPage() {
             </div>
 
             {/* Document Viewer Frame */}
-            <div className="col-span-1 lg:col-span-2 bg-white rounded-xl shadow-2xl overflow-hidden min-h-[600px]">
+            <div className="col-span-1 lg:col-span-2 bg-zinc-950  shadow-[0_0_15px_rgba(0,0,0,0.6)] overflow-hidden min-h-[600px]">
               {selectedDocId ? (
                 <iframe 
                   src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/quantum-founder/vault/render/${selectedDocId}`} 
@@ -367,7 +367,7 @@ export default function QuantumTaxShieldPage() {
                   title="Document Viewer"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50">
+                <div className="w-full h-full flex flex-col items-center justify-center text-zinc-500 bg-[#050505]">
                   <FileText className="w-16 h-16 text-gray-300 mb-4" />
                   <p>Select a document to view.</p>
                 </div>

@@ -13,9 +13,9 @@ export type SystemStatus =
 
 export function StatusBadge({ status, accent }: { status: SystemStatus; accent: string }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
+    <span className="inline-flex items-center gap-2  border px-3 py-1 text-xs"
       style={{ borderColor: "rgba(255,255,255,0.12)" }}>
-      <span className="h-2 w-2 rounded-full" style={{ background: accent }} />
+      <span className="h-2 w-2 " style={{ background: accent }} />
       <span className="text-[rgba(255,255,255,0.78)]">{status.replaceAll("_", " ")}</span>
     </span>
   );
@@ -29,13 +29,13 @@ export function ModalContainer({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.65)] p-4">
-      <div className="w-full max-w-xl rounded-2xl border border-border bg-panel shadow-2xl">
+      <div className="w-full max-w-xl  border border-border bg-panel shadow-[0_0_15px_rgba(0,0,0,0.6)]">
         <div className="border-b border-border p-5">
           <div className="text-lg font-semibold">{title}</div>
         </div>
         <div className="p-5 text-sm text-muted whitespace-pre-wrap">{body}</div>
         <div className="flex justify-end gap-3 border-t border-border p-4">
-          <button onClick={onClose} className="rounded-xl border border-border px-4 py-2 text-sm">
+          <button onClick={onClose} className=" border border-border px-4 py-2 text-sm">
             {ctaLabel ?? "Return"}
           </button>
         </div>
@@ -46,7 +46,7 @@ export function ModalContainer({
 
 function NavLink({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="rounded-lg px-3 py-2 text-sm text-muted hover:text-text hover:bg-[rgba(255,255,255,0.06)]">
+    <Link href={href} className=" px-3 py-2 text-sm text-muted hover:text-text hover:bg-[rgba(255,255,255,0.06)]">
       {label}
     </Link>
   );
@@ -60,7 +60,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border bg-[rgba(11,15,20,0.9)] backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl border border-border bg-panel2 flex items-center justify-center font-bold">
+            <div className="h-9 w-9  border border-border bg-panel2 flex items-center justify-center font-bold">
               FQ
             </div>
             <div>
@@ -86,15 +86,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link href="/portal/patient" className="rounded-xl border border-border px-3 py-2 text-sm text-muted hover:text-text">
+            <Link href="/portal/patient" className=" border border-border px-3 py-2 text-sm text-muted hover:text-text">
               Pay My Bill
             </Link>
-            <Link href="/billing/login" className="rounded-xl border border-border px-3 py-2 text-sm text-muted hover:text-text">
+            <Link href="/billing/login" className=" border border-border px-3 py-2 text-sm text-muted hover:text-text">
               Billing Login
             </Link>
             <button
               onClick={() => setCmdPaletteOpen(true)}
-              className="rounded-xl bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
+              className=" bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
             >
               Command
             </button>

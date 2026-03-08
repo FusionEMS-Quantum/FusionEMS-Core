@@ -29,21 +29,21 @@ export function QuantumCommandBar({
     <div
       className={clsx(
         'flex items-center justify-between gap-4',
-        'px-4 py-3 bg-bg-panel-raised border border-border-DEFAULT chamfer-8',
+        'px-4 py-3 bg-[#0A0A0B]-raised border border-border-DEFAULT chamfer-8',
         'animate-fade-in',
         className,
       )}
     >
       <div className="flex items-center gap-3">
         {selectedCount > 0 && (
-          <span className="label-caps text-orange">
+          <span className="label-caps text-[#FF4D00]">
             {selectedCount} selected
           </span>
         )}
         {onClear && selectedCount > 0 && (
           <button
             onClick={onClear}
-            className="text-text-muted hover:text-text-primary text-label transition-colors duration-fast"
+            className="text-zinc-500 hover:text-zinc-100 text-label transition-colors duration-fast"
           >
             Clear
           </button>
@@ -52,9 +52,9 @@ export function QuantumCommandBar({
       <div className="flex items-center gap-2">
         {actions.map((action, i) => {
           const variantClass = {
-            primary: 'bg-orange text-text-inverse hover:bg-orange-bright',
-            danger: 'bg-red-ghost text-red hover:bg-red-dim hover:text-text-primary',
-            ghost: 'text-text-secondary hover:text-text-primary hover:bg-bg-overlay',
+            primary: 'bg-[#FF4D00] text-black hover:bg-[#FF4D00]-bright',
+            danger: 'bg-red-ghost text-red hover:bg-red-dim hover:text-zinc-100',
+            ghost: 'text-zinc-400 hover:text-zinc-100 hover:bg-bg-overlay',
           }[action.variant ?? 'ghost'];
 
           return (

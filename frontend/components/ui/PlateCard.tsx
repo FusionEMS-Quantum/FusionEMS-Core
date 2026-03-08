@@ -34,7 +34,7 @@ const plateVariants = cva(
     variants: {
       variant: {
         default: [
-          'bg-bg-panel',
+          'bg-[#0A0A0B]',
           'border border-border-DEFAULT',
           'shadow-elevation-1',
           'chamfer-8',
@@ -76,7 +76,7 @@ const plateVariants = cva(
 );
 
 const accentColors: Record<string, string> = {
-  orange:     'var(--color-brand-orange)',
+  orange:     '#FF4D00',
   red:        'var(--color-brand-red)',
   fire:       'var(--color-system-fire)',
   billing:    'var(--color-system-billing)',

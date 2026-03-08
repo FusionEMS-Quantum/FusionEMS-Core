@@ -21,6 +21,30 @@ variable "project" {
   default     = "fusionems"
 }
 
+variable "application" {
+  description = "Application tag value"
+  type        = string
+  default     = "FusionEMS-Core"
+}
+
+variable "owner" {
+  description = "Owner tag value"
+  type        = string
+  default     = "fusion-platform"
+}
+
+variable "cost_center" {
+  description = "CostCenter tag value"
+  type        = string
+  default     = "fusionems"
+}
+
+variable "data_classification" {
+  description = "DataClassification tag value"
+  type        = string
+  default     = "confidential"
+}
+
 # ─── Networking ──────────────────────────────────────────────────────────────
 
 variable "vpc_cidr" {
@@ -38,9 +62,20 @@ variable "public_subnet_cidrs" {
   type        = list(string)
 }
 
-variable "private_subnet_cidrs" {
-  description = "CIDR blocks for private subnets"
+variable "private_app_subnet_cidrs" {
+  description = "CIDR blocks for private application subnets"
   type        = list(string)
+}
+
+variable "private_data_subnet_cidrs" {
+  description = "CIDR blocks for private data subnets"
+  type        = list(string)
+}
+
+variable "nat_gateway_mode" {
+  description = "NAT topology mode: per_az or single"
+  type        = string
+  default     = "per_az"
 }
 
 # ─── DNS / TLS ───────────────────────────────────────────────────────────────

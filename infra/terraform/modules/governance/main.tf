@@ -317,9 +317,9 @@ resource "aws_iam_policy" "tenant_isolation_boundary" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid    = "DenyAssumeCrossTenant",
-        Effect = "Deny",
-        Action = "sts:AssumeRole",
+        Sid      = "DenyAssumeCrossTenant",
+        Effect   = "Deny",
+        Action   = "sts:AssumeRole",
         Resource = "*",
         Condition = {
           StringNotEquals = {

@@ -78,7 +78,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-[0_0_15px_rgba(0,0,0,0.6)]"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -164,12 +164,12 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
       onClick={onClose}
     >
       <div
-        className="bg-bg-base border border-white/[0.12] chamfer-4 p-6 w-full max-w-md shadow-2xl"
+        className="bg-[#050505] border border-white/[0.12] chamfer-4 p-6 w-full max-w-md shadow-[0_0_15px_rgba(0,0,0,0.6)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary">Import from GitHub</h3>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary text-lg leading-none">✕</button>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-100">Import from GitHub</h3>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-100 text-lg leading-none">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           {[
@@ -178,13 +178,13 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
             { label: 'Ref (branch/tag)', value: ref, onChange: setRef, placeholder: 'main' },
           ].map((f) => (
             <div key={f.label}>
-              <label className="block text-micro uppercase tracking-wider text-text-muted mb-1">{f.label}</label>
+              <label className="block text-micro uppercase tracking-wider text-zinc-500 mb-1">{f.label}</label>
               <input
                 type="text"
                 value={f.value}
                 onChange={(e) => f.onChange(e.target.value)}
                 placeholder={f.placeholder}
-                className="w-full bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-muted"
+                className="w-full bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-zinc-500"
               />
             </div>
           ))}
@@ -198,7 +198,7 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
               type="submit"
               disabled={loading}
               className="flex-1 py-2 text-xs font-semibold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
-              style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
+              style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
             >
               {loading ? 'Importing…' : 'Start Import'}
             </button>
@@ -235,20 +235,20 @@ function PackDetailDrawer({
       onClick={onClose}
     >
       <div
-        className="bg-bg-base border-l border-border-DEFAULT h-full overflow-y-auto flex flex-col"
+        className="bg-[#050505] border-l border-border-DEFAULT h-full overflow-y-auto flex flex-col"
         style={{ width: 400 }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-5 py-4 border-b border-border-DEFAULT flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">Pack Detail</h2>
-            <p className="text-micro text-text-muted mt-0.5">{pack.name}</p>
+            <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">Pack Detail</h2>
+            <p className="text-micro text-zinc-500 mt-0.5">{pack.name}</p>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors text-lg leading-none">✕</button>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-100 transition-colors text-lg leading-none">✕</button>
         </div>
         <div className="flex-1 px-5 py-4 space-y-5">
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">Pack Data</p>
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">Pack Data</p>
             <div className="space-y-2.5">
               {[
                 { label: 'Name', value: pack.name },
@@ -259,20 +259,20 @@ function PackDetailDrawer({
                 { label: 'Created', value: new Date(pack.created_at).toLocaleString() },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-start justify-between gap-3">
-                  <span className="text-micro uppercase tracking-wider text-text-muted flex-shrink-0 mt-0.5">{label}</span>
-                  <span className="text-xs text-text-primary text-right font-mono break-all">{value}</span>
+                  <span className="text-micro uppercase tracking-wider text-zinc-500 flex-shrink-0 mt-0.5">{label}</span>
+                  <span className="text-xs text-zinc-100 text-right font-mono break-all">{value}</span>
                 </div>
               ))}
             </div>
           </div>
           <div className="flex items-center justify-between py-3 border-y border-border-subtle">
             <div className="flex flex-col gap-1.5">
-              <span className="text-micro uppercase tracking-wider text-text-muted">Status</span>
+              <span className="text-micro uppercase tracking-wider text-zinc-500">Status</span>
               <PackStatusBadge status={pack.status} />
             </div>
             {pack.compiled && (
               <div className="flex flex-col gap-1.5 items-end">
-                <span className="text-micro uppercase tracking-wider text-text-muted">Compiled</span>
+                <span className="text-micro uppercase tracking-wider text-zinc-500">Compiled</span>
                 <span className="px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wider chamfer-4" style={{ color: 'var(--q-green)', background: 'rgba(76,175,80,0.12)' }}>YES</span>
               </div>
             )}
@@ -280,17 +280,17 @@ function PackDetailDrawer({
           {pack.compiled && (
             <div className="flex gap-2">
               <div className="flex flex-col items-center px-3 py-2 chamfer-4" style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)' }}>
-                <span className="text-[9px] uppercase tracking-wider text-text-muted">Entity Rules</span>
+                <span className="text-[9px] uppercase tracking-wider text-zinc-500">Entity Rules</span>
                 <span className="text-base font-bold text-system-billing">{(pack.data as any)?.rules_json?.entity_rules?.length ?? '—'}</span>
               </div>
               <div className="flex flex-col items-center px-3 py-2 chamfer-4" style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)' }}>
-                <span className="text-[9px] uppercase tracking-wider text-text-muted">Incident Rules</span>
+                <span className="text-[9px] uppercase tracking-wider text-zinc-500">Incident Rules</span>
                 <span className="text-base font-bold text-system-compliance">{(pack.data as any)?.rules_json?.incident_rules?.length ?? '—'}</span>
               </div>
             </div>
           )}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">Actions</p>
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">Actions</p>
             <div className="flex flex-wrap gap-2">
               {pack.status === 'staged' && (
                 <button
@@ -392,7 +392,7 @@ function PacksTab({
           <button
             onClick={onImport}
             className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110"
-            style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
+            style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
           >
             Import from GitHub
           </button>
@@ -405,17 +405,17 @@ function PacksTab({
           </button>
         </div>
         {lastRefreshed && (
-          <span className="text-micro text-text-muted font-mono">
+          <span className="text-micro text-zinc-500 font-mono">
             Last refreshed: {lastRefreshed.toLocaleTimeString()}
           </span>
         )}
       </div>
-      <div className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-x-auto">
+      <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 overflow-x-auto">
         <table className="w-full text-xs min-w-[780px]">
           <thead>
             <tr className="border-b border-white/[0.07]">
               {['Name', 'Source Type', 'Status', 'Created At', 'SHA256', 'Actions'].map((h) => (
-                <th key={h} className="text-left py-2.5 px-3 text-[9px] uppercase tracking-wider text-text-muted font-semibold whitespace-nowrap">
+                <th key={h} className="text-left py-2.5 px-3 text-[9px] uppercase tracking-wider text-zinc-500 font-semibold whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -424,32 +424,32 @@ function PacksTab({
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-body text-text-muted">Loading…</td>
+                <td colSpan={6} className="py-10 text-center text-body text-zinc-500">Loading…</td>
               </tr>
             )}
             {!loading && packs.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-body text-text-muted">No packs found. Import a pack to get started.</td>
+                <td colSpan={6} className="py-10 text-center text-body text-zinc-500">No packs found. Import a pack to get started.</td>
               </tr>
             )}
             {!loading && packs.map((pack) => (
               <tr
                 key={pack.id}
-                className="border-b border-border-subtle hover:bg-white/[0.02] transition-colors"
+                className="border-b border-border-subtle hover:bg-zinc-950/[0.02] transition-colors"
                 style={pack.id === activePackId ? { background: 'rgba(76,175,80,0.04)' } : undefined}
               >
-                <td className="py-2.5 px-3 font-medium text-text-primary whitespace-nowrap">
+                <td className="py-2.5 px-3 font-medium text-zinc-100 whitespace-nowrap">
                   {pack.name}
                   {pack.id === activePackId && (
                     <span className="ml-2 text-[9px] text-status-active uppercase tracking-wider">● active</span>
                   )}
                 </td>
-                <td className="py-2.5 px-3 text-text-secondary uppercase">{pack.source_type}</td>
+                <td className="py-2.5 px-3 text-zinc-400 uppercase">{pack.source_type}</td>
                 <td className="py-2.5 px-3"><PackStatusBadge status={pack.status} /></td>
-                <td className="py-2.5 px-3 font-mono text-text-muted whitespace-nowrap">
+                <td className="py-2.5 px-3 font-mono text-zinc-500 whitespace-nowrap">
                   {new Date(pack.created_at).toLocaleDateString()}
                 </td>
-                <td className="py-2.5 px-3 font-mono text-text-muted text-micro">
+                <td className="py-2.5 px-3 font-mono text-zinc-500 text-micro">
                   {pack.sha256 ? pack.sha256.slice(0, 12) : '—'}
                 </td>
                 <td className="py-2.5 px-3">
@@ -497,7 +497,7 @@ function CopilotResult({ result }: { result: CopilotResult }) {
     <div className="mt-4 p-4 chamfer-4 space-y-3" style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)' }}>
       <p className="text-[9px] uppercase tracking-[0.18em] text-system-compliance">Copilot Analysis</p>
       {result.summary && (
-        <p className="text-xs text-text-primary leading-relaxed">{result.summary}</p>
+        <p className="text-xs text-zinc-100 leading-relaxed">{result.summary}</p>
       )}
       {result.actions && result.actions.length > 0 && (
         <div className="space-y-2">
@@ -505,11 +505,11 @@ function CopilotResult({ result }: { result: CopilotResult }) {
             <div key={i} className="flex gap-2 items-start">
               <span
                 className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider chamfer-4 shrink-0 mt-0.5"
-                style={{ background: 'rgba(255,107,26,0.15)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.3)' }}
+                style={{ background: 'rgba(255,107,26,0.15)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.3)' }}
               >
                 {item.type}
               </span>
-              <span className="text-xs text-text-primary">{item.instruction}</span>
+              <span className="text-xs text-zinc-100">{item.instruction}</span>
             </div>
           ))}
         </div>
@@ -517,12 +517,12 @@ function CopilotResult({ result }: { result: CopilotResult }) {
       {result.confidence !== undefined && (
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] uppercase tracking-wider text-text-muted">Confidence</span>
-            <span className="text-micro font-mono text-text-secondary">{Math.round(result.confidence * 100)}%</span>
+            <span className="text-[9px] uppercase tracking-wider text-zinc-500">Confidence</span>
+            <span className="text-micro font-mono text-zinc-400">{Math.round(result.confidence * 100)}%</span>
           </div>
-          <div className="h-1.5 rounded-full bg-white/[0.08]">
+          <div className="h-1.5  bg-zinc-950/[0.08]">
             <div
-              className="h-full rounded-full"
+              className="h-full "
               style={{ width: `${result.confidence * 100}%`, background: 'var(--color-system-compliance)' }}
             />
           </div>
@@ -554,10 +554,10 @@ function IssueCard({ issue }: { issue: ValidationIssue }) {
           {issue.severity}
         </span>
         {issue.field_label && (
-          <span className="text-xs font-semibold text-text-primary">{issue.field_label}</span>
+          <span className="text-xs font-semibold text-zinc-100">{issue.field_label}</span>
         )}
         {issue.path && (
-          <span className="text-micro font-mono text-text-muted">{issue.path}</span>
+          <span className="text-micro font-mono text-zinc-500">{issue.path}</span>
         )}
         {issue.ui_section && (
           <span
@@ -568,9 +568,9 @@ function IssueCard({ issue }: { issue: ValidationIssue }) {
           </span>
         )}
       </div>
-      <p className="text-xs text-text-primary mb-1">{issue.message}</p>
+      <p className="text-xs text-zinc-100 mb-1">{issue.message}</p>
       {issue.suggested_fix && (
-        <p className="text-body text-text-muted">{issue.suggested_fix}</p>
+        <p className="text-body text-zinc-500">{issue.suggested_fix}</p>
       )}
     </div>
   );
@@ -670,7 +670,7 @@ function ValidateTab({
     ...(incidentResult?.issues ?? []),
   ];
 
-  const inputClass = "w-full bg-white/[0.03] border border-border-DEFAULT text-xs font-mono text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-text-muted resize-y";
+  const inputClass = "w-full bg-zinc-950/[0.03] border border-border-DEFAULT text-xs font-mono text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-zinc-500 resize-y";
 
   return (
     <div className="space-y-5">
@@ -681,10 +681,10 @@ function ValidateTab({
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Entity panel */}
-        <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-4 space-y-3">
+        <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-4 space-y-3">
           <div>
-            <p className="text-micro uppercase tracking-[0.18em] text-orange-dim mb-0.5">Entity (Department)</p>
-            <p className="text-body text-text-muted">Paste entity JSON payload below</p>
+            <p className="text-micro uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-0.5">Entity (Department)</p>
+            <p className="text-body text-zinc-500">Paste entity JSON payload below</p>
           </div>
           <textarea
             value={entityJson}
@@ -700,7 +700,7 @@ function ValidateTab({
             onClick={validateEntity}
             disabled={loadingEntity || !entityJson.trim()}
             className="w-full py-2 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
-            style={{ background: 'rgba(255,107,26,0.16)', border: '1px solid rgba(255,107,26,0.3)', color: 'var(--q-orange)' }}
+            style={{ background: 'rgba(255,107,26,0.16)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF4D00' }}
           >
             {loadingEntity ? 'Validating…' : 'Validate Entity'}
           </button>
@@ -715,7 +715,7 @@ function ValidateTab({
                 >
                   {entityResult.valid ? 'VALID' : 'INVALID'}
                 </span>
-                <span className="text-body text-text-muted">{entityResult.issues.length} issue{entityResult.issues.length !== 1 ? 's' : ''}</span>
+                <span className="text-body text-zinc-500">{entityResult.issues.length} issue{entityResult.issues.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {entityResult.issues.map((issue, i) => <IssueCard key={i} issue={issue} />)}
@@ -724,18 +724,18 @@ function ValidateTab({
           )}
         </div>
         {/* Incident panel */}
-        <div className="bg-bg-base border border-border-DEFAULT chamfer-4 p-4 space-y-3">
+        <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-4 space-y-3">
           <div>
-            <p className="text-micro uppercase tracking-[0.18em] text-orange-dim mb-0.5">Incident</p>
-            <p className="text-body text-text-muted">Paste incident JSON payload below</p>
+            <p className="text-micro uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-0.5">Incident</p>
+            <p className="text-body text-zinc-500">Paste incident JSON payload below</p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-micro uppercase tracking-wider text-text-muted">Entity Type</label>
+            <label className="text-micro uppercase tracking-wider text-zinc-500">Entity Type</label>
             <select
               value={entityType}
               onChange={(e) => setEntityType(e.target.value as 'ENTITY' | 'INCIDENT')}
-              className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-2 py-1 chamfer-4 outline-none focus:border-brand-orange/40"
-              style={{ background: 'var(--color-bg-base)' }}
+              className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-2 py-1 chamfer-4 outline-none focus:border-brand-orange/40"
+              style={{ background: '#050505' }}
             >
               <option value="ENTITY">ENTITY</option>
               <option value="INCIDENT">INCIDENT</option>
@@ -755,7 +755,7 @@ function ValidateTab({
             onClick={validateIncident}
             disabled={loadingIncident || !incidentJson.trim()}
             className="w-full py-2 text-micro font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
-            style={{ background: 'rgba(255,107,26,0.16)', border: '1px solid rgba(255,107,26,0.3)', color: 'var(--q-orange)' }}
+            style={{ background: 'rgba(255,107,26,0.16)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF4D00' }}
           >
             {loadingIncident ? 'Validating…' : 'Validate'}
           </button>
@@ -770,7 +770,7 @@ function ValidateTab({
                 >
                   {incidentResult.valid ? 'VALID' : 'INVALID'}
                 </span>
-                <span className="text-body text-text-muted">{incidentResult.issues.length} issue{incidentResult.issues.length !== 1 ? 's' : ''}</span>
+                <span className="text-body text-zinc-500">{incidentResult.issues.length} issue{incidentResult.issues.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {incidentResult.issues.map((issue, i) => <IssueCard key={i} issue={issue} />)}
@@ -852,7 +852,7 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
 
   if (issues.length === 0) {
     return (
-      <div className="py-16 text-center text-text-muted text-sm">
+      <div className="py-16 text-center text-zinc-500 text-sm">
         No issues. Run a validation in the Validate tab to populate the fix list.
       </div>
     );
@@ -893,13 +893,13 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
         const secErrors = sectionIssues.filter((i) => i.severity === 'error').length;
         const secWarns = sectionIssues.filter((i) => i.severity === 'warning').length;
         return (
-          <div key={section} className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-hidden">
+          <div key={section} className="bg-[#050505] border border-border-DEFAULT chamfer-4 overflow-hidden">
             <button
               onClick={() => toggleSection(section)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-950/[0.02] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-primary">{section}</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-100">{section}</span>
                 {secErrors > 0 && (
                   <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase chamfer-4" style={{ color: 'var(--q-red)', background: 'rgba(229,57,53,0.15)' }}>
                     {secErrors} error{secErrors !== 1 ? 's' : ''}
@@ -911,7 +911,7 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
                   </span>
                 )}
               </div>
-              <span className="text-text-muted text-sm">{isOpen ? '▾' : '▸'}</span>
+              <span className="text-zinc-500 text-sm">{isOpen ? '▾' : '▸'}</span>
             </button>
             {isOpen && (
               <div className="px-4 pb-4 space-y-2 border-t border-white/5">
@@ -922,10 +922,10 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
                         {issue.severity === 'error' ? '✖' : '▲'}
                       </span>
                       <div>
-                        <span className="text-xs font-semibold text-text-primary">{issue.field_label ?? issue.path ?? 'Field'}</span>
-                        <p className="text-body text-text-secondary mt-0.5">{issue.message}</p>
+                        <span className="text-xs font-semibold text-zinc-100">{issue.field_label ?? issue.path ?? 'Field'}</span>
+                        <p className="text-body text-zinc-400 mt-0.5">{issue.message}</p>
                         {issue.suggested_fix && (
-                          <p className="text-micro text-text-muted mt-0.5">{issue.suggested_fix}</p>
+                          <p className="text-micro text-zinc-500 mt-0.5">{issue.suggested_fix}</p>
                         )}
                       </div>
                     </div>
@@ -965,14 +965,14 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
 
   if (!activePackId) {
     return (
-      <div className="py-16 text-center text-text-muted text-sm max-w-md mx-auto">
+      <div className="py-16 text-center text-zinc-500 text-sm max-w-md mx-auto">
         No active NERIS pack. Import and activate a pack in the Packs tab.
       </div>
     );
   }
 
   if (loading) {
-    return <div className="py-16 text-center text-text-muted text-sm">Loading rules…</div>;
+    return <div className="py-16 text-center text-zinc-500 text-sm">Loading rules…</div>;
   }
 
   const rules = subTab === 'entity'
@@ -1001,15 +1001,15 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div>
-          <p className="text-micro uppercase tracking-[0.18em] text-orange-dim">Active Pack</p>
-          <p className="text-sm font-semibold text-text-primary">{activePack?.name ?? activePackId}</p>
+          <p className="text-micro uppercase tracking-[0.18em] text-[#FF4D00]-dim">Active Pack</p>
+          <p className="text-sm font-semibold text-zinc-100">{activePack?.name ?? activePackId}</p>
         </div>
         <div className="flex gap-1 border-b border-border-DEFAULT ml-auto">
           {(['entity', 'incident'] as const).map((k) => (
             <button
               key={k}
               onClick={() => setSubTab(k)}
-              className={`px-4 py-2 text-xs font-semibold transition-colors border-b-2 -mb-px ${subTab === k ? 'text-orange border-orange' : 'text-text-muted border-transparent hover:text-text-primary'}`}
+              className={`px-4 py-2 text-xs font-semibold transition-colors border-b-2 -mb-px ${subTab === k ? 'text-[#FF4D00] border-orange' : 'text-zinc-500 border-transparent hover:text-zinc-100'}`}
             >
               {k === 'entity' ? 'Entity Rules' : 'Incident Rules'}
             </button>
@@ -1018,7 +1018,7 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
       </div>
 
       {rules.length === 0 && (
-        <div className="py-16 text-center text-text-muted text-sm">
+        <div className="py-16 text-center text-zinc-500 text-sm">
           No {subTab} rules found in this pack.
         </div>
       )}
@@ -1027,19 +1027,19 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
         {rules.map((section) => {
           const isOpen = expandedSections.has(section.id);
           return (
-            <div key={section.id} className="bg-bg-base border border-border-DEFAULT chamfer-4 overflow-hidden">
+            <div key={section.id} className="bg-[#050505] border border-border-DEFAULT chamfer-4 overflow-hidden">
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-950/[0.02] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-micro font-mono text-text-muted">{section.id}</span>
-                  <span className="text-xs font-semibold text-text-primary">{section.label}</span>
+                  <span className="text-micro font-mono text-zinc-500">{section.id}</span>
+                  <span className="text-xs font-semibold text-zinc-100">{section.label}</span>
                   <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase chamfer-4" style={{ color: 'var(--color-system-billing)', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.2)' }}>
                     {section.fields.length} field{section.fields.length !== 1 ? 's' : ''}
                   </span>
                 </div>
-                <span className="text-text-muted text-sm">{isOpen ? '▾' : '▸'}</span>
+                <span className="text-zinc-500 text-sm">{isOpen ? '▾' : '▸'}</span>
               </button>
               {isOpen && (
                 <div className="border-t border-white/5 px-4 py-3 space-y-1.5">
@@ -1050,22 +1050,22 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
                       <div key={field.path} className="chamfer-4 overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                         <button
                           onClick={() => toggleField(fKey)}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/[0.02] transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-zinc-950/[0.02] transition-colors"
                         >
-                          <span className="text-body font-mono text-text-secondary flex-1 truncate">{field.path}</span>
+                          <span className="text-body font-mono text-zinc-400 flex-1 truncate">{field.path}</span>
                           {field.type && (
-                            <span className="text-[9px] font-mono uppercase text-text-muted">{field.type}</span>
+                            <span className="text-[9px] font-mono uppercase text-zinc-500">{field.type}</span>
                           )}
                           {field.required && (
-                            <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--q-orange)' }}>req</span>
+                            <span className="text-[9px] uppercase tracking-wider" style={{ color: '#FF4D00' }}>req</span>
                           )}
                           {field.value_set && field.value_set.length > 0 && (
-                            <span className="text-[9px] text-text-muted">{fOpen ? '▾' : '▸'} values</span>
+                            <span className="text-[9px] text-zinc-500">{fOpen ? '▾' : '▸'} values</span>
                           )}
                         </button>
                         {fOpen && field.value_set && field.value_set.length > 0 && (
                           <div className="px-3 pb-3 border-t border-border-subtle">
-                            <p className="text-[9px] uppercase tracking-wider text-text-muted mt-2 mb-1.5">Allowed Values</p>
+                            <p className="text-[9px] uppercase tracking-wider text-zinc-500 mt-2 mb-1.5">Allowed Values</p>
                             <div className="flex flex-wrap gap-1">
                               {field.value_set.map((v) => (
                                 <span
@@ -1138,7 +1138,7 @@ export default function NerisComplianceStudioPage() {
   const fixListCount = persistedIssues.length;
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-5">
+    <div className="min-h-screen bg-black text-zinc-100 p-5">
       <Toast items={toasts} />
 
       {showImportModal && (
@@ -1150,11 +1150,11 @@ export default function NerisComplianceStudioPage() {
 
       {/* Page Header */}
       <div className="mb-5">
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">
           5 · COMPLIANCE
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-lg font-black uppercase tracking-wider text-text-primary">
+          <h1 className="text-lg font-black uppercase tracking-wider text-zinc-100">
             NERIS COMPLIANCE STUDIO
           </h1>
           <span className="text-base">🏴</span>
@@ -1165,7 +1165,7 @@ export default function NerisComplianceStudioPage() {
             Wisconsin RMS-Only
           </span>
         </div>
-        <p className="text-xs text-text-muted mt-0.5">
+        <p className="text-xs text-zinc-500 mt-0.5">
           Pack management · Validation engine · Copilot fix assistant · Rules browser
         </p>
       </div>
@@ -1178,8 +1178,8 @@ export default function NerisComplianceStudioPage() {
             onClick={() => setTab(t.key)}
             className={`px-4 py-2.5 text-xs font-semibold transition-colors border-b-2 -mb-px relative ${
               tab === t.key
-                ? 'text-orange border-orange'
-                : 'text-text-muted border-transparent hover:text-text-primary'
+                ? 'text-[#FF4D00] border-orange'
+                : 'text-zinc-500 border-transparent hover:text-zinc-100'
             }`}
           >
             {t.label}

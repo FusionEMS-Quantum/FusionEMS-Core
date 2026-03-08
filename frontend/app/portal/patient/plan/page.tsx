@@ -27,7 +27,7 @@ export default function PatientPlanPage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-base)',
+        background: '#050505',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -44,7 +44,7 @@ export default function PatientPlanPage() {
               fontWeight: 600,
               letterSpacing: 'var(--tracking-micro)',
               textTransform: 'uppercase',
-              color: 'var(--color-brand-orange)',
+              color: '#FF4D00',
               marginBottom: 6,
             }}
           >
@@ -65,9 +65,9 @@ export default function PatientPlanPage() {
         {/* Balance summary */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             border: '1px solid var(--color-border-default)',
-            borderLeft: '3px solid var(--color-brand-orange)',
+            borderLeft: '3px solid #FF4D00',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
             padding: '16px 20px',
             marginBottom: 20,
@@ -95,7 +95,7 @@ export default function PatientPlanPage() {
                 fontFamily: 'var(--font-mono)',
                 fontSize: 'var(--text-h1)',
                 fontWeight: 700,
-                color: 'var(--color-brand-orange)',
+                color: '#FF4D00',
               }}
             >
               ${TOTAL_BALANCE.toFixed(2)}
@@ -142,12 +142,12 @@ export default function PatientPlanPage() {
                 style={{
                   background: isSelected
                     ? 'rgba(255, 107, 26, 0.08)'
-                    : 'var(--color-bg-panel)',
+                    : '#0A0A0B',
                   border: isSelected
-                    ? '1px solid var(--color-brand-orange)'
+                    ? '1px solid #FF4D00'
                     : '1px solid var(--color-border-default)',
                   borderLeft: isSelected
-                    ? '3px solid var(--color-brand-orange)'
+                    ? '3px solid #FF4D00'
                     : '3px solid transparent',
                   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
                   padding: '16px 20px',
@@ -167,7 +167,7 @@ export default function PatientPlanPage() {
                       width: 16,
                       height: 16,
                       borderRadius: '50%',
-                      border: `2px solid ${isSelected ? 'var(--color-brand-orange)' : 'var(--color-border-strong)'}`,
+                      border: `2px solid ${isSelected ? '#FF4D00' : 'var(--color-border-strong)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -180,7 +180,7 @@ export default function PatientPlanPage() {
                           width: 8,
                           height: 8,
                           borderRadius: '50%',
-                          background: 'var(--color-brand-orange)',
+                          background: '#FF4D00',
                         }}
                       />
                     )}
@@ -193,7 +193,7 @@ export default function PatientPlanPage() {
                         fontWeight: 700,
                         letterSpacing: 'var(--tracking-label)',
                         textTransform: 'uppercase',
-                        color: isSelected ? 'var(--color-brand-orange)' : 'var(--color-text-primary)',
+                        color: isSelected ? '#FF4D00' : 'var(--color-text-primary)',
                       }}
                     >
                       {plan.months} Months
@@ -214,7 +214,7 @@ export default function PatientPlanPage() {
                     fontFamily: 'var(--font-mono)',
                     fontSize: 'var(--text-h3)',
                     fontWeight: 700,
-                    color: isSelected ? 'var(--color-brand-orange)' : 'var(--color-text-secondary)',
+                    color: isSelected ? '#FF4D00' : 'var(--color-text-secondary)',
                   }}
                 >
                   ${plan.monthly.toFixed(2)}
@@ -239,7 +239,7 @@ export default function PatientPlanPage() {
         {/* AutoPay option */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             border: '1px solid var(--color-border-default)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
             padding: '14px 18px',
@@ -274,8 +274,8 @@ export default function PatientPlanPage() {
               width: 44,
               height: 24,
               borderRadius: 12,
-              background: autopay ? 'var(--color-brand-orange)' : 'var(--color-bg-overlay)',
-              border: `1px solid ${autopay ? 'var(--color-brand-orange)' : 'var(--color-border-strong)'}`,
+              background: autopay ? '#FF4D00' : 'var(--color-bg-overlay)',
+              border: `1px solid ${autopay ? '#FF4D00' : 'var(--color-border-strong)'}`,
               cursor: 'pointer',
               position: 'relative',
               flexShrink: 0,
@@ -308,7 +308,7 @@ export default function PatientPlanPage() {
             background:
               !selected || enrolled
                 ? 'var(--color-brand-orange-dim)'
-                : 'var(--color-brand-orange)',
+                : '#FF4D00',
             color: '#000',
             fontFamily: 'var(--font-label)',
             fontSize: 'var(--text-label)',

@@ -350,7 +350,7 @@ export default function FleetPage() {
     <ModuleDashboardShell
       title="Fleet Intelligence"
       subtitle="Unit readiness, alerts, maintenance, and inspections"
-      accentColor="var(--color-brand-orange)"
+      accentColor="#FF4D00"
       kpiStrip={fleet ? (
         <>
           <MetricCard label="Fleet Count" value={fleet.fleet_count ?? units.length} domain="fleet" compact />
@@ -374,12 +374,12 @@ export default function FleetPage() {
           {fleetBusy && <QuantumCardSkeleton />}
 
           {fleet && units.length > 0 && (
-            <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 overflow-hidden">
+            <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 overflow-hidden">
               <table className="w-full text-body">
                 <thead>
                   <tr className="bg-bg-overlay border-b border-[var(--color-border-default)]">
                     {['Unit ID', 'Readiness', 'Alerts', 'MDT', 'Open Maint.'].map((h) => (
-                      <th key={h} className="px-3 py-2 text-left font-label text-label uppercase tracking-wider text-text-muted">
+                      <th key={h} className="px-3 py-2 text-left font-label text-label uppercase tracking-wider text-zinc-500">
                         {h}
                       </th>
                     ))}
@@ -395,18 +395,18 @@ export default function FleetPage() {
                         background: selectedUnit === u.unit_id ? 'rgba(255,107,26,0.06)' : undefined,
                       }}
                     >
-                      <td className="px-3 py-2 font-semibold text-orange">{u.unit_id}</td>
+                      <td className="px-3 py-2 font-semibold text-[#FF4D00]">{u.unit_id}</td>
                       <td className="px-3 py-2"><ReadinessBar score={u.readiness_score} /></td>
                       <td className="px-3 py-2 tabular-nums" style={{ color: u.alert_count > 0 ? 'var(--color-brand-red)' : undefined }}>
                         {u.alert_count}
                       </td>
                       <td className="px-3 py-2">
                         <span
-                          className="w-2 h-2 rounded-full inline-block"
+                          className="w-2 h-2  inline-block"
                           style={{ background: u.mdt_online ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}
                         />
                       </td>
-                      <td className="px-3 py-2 tabular-nums text-text-muted">{u.open_maintenance}</td>
+                      <td className="px-3 py-2 tabular-nums text-zinc-500">{u.open_maintenance}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -416,14 +416,14 @@ export default function FleetPage() {
 
           {/* Unit detail panel */}
           {selectedUnit && (
-            <div className="bg-bg-panel border border-orange/20 chamfer-8 p-4">
-              <p className="text-label font-label uppercase tracking-wider text-orange mb-2">
+            <div className="bg-[#0A0A0B] border border-orange/20 chamfer-8 p-4">
+              <p className="text-label font-label uppercase tracking-wider text-[#FF4D00] mb-2">
                 Unit Detail — {selectedUnit}
               </p>
               {unitDetailBusy ? (
                 <QuantumCardSkeleton />
               ) : unitDetail ? (
-                <pre className="text-body whitespace-pre-wrap text-text-muted font-mono">
+                <pre className="text-body whitespace-pre-wrap text-zinc-500 font-mono">
                   {JSON.stringify(unitDetail, null, 2)}
                 </pre>
               ) : null}
@@ -442,17 +442,17 @@ export default function FleetPage() {
           {alerts.map((alert) => (
             <div
               key={alert.alert_id}
-              className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-3"
+              className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-3"
             >
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <SeverityBadge severity={ALERT_SEVERITY_MAP[alert.severity]} size="sm" />
-                <span className="text-body font-semibold text-text-secondary">{alert.unit_id}</span>
+                <span className="text-body font-semibold text-zinc-400">{alert.unit_id}</span>
                 <span className="text-micro ml-auto text-text-disabled">{fmtTs(alert.detected_at)}</span>
               </div>
-              <p className="text-body text-text-muted mb-2">{alert.message}</p>
+              <p className="text-body text-zinc-500 mb-2">{alert.message}</p>
               <div className="flex items-center gap-2">
                 <input
-                  className="flex-1 bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2 py-1 text-body text-text-primary outline-none
+                  className="flex-1 bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2 py-1 text-body text-zinc-100 outline-none
                              focus:border-orange transition-colors duration-fast"
                   placeholder="Resolution note (optional)"
                   value={resolveNote[alert.alert_id] || ''}
@@ -482,8 +482,8 @@ export default function FleetPage() {
       <TabPanel tabId="workorders" activeTab={activeTab}>
         <div className="space-y-4">
           {/* Create form */}
-          <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-            <p className="text-label font-label uppercase tracking-wider text-text-muted mb-3">
+          <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <p className="text-label font-label uppercase tracking-wider text-zinc-500 mb-3">
               Create Work Order
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -496,10 +496,10 @@ export default function FleetPage() {
                 ] as { key: keyof typeof woForm; label: string; type: string }[]
               ).map(({ key, label, type }) => (
                 <div key={key} className="flex flex-col gap-1">
-                  <label className="text-micro font-label uppercase tracking-wider text-text-muted">{label}</label>
+                  <label className="text-micro font-label uppercase tracking-wider text-zinc-500">{label}</label>
                   <input
                     type={type}
-                    className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-text-primary outline-none
+                    className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-zinc-100 outline-none
                                focus:border-orange transition-colors duration-fast"
                     value={woForm[key]}
                     onChange={(e) => setWoForm((p) => ({ ...p, [key]: e.target.value }))}
@@ -507,9 +507,9 @@ export default function FleetPage() {
                 </div>
               ))}
               <div className="flex flex-col gap-1">
-                <label className="text-micro font-label uppercase tracking-wider text-text-muted">Priority</label>
+                <label className="text-micro font-label uppercase tracking-wider text-zinc-500">Priority</label>
                 <select
-                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-text-primary outline-none
+                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-zinc-100 outline-none
                              focus:border-orange transition-colors duration-fast"
                   value={woForm.priority}
                   onChange={(e) => setWoForm((p) => ({ ...p, priority: e.target.value }))}
@@ -524,7 +524,7 @@ export default function FleetPage() {
               onClick={createWorkOrder}
               disabled={woSubmitBusy}
               className="px-4 py-2 text-label font-label uppercase tracking-wider chamfer-4
-                         bg-orange text-text-inverse hover:bg-orange-bright
+                         bg-[#FF4D00] text-black hover:bg-[#FF6A1A]
                          transition-colors duration-fast disabled:opacity-40"
               type="button"
             >
@@ -544,7 +544,7 @@ export default function FleetPage() {
             return (
               <div
                 key={wo.work_order_id}
-                className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-3"
+                className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-3"
               >
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span
@@ -553,14 +553,14 @@ export default function FleetPage() {
                   >
                     {s.label}
                   </span>
-                  <span className="text-body font-semibold text-text-secondary">{wo.title}</span>
+                  <span className="text-body font-semibold text-zinc-400">{wo.title}</span>
                   <span className="text-micro text-text-disabled">{wo.unit_id}</span>
                   <span className="text-micro px-1.5 py-0.5 bg-bg-overlay chamfer-4 text-text-disabled ml-auto">
                     {wo.priority}
                   </span>
                 </div>
                 {wo.description && (
-                  <p className="text-body text-text-muted mb-2">{wo.description}</p>
+                  <p className="text-body text-zinc-500 mb-2">{wo.description}</p>
                 )}
                 {nextStatuses.length > 0 && (
                   <div className="flex gap-2">
@@ -591,24 +591,24 @@ export default function FleetPage() {
       <TabPanel tabId="inspections" activeTab={activeTab}>
         <div className="space-y-4">
           {/* Create form */}
-          <div className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4">
-            <p className="text-label font-label uppercase tracking-wider text-text-muted mb-3">
+          <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <p className="text-label font-label uppercase tracking-wider text-zinc-500 mb-3">
               Create Inspection Template
             </p>
             <div className="flex flex-wrap gap-3 mb-3 items-end">
               <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
-                <label className="text-micro font-label uppercase tracking-wider text-text-muted">Name</label>
+                <label className="text-micro font-label uppercase tracking-wider text-zinc-500">Name</label>
                 <input
-                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-text-primary outline-none
+                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-zinc-100 outline-none
                              focus:border-orange transition-colors duration-fast"
                   value={inspForm.name}
                   onChange={(e) => setInspForm((p) => ({ ...p, name: e.target.value }))}
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-micro font-label uppercase tracking-wider text-text-muted">Vehicle Type</label>
+                <label className="text-micro font-label uppercase tracking-wider text-zinc-500">Vehicle Type</label>
                 <select
-                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-text-primary outline-none
+                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-zinc-100 outline-none
                              focus:border-orange transition-colors duration-fast"
                   value={inspForm.vehicle_type}
                   onChange={(e) => setInspForm((p) => ({ ...p, vehicle_type: e.target.value }))}
@@ -619,9 +619,9 @@ export default function FleetPage() {
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-micro font-label uppercase tracking-wider text-text-muted">Frequency</label>
+                <label className="text-micro font-label uppercase tracking-wider text-zinc-500">Frequency</label>
                 <select
-                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-text-primary outline-none
+                  className="bg-bg-input border border-[var(--color-border-default)] chamfer-4 px-2.5 py-1.5 text-body text-zinc-100 outline-none
                              focus:border-orange transition-colors duration-fast"
                   value={inspForm.frequency}
                   onChange={(e) => setInspForm((p) => ({ ...p, frequency: e.target.value }))}
@@ -635,7 +635,7 @@ export default function FleetPage() {
                 onClick={createTemplate}
                 disabled={inspSubmitBusy}
                 className="px-4 py-2 text-label font-label uppercase tracking-wider chamfer-4
-                           bg-orange text-text-inverse hover:bg-orange-bright
+                           bg-[#FF4D00] text-black hover:bg-[#FF6A1A]
                            transition-colors duration-fast disabled:opacity-40"
                 type="button"
               >
@@ -652,13 +652,13 @@ export default function FleetPage() {
           {templates.map((t) => (
             <div
               key={t.template_id}
-              className="bg-bg-panel border border-[var(--color-border-default)] chamfer-8 px-4 py-3 flex flex-wrap items-center gap-3"
+              className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 px-4 py-3 flex flex-wrap items-center gap-3"
             >
-              <span className="text-body font-semibold text-text-secondary">{t.name}</span>
-              <span className="text-micro px-1.5 py-0.5 bg-bg-overlay chamfer-4 text-text-muted">
+              <span className="text-body font-semibold text-zinc-400">{t.name}</span>
+              <span className="text-micro px-1.5 py-0.5 bg-bg-overlay chamfer-4 text-zinc-500">
                 {t.vehicle_type}
               </span>
-              <span className="text-micro px-1.5 py-0.5 bg-orange-ghost chamfer-4 text-orange">
+              <span className="text-micro px-1.5 py-0.5 bg-[rgba(255,77,0,0.12)] chamfer-4 text-[#FF4D00]">
                 {t.frequency}
               </span>
               <span className="text-micro ml-auto text-text-disabled">{t.template_id}</span>

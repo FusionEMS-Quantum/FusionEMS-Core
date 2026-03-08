@@ -71,14 +71,14 @@ interface AgingChartProps {
   className?: string;
 }
 
-const CHART_ACCENT = 'var(--color-brand-orange)';
+const CHART_ACCENT = '#FF4D00';
 const CHART_TICK = 'var(--color-text-muted)';
 const CHART_TOOLTIP_BG = 'var(--color-bg-input)';
 const CHART_TOOLTIP_TEXT = 'var(--color-text-primary)';
 const AGING_COLORS = [
   'var(--color-status-active)',
   'var(--color-status-warning)',
-  'var(--color-brand-orange)',
+  '#FF4D00',
   'var(--color-brand-orange-bright)',
   'var(--color-brand-red)',
 ];

@@ -26,7 +26,7 @@ export default function BillingLoginPage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-void)',
+        background: '#000000',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -43,7 +43,7 @@ export default function BillingLoginPage() {
           maxWidth: '440px',
           marginBottom: '24px',
           background: 'rgba(255, 107, 26, 0.08)',
-          borderLeft: '4px solid var(--color-brand-orange)',
+          borderLeft: '4px solid #FF4D00',
           clipPath: 'var(--chamfer-8)',
           padding: '12px 16px',
         }}
@@ -65,7 +65,7 @@ export default function BillingLoginPage() {
         style={{
           width: '100%',
           maxWidth: '440px',
-          background: 'var(--color-bg-panel)',
+          background: '#0A0A0B',
           clipPath: 'var(--chamfer-8)',
           padding: '40px',
           boxShadow: 'var(--elevation-3)',
@@ -237,7 +237,7 @@ export default function BillingLoginPage() {
             style={{
               marginTop: '8px',
               height: 'var(--density-button-height)',
-              background: 'var(--color-brand-orange)',
+              background: '#FF4D00',
               clipPath: 'var(--chamfer-8)',
               border: 'none',
               color: 'rgba(0,0,0,0.92)',

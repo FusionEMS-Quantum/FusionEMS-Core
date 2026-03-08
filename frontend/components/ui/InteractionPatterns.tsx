@@ -35,7 +35,7 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 flex-wrap p-3 bg-bg-panel border border-[var(--color-border-default)] chamfer-4',
+        'flex items-center gap-3 flex-wrap p-3 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-4',
         className
       )}
     >
@@ -43,7 +43,7 @@ export function FilterBar({
       {onSearchChange && (
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -57,7 +57,7 @@ export function FilterBar({
             value={searchValue ?? ''}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full bg-bg-input border border-[var(--color-border-default)] text-text-primary 
+            className="w-full bg-bg-input border border-[var(--color-border-default)] text-zinc-100 
                        text-body pl-10 pr-3 py-2 chamfer-4 placeholder:text-text-disabled
                        focus:outline-none focus:border-orange focus:shadow-[var(--focus-ring)]
                        transition-colors duration-fast"
@@ -70,7 +70,7 @@ export function FilterBar({
         <div key={filter.id} className="flex items-center gap-1.5">
           <label
             htmlFor={`filter-${filter.id}`}
-            className="text-micro font-label uppercase tracking-wider text-text-muted whitespace-nowrap"
+            className="text-micro font-label uppercase tracking-wider text-zinc-500 whitespace-nowrap"
           >
             {filter.label}
           </label>
@@ -78,7 +78,7 @@ export function FilterBar({
             id={`filter-${filter.id}`}
             value={filter.value}
             onChange={(e) => filter.onChange(e.target.value)}
-            className="bg-bg-input border border-[var(--color-border-default)] text-text-primary 
+            className="bg-bg-input border border-[var(--color-border-default)] text-zinc-100 
                        text-body px-2 py-1.5 chamfer-4 cursor-pointer
                        focus:outline-none focus:border-orange"
           >
@@ -149,8 +149,8 @@ export function TabBar({
               'transition-colors duration-fast border-b-2 -mb-px',
               size === 'sm' ? 'px-3 py-2 text-micro' : 'px-4 py-2.5 text-label',
               isActive
-                ? 'text-orange border-orange'
-                : 'text-text-muted border-transparent hover:text-text-secondary hover:border-[var(--color-border-subtle)]',
+                ? 'text-[#FF4D00] border-orange'
+                : 'text-zinc-500 border-transparent hover:text-zinc-400 hover:border-[var(--color-border-subtle)]',
               tab.disabled && 'opacity-40 cursor-not-allowed'
             )}
             type="button"
@@ -160,8 +160,8 @@ export function TabBar({
             {tab.count !== undefined && (
               <span
                 className={cn(
-                  'text-micro px-1.5 py-0.5 rounded-full',
-                  isActive ? 'bg-orange-ghost text-orange' : 'bg-bg-overlay text-text-muted'
+                  'text-micro px-1.5 py-0.5 ',
+                  isActive ? 'bg-[#FF4D00]-ghost text-[#FF4D00]' : 'bg-bg-overlay text-zinc-500'
                 )}
               >
                 {tab.count}
@@ -229,12 +229,12 @@ export function RecordSummary({
               {crumb.href ? (
                 <a
                   href={crumb.href}
-                  className="text-label text-text-muted hover:text-orange transition-colors duration-fast"
+                  className="text-label text-zinc-500 hover:text-[#FF4D00] transition-colors duration-fast"
                 >
                   {crumb.label}
                 </a>
               ) : (
-                <span className="text-label text-text-secondary">{crumb.label}</span>
+                <span className="text-label text-zinc-400">{crumb.label}</span>
               )}
             </span>
           ))}
@@ -245,11 +245,11 @@ export function RecordSummary({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-h2 font-sans font-bold text-text-primary truncate">{title}</h1>
+            <h1 className="text-h2 font-sans font-bold text-zinc-100 truncate">{title}</h1>
             {status}
           </div>
           {subtitle && (
-            <p className="text-body text-text-muted mt-1">{subtitle}</p>
+            <p className="text-body text-zinc-500 mt-1">{subtitle}</p>
           )}
         </div>
         {actions && (
@@ -267,7 +267,7 @@ export function RecordSummary({
               <span className="text-micro font-label uppercase tracking-wider text-text-disabled">
                 {item.label}
               </span>
-              <span className="text-label text-text-secondary">{item.value}</span>
+              <span className="text-label text-zinc-400">{item.value}</span>
             </div>
           ))}
         </div>
@@ -292,8 +292,8 @@ export function SimpleModeToggle({ isSimple, onToggle, className }: SimpleModeTo
         'flex items-center gap-2 px-3 py-1.5 text-label font-label uppercase tracking-wider',
         'border chamfer-4 transition-all duration-fast',
         isSimple
-          ? 'bg-orange-ghost text-orange border-orange/30'
-          : 'bg-bg-panel text-text-muted border-[var(--color-border-default)] hover:text-text-secondary',
+          ? 'bg-[#FF4D00]-ghost text-[#FF4D00] border-orange/30'
+          : 'bg-[#0A0A0B] text-zinc-500 border-[var(--color-border-default)] hover:text-zinc-400',
         className
       )}
       type="button"
@@ -355,7 +355,7 @@ export function DrilldownDrawer({
       {/* Drawer panel */}
       <div
         className={cn(
-          'relative w-full h-full bg-bg-panel border-l border-[var(--color-border-default)]',
+          'relative w-full h-full bg-[#0A0A0B] border-l border-[var(--color-border-default)]',
           'flex flex-col overflow-hidden animate-slide-in-right',
           widthClasses[width],
           'chamfer-drawer',
@@ -368,16 +368,16 @@ export function DrilldownDrawer({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-default)]">
           <div className="min-w-0">
-            <h2 className="text-h3 font-sans font-bold text-text-primary truncate">{title}</h2>
+            <h2 className="text-h3 font-sans font-bold text-zinc-100 truncate">{title}</h2>
             {subtitle && (
-              <p className="text-label text-text-muted mt-0.5">{subtitle}</p>
+              <p className="text-label text-zinc-500 mt-0.5">{subtitle}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
             {actions}
             <button
               onClick={onClose}
-              className="p-2 text-text-muted hover:text-text-primary transition-colors duration-fast"
+              className="p-2 text-zinc-500 hover:text-zinc-100 transition-colors duration-fast"
               type="button"
               aria-label="Close drawer"
             >

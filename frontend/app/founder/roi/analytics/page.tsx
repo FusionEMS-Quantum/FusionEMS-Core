@@ -7,9 +7,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
-        {sub && <span className="text-xs text-text-muted">{sub}</span>}
+        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
+        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
     </div>
   );
@@ -22,7 +22,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
       className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
-      <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
+      <span className="w-1 h-1 " style={{ background: c[status] }} />
       {label}
     </span>
   );
@@ -31,7 +31,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -42,12 +42,12 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div
-      className="bg-bg-panel border border-border-DEFAULT p-4"
+      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -55,9 +55,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+    <div className="h-1.5 bg-zinc-950/[0.06]  overflow-hidden">
       <motion.div
-        className="h-full rounded-full"
+        className="h-full "
         style={{ background: color }}
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
@@ -120,7 +120,7 @@ export default function ROIAnalyticsPage() {
       : `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-6">
+    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
@@ -129,9 +129,9 @@ export default function ROIAnalyticsPage() {
               MODULE 8 · ROI &amp; SALES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>ROI Calculator Analytics</h1>
-            <p className="text-xs text-text-muted mt-1">Conversion funnel · proposal acceptance rate · regional revenue heatmap</p>
+            <p className="text-xs text-zinc-500 mt-1">Conversion funnel · proposal acceptance rate · regional revenue heatmap</p>
           </div>
-          <Link href="/founder" className="text-body text-text-muted hover:text-status-warning transition-colors font-mono">
+          <Link href="/founder" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
             ← Back to Founder OS
           </Link>
         </div>
@@ -154,25 +154,25 @@ export default function ROIAnalyticsPage() {
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Agency', 'Plan', 'MRR', 'Transports/mo', 'Revenue Per Call', 'Since'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-text-muted font-semibold uppercase tracking-wider text-micro">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {AGENCIES.map((a, i) => (
-                <tr key={i} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                  <td className="py-2 pr-4 font-semibold text-text-primary">{a.name}</td>
+                <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                  <td className="py-2 pr-4 font-semibold text-zinc-100">{a.name}</td>
                   <td className="py-2 pr-4"><Badge label={a.plan} status={a.plan === 'Professional' ? 'info' : 'ok'} /></td>
                   <td className="py-2 pr-4 font-mono font-bold" style={{ color: 'var(--color-system-billing)' }}>${a.mrr.toLocaleString()}/mo</td>
-                  <td className="py-2 pr-4 text-text-secondary">{a.transports}</td>
-                  <td className="py-2 pr-4 font-mono text-text-secondary">${a.rpc.toFixed(2)}</td>
-                  <td className="py-2 pr-4 text-text-muted">{a.since}</td>
+                  <td className="py-2 pr-4 text-zinc-400">{a.transports}</td>
+                  <td className="py-2 pr-4 font-mono text-zinc-400">${a.rpc.toFixed(2)}</td>
+                  <td className="py-2 pr-4 text-zinc-500">{a.since}</td>
                 </tr>
               ))}
               <tr className="border-t border-border-DEFAULT">
-                <td className="py-2 pr-4 font-bold text-text-secondary" colSpan={2}>Total</td>
+                <td className="py-2 pr-4 font-bold text-zinc-400" colSpan={2}>Total</td>
                 <td className="py-2 pr-4 font-mono font-bold" style={{ color: 'var(--color-system-billing)' }}>$4,320/mo</td>
-                <td className="py-2 pr-4 font-bold text-text-secondary">580</td>
+                <td className="py-2 pr-4 font-bold text-zinc-400">580</td>
                 <td colSpan={2} />
               </tr>
             </tbody>
@@ -188,8 +188,8 @@ export default function ROIAnalyticsPage() {
             <div key={p.label}>
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-                  <span className="text-body text-text-primary">{p.label}</span>
+                  <div className="w-2 h-2 " style={{ background: p.color }} />
+                  <span className="text-body text-zinc-100">{p.label}</span>
                 </div>
                 <span className="text-body font-bold" style={{ color: p.color }}>{p.pct}%</span>
               </div>
@@ -205,7 +205,7 @@ export default function ROIAnalyticsPage() {
         <div className="grid grid-cols-2 gap-6 mb-4">
           <div className="space-y-3">
             <div>
-              <label className="text-micro text-text-muted block mb-1">
+              <label className="text-micro text-zinc-500 block mb-1">
                 Monthly Transport Volume: <span className="text-status-warning font-bold">{calcVolume}</span>
               </label>
               <input
@@ -215,7 +215,7 @@ export default function ROIAnalyticsPage() {
               />
             </div>
             <div>
-              <label className="text-micro text-text-muted block mb-1">
+              <label className="text-micro text-zinc-500 block mb-1">
                 Avg Blended Rate ($): <span className="text-status-warning font-bold">${calcRate}</span>
               </label>
               <input
@@ -233,7 +233,7 @@ export default function ROIAnalyticsPage() {
           </div>
         </div>
         <div className="p-3 bg-bg-input border border-green-500/[0.15] chamfer-4 flex items-center justify-between">
-          <span className="text-body text-text-secondary">5-Year Cumulative Saving</span>
+          <span className="text-body text-zinc-400">5-Year Cumulative Saving</span>
           <span className="text-[15px] font-bold" style={{ color: fiveYrSaving >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>
             {fiveYrSaving >= 0 ? '+' : ''}{fmt(fiveYrSaving)}
           </span>
@@ -247,7 +247,7 @@ export default function ROIAnalyticsPage() {
           {GROWTH.map((g) => (
             <div key={g.month}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-body text-text-secondary w-8 font-mono">{g.month}</span>
+                <span className="text-body text-zinc-400 w-8 font-mono">{g.month}</span>
                 <span className="text-body font-bold flex-1 text-right" style={{ color: 'var(--color-system-billing)' }}>
                   {g.mrr === 0 ? '$0' : `$${g.mrr.toLocaleString()}`}
                 </span>
@@ -255,7 +255,7 @@ export default function ROIAnalyticsPage() {
               <ProgressBar value={g.mrr} max={5000} color="var(--color-status-info)" />
             </div>
           ))}
-          <div className="flex justify-between text-[9px] text-text-muted mt-1">
+          <div className="flex justify-between text-[9px] text-zinc-500 mt-1">
             <span>$0</span><span>$5,000</span>
           </div>
         </div>
@@ -269,7 +269,7 @@ export default function ROIAnalyticsPage() {
             <thead>
               <tr className="border-b border-border-subtle">
                 {['State', 'Active Agencies', 'Market Potential', 'Penetration', ''].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-text-muted font-semibold uppercase tracking-wider text-micro">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -277,13 +277,13 @@ export default function ROIAnalyticsPage() {
               {REGIONAL.map((r, i) => {
                 const pct = r.potential > 0 ? (r.agencies / r.potential) * 100 : 0;
                 return (
-                  <tr key={i} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                    <td className="py-2 pr-4 font-semibold text-text-primary">{r.state}</td>
+                  <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                    <td className="py-2 pr-4 font-semibold text-zinc-100">{r.state}</td>
                     <td className="py-2 pr-4">
                       <span className="font-bold text-system-billing">{r.agencies}</span>
                       {r.agencies === 0 && <Badge label="Target" status="warn" />}
                     </td>
-                    <td className="py-2 pr-4 text-text-secondary">{r.potential} agencies</td>
+                    <td className="py-2 pr-4 text-zinc-400">{r.potential} agencies</td>
                     <td className="py-2 pr-4 w-40">
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
@@ -330,10 +330,10 @@ export default function ROIAnalyticsPage() {
                   >
                     {a.score}
                   </div>
-                  <div className="text-[9px] text-text-muted">/ 100</div>
+                  <div className="text-[9px] text-zinc-500">/ 100</div>
                 </div>
                 <div>
-                  <div className="text-[12px] font-semibold text-text-primary">{a.agency}</div>
+                  <div className="text-[12px] font-semibold text-zinc-100">{a.agency}</div>
                   <div className="w-28 mt-1">
                     <ProgressBar
                       value={a.score}

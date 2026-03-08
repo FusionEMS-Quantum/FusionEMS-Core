@@ -43,29 +43,29 @@ export function TimelinePanel({
   return (
     <div
       className={cn(
-        'bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4',
+        'bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4',
         className
       )}
     >
-      <h3 className="font-label text-label uppercase tracking-wider text-text-secondary mb-4">
+      <h3 className="font-label text-label uppercase tracking-wider text-zinc-400 mb-4">
         {title}
-        <span className="text-text-muted ml-2">({events.length})</span>
+        <span className="text-zinc-500 ml-2">({events.length})</span>
       </h3>
 
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2].map(i => (
             <div key={i} className="animate-pulse flex gap-3">
-              <div className="w-2 h-2 rounded-full bg-bg-overlay mt-1.5 flex-shrink-0" />
+              <div className="w-2 h-2  bg-bg-overlay mt-1.5 flex-shrink-0" />
               <div className="flex-1 space-y-1">
-                <div className="h-3 w-3/4 bg-bg-overlay rounded" />
-                <div className="h-2 w-1/2 bg-bg-overlay rounded" />
+                <div className="h-3 w-3/4 bg-bg-overlay " />
+                <div className="h-2 w-1/2 bg-bg-overlay " />
               </div>
             </div>
           ))}
         </div>
       ) : visible.length === 0 ? (
-        <p className="text-body text-text-muted text-center py-6">{emptyMessage}</p>
+        <p className="text-body text-zinc-500 text-center py-6">{emptyMessage}</p>
       ) : (
         <div className="relative">
           {/* Vertical connector line */}
@@ -80,8 +80,8 @@ export function TimelinePanel({
           {(hasMore || onLoadMore) && (
             <button
               onClick={onLoadMore}
-              className="mt-3 w-full text-center text-label font-label text-text-muted 
-                         hover:text-orange transition-colors duration-fast py-1"
+              className="mt-3 w-full text-center text-label font-label text-zinc-500 
+                         hover:text-[#FF4D00] transition-colors duration-fast py-1"
               type="button"
             >
               Show more events
@@ -102,7 +102,7 @@ function TimelineEventItem({ event }: { readonly event: TimelineEvent }) {
     <li className="relative flex gap-3 pl-0 group">
       {/* Dot */}
       <div
-        className="w-[10px] h-[10px] rounded-full flex-shrink-0 mt-1 z-10 border-2 border-bg-panel"
+        className="w-[10px] h-[10px]  flex-shrink-0 mt-1 z-10 border-2 border-bg-panel"
         style={{ backgroundColor: dotColor }}
         aria-hidden
       />
@@ -110,17 +110,17 @@ function TimelineEventItem({ event }: { readonly event: TimelineEvent }) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-body text-text-primary font-medium truncate">
+          <span className="text-body text-zinc-100 font-medium truncate">
             {event.title}
           </span>
           {event.domain && (
-            <span className="text-micro font-label uppercase tracking-wider text-text-muted">
+            <span className="text-micro font-label uppercase tracking-wider text-zinc-500">
               {event.domain}
             </span>
           )}
         </div>
         {event.description && (
-          <p className="text-label text-text-muted mt-0.5 leading-snug">
+          <p className="text-label text-zinc-500 mt-0.5 leading-snug">
             {event.description}
           </p>
         )}
@@ -135,7 +135,7 @@ function TimelineEventItem({ event }: { readonly event: TimelineEvent }) {
           )}
         </div>
         {event.detail && (
-          <div className="mt-2 p-2 bg-bg-base border border-[var(--color-border-subtle)] chamfer-4 text-label text-text-secondary">
+          <div className="mt-2 p-2 bg-[#050505] border border-[var(--color-border-subtle)] chamfer-4 text-label text-zinc-400">
             {event.detail}
           </div>
         )}

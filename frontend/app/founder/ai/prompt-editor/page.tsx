@@ -63,9 +63,9 @@ export default function PromptEditorPage() {
   return (
     <div className="p-5 min-h-screen space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Prompt Editor</h1>
-        <p className="text-xs text-text-muted mt-0.5">Build, version, and test system prompts with guardrails</p>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">AI GOVERNANCE</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Prompt Editor</h1>
+        <p className="text-xs text-zinc-500 mt-0.5">Build, version, and test system prompts with guardrails</p>
       </div>
 
       {error && (
@@ -77,7 +77,7 @@ export default function PromptEditorPage() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-bg-panel border border-border-DEFAULT h-16 chamfer-8" />
+            <div key={i} className="animate-pulse bg-[#0A0A0B] border border-border-DEFAULT h-16 chamfer-8" />
           ))}
         </div>
       ) : selected ? (
@@ -85,31 +85,31 @@ export default function PromptEditorPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-bold text-text-primary">{selected.template_key}</div>
-              <div className="text-micro text-text-muted">Domain: {selected.domain} · Version: {selected.version}</div>
+              <div className="text-sm font-bold text-zinc-100">{selected.template_key}</div>
+              <div className="text-micro text-zinc-500">Domain: {selected.domain} · Version: {selected.version}</div>
             </div>
-            <button onClick={() => setSelected(null)} className="text-micro uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors">
+            <button onClick={() => setSelected(null)} className="text-micro uppercase tracking-widest text-zinc-500 hover:text-zinc-100 transition-colors">
               Cancel
             </button>
           </div>
 
           <div>
-            <label className="text-micro uppercase tracking-widest text-text-muted block mb-1">System Prompt</label>
+            <label className="text-micro uppercase tracking-widest text-zinc-500 block mb-1">System Prompt</label>
             <textarea
               value={editSystem}
               onChange={(e) => setEditSystem(e.target.value)}
               rows={8}
-              className="w-full bg-bg-void border border-border-DEFAULT p-3 text-xs text-text-primary font-mono resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
+              className="w-full bg-black border border-border-DEFAULT p-3 text-xs text-zinc-100 font-mono resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="text-micro uppercase tracking-widest text-text-muted block mb-1">User Prompt Template</label>
+            <label className="text-micro uppercase tracking-widest text-zinc-500 block mb-1">User Prompt Template</label>
             <textarea
               value={editUser}
               onChange={(e) => setEditUser(e.target.value)}
               rows={6}
-              className="w-full bg-bg-void border border-border-DEFAULT p-3 text-xs text-text-primary font-mono resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
+              className="w-full bg-black border border-border-DEFAULT p-3 text-xs text-zinc-100 font-mono resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
             />
           </div>
 
@@ -117,15 +117,15 @@ export default function PromptEditorPage() {
             onClick={handleSave}
             disabled={saving}
             className="text-micro uppercase tracking-widest font-bold px-4 py-2 chamfer-4 border transition-colors hover:bg-brand-orange/[0.12] disabled:opacity-50"
-            style={{ color: 'var(--color-brand-orange)', borderColor: 'rgba(255,107,26,0.35)' }}
+            style={{ color: '#FF4D00', borderColor: 'rgba(255,107,26,0.35)' }}
           >
             {saving ? 'Saving...' : 'Save & Version'}
           </button>
         </motion.div>
       ) : templates.length === 0 ? (
-        <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 p-10 text-center">
-          <div className="text-sm text-text-muted">No prompt templates configured</div>
-          <p className="text-xs text-text-muted mt-1">Create prompt templates via the API to manage them here.</p>
+        <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 p-10 text-center">
+          <div className="text-sm text-zinc-500">No prompt templates configured</div>
+          <p className="text-xs text-zinc-500 mt-1">Create prompt templates via the API to manage them here.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -136,12 +136,12 @@ export default function PromptEditorPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
               onClick={() => selectTemplate(tpl)}
-              className="w-full text-left bg-bg-panel border border-border-DEFAULT p-4 flex items-center justify-between gap-3 hover:border-white/[0.18] transition-colors"
+              className="w-full text-left bg-[#0A0A0B] border border-border-DEFAULT p-4 flex items-center justify-between gap-3 hover:border-white/[0.18] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
             >
               <div className="min-w-0">
-                <div className="text-sm font-bold text-text-primary">{tpl.template_key}</div>
-                <div className="text-micro text-text-muted">Domain: {tpl.domain} · v{tpl.version}</div>
+                <div className="text-sm font-bold text-zinc-100">{tpl.template_key}</div>
+                <div className="text-micro text-zinc-500">Domain: {tpl.domain} · v{tpl.version}</div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span
@@ -160,7 +160,7 @@ export default function PromptEditorPage() {
         </div>
       )}
 
-      <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-orange">← Back to AI Governance</Link>
+      <Link href="/founder/ai" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to AI Governance</Link>
     </div>
   );
 }

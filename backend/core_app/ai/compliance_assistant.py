@@ -11,7 +11,7 @@ class ComplianceAssistant:
         self.db = db
         self.gov_service = GovernanceService(db)
 
-    def analyze_issue(self, tenant_id: uuid.UUID, issue_type: str, context: dict[str, Any]) -> dict[str, Any]:
+    def analyze_issue(self, _tenant_id: uuid.UUID, issue_type: str, context: dict[str, Any]) -> dict[str, Any]:  # pylint: disable=unused-argument
         """
         AI Governance analysis of a security/compliance event.
         Returns a structured recommendation for the founder.

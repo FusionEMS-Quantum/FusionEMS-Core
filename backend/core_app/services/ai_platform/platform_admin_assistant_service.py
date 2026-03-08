@@ -70,7 +70,7 @@ class PlatformAdminAssistantService:
         for rule in rules:
             try:
                 issues.extend(rule())
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 logger.exception("AI diagnostic rule failed: %s", rule.__name__)
                 # Never break on AI failure — continue to next rule
         return issues
@@ -86,7 +86,7 @@ class PlatformAdminAssistantService:
         for rule in rules:
             try:
                 issues.extend(rule())
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 logger.exception("AI tenant diagnostic rule failed for %s", tenant_id)
         return issues
 

@@ -262,6 +262,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  position: relative;
+  isolation: isolate;
   border-radius: 0;
   clip-path: var(--chamfer-8);
   font-family: var(--font-label);
@@ -272,6 +274,20 @@
   transition: all var(--duration-fast) var(--ease-out);
   user-select: none;
   cursor: pointer;
+  transform: translateY(0);
+  text-decoration: none;
+}
+
+.quantum-btn::before,
+.quantum-btn-sm::before,
+.quantum-btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  clip-path: var(--chamfer-8);
+  opacity: 1;
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
 
 .quantum-btn:focus-visible,
@@ -290,30 +306,95 @@
 
 .quantum-btn,
 .quantum-btn-sm {
-  background: var(--color-bg-panel);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-default);
-  min-height: var(--density-button-height);
-  padding: var(--space-2) var(--space-4);
-}
-
-.quantum-btn:hover:not(:disabled),
-.quantum-btn-sm:hover:not(:disabled) {
-  border-color: var(--color-brand-orange);
-  color: var(--color-brand-orange);
-}
-
-.quantum-btn-primary {
-  background: var(--color-brand-orange);
-  color: var(--color-text-inverse);
-  border: 1px solid var(--color-brand-orange);
   min-height: var(--density-button-height);
   padding: var(--space-2) var(--space-4);
   box-shadow: var(--elevation-1);
 }
 
+.quantum-btn::before,
+.quantum-btn-sm::before {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(9, 13, 20, 0.98));
+}
+
+.quantum-btn:hover:not(:disabled),
+.quantum-btn-sm:hover:not(:disabled) {
+  border-color: var(--color-brand-orange);
+  color: var(--color-brand-orange-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(255, 106, 0, 0.18), 0 0 0 1px rgba(255, 140, 51, 0.18);
+}
+
+.quantum-btn-primary {
+  background: linear-gradient(135deg, var(--color-brand-orange-bright), var(--color-brand-orange));
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-brand-orange);
+  min-height: var(--density-button-height);
+  padding: var(--space-2) var(--space-4);
+  box-shadow: 0 10px 22px rgba(255, 106, 0, 0.26), 0 0 0 1px rgba(255, 140, 51, 0.28);
+}
+
+.quantum-btn-primary::before {
+  background: linear-gradient(145deg, rgba(255, 196, 148, 0.45), rgba(255, 128, 0, 0.08));
+}
+
 .quantum-btn-primary:hover:not(:disabled) {
-  background: var(--color-brand-orange-bright);
+  background: linear-gradient(135deg, #ffa354, var(--color-brand-orange-bright));
   border-color: var(--color-brand-orange-bright);
-  box-shadow: 0 0 14px var(--color-brand-orange-glow);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(255, 106, 0, 0.34), 0 0 0 1px rgba(255, 140, 51, 0.35);
+}
+
+.quantum-btn:active:not(:disabled),
+.quantum-btn-sm:active:not(:disabled),
+.quantum-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.quantum-btn svg,
+.quantum-btn-sm svg,
+.quantum-btn-primary svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  stroke-width: 1.9;
+}
+
+.quantum-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  clip-path: var(--chamfer-4);
+}
+
+.quantum-icon-frame {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-default);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+  clip-path: var(--chamfer-8);
+  overflow: hidden;
+}
+
+.quantum-icon-frame::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(9, 13, 20, 0.98));
+  clip-path: var(--chamfer-8);
+}
+
+.quantum-icon {
+  position: relative;
+  z-index: 1;
+  width: var(--density-icon-size);
+  height: var(--density-icon-size);
+  stroke-width: 1.8;
 }

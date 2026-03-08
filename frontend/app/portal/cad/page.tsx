@@ -62,11 +62,11 @@ const PRIORITY_CONFIG: Record<string, {
   ring: string; sortOrder: number;
 }> = {
   ECHO:   { label: 'E', bg: 'bg-red-900/40',     border: 'border-red-500',     text: 'text-red-300',    ring: 'shadow-red-500/40',    sortOrder: 5 },
-  DELTA:  { label: 'D', bg: 'bg-orange-900/40',   border: 'border-orange-500',  text: 'text-orange-300', ring: 'shadow-orange-500/40', sortOrder: 4 },
+  DELTA:  { label: 'D', bg: 'bg-[rgba(255,77,0,0.4)]', border: 'border-orange-500',  text: 'text-[#FF9A66]', ring: 'shadow-orange-500/40', sortOrder: 4 },
   CHARLIE:{ label: 'C', bg: 'bg-yellow-900/40',   border: 'border-yellow-500',  text: 'text-yellow-300', ring: 'shadow-yellow-500/40', sortOrder: 3 },
   BRAVO:  { label: 'B', bg: 'bg-blue-900/40',     border: 'border-blue-500',    text: 'text-blue-300',   ring: 'shadow-blue-500/40',   sortOrder: 2 },
   ALPHA:  { label: 'A', bg: 'bg-green-900/40',    border: 'border-green-500',   text: 'text-green-300',  ring: 'shadow-green-500/40',  sortOrder: 1 },
-  OMEGA:  { label: 'Ω', bg: 'bg-gray-800/50',     border: 'border-gray-600',    text: 'text-gray-400',   ring: '',                     sortOrder: 0 },
+  OMEGA:  { label: 'Ω', bg: 'bg-zinc-900/50',     border: 'border-gray-600',    text: 'text-zinc-500',   ring: '',                     sortOrder: 0 },
 };
 
 const PRIORITY_SEVERITY_MAP: Record<string, SeverityLevel> = {
@@ -152,7 +152,7 @@ function ElapsedTimer({ startTime, critical }: { startTime: string; critical?: n
   const isCritical = critical !== undefined && minutes >= critical;
 
   return (
-    <span className={`font-mono text-xs font-bold ${isCritical ? 'text-red-400 animate-pulse' : minutes > 8 ? 'text-orange-400' : 'text-text-muted'}`}>
+    <span className={`font-mono text-xs font-bold ${isCritical ? 'text-red-400 animate-pulse' : minutes > 8 ? 'text-[#FF7A33]' : 'text-zinc-500'}`}>
       {elapsed}
     </span>
   );
@@ -181,7 +181,7 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
     <div
       onClick={onSelect}
       className={`relative border chamfer-8 p-4 cursor-pointer transition-all ${cfg.bg} ${cfg.border} ${
-        isSelected ? `shadow-lg ring-1 ring-inset ring-white/5` : 'hover:brightness-110'
+        isSelected ? `shadow-[0_0_15px_rgba(0,0,0,0.6)] ring-1 ring-inset ring-white/5` : 'hover:brightness-110'
       }`}
     >
       {/* Priority Badge + Call # + Elapsed */}
@@ -194,7 +194,7 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
             {cfg.label}
           </span>
           <div>
-            <div className="text-sm font-bold text-text-primary">#{call.call_number}</div>
+            <div className="text-sm font-bold text-zinc-100">#{call.call_number}</div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`text-micro font-semibold ${cfg.text}`}>{call.priority}</span>
               <SeverityBadge severity={PRIORITY_SEVERITY_MAP[call.priority] ?? 'INFORMATIONAL'} size="sm" />
@@ -206,14 +206,14 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
             startTime={call.call_received_at}
             critical={call.priority === 'ECHO' ? 4 : call.priority === 'DELTA' ? 8 : 15}
           />
-          <div className="text-micro text-text-muted mt-0.5">elapsed</div>
+          <div className="text-micro text-zinc-500 mt-0.5">elapsed</div>
         </div>
       </div>
 
       {/* Complaint + Address */}
       <div className="mb-2">
-        <div className="text-sm font-semibold text-text-primary">{call.chief_complaint || 'No complaint noted'}</div>
-        <div className="text-micro text-text-muted mt-0.5 truncate mb-1.5">
+        <div className="text-sm font-semibold text-zinc-100">{call.chief_complaint || 'No complaint noted'}</div>
+        <div className="text-micro text-zinc-500 mt-0.5 truncate mb-1.5">
           📍 {call.address || call.location_address || 'Address pending'}
         </div>
         <StatusChip status={CALL_STATE_STATUS_MAP[call.state]} size="sm">
@@ -230,10 +230,10 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
             <div
               key={s}
               title={STATE_LABEL[s]}
-              className={`h-1 flex-1 rounded-full transition-all ${
+              className={`h-1 flex-1  transition-all ${
                 idx < currentIdx ? `${activeBg} opacity-80` :
                 idx === currentIdx ? currentBg :
-                'bg-white/10'
+                'bg-zinc-950/10'
               }`}
             />
           );
@@ -244,16 +244,16 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
       {isSelected && (
         <div className="border-t border-white/10 pt-3 mt-1 space-y-2">
           {call.caller_name && (
-            <div className="text-sm text-text-secondary">
+            <div className="text-sm text-zinc-400">
               📞 {call.caller_name}{call.caller_phone ? ` · ${call.caller_phone}` : ''}
             </div>
           )}
           {call.triage_notes && (
-            <div className="text-xs text-text-muted bg-black/20 chamfer-4 p-2">{call.triage_notes}</div>
+            <div className="text-xs text-zinc-500 bg-black/20 chamfer-4 p-2">{call.triage_notes}</div>
           )}
           {call.assigned_unit && (
-            <div className="text-xs text-text-secondary">
-              🚑 Assigned: <span className="font-semibold text-text-primary">{call.assigned_unit}</span>
+            <div className="text-xs text-zinc-400">
+              🚑 Assigned: <span className="font-semibold text-zinc-100">{call.assigned_unit}</span>
             </div>
           )}
         </div>
@@ -278,15 +278,15 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
               Assign {availableUnits.length > 0 ? `(${availableUnits.length})` : '—'}
             </button>
             {assignOpen && availableUnits.length > 0 && (
-              <div className="absolute bottom-full left-0 mb-1 w-48 bg-bg-void border border-border-subtle chamfer-8 z-50 shadow-xl">
+              <div className="absolute bottom-full left-0 mb-1 w-48 bg-black border border-border-subtle chamfer-8 z-50 shadow-[0_0_15px_rgba(0,0,0,0.6)]">
                 {availableUnits.map(u => (
                   <button
                     key={u.id}
                     onClick={() => { onAssign(u.id); setAssignOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-xs text-text-secondary hover:bg-brand-orange/10 hover:text-brand-orange transition-colors border-b border-border-subtle last:border-0"
+                    className="w-full text-left px-3 py-2 text-xs text-zinc-400 hover:bg-brand-orange/10 hover:text-brand-orange transition-colors border-b border-border-subtle last:border-0"
                   >
-                    <span className="font-bold text-text-primary">{u.unit_name}</span>
-                    <span className="text-text-muted ml-2">{u.unit_type}</span>
+                    <span className="font-bold text-zinc-100">{u.unit_name}</span>
+                    <span className="text-zinc-500 ml-2">{u.unit_type}</span>
                   </button>
                 ))}
               </div>
@@ -295,7 +295,7 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
         )}
         <button
           onClick={() => onTransition('CANCELLED')}
-          className="ml-auto px-2 py-1.5 text-micro text-gray-500 hover:text-red-400 transition-colors"
+          className="ml-auto px-2 py-1.5 text-micro text-zinc-500 hover:text-red-400 transition-colors"
           title="Cancel call"
         >
           ✕
@@ -334,17 +334,17 @@ function NewCallForm({ onClose, onCreated }: NewCallFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
-      <div className="bg-bg-void border border-brand-orange/40 chamfer-16 p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+      <div className="bg-black border border-brand-orange/40 chamfer-16 p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-black text-text-primary uppercase tracking-wider">New CAD Call</h2>
-            <div className="text-micro text-text-muted">All fields captured for NEMSIS compliance</div>
+            <h2 className="text-base font-black text-zinc-100 uppercase tracking-wider">New CAD Call</h2>
+            <div className="text-micro text-zinc-500">All fields captured for NEMSIS compliance</div>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary">✕</button>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-100">✕</button>
         </div>
         <div className="space-y-3">
           <div>
-            <label className="block text-micro text-text-muted mb-1 uppercase tracking-wider">PRIORITY *</label>
+            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">PRIORITY *</label>
             <div className="flex gap-2">
               {(['ECHO','DELTA','CHARLIE','BRAVO','ALPHA'] as const).map(prio => {
                 const cfg = PRIORITY_CONFIG[prio];
@@ -355,7 +355,7 @@ function NewCallForm({ onClose, onCreated }: NewCallFormProps) {
                     className={`flex-1 py-2 text-xs font-black uppercase border transition-all chamfer-4 ${
                       form.priority === prio
                         ? `${cfg.bg} ${cfg.border} ${cfg.text}`
-                        : 'border-border-subtle text-text-muted hover:border-white/20'
+                        : 'border-border-subtle text-zinc-500 hover:border-white/20'
                     }`}
                   >
                     {prio}
@@ -366,49 +366,49 @@ function NewCallForm({ onClose, onCreated }: NewCallFormProps) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-micro text-text-muted mb-1 uppercase tracking-wider">CALLER NAME</label>
+              <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">CALLER NAME</label>
               <input
                 value={form.caller_name}
                 onChange={e => setForm(f => ({ ...f, caller_name: e.target.value }))}
-                className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                 placeholder="Jane Smith"
               />
             </div>
             <div>
-              <label className="block text-micro text-text-muted mb-1 uppercase tracking-wider">CALLER PHONE</label>
+              <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">CALLER PHONE</label>
               <input
                 value={form.caller_phone}
                 onChange={e => setForm(f => ({ ...f, caller_phone: e.target.value }))}
-                className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+                className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
                 placeholder="(555) 000-0000"
               />
             </div>
           </div>
           <div>
-            <label className="block text-micro text-text-muted mb-1 uppercase tracking-wider">LOCATION ADDRESS *</label>
+            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">LOCATION ADDRESS *</label>
             <input
               value={form.location_address}
               onChange={e => setForm(f => ({ ...f, location_address: e.target.value }))}
-              className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
               placeholder="123 Main St, Anytown, WI 53703"
             />
           </div>
           <div>
-            <label className="block text-micro text-text-muted mb-1 uppercase tracking-wider">CHIEF COMPLAINT *</label>
+            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">CHIEF COMPLAINT *</label>
             <input
               value={form.chief_complaint}
               onChange={e => setForm(f => ({ ...f, chief_complaint: e.target.value }))}
-              className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
               placeholder="Chest pain, difficulty breathing…"
             />
           </div>
           <div>
-            <label className="block text-micro text-text-muted mb-1 uppercase tracking-wider">EMD TRIAGE NOTES</label>
+            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">EMD TRIAGE NOTES</label>
             <textarea
               value={form.triage_notes}
               onChange={e => setForm(f => ({ ...f, triage_notes: e.target.value }))}
               rows={2}
-              className="w-full bg-bg-panel border border-border-subtle chamfer-4 px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-orange/60 resize-none"
+              className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60 resize-none"
               placeholder="Patient is conscious and breathing, denies prior cardiac history…"
             />
           </div>
@@ -447,22 +447,22 @@ function UnitBoard({ units }: { units: CADUnit[] }) {
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-green-900/20 border border-green-500/30 chamfer-8 p-2 text-center">
           <div className="text-xl font-black text-green-400">{available}</div>
-          <div className="text-micro text-text-muted">Available</div>
+          <div className="text-micro text-zinc-500">Available</div>
         </div>
-        <div className="bg-orange-900/20 border border-orange-500/30 chamfer-8 p-2 text-center">
-          <div className="text-xl font-black text-orange-400">{busy}</div>
-          <div className="text-micro text-text-muted">Committed</div>
+        <div className="bg-[rgba(255,77,0,0.2)] border border-orange-500/30 chamfer-8 p-2 text-center">
+          <div className="text-xl font-black text-[#FF7A33]">{busy}</div>
+          <div className="text-micro text-zinc-500">Committed</div>
         </div>
-        <div className="bg-gray-800/30 border border-gray-600/30 chamfer-8 p-2 text-center">
-          <div className="text-xl font-black text-gray-400">{oos}</div>
-          <div className="text-micro text-text-muted">OOS</div>
+        <div className="bg-zinc-900/30 border border-gray-600/30 chamfer-8 p-2 text-center">
+          <div className="text-xl font-black text-zinc-500">{oos}</div>
+          <div className="text-micro text-zinc-500">OOS</div>
         </div>
       </div>
       {Object.entries(byStation).map(([station, stationUnits]) => (
-        <div key={station} className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+        <div key={station} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
           <div className="px-3 py-2 border-b border-border-subtle flex items-center justify-between">
-            <span className="text-micro font-bold text-text-muted uppercase tracking-widest">{station}</span>
-            <span className="text-micro text-text-muted">
+            <span className="text-micro font-bold text-zinc-500 uppercase tracking-widest">{station}</span>
+            <span className="text-micro text-zinc-500">
               {stationUnits.filter(u => u.state === 'AVAILABLE').length}/{stationUnits.length} avail
             </span>
           </div>
@@ -471,11 +471,11 @@ function UnitBoard({ units }: { units: CADUnit[] }) {
               const statusVariant = UNIT_STATE_STATUS_MAP[unit.state] ?? 'neutral';
               const readinessPct = unit.readiness_score != null ? Math.round(unit.readiness_score * 100) : null;
               return (
-                <div key={unit.id} className="px-3 py-2 flex items-center justify-between hover:bg-white/[0.02]">
+                <div key={unit.id} className="px-3 py-2 flex items-center justify-between hover:bg-zinc-950/[0.02]">
                   <div className="flex items-center gap-2">
                     <div>
-                      <div className="text-sm font-bold text-text-primary">{unit.unit_name}</div>
-                      <div className="text-micro text-text-muted">{unit.unit_type}</div>
+                      <div className="text-sm font-bold text-zinc-100">{unit.unit_name}</div>
+                      <div className="text-micro text-zinc-500">{unit.unit_type}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -493,7 +493,7 @@ function UnitBoard({ units }: { units: CADUnit[] }) {
         </div>
       ))}
       {units.length === 0 && (
-        <div className="text-center py-6 text-sm text-text-muted">
+        <div className="text-center py-6 text-sm text-zinc-500">
           No units registered. Add units through Fleet Management.
         </div>
       )}
@@ -592,7 +592,7 @@ export default function CADDispatchPage() {
                   key={v}
                   onClick={() => setActiveView(v)}
                   className={`px-3 py-1.5 text-micro font-semibold capitalize transition-colors ${
-                    activeView === v ? 'bg-brand-orange text-white' : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
+                    activeView === v ? 'bg-brand-orange text-white' : 'text-zinc-500 hover:text-zinc-400 hover:bg-zinc-950/5'
                   }`}
                 >
                   {v}
@@ -601,7 +601,7 @@ export default function CADDispatchPage() {
             </div>
             {activeView === 'dispatch' && (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-micro text-text-muted mr-1 uppercase tracking-widest">Priority:</span>
+                <span className="text-micro text-zinc-500 mr-1 uppercase tracking-widest">Priority:</span>
                 {['ALL','ECHO','DELTA','CHARLIE','BRAVO','ALPHA'].map(p => {
                   const cfg = PRIORITY_CONFIG[p];
                   return (
@@ -611,7 +611,7 @@ export default function CADDispatchPage() {
                       className={`px-2.5 py-1 text-micro font-bold transition-all chamfer-4 border ${
                         priorityFilter === p
                           ? cfg ? `${cfg.bg} ${cfg.border} ${cfg.text}` : 'bg-brand-orange border-brand-orange text-white'
-                          : cfg ? `${cfg.border} ${cfg.text} opacity-50 hover:opacity-80` : 'border-border-subtle text-text-muted hover:border-brand-orange/40'
+                          : cfg ? `${cfg.border} ${cfg.text} opacity-50 hover:opacity-80` : 'border-border-subtle text-zinc-500 hover:border-brand-orange/40'
                       }`}
                     >
                       {p}
@@ -679,12 +679,12 @@ export default function CADDispatchPage() {
           historyCalls.length === 0 ? (
             <QuantumEmptyState title="No closed calls" description="Closed and cancelled calls will appear here." icon="archive" />
           ) : (
-            <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+            <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-border-subtle">
                     {['Call #','Priority','Complaint','Address','Status','Received'].map(h => (
-                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -692,15 +692,15 @@ export default function CADDispatchPage() {
                   {historyCalls.map(call => {
                     const cfg = PRIORITY_CONFIG[call.priority] || PRIORITY_CONFIG.ALPHA;
                     return (
-                      <tr key={call.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                        <td className="px-4 py-3 text-sm font-bold text-text-primary">#{call.call_number}</td>
+                      <tr key={call.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                        <td className="px-4 py-3 text-sm font-bold text-zinc-100">#{call.call_number}</td>
                         <td className={`px-4 py-3 text-sm font-semibold ${cfg.text}`}>{call.priority}</td>
-                        <td className="px-4 py-3 text-sm text-text-secondary">{call.chief_complaint || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-text-muted truncate max-w-xs">{call.address || call.location_address || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-text-muted">
+                        <td className="px-4 py-3 text-sm text-zinc-400">{call.chief_complaint || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-zinc-500 truncate max-w-xs">{call.address || call.location_address || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-zinc-500">
                           <StatusChip status={CALL_STATE_STATUS_MAP[call.state]} size="sm">{STATE_LABEL[call.state]}</StatusChip>
                         </td>
-                        <td className="px-4 py-3 text-sm font-mono text-text-muted">
+                        <td className="px-4 py-3 text-sm font-mono text-zinc-500">
                           {call.call_received_at ? new Date(call.call_received_at).toLocaleTimeString() : '—'}
                         </td>
                       </tr>

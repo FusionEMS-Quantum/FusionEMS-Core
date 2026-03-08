@@ -106,7 +106,7 @@ function Toast({ items }: { items: ToastItem[] }) {
       {items.map((t) => (
         <div
           key={t.id}
-          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-lg"
+          className="px-4 py-2.5 chamfer-4 text-xs font-semibold shadow-[0_0_15px_rgba(0,0,0,0.6)]"
           style={{
             background: t.type === 'success' ? 'rgba(76,175,80,0.18)' : 'rgba(229,57,53,0.18)',
             border: `1px solid ${t.type === 'success' ? 'rgba(76,175,80,0.4)' : 'rgba(229,57,53,0.4)'}`,
@@ -164,9 +164,9 @@ function IncidentTypeBadge({ code }: { code: string }) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)]";
-const inputErrorClass = "w-full bg-[rgba(229,57,53,0.05)] border border-[rgba(229,57,53,0.4)] text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-[rgba(229,57,53,0.6)] placeholder:text-[rgba(255,255,255,0.2)]";
-const labelClass = "block text-micro uppercase tracking-wider text-text-muted mb-1";
+const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)]";
+const inputErrorClass = "w-full bg-[rgba(229,57,53,0.05)] border border-[rgba(229,57,53,0.4)] text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-[rgba(229,57,53,0.6)] placeholder:text-[rgba(255,255,255,0.2)]";
+const labelClass = "block text-micro uppercase tracking-wider text-zinc-500 mb-1";
 
 function makeEmptyForm(): IncidentForm {
   return {
@@ -222,13 +222,13 @@ function IncidentList({
       {/* Header */}
       <div className="px-4 py-3 border-b border-border-DEFAULT flex items-center justify-between">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim">Portal</p>
-          <h2 className="text-sm font-bold uppercase tracking-wider text-text-primary">Fire Incidents</h2>
+          <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70">Portal</p>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-100">Fire Incidents</h2>
         </div>
         <button
           onClick={onNew}
           className="h-7 px-3 text-micro font-bold uppercase tracking-wider chamfer-4"
-          style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
+          style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
         >
           + New
         </button>
@@ -241,7 +241,7 @@ function IncidentList({
             onClick={() => onFilterChange(f.value)}
             className="h-6 px-2 text-[9px] font-semibold uppercase tracking-wider chamfer-4 transition-colors"
             style={statusFilter === f.value
-              ? { background: 'rgba(255,107,26,0.2)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.35)' }
+              ? { background: 'rgba(255,107,26,0.2)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.35)' }
               : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.07)' }
             }
           >
@@ -252,10 +252,10 @@ function IncidentList({
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading && (
-          <div className="py-8 text-center text-body text-text-muted">Loading…</div>
+          <div className="py-8 text-center text-body text-zinc-500">Loading…</div>
         )}
         {!loading && incidents.length === 0 && (
-          <div className="py-8 text-center text-body text-text-muted">No incidents found</div>
+          <div className="py-8 text-center text-body text-zinc-500">No incidents found</div>
         )}
         {!loading && incidents.map((inc) => (
           <button
@@ -269,7 +269,7 @@ function IncidentList({
               <IncidentStatusBadge status={inc.status} />
             </div>
             <IncidentTypeBadge code={inc.incident_type_code} />
-            <p className="text-micro text-text-muted mt-1 font-mono">
+            <p className="text-micro text-zinc-500 mt-1 font-mono">
               {inc.start_datetime ? new Date(inc.start_datetime).toLocaleString() : '—'}
             </p>
           </button>
@@ -293,7 +293,7 @@ function FormSection({
   const [open, setOpen] = useState(true);
   return (
     <div
-      className="bg-bg-base border chamfer-4 overflow-hidden"
+      className="bg-[#050505] border chamfer-4 overflow-hidden"
       style={{ borderColor: errorCount > 0 ? 'rgba(229,57,53,0.35)' : 'rgba(255,255,255,0.08)' }}
     >
       <button
@@ -308,7 +308,7 @@ function FormSection({
             </span>
           )}
         </div>
-        <span className="text-text-muted text-sm">{open ? '▾' : '▸'}</span>
+        <span className="text-zinc-500 text-sm">{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)]">
@@ -336,7 +336,7 @@ function FormField({
     <div>
       <label className={labelClass}>
         {label}
-        {required && <span className="ml-1" style={{ color: 'var(--q-orange)' }}>*</span>}
+        {required && <span className="ml-1" style={{ color: '#FF4D00' }}>*</span>}
       </label>
       {children}
       {error && <p className="text-micro text-red mt-0.5">{error}</p>}
@@ -542,8 +542,8 @@ function IncidentForm({
       {/* Form header */}
       <div className="px-5 py-3 border-b border-border-DEFAULT flex items-center justify-between flex-shrink-0">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim">{currentId ? 'Edit Incident' : 'New Incident'}</p>
-          <h3 className="text-sm font-bold text-text-primary">
+          <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70">{currentId ? 'Edit Incident' : 'New Incident'}</p>
+          <h3 className="text-sm font-bold text-zinc-100">
             {form.incident_number || (currentId ? 'Incident' : 'New Fire Incident')}
           </h3>
         </div>
@@ -581,9 +581,9 @@ function IncidentForm({
                 value={form.incident_type_code}
                 onChange={(e) => update('incident_type_code', e.target.value)}
                 className={getInputClass('incident_type_code')}
-                style={{ background: 'var(--color-bg-base)' }}
+                style={{ background: '#050505' }}
               >
-                <option value="" className="bg-bg-base">— Select —</option>
+                <option value="" className="bg-[#050505]">— Select —</option>
                 {(incidentTypeValues.length > 0
                   ? incidentTypeValues.map((v) => ({ code: v, label: v }))
                   : [
@@ -601,7 +601,7 @@ function IncidentForm({
                       { code: 'UNK', label: 'Unknown' },
                     ]
                 ).map((v) => (
-                  <option key={v.code} value={v.code} className="bg-bg-base">{v.label}</option>
+                  <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
                 ))}
               </select>
             </FormField>
@@ -656,9 +656,9 @@ function IncidentForm({
                 value={form.property_use_code}
                 onChange={(e) => update('property_use_code', e.target.value)}
                 className={getInputClass('property_use_code')}
-                style={{ background: 'var(--color-bg-base)' }}
+                style={{ background: '#050505' }}
               >
-                <option value="" className="bg-bg-base">— Select —</option>
+                <option value="" className="bg-[#050505]">— Select —</option>
                 {(propertyUseValues.length > 0
                   ? propertyUseValues.map((v) => ({ code: v, label: v }))
                   : [
@@ -676,7 +676,7 @@ function IncidentForm({
                       { code: 'NNN', label: 'None/Not applicable' },
                     ]
                 ).map((v) => (
-                  <option key={v.code} value={v.code} className="bg-bg-base">{v.label}</option>
+                  <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
                 ))}
               </select>
             </FormField>
@@ -718,11 +718,11 @@ function IncidentForm({
                         update('units', updated);
                       }}
                       className={inputClass}
-                      style={{ background: 'var(--color-bg-base)' }}
+                      style={{ background: '#050505' }}
                     >
-                      <option value="" className="bg-bg-base">— Select —</option>
+                      <option value="" className="bg-[#050505]">— Select —</option>
                       {apparatus.map((a) => (
-                        <option key={a.id} value={a.id} className="bg-bg-base">{a.unit_id} ({a.unit_type_code})</option>
+                        <option key={a.id} value={a.id} className="bg-[#050505]">{a.unit_id} ({a.unit_type_code})</option>
                       ))}
                     </select>
                   </FormField>
@@ -778,9 +778,9 @@ function IncidentForm({
                         update('actions', updated);
                       }}
                       className={inputClass}
-                      style={{ background: 'var(--color-bg-base)' }}
+                      style={{ background: '#050505' }}
                     >
-                      <option value="" className="bg-bg-base">— Select —</option>
+                      <option value="" className="bg-[#050505]">— Select —</option>
                       {(actionTakenValues.length > 0
                         ? actionTakenValues.map((v) => ({ code: v, label: v }))
                         : [
@@ -796,7 +796,7 @@ function IncidentForm({
                             { code: '93', label: 'Cancelled en route' },
                           ]
                       ).map((v) => (
-                        <option key={v.code} value={v.code} className="bg-bg-base">{v.label}</option>
+                        <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
                       ))}
                     </select>
                   </FormField>
@@ -864,13 +864,13 @@ function IncidentForm({
       {/* ── Action Bar ── */}
       <div
         className="flex-shrink-0 px-5 py-3 border-t border-border-DEFAULT flex items-center gap-3 flex-wrap"
-        style={{ background: 'var(--color-bg-base)' }}
+        style={{ background: '#050505' }}
       >
         <button
           onClick={saveDraft}
           disabled={savingDraft}
           className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
-          style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
+          style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
         >
           {savingDraft ? 'Saving…' : 'Save Draft'}
         </button>
@@ -990,7 +990,7 @@ export default function FireIncidentsPage() {
   const showForm = isNew || selectedIncident !== null;
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary flex flex-col" style={{ height: '100vh' }}>
+    <div className="min-h-screen bg-black text-zinc-100 flex flex-col" style={{ height: '100vh' }}>
       <Toast items={toasts} />
       <div className="flex flex-1 min-h-0">
         <IncidentList
@@ -1016,11 +1016,11 @@ export default function FireIncidentsPage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-3">
                 <div className="text-4xl opacity-20">🔥</div>
-                <p className="text-sm text-text-muted">Select an incident or create a new one.</p>
+                <p className="text-sm text-zinc-500">Select an incident or create a new one.</p>
                 <button
                   onClick={handleNew}
                   className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4"
-                  style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: 'var(--q-orange)' }}
+                  style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
                 >
                   + New Incident
                 </button>

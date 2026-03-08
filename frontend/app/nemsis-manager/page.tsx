@@ -114,7 +114,7 @@ function StatCard({
 }) {
   const accents = { green: "text-green-400", red: "text-red-400", yellow: "text-yellow-400" };
   return (
-    <div className="rounded-xl border border-border bg-panel p-4">
+    <div className=" border border-border bg-panel p-4">
       <div className="text-xs text-muted">{label}</div>
       <div className={`mt-1 text-2xl font-bold ${accent ? accents[accent] : ""}`}>{value}</div>
       {sub && <div className="mt-1 text-xs text-muted">{sub}</div>}
@@ -134,11 +134,11 @@ function Badge({ color, label }: { color: string; label: string }) {
     red: "bg-red-900/40 text-red-300 border-red-700",
     yellow: "bg-yellow-900/40 text-yellow-300 border-yellow-700",
     blue: "bg-blue-900/40 text-blue-300 border-blue-700",
-    gray: "bg-bg-raised text-text-secondary border-border-strong",
+    gray: "bg-bg-raised text-zinc-400 border-border-strong",
   };
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs border font-medium ${
+      className={`inline-flex items-center  px-2 py-0.5 text-xs border font-medium ${
         colors[color] ?? colors.gray
       }`}
     >
@@ -150,7 +150,7 @@ function Badge({ color, label }: { color: string; label: string }) {
 function ValidationResultDisplay({ result }: { result: ValidationResult }) {
   return (
     <div
-      className={`rounded-lg border p-4 ${
+      className={` border p-4 ${
         result.valid ? "border-green-700 bg-green-900/20" : "border-red-700 bg-red-900/20"
       }`}
     >
@@ -183,7 +183,7 @@ function ValidationResultDisplay({ result }: { result: ValidationResult }) {
             {result.missing_required.slice(0, 20).map((e) => (
               <span
                 key={e}
-                className="rounded bg-yellow-900/30 px-1.5 py-0.5 text-xs text-yellow-300"
+                className=" bg-yellow-900/30 px-1.5 py-0.5 text-xs text-yellow-300"
               >
                 {e}
               </span>
@@ -394,7 +394,7 @@ export default function NEMSISManagerPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-border bg-panel p-6">
+      <div className=" border border-border bg-panel p-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <div className="text-xl font-bold">NEMSIS 3.5.1 Dataset Manager</div>
@@ -407,7 +407,7 @@ export default function NEMSISManagerPage() {
             {schema && <Badge color="green" label={`NEMSIS v${schema.version}`} />}
             {integrityScore && (
               <div
-                className={`rounded-lg border px-3 py-1 text-xs font-bold ${
+                className={` border px-3 py-1 text-xs font-bold ${
                   integrityScore.grade === "A"
                     ? "border-green-700 bg-green-900/40 text-green-300"
                     : integrityScore.grade === "B"
@@ -428,7 +428,7 @@ export default function NEMSISManagerPage() {
             <Tabs.Trigger
               key={t.id}
               value={t.id}
-              className="rounded-lg px-3 py-2 text-xs font-medium text-muted hover:text-text data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-text"
+              className=" px-3 py-2 text-xs font-medium text-muted hover:text-text data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-text"
             >
               {t.label}
             </Tabs.Trigger>
@@ -447,7 +447,7 @@ export default function NEMSISManagerPage() {
             )}
 
             {integrityScore && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Data Integrity Score" />
                 <div className="flex items-end gap-4">
                   <div
@@ -474,9 +474,9 @@ export default function NEMSISManagerPage() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-3 h-3 rounded-full bg-[rgba(255,255,255,0.08)] overflow-hidden">
+                <div className="mt-3 h-3  bg-[rgba(255,255,255,0.08)] overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${
+                    className={`h-full  transition-all ${
                       integrityScore.grade === "A"
                         ? "bg-green-500"
                         : integrityScore.grade === "B"
@@ -490,7 +490,7 @@ export default function NEMSISManagerPage() {
             )}
 
             {certReadiness && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Certification Readiness" />
                 <div className="flex items-center gap-3 mb-4">
                   <Badge
@@ -505,8 +505,8 @@ export default function NEMSISManagerPage() {
                   {certReadiness.checks.map((check, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm">
                       <span
-                        className={`h-4 w-4 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                          check.passed ? "bg-green-500 text-text-primary" : "bg-red-500 text-text-primary"
+                        className={`h-4 w-4  flex items-center justify-center text-xs font-bold shrink-0 ${
+                          check.passed ? "bg-green-500 text-zinc-100" : "bg-red-500 text-zinc-100"
                         }`}
                       >
                         {check.passed ? "✓" : "✗"}
@@ -521,7 +521,7 @@ export default function NEMSISManagerPage() {
             )}
 
             {exportDash && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Export Dashboard" />
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   <StatCard label="Total Export Jobs" value={exportDash.total_jobs} />
@@ -540,7 +540,7 @@ export default function NEMSISManagerPage() {
                 {Object.keys(exportDash.jobs_by_status).length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {Object.entries(exportDash.jobs_by_status).map(([status, count]) => (
-                      <div key={status} className="rounded-lg border border-border px-3 py-1 text-xs">
+                      <div key={status} className=" border border-border px-3 py-1 text-xs">
                         <span className="text-muted">{status}: </span>
                         <span className="font-semibold">{count}</span>
                       </div>
@@ -551,7 +551,7 @@ export default function NEMSISManagerPage() {
             )}
 
             {schemaDiff && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle
                   title={`Schema Diff v${schemaDiff.version_a} → v${schemaDiff.version_b}`}
                 />
@@ -568,7 +568,7 @@ export default function NEMSISManagerPage() {
                         }
                         label={d.status}
                       />
-                      <code className="text-xs bg-[rgba(255,255,255,0.06)] px-2 py-0.5 rounded">
+                      <code className="text-xs bg-[rgba(255,255,255,0.06)] px-2 py-0.5 ">
                         {d.element}
                       </code>
                       <span className="text-xs text-muted">{d.notes || d.change_detail}</span>
@@ -586,13 +586,13 @@ export default function NEMSISManagerPage() {
               <>
                 <div className="flex flex-wrap gap-3">
                   <input
-                    className="flex-1 min-w-48 rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="flex-1 min-w-48  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     placeholder="Search elements by ID or label..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   <select
-                    className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={selectedSection}
                     onChange={(e) => setSelectedSection(e.target.value)}
                   >
@@ -605,7 +605,7 @@ export default function NEMSISManagerPage() {
                   </select>
                 </div>
                 <div className="text-xs text-muted">{filteredElements.length} elements shown</div>
-                <div className="rounded-xl border border-border bg-panel overflow-hidden">
+                <div className=" border border-border bg-panel overflow-hidden">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-border bg-[rgba(255,255,255,0.02)]">
@@ -646,14 +646,14 @@ export default function NEMSISManagerPage() {
                   )}
                 </div>
                 {hierarchy && (
-                  <div className="rounded-xl border border-border bg-panel p-4">
+                  <div className=" border border-border bg-panel p-4">
                     <SectionTitle title="Section Summary" />
                     <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                       {hierarchy.sections.map((section) => {
                         const sectionElems = hierarchy.hierarchy[section] || [];
                         const reqCount = sectionElems.filter((e) => e.required).length;
                         return (
-                          <div key={section} className="rounded-lg border border-border p-3">
+                          <div key={section} className=" border border-border p-3">
                             <div className="font-semibold text-xs">{section}</div>
                             <div className="mt-1 text-xs text-muted">
                               {sectionElems.length} elements · {reqCount} required
@@ -671,13 +671,13 @@ export default function NEMSISManagerPage() {
 
         <Tabs.Content value="validate">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Live Validation Engine" />
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-muted">Provided Elements (comma-separated)</label>
                   <textarea
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs font-mono outline-none"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs font-mono outline-none"
                     rows={3}
                     value={elementsInput}
                     onChange={(e) => setElementsInput(e.target.value)}
@@ -686,7 +686,7 @@ export default function NEMSISManagerPage() {
                 <div>
                   <label className="text-xs text-muted">State Code</label>
                   <input
-                    className="mt-1 w-24 rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="mt-1 w-24  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     value={stateCode}
                     onChange={(e) => setStateCode(e.target.value)}
                     placeholder="CA"
@@ -695,19 +695,19 @@ export default function NEMSISManagerPage() {
                 <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={runLiveValidation}
-                    className="rounded-lg bg-billing px-4 py-2 text-sm font-semibold text-text-inverse hover:opacity-90"
+                    className=" bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
                   >
                     Validate Live
                   </button>
                   <button
                     onClick={runReadiness}
-                    className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
+                    className=" border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
                   >
                     Readiness Score
                   </button>
                   <button
                     onClick={runExportSimulation}
-                    className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
+                    className=" border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
                   >
                     Export Simulation
                   </button>
@@ -719,7 +719,7 @@ export default function NEMSISManagerPage() {
                 </div>
               )}
               {readinessResult && (
-                <div className="mt-3 rounded-lg border border-border p-4">
+                <div className="mt-3  border border-border p-4">
                   <SectionTitle title="Readiness Score" />
                   <div className="flex items-end gap-3 mb-3">
                     <div
@@ -747,7 +747,7 @@ export default function NEMSISManagerPage() {
               )}
               {simResult && (
                 <div
-                  className={`mt-3 rounded-lg border p-4 ${
+                  className={`mt-3  border p-4 ${
                     (simResult as Record<string, boolean>).can_export
                       ? "border-green-700 bg-green-900/20"
                       : "border-red-700 bg-red-900/20"
@@ -768,13 +768,13 @@ export default function NEMSISManagerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Field-Level Validation" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
                   <label className="text-xs text-muted">Element ID</label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none font-mono"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none font-mono"
                     value={fieldId}
                     onChange={(e) => setFieldId(e.target.value)}
                     placeholder="e.g. ePatient.04"
@@ -783,7 +783,7 @@ export default function NEMSISManagerPage() {
                 <div>
                   <label className="text-xs text-muted">Value</label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     value={fieldValue}
                     onChange={(e) => setFieldValue(e.target.value)}
                     placeholder="Test value"
@@ -792,13 +792,13 @@ export default function NEMSISManagerPage() {
               </div>
               <button
                 onClick={runFieldValidation}
-                className="mt-3 rounded-lg bg-billing px-4 py-2 text-sm font-semibold text-text-inverse hover:opacity-90"
+                className="mt-3  bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
               >
                 Validate Field
               </button>
               {fieldResult && (
                 <div
-                  className={`mt-3 rounded-lg border p-3 text-sm ${
+                  className={`mt-3  border p-3 text-sm ${
                     (fieldResult as Record<string, boolean>).valid
                       ? "border-green-700 bg-green-900/20 text-green-300"
                       : "border-red-700 bg-red-900/20 text-red-300"
@@ -817,7 +817,7 @@ export default function NEMSISManagerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title={`Validation History (${validationHistory.length})`} />
               {validationHistory.length === 0 ? (
                 <div className="text-sm text-muted">No validation history yet.</div>
@@ -826,7 +826,7 @@ export default function NEMSISManagerPage() {
                   {[...validationHistory].reverse().slice(0, 10).map((v) => (
                     <div
                       key={v.id}
-                      className="flex items-center gap-2 text-xs rounded-lg border border-border px-3 py-2"
+                      className="flex items-center gap-2 text-xs  border border-border px-3 py-2"
                     >
                       <Badge
                         color={v.data.valid ? "green" : "red"}
@@ -848,12 +848,12 @@ export default function NEMSISManagerPage() {
 
         <Tabs.Content value="narrative">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Narrative & Medical Necessity Analysis" />
               <div>
                 <label className="text-xs text-muted">PCR Narrative (eNarrative.01)</label>
                 <textarea
-                  className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                  className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                   rows={4}
                   value={narrativeInput}
                   onChange={(e) => setNarrativeInput(e.target.value)}
@@ -862,25 +862,25 @@ export default function NEMSISManagerPage() {
               <div className="flex flex-wrap gap-2 mt-3">
                 <button
                   onClick={runNarrativeCheck}
-                  className="rounded-lg bg-billing px-4 py-2 text-sm font-semibold text-text-inverse hover:opacity-90"
+                  className=" bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
                 >
                   Narrative Check
                 </button>
                 <button
                   onClick={runMedNecessity}
-                  className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
+                  className=" border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
                 >
                   Medical Necessity
                 </button>
                 <button
                   onClick={runCodingSuggest}
-                  className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
+                  className=" border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
                 >
                   Auto-Code Suggest
                 </button>
                 <button
                   onClick={runReportableFlag}
-                  className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
+                  className=" border border-border px-4 py-2 text-sm hover:bg-[rgba(255,255,255,0.05)]"
                 >
                   Reportable Flag
                 </button>
@@ -888,7 +888,7 @@ export default function NEMSISManagerPage() {
 
               {narrativeResult && (
                 <div
-                  className={`mt-3 rounded-lg border p-3 ${
+                  className={`mt-3  border p-3 ${
                     (narrativeResult as Record<string, boolean>).valid
                       ? "border-green-700 bg-green-900/20"
                       : "border-red-700 bg-red-900/20"
@@ -914,7 +914,7 @@ export default function NEMSISManagerPage() {
 
               {medNecessityResult && (
                 <div
-                  className={`mt-3 rounded-lg border p-3 ${
+                  className={`mt-3  border p-3 ${
                     (medNecessityResult as Record<string, boolean>).has_medical_necessity
                       ? "border-green-700 bg-green-900/20"
                       : "border-yellow-700 bg-yellow-900/20"
@@ -943,7 +943,7 @@ export default function NEMSISManagerPage() {
                       ).map((kw) => (
                         <span
                           key={kw}
-                          className="rounded bg-green-900/40 px-1.5 py-0.5 text-xs text-green-300"
+                          className=" bg-green-900/40 px-1.5 py-0.5 text-xs text-green-300"
                         >
                           {kw}
                         </span>
@@ -957,7 +957,7 @@ export default function NEMSISManagerPage() {
               )}
 
               {codingSuggestResult && (
-                <div className="mt-3 rounded-lg border border-border p-3">
+                <div className="mt-3  border border-border p-3">
                   <div className="font-semibold text-sm mb-2">
                     Coding Suggestions ({String(codingSuggestResult.count)})
                   </div>
@@ -976,7 +976,7 @@ export default function NEMSISManagerPage() {
                   ).map((s, i) => (
                     <div
                       key={i}
-                      className="text-xs rounded border border-border px-2 py-1.5 mb-1"
+                      className="text-xs  border border-border px-2 py-1.5 mb-1"
                     >
                       <span className="font-mono text-muted">{s.element}: </span>
                       <span className="font-semibold">{s.suggested_code}</span>
@@ -992,7 +992,7 @@ export default function NEMSISManagerPage() {
 
               {reportableFlagResult && (
                 <div
-                  className={`mt-3 rounded-lg border p-3 ${
+                  className={`mt-3  border p-3 ${
                     (reportableFlagResult as Record<string, boolean>).reportable
                       ? "border-red-700 bg-red-900/20"
                       : "border-border"
@@ -1046,7 +1046,7 @@ export default function NEMSISManagerPage() {
                 />
               </div>
             )}
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title={`Export Batches (${exportBatches.length})`} />
               {exportBatches.length === 0 ? (
                 <div className="text-sm text-muted">No export batches created yet.</div>
@@ -1055,7 +1055,7 @@ export default function NEMSISManagerPage() {
                   {exportBatches.map((b) => (
                     <div
                       key={b.id}
-                      className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex items-center justify-between  border border-border px-3 py-2 text-sm"
                     >
                       <div>
                         <span className="font-medium">Batch</span>
@@ -1078,14 +1078,14 @@ export default function NEMSISManagerPage() {
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title={`State Rejections (${rejections.length})`} />
               {rejections.length === 0 ? (
                 <div className="text-sm text-muted">No state rejections recorded.</div>
               ) : (
                 <div className="space-y-2">
                   {rejections.map((r) => (
-                    <div key={r.id} className="rounded-lg border border-border p-3 text-sm">
+                    <div key={r.id} className=" border border-border p-3 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{r.data.state_code}</span>
                         <Badge
@@ -1107,21 +1107,21 @@ export default function NEMSISManagerPage() {
         <Tabs.Content value="compliance">
           <div className="space-y-5">
             {certReadiness && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Certification Checks" />
                 <div className="space-y-2">
                   {certReadiness.checks.map((check, i) => (
                     <div
                       key={i}
-                      className={`rounded-lg border p-3 flex items-center gap-3 ${
+                      className={` border p-3 flex items-center gap-3 ${
                         check.passed
                           ? "border-green-700 bg-green-900/10"
                           : "border-red-700 bg-red-900/10"
                       }`}
                     >
                       <span
-                        className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                          check.passed ? "bg-green-500 text-text-primary" : "bg-red-500 text-text-primary"
+                        className={`h-6 w-6  flex items-center justify-center text-xs font-bold shrink-0 ${
+                          check.passed ? "bg-green-500 text-zinc-100" : "bg-red-500 text-zinc-100"
                         }`}
                       >
                         {check.passed ? "✓" : "✗"}
@@ -1135,7 +1135,7 @@ export default function NEMSISManagerPage() {
               </div>
             )}
             {upgradeImpact && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Upgrade Impact Analysis" />
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm text-muted">v{upgradeImpact.from_version}</span>
@@ -1151,7 +1151,7 @@ export default function NEMSISManagerPage() {
                 {upgradeImpact.breaking_changes.map((c, i) => (
                   <div
                     key={i}
-                    className="text-xs rounded border border-yellow-700 bg-yellow-900/10 px-3 py-2 mb-1"
+                    className="text-xs  border border-yellow-700 bg-yellow-900/10 px-3 py-2 mb-1"
                   >
                     <span className="font-mono">{c.element}</span>:{" "}
                     <span className="text-yellow-300">{c.change}</span>
@@ -1168,14 +1168,14 @@ export default function NEMSISManagerPage() {
         <Tabs.Content value="tools">
           <div className="space-y-5">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Auto-Populate Fields" />
                 <div className="text-xs text-muted mb-3">
                   Detect missing standard fields from incident context
                 </div>
                 <button
                   onClick={runAutoPopulate}
-                  className="rounded-lg bg-billing px-4 py-2 text-sm font-semibold text-text-inverse hover:opacity-90"
+                  className=" bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
                 >
                   Run Auto-Populate
                 </button>
@@ -1187,7 +1187,7 @@ export default function NEMSISManagerPage() {
                     {Object.entries(
                       (autoPopResult as Record<string, Record<string, string>>).auto_populated || {}
                     ).map(([k, v]) => (
-                      <div key={k} className="text-xs rounded border border-border px-2 py-1">
+                      <div key={k} className="text-xs  border border-border px-2 py-1">
                         <span className="font-mono text-muted">{k}: </span>
                         <span className="text-green-300">{v}</span>
                       </div>
@@ -1196,14 +1196,14 @@ export default function NEMSISManagerPage() {
                 )}
               </div>
 
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Data Normalization" />
                 <div className="text-xs text-muted mb-3">
                   Normalize values to NEMSIS 3.5.1 standards
                 </div>
                 <button
                   onClick={runNormalize}
-                  className="rounded-lg bg-billing px-4 py-2 text-sm font-semibold text-text-inverse hover:opacity-90"
+                  className=" bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
                 >
                   Normalize Sample
                 </button>
@@ -1220,7 +1220,7 @@ export default function NEMSISManagerPage() {
                         >
                       ).changes || {}
                     ).map(([k, v]) => (
-                      <div key={k} className="text-xs rounded border border-border px-2 py-1 mb-1">
+                      <div key={k} className="text-xs  border border-border px-2 py-1 mb-1">
                         <span className="font-mono">{k}: </span>
                         <span className="text-red-300 line-through">{String(v.from)}</span>
                         <span className="text-muted"> → </span>
@@ -1233,7 +1233,7 @@ export default function NEMSISManagerPage() {
             </div>
 
             {schema && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Required Elements Quick Reference" />
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {schema.sections.map((section) => {
@@ -1242,7 +1242,7 @@ export default function NEMSISManagerPage() {
                     );
                     if (required.length === 0) return null;
                     return (
-                      <div key={section} className="rounded-lg border border-border p-3">
+                      <div key={section} className=" border border-border p-3">
                         <div className="font-semibold text-xs mb-2">
                           {section} ({required.length})
                         </div>

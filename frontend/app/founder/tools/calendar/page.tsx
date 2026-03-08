@@ -7,9 +7,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
-        {sub && <span className="text-xs text-text-muted">{sub}</span>}
+        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
+        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
     </div>
   );
@@ -22,7 +22,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
       className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
-      <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
+      <span className="w-1 h-1 " style={{ background: c[status] }} />
       {label}
     </span>
   );
@@ -31,7 +31,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -40,10 +40,10 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 }
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const TODAY_INDEX = 0; // Mon is today for demo
+const TODAY_INDEX = 0;
 
 const WEEK_EVENTS: Record<number, string[]> = {
-  0: ['Agency Demo Call 2pm'],
+  0: ['Agency Operations Call 2pm'],
   1: ['Stripe billing cycle'],
   2: [],
   3: ['NEMSIS deadline TX'],
@@ -93,21 +93,21 @@ export default function FounderCalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-6">
+    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[#FF4D00]-dim font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
+          <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-100" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
           Founder Calendar
         </h1>
-        <p className="text-xs text-text-muted mt-1">Meetings · deadlines · billing cycles · compliance events</p>
+        <p className="text-xs text-zinc-500 mt-1">Meetings · deadlines · billing cycles · compliance events</p>
       </motion.div>
 
       {/* MODULE 1 — This Week */}
@@ -123,29 +123,29 @@ export default function FounderCalendarPage() {
                 style={{
                   background: selectedDay === i ? 'rgba(255,107,26,0.1)' : 'rgba(255,255,255,0.02)',
                   border: i === TODAY_INDEX
-                    ? '1px solid var(--color-brand-orange)'
+                    ? '1px solid #FF4D00'
                     : selectedDay === i
                     ? '1px solid rgba(255,107,26,0.4)'
                     : '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                <span className="text-micro font-semibold text-text-muted uppercase tracking-widest">{day}</span>
+                <span className="text-micro font-semibold text-zinc-500 uppercase tracking-widest">{day}</span>
                 <span
                   className="text-lg font-bold mt-0.5"
-                  style={{ color: i === TODAY_INDEX ? 'var(--color-brand-orange)' : 'rgba(255,255,255,0.85)' }}
+                  style={{ color: i === TODAY_INDEX ? '#FF4D00' : 'rgba(255,255,255,0.85)' }}
                 >
                   {WEEK_DATES[i]}
                 </span>
                 <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
                   {WEEK_EVENTS[i].length > 0 ? (
                     <>
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange" />
-                      <span className="text-[8px] text-text-muted text-center leading-tight mt-0.5 line-clamp-2">
+                      <span className="w-1.5 h-1.5  bg-[#FF4D00]" />
+                      <span className="text-[8px] text-zinc-500 text-center leading-tight mt-0.5 line-clamp-2">
                         {WEEK_EVENTS[i][0]}
                       </span>
                     </>
                   ) : (
-                    <span className="text-[9px] text-text-muted">clear</span>
+                    <span className="text-[9px] text-zinc-500">clear</span>
                   )}
                 </div>
               </button>
@@ -153,8 +153,8 @@ export default function FounderCalendarPage() {
           </div>
           {WEEK_EVENTS[selectedDay].length > 0 && (
             <div className="mt-3 p-2 bg-brand-orange/[0.06] border border-brand-orange/[0.15] chamfer-4">
-              <span className="text-micro text-orange font-semibold">{DAYS[selectedDay]} selected: </span>
-              <span className="text-body text-text-primary">{WEEK_EVENTS[selectedDay].join(', ')}</span>
+              <span className="text-micro text-[#FF4D00] font-semibold">{DAYS[selectedDay]} selected: </span>
+              <span className="text-body text-zinc-100">{WEEK_EVENTS[selectedDay].join(', ')}</span>
             </div>
           )}
         </Panel>
@@ -169,7 +169,7 @@ export default function FounderCalendarPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Date', 'Event', 'Category', 'Priority'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-text-muted font-semibold uppercase tracking-wider text-micro">
+                    <th key={h} className="text-left py-1.5 px-2 text-zinc-500 font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -177,10 +177,10 @@ export default function FounderCalendarPage() {
               </thead>
               <tbody>
                 {UPCOMING_EVENTS.map((ev, i) => (
-                  <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
+                  <tr key={i} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
                     <td className="py-2 px-2 font-mono text-brand-orange">{ev.date}</td>
-                    <td className="py-2 px-2 text-text-primary">{ev.event}</td>
-                    <td className="py-2 px-2 text-text-muted">{ev.category}</td>
+                    <td className="py-2 px-2 text-zinc-100">{ev.event}</td>
+                    <td className="py-2 px-2 text-zinc-500">{ev.category}</td>
                     <td className="py-2 px-2">
                       <Badge
                         label={ev.priority === 'warn' ? 'medium' : ev.priority === 'info' ? 'low' : ev.priority}
@@ -201,52 +201,52 @@ export default function FounderCalendarPage() {
           <SectionHeader number="3" title="Add Event" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-text-muted uppercase tracking-wider">Event Title</label>
+              <label className="text-micro text-zinc-500 uppercase tracking-wider">Event Title</label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="Event title"
-                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-text-muted"
+                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-zinc-500"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-text-muted uppercase tracking-wider">Date</label>
+              <label className="text-micro text-zinc-500 uppercase tracking-wider">Date</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-text-muted uppercase tracking-wider">Category</label>
+              <label className="text-micro text-zinc-500 uppercase tracking-wider">Category</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
               >
                 {['Compliance', 'Sales', 'Billing', 'Executive', 'Infra'].map((c) => (
-                  <option key={c} value={c} className="bg-bg-panel">{c}</option>
+                  <option key={c} value={c} className="bg-[#0A0A0B]">{c}</option>
                 ))}
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-text-muted uppercase tracking-wider">Priority</label>
+              <label className="text-micro text-zinc-500 uppercase tracking-wider">Priority</label>
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="bg-white/[0.04] border border-border-DEFAULT text-xs text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
               >
                 {['high', 'medium', 'low'].map((p) => (
-                  <option key={p} value={p} className="bg-bg-panel">{p}</option>
+                  <option key={p} value={p} className="bg-[#0A0A0B]">{p}</option>
                 ))}
               </select>
             </div>
             <div className="flex items-end">
               <button
                 className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
-                style={{ background: 'var(--color-brand-orange)', color: '#000' }}
+                style={{ background: '#FF4D00', color: '#000' }}
                 onClick={() => setForm({ title: '', date: '', category: 'Compliance', priority: 'high' })}
               >
                 Add Event
@@ -266,15 +266,15 @@ export default function FounderCalendarPage() {
                 <div className="flex items-center gap-3">
                   <span
                     className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
-                    style={{ background: 'rgba(255,107,26,0.12)', color: 'var(--q-orange)', border: '1px solid rgba(255,107,26,0.25)' }}
+                    style={{ background: 'rgba(255,107,26,0.12)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.25)' }}
                   >
                     {r.freq}
                   </span>
-                  <span className="text-xs text-text-primary">{r.label}</span>
+                  <span className="text-xs text-zinc-100">{r.label}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-micro font-mono text-text-muted">{r.time}</span>
-                  <span className="text-micro text-text-muted italic">{r.note}</span>
+                  <span className="text-micro font-mono text-zinc-500">{r.time}</span>
+                  <span className="text-micro text-zinc-500 italic">{r.note}</span>
                 </div>
               </div>
             ))}
@@ -289,9 +289,9 @@ export default function FounderCalendarPage() {
           <div className="space-y-3">
             {COMPLIANCE_DEADLINES.map((cd, i) => (
               <div key={i} className="flex items-center justify-between py-2 px-3 chamfer-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span className="text-xs text-text-primary">{cd.label}</span>
+                <span className="text-xs text-zinc-100">{cd.label}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-body font-mono text-text-secondary">{cd.days} days</span>
+                  <span className="text-body font-mono text-zinc-400">{cd.days} days</span>
                   <Badge label={`${cd.days}d`} status={cd.status} />
                 </div>
               </div>
@@ -301,7 +301,7 @@ export default function FounderCalendarPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder" className="text-body text-text-muted hover:text-orange transition-colors">
+        <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

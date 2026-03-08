@@ -38,7 +38,7 @@ const STATE_SEQUENCE = [
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-white/[0.03] border border-white/[0.08] chamfer-8 p-4 ${className}`}>
+    <div className={`bg-zinc-950/[0.03] border border-white/[0.08] chamfer-8 p-4 ${className}`}>
       {children}
     </div>
   );
@@ -149,26 +149,26 @@ export default function CadDispatchPage() {
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
       {toast && (
-        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 chamfer-8 text-sm font-medium shadow-lg">{toast}</div>
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 chamfer-8 text-sm font-medium shadow-[0_0_15px_rgba(0,0,0,0.6)]">{toast}</div>
       )}
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-body text-orange-400 hover:text-orange-300 mb-1 block">← Ops Command</Link>
+          <Link href="/founder/ops" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">CAD / Dispatch</h1>
-          <p className="text-sm text-text-muted mt-1">Mission intake · State machine · Unit & crew assignment · Full audit trail</p>
+          <p className="text-sm text-zinc-500 mt-1">Mission intake · State machine · Unit & crew assignment · Full audit trail</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 bg-brand-orange/[0.1] border border-brand-orange/[0.3] chamfer-8">
-            <span className="text-orange-400 text-sm font-bold">{active.length}</span>
-            <span className="text-micro text-text-muted ml-1">ACTIVE</span>
+            <span className="text-[#FF4D00]-400 text-sm font-bold">{active.length}</span>
+            <span className="text-micro text-zinc-500 ml-1">ACTIVE</span>
           </div>
           <div className="px-3 py-1.5 bg-red-600/[0.1] border border-red-600/[0.3] chamfer-8">
             <span className="text-red-400 text-sm font-bold">{unassigned.length}</span>
-            <span className="text-micro text-text-muted ml-1">UNASSIGNED</span>
+            <span className="text-micro text-zinc-500 ml-1">UNASSIGNED</span>
           </div>
-          <button onClick={load} className="px-3 py-1.5 bg-white/[0.06] border border-white/[0.12] text-body chamfer-8 hover:bg-white/10">
+          <button onClick={load} className="px-3 py-1.5 bg-zinc-950/[0.06] border border-white/[0.12] text-body chamfer-8 hover:bg-zinc-950/10">
             ↻ Refresh
           </button>
         </div>
@@ -176,12 +176,12 @@ export default function CadDispatchPage() {
 
       {/* ── CAD State Machine Legend ── */}
       <Panel>
-        <div className="text-micro uppercase tracking-widest text-text-muted mb-3">Mission State Machine</div>
+        <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Mission State Machine</div>
         <div className="flex flex-wrap gap-1.5">
           {STATE_SEQUENCE.map((s, i) => (
             <span key={s} className="flex items-center gap-1">
               <StateBadge state={s} />
-              {i < STATE_SEQUENCE.length - 1 && <span className="text-text-muted text-xs">→</span>}
+              {i < STATE_SEQUENCE.length - 1 && <span className="text-zinc-500 text-xs">→</span>}
             </span>
           ))}
         </div>
@@ -189,35 +189,35 @@ export default function CadDispatchPage() {
 
       {/* ── New Mission Intake ── */}
       <Panel>
-        <div className="text-micro uppercase tracking-widest text-text-muted mb-3">New Dispatch Request</div>
+        <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">New Dispatch Request</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <select value={newRequest.service_level} onChange={e => setNewRequest(p => ({ ...p, service_level: e.target.value }))}
-            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400">
+            className="h-9 bg-zinc-950/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400">
             {['BLS','ALS','CCT','HEMS'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={newRequest.priority} onChange={e => setNewRequest(p => ({ ...p, priority: e.target.value }))}
-            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400">
+            className="h-9 bg-zinc-950/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400">
             {['P1','P2','P3','ROUTINE','ECHO','DELTA'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <input value={newRequest.origin_address} onChange={e => setNewRequest(p => ({ ...p, origin_address: e.target.value }))}
             placeholder="Origin address *"
-            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-text-text-muted" />
+            className="h-9 bg-zinc-950/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-text-zinc-500" />
           <input value={newRequest.chief_complaint} onChange={e => setNewRequest(p => ({ ...p, chief_complaint: e.target.value }))}
             placeholder="Chief complaint"
-            className="h-9 bg-white/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-text-text-muted" />
+            className="h-9 bg-zinc-950/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-text-zinc-500" />
         </div>
         <button onClick={createRequest} disabled={creating || !newRequest.origin_address}
-          className="px-6 py-2 bg-orange-600 text-white text-sm font-bold chamfer-8 hover:bg-orange-500 disabled:opacity-40 transition-colors">
+          className="px-6 py-2 bg-[#FF4D00]-600 text-white text-sm font-bold chamfer-8 hover:bg-[#FF4D00]-500 disabled:opacity-40 transition-colors">
           {creating ? 'Creating…' : '+ Create Mission'}
         </button>
       </Panel>
 
       {/* ── Filter ── */}
       <div className="flex items-center gap-2">
-        <span className="text-micro uppercase tracking-widest text-text-muted">Filter by state:</span>
-        <button onClick={() => setFilterState('')} className={`px-2 py-1 chamfer-4 text-micro font-bold ${!filterState ? 'bg-orange-600 text-white' : 'bg-white/[0.06] text-text-secondary'}`}>ALL</button>
+        <span className="text-micro uppercase tracking-widest text-zinc-500">Filter by state:</span>
+        <button onClick={() => setFilterState('')} className={`px-2 py-1 chamfer-4 text-micro font-bold ${!filterState ? 'bg-[#FF4D00]-600 text-white' : 'bg-zinc-950/[0.06] text-zinc-400'}`}>ALL</button>
         {['NEW_REQUEST','READY_FOR_ASSIGNMENT','ASSIGNED','EN_ROUTE','ON_SCENE','TRANSPORTING'].map(s => (
-          <button key={s} onClick={() => setFilterState(s)} className={`px-2 py-1 chamfer-4 text-micro font-bold ${filterState === s ? 'bg-orange-600 text-white' : 'bg-white/[0.06] text-text-secondary'}`}>
+          <button key={s} onClick={() => setFilterState(s)} className={`px-2 py-1 chamfer-4 text-micro font-bold ${filterState === s ? 'bg-[#FF4D00]-600 text-white' : 'bg-zinc-950/[0.06] text-zinc-400'}`}>
             {s.replace(/_/g, ' ')}
           </button>
         ))}
@@ -225,11 +225,11 @@ export default function CadDispatchPage() {
 
       {/* ── Mission List ── */}
       <div className="space-y-2">
-        {loading && <div className="text-sm text-text-muted p-4">Loading missions…</div>}
+        {loading && <div className="text-sm text-zinc-500 p-4">Loading missions…</div>}
         {!loading && filtered.length === 0 && (
           <div className="text-center py-10 chamfer-4-xl border border-white/[0.08]">
             <div className="text-3xl mb-2">📡</div>
-            <div className="text-sm text-text-muted">No missions found. Create a new dispatch request above.</div>
+            <div className="text-sm text-zinc-500">No missions found. Create a new dispatch request above.</div>
           </div>
         )}
         {filtered.map(m => {
@@ -240,19 +240,19 @@ export default function CadDispatchPage() {
           return (
             <div key={m.id} className="chamfer-4-xl border border-white/[0.08] overflow-hidden">
               <button onClick={() => setSelected(isSelected ? null : m)}
-                className="w-full flex items-center gap-4 p-4 text-left hover:bg-white/[0.03] transition-colors">
+                className="w-full flex items-center gap-4 p-4 text-left hover:bg-zinc-950/[0.03] transition-colors">
                 <div className="flex-shrink-0">
                   <div className="text-micro font-bold uppercase tracking-widest" style={{ color: priorityColor }}>{d.priority}</div>
                   <div className="text-body font-bold text-white mt-0.5">{d.service_level}</div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{d.chief_complaint || 'No complaint recorded'}</div>
-                  <div className="text-body text-text-muted truncate">{d.origin_address}</div>
+                  <div className="text-body text-zinc-500 truncate">{d.origin_address}</div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <StateBadge state={d.state} />
                   {d.assigned_unit_id && <span className="text-micro text-green-400">Unit: {d.assigned_unit_id.slice(0, 8)}</span>}
-                  <span className="text-text-muted text-sm">{isSelected ? '▲' : '▼'}</span>
+                  <span className="text-zinc-500 text-sm">{isSelected ? '▲' : '▼'}</span>
                 </div>
               </button>
 
@@ -260,7 +260,7 @@ export default function CadDispatchPage() {
                 <div className="px-4 pb-4 border-t border-white/[0.06] space-y-4">
                   {/* State transition controls */}
                   <div className="mt-4">
-                    <div className="text-micro uppercase tracking-widest text-text-muted mb-2">Transition State</div>
+                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">Transition State</div>
                     <div className="flex flex-wrap gap-2">
                       {STATE_SEQUENCE
                         .filter(s => s !== d.state && !['CANCELLED','CLOSED'].includes(d.state))
@@ -268,7 +268,7 @@ export default function CadDispatchPage() {
                         .map(s => (
                           <button key={s} onClick={() => transition(m.id, s)}
                             disabled={transitioning}
-                            className="px-3 py-1.5 chamfer-8 text-body font-semibold border border-white/[0.12] text-white hover:bg-white/[0.08] disabled:opacity-40 transition-colors">
+                            className="px-3 py-1.5 chamfer-8 text-body font-semibold border border-white/[0.12] text-white hover:bg-zinc-950/[0.08] disabled:opacity-40 transition-colors">
                             → {s.replace(/_/g, ' ')}
                           </button>
                         ))
@@ -279,10 +279,10 @@ export default function CadDispatchPage() {
                         <div className="text-body text-yellow-400">{transitionResult.reason}</div>
                         <input value={overrideReason} onChange={e => setOverrideReason(e.target.value)}
                           placeholder="Override reason (required for manual override)"
-                          className="w-full h-8 bg-brand-orange/[0.1] border border-brand-orange/[0.3] px-3 text-body text-white chamfer-8 focus:outline-none placeholder-text-text-muted" />
+                          className="w-full h-8 bg-brand-orange/[0.1] border border-brand-orange/[0.3] px-3 text-body text-white chamfer-8 focus:outline-none placeholder-text-zinc-500" />
                         <button onClick={() => transition(m.id, selected?.data?.state || '', true)}
                           disabled={!overrideReason}
-                          className="px-4 py-1.5 bg-orange-700 text-white text-body font-bold chamfer-8 hover:bg-orange-600 disabled:opacity-40">
+                          className="px-4 py-1.5 bg-[#FF4D00]-700 text-white text-body font-bold chamfer-8 hover:bg-[#FF4D00]-600 disabled:opacity-40">
                           Apply Manual Override
                         </button>
                       </div>
@@ -297,19 +297,19 @@ export default function CadDispatchPage() {
                   {/* Mission details */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-text-muted">Mission ID</div>
+                      <div className="text-micro uppercase tracking-wider text-zinc-500">Mission ID</div>
                       <div className="text-body text-white font-mono">{m.id.slice(0, 16)}</div>
                     </div>
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-text-muted">Destination</div>
+                      <div className="text-micro uppercase tracking-wider text-zinc-500">Destination</div>
                       <div className="text-body text-white">{d.destination_address || 'Not set'}</div>
                     </div>
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-text-muted">Created</div>
+                      <div className="text-micro uppercase tracking-wider text-zinc-500">Created</div>
                       <div className="text-body text-white">{d.created_at ? new Date(d.created_at).toLocaleString() : '—'}</div>
                     </div>
                     <div>
-                      <div className="text-micro uppercase tracking-wider text-text-muted">Last State Change</div>
+                      <div className="text-micro uppercase tracking-wider text-zinc-500">Last State Change</div>
                       <div className="text-body text-white">{d.state_updated_at ? new Date(d.state_updated_at).toLocaleString() : '—'}</div>
                     </div>
                   </div>

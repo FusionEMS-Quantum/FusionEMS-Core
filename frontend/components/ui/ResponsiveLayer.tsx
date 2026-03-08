@@ -126,7 +126,7 @@ export function StickyActionSummary({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-40 bg-bg-panel border-t border-[var(--color-border-default)]',
+        'fixed bottom-0 left-0 right-0 z-40 bg-[#0A0A0B] border-t border-[var(--color-border-default)]',
         'px-4 py-3 shadow-elevation-3',
         'lg:static lg:border-t-0 lg:shadow-none lg:p-0',
         className
@@ -154,7 +154,7 @@ export function DensitySelector({ className }: DensitySelectorProps) {
   ];
 
   return (
-    <div className={cn('flex items-center gap-1 bg-bg-base border border-[var(--color-border-default)] chamfer-4 p-0.5', className)}>
+    <div className={cn('flex items-center gap-1 bg-[#050505] border border-[var(--color-border-default)] chamfer-4 p-0.5', className)}>
       {modes.map((mode) => (
         <button
           key={mode.id}
@@ -162,8 +162,8 @@ export function DensitySelector({ className }: DensitySelectorProps) {
           className={cn(
             'px-2 py-1 text-micro font-label uppercase tracking-wider chamfer-4 transition-colors duration-fast',
             density === mode.id
-              ? 'bg-orange-ghost text-orange'
-              : 'text-text-muted hover:text-text-secondary'
+              ? 'bg-[#FF4D00]-ghost text-[#FF4D00]'
+              : 'text-zinc-500 hover:text-zinc-400'
           )}
           title={mode.label}
           type="button"
@@ -217,7 +217,7 @@ export function WidescreenSplit({
           onClick={() => setShowSecondary(false)}
           className={cn(
             'px-3 py-1.5 text-label font-label uppercase tracking-wider chamfer-4 transition-colors duration-fast',
-            !showSecondary ? 'bg-orange-ghost text-orange' : 'text-text-muted hover:text-text-secondary'
+            !showSecondary ? 'bg-[#FF4D00]-ghost text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-400'
           )}
           type="button"
         >
@@ -227,7 +227,7 @@ export function WidescreenSplit({
           onClick={() => setShowSecondary(true)}
           className={cn(
             'px-3 py-1.5 text-label font-label uppercase tracking-wider chamfer-4 transition-colors duration-fast',
-            showSecondary ? 'bg-orange-ghost text-orange' : 'text-text-muted hover:text-text-secondary'
+            showSecondary ? 'bg-[#FF4D00]-ghost text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-400'
           )}
           type="button"
         >
@@ -263,10 +263,10 @@ export function TouchSafeButton({
   type = 'button',
 }: TouchSafeButtonProps) {
   const variantStyles = {
-    primary: 'bg-orange text-text-inverse hover:bg-orange-bright',
-    secondary: 'bg-bg-panel text-text-primary border border-[var(--color-border-default)] hover:bg-bg-overlay',
+    primary: 'bg-[#FF4D00] text-black hover:bg-[#FF4D00]-bright',
+    secondary: 'bg-[#0A0A0B] text-zinc-100 border border-[var(--color-border-default)] hover:bg-bg-overlay',
     danger: 'bg-red text-white hover:bg-red-bright',
-    ghost: 'text-text-muted hover:text-text-primary hover:bg-bg-overlay',
+    ghost: 'text-zinc-500 hover:text-zinc-100 hover:bg-bg-overlay',
   };
 
   return (

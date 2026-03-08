@@ -18,7 +18,7 @@ interface CadLiveMapProps {
 const STATUS_COLORS: Record<string, string> = {
   available: 'var(--color-status-active)',
   dispatched: 'var(--color-status-warning)',
-  on_scene: 'var(--color-brand-orange)',
+  on_scene: '#FF4D00',
   transport: 'var(--color-system-fleet)',
   at_hospital: 'var(--color-system-compliance)',
 };
@@ -85,7 +85,7 @@ export function CadLiveMap({ units = [], className = '' }: CadLiveMapProps) {
   }, [units]);
 
   return (
-    <div className={`rounded-2xl overflow-hidden border border-border ${className}`}>
+    <div className={` overflow-hidden border border-border ${className}`}>
       <div ref={mapRef} style={{ height: '400px', width: '100%' }} />
     </div>
   );

@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from alembic import op
+from typing import Any, cast
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
 from geoalchemy2 import Geography
+
+op = cast(Any, op)
 
 revision = "20260225_0004"
 down_revision = "20260224_0003"
@@ -68,6 +71,7 @@ TENANT_TABLES = [
     "facilities",
     "facility_users",
     "facility_requests",
+    "facility_access_requests",
     "recurring_request_rules",
     "request_documents",
     # Documents + OCR + Signatures + Fax

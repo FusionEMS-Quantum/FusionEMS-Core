@@ -84,6 +84,10 @@ class Settings(BaseSettings):
         default="https://app.fusionemsquantum.com/dashboard",
         description="Frontend URL to redirect to after successful Microsoft login",
     )
+    microsoft_founder_post_login_url: str = Field(
+        default="https://app.fusionemsquantum.com/dashboard?next=%2Ffounder",
+        description="Frontend URL to redirect founder-intent Microsoft logins after token issuance",
+    )
     microsoft_post_logout_url: str = Field(
         default="https://app.fusionemsquantum.com/login",
         description="Frontend URL Entra redirects to after logout (matches manifest logoutUrl)",
@@ -110,6 +114,44 @@ class Settings(BaseSettings):
     ivr_audio_base_url: str = Field(
         default="", description="S3 or CDN base URL for pre-generated IVR WAV prompts"
     )
+    # Open-source-first voice stack (XTTS primary, Piper fallback, faster-whisper STT)
+    oss_tts_prompt_dir: str = Field(
+        default="/tmp/fusionems_voice_prompts",
+        description="Local directory for generated billing prompt WAV files",
+    )
+    oss_tts_engine_primary: str = Field(default="xtts", description="xtts|piper")
+    oss_tts_engine_fallback: str = Field(default="piper", description="piper|xtts")
+    oss_tts_xtts_bin: str = Field(default="tts", description="Path to Coqui XTTS CLI binary")
+    oss_tts_xtts_model_name: str = Field(
+        default="tts_models/multilingual/multi-dataset/xtts_v2",
+        description="Coqui XTTS model name",
+    )
+    oss_tts_xtts_language: str = Field(default="en", description="XTTS synthesis language")
+    oss_tts_xtts_speaker_wav: str = Field(
+        default="",
+        description="Optional path to reference WAV for XTTS voice cloning",
+    )
+    oss_tts_piper_bin: str = Field(default="piper", description="Path to Piper binary")
+    oss_tts_piper_model_path: str = Field(default="", description="Path to Piper model file")
+    oss_tts_piper_config_path: str = Field(default="", description="Path to Piper model config")
+    oss_tts_piper_speaker_id: int | None = Field(default=None, description="Optional Piper speaker id")
+
+    oss_stt_engine: str = Field(default="faster_whisper", description="STT engine name")
+    oss_stt_model_size: str = Field(default="small", description="faster-whisper model size")
+
+    billing_telephony_engine: str = Field(
+        default="telnyx",
+        description="Primary billing telephony control path: telnyx|asterisk|freeswitch",
+    )
+    billing_telephony_control_url: str = Field(
+        default="",
+        description="Optional control-plane URL for Asterisk/FreeSWITCH transfer bridge",
+    )
+    billing_telephony_control_token: str = Field(
+        default="",
+        description="Bearer token for telephony control bridge",
+    )
+
     s3_bucket_audio: str = Field(default="")
     fax_classify_queue_url: str = Field(default="")
 
@@ -188,6 +230,10 @@ class Settings(BaseSettings):
                 ("graph_founder_email", "GRAPH_FOUNDER_EMAIL"),
                 ("microsoft_redirect_uri", "MICROSOFT_REDIRECT_URI"),
                 ("microsoft_post_login_url", "MICROSOFT_POST_LOGIN_URL"),
+                (
+                    "microsoft_founder_post_login_url",
+                    "MICROSOFT_FOUNDER_POST_LOGIN_URL",
+                ),
                 ("microsoft_post_logout_url", "MICROSOFT_POST_LOGOUT_URL"),
             ]
             missing = [env_name for attr, env_name in _REQUIRED if not getattr(self, attr, "")]
@@ -199,7 +245,7 @@ class Settings(BaseSettings):
                 )
             if self.jwt_secret_key in ("change-me", "changeme", "secret"):
                 raise ValueError(
-                    "JWT_SECRET_KEY is set to a known insecure placeholder value. "
+                    "JWT_SECRET_KEY is set to a known insecure default value. "
                     "Generate a cryptographically random key and inject it from Secrets Manager."
                 )
             if str(self.auth_mode).lower() == "local":

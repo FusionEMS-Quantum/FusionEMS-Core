@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import EventPublisher
 
+VALIDATION_INCIDENT_STEP_ID = "validation_incident"
+LEGACY_VALIDATION_INCIDENT_STEP_ID = "sample_incident"
+
 ONBOARDING_STEPS = [
     {"id": "department_identity", "label": "Department Identity", "required": True},
     {"id": "reporting_mode", "label": "Reporting Mode", "required": True},
@@ -16,7 +19,11 @@ ONBOARDING_STEPS = [
     {"id": "apparatus", "label": "Apparatus & Units", "required": True},
     {"id": "personnel", "label": "Personnel (Optional)", "required": False},
     {"id": "pack_assignment", "label": "NERIS Pack Assignment", "required": True},
-    {"id": "sample_incident", "label": "Create & Validate Sample Incident", "required": True},
+    {
+        "id": VALIDATION_INCIDENT_STEP_ID,
+        "label": "Create & Validate Incident",
+        "required": True,
+    },
     {"id": "golive_checklist", "label": "Go-Live Checklist", "required": True},
 ]
 
@@ -24,7 +31,7 @@ WI_DSPS_GOLIVE_CHECKLIST = [
     "Confirm department identifiers match DSPS records",
     "Verify primary contact information is current",
     "Ensure all apparatus have valid NERIS unit type codes",
-    "Complete at least one sample incident with zero validation errors",
+    "Complete at least one validated incident with zero validation errors",
     "Review and save Go-Live checklist for department records",
     "Contact your NERIS vendor coordinator when ready to begin production reporting",
     "Schedule department training on RMS incident entry workflow",
@@ -98,9 +105,12 @@ class NERISOnboardingWizard:
         rd = rec.get("data") or {}
         dept = self._get_department(rd.get("department_id"))
         step_status = rd.get("step_status_json", {})
-        steps_with_status = [
-            {**step, "status": step_status.get(step["id"], "pending")} for step in ONBOARDING_STEPS
-        ]
+        steps_with_status = []
+        for step in ONBOARDING_STEPS:
+            status = step_status.get(step["id"], "pending")
+            if step["id"] == VALIDATION_INCIDENT_STEP_ID and status == "pending":
+                status = step_status.get(LEGACY_VALIDATION_INCIDENT_STEP_ID, "pending")
+            steps_with_status.append({**step, "status": status})
         completed = sum(1 for s in steps_with_status if s["status"] == "complete")
         total_required = sum(1 for s in ONBOARDING_STEPS if s["required"])
         return {
@@ -132,14 +142,25 @@ class NERISOnboardingWizard:
         department_id = rd.get("department_id")
 
         valid_ids = {s["id"] for s in ONBOARDING_STEPS}
+        valid_ids.add(LEGACY_VALIDATION_INCIDENT_STEP_ID)
         if step_id not in valid_ids:
             raise ValueError(f"invalid_step: {step_id}")
 
+        normalized_step_id = (
+            VALIDATION_INCIDENT_STEP_ID
+            if step_id in {VALIDATION_INCIDENT_STEP_ID, LEGACY_VALIDATION_INCIDENT_STEP_ID}
+            else step_id
+        )
+
         # Step-specific validation and side-effects
-        await self._process_step(step_id, data, department_id, rd, correlation_id)
+        await self._process_step(
+            normalized_step_id, data, department_id, rd, correlation_id
+        )
 
         step_status = dict(rd.get("step_status_json", {}))
-        step_status[step_id] = "complete"
+        step_status[normalized_step_id] = "complete"
+        if normalized_step_id == VALIDATION_INCIDENT_STEP_ID:
+            step_status.pop(LEGACY_VALIDATION_INCIDENT_STEP_ID, None)
         rd["step_status_json"] = step_status
 
         all_required_done = all(
@@ -286,16 +307,15 @@ class NERISOnboardingWizard:
             else:
                 raise ValueError("no_active_neris_pack")
 
-        elif step_id == "sample_incident":
-            # Verify sample incident was validated
-            incident_id = data.get("sample_incident_id")
+        elif step_id == VALIDATION_INCIDENT_STEP_ID:
+            incident_id = data.get("validation_incident_id") or data.get("sample_incident_id")
             if not incident_id:
-                raise ValueError("sample_incident_id_required")
+                raise ValueError("validation_incident_id_required")
             inc = self.svc.repo("fire_incidents").get(
                 tenant_id=self.tenant_id, record_id=uuid.UUID(incident_id)
             )
             if not inc or (inc.get("data") or {}).get("status") not in ("validated", "exported"):
-                raise ValueError("sample_incident_not_validated")
+                raise ValueError("validation_incident_not_validated")
 
         elif step_id == "golive_checklist":
             checklist = data.get("checklist", {})

@@ -79,7 +79,7 @@ export default function FounderCopilotPanel({ isOpen, onClose }: { isOpen: boole
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="fixed bottom-10 right-10 z-[100] w-[90vw] max-w-2xl h-[70vh] bg-[#0D1017] border border-blue-500/30 rounded-2xl shadow-2xl shadow-blue-900/20 flex flex-col overflow-hidden"
+          className="fixed bottom-10 right-10 z-[100] w-[90vw] max-w-2xl h-[70vh] bg-[#0D1017] border border-blue-500/30  shadow-[0_0_15px_rgba(0,0,0,0.6)] shadow-blue-900/20 flex flex-col overflow-hidden"
         >
           {/* Header */}
           <div className="bg-blue-900/20 border-b border-blue-500/30 p-4 flex justify-between items-center shrink-0">
@@ -90,7 +90,7 @@ export default function FounderCopilotPanel({ isOpen, onClose }: { isOpen: boole
                 <p className="text-blue-500/60 text-xs font-mono">Sovereign AI Command Interface</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+            <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -100,9 +100,9 @@ export default function FounderCopilotPanel({ isOpen, onClose }: { isOpen: boole
             {messages.map(msg => (
               <div key={msg.id} className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
                 {msg.sender === 'ai' && <Bot className="w-5 h-5 text-blue-500 shrink-0 mt-1" />}
-                <div className={`w-full max-w-lg p-4 rounded-xl ${msg.sender === 'user' ? 'bg-blue-900/40' : 'bg-gray-800/30'}`}>
+                <div className={`w-full max-w-lg p-4  ${msg.sender === 'user' ? 'bg-blue-900/40' : 'bg-zinc-900/30'}`}>
                   {msg.type === 'code' ? (
-                    <pre className="bg-black/50 p-3 rounded-md text-xs text-cyan-300 font-mono whitespace-pre-wrap overflow-x-auto"><code>{msg.content}</code></pre>
+                    <pre className="bg-black/50 p-3  text-xs text-cyan-300 font-mono whitespace-pre-wrap overflow-x-auto"><code>{msg.content}</code></pre>
                   ) : msg.type === 'status_update' ? (
                     <p className="text-yellow-300 text-sm">{msg.content}</p>
                   ) : (
@@ -110,14 +110,14 @@ export default function FounderCopilotPanel({ isOpen, onClose }: { isOpen: boole
                   )}
                   <p className="text-right text-xs text-gray-600 mt-2 font-mono">{new Date(msg.timestamp).toLocaleTimeString()}</p>
                 </div>
-                {msg.sender === 'user' && <User className="w-5 h-5 text-gray-500 shrink-0 mt-1" />}
+                {msg.sender === 'user' && <User className="w-5 h-5 text-zinc-500 shrink-0 mt-1" />}
               </div>
             ))}
             {isThinking && (
               <div className="flex items-start gap-3">
                 <Bot className="w-5 h-5 text-blue-500 shrink-0 mt-1 animate-pulse" />
-                <div className="w-full max-w-lg p-4 rounded-xl bg-gray-800/30">
-                  <p className="text-gray-400 text-sm italic animate-pulse">Processing command...</p>
+                <div className="w-full max-w-lg p-4  bg-zinc-900/30">
+                  <p className="text-zinc-500 text-sm italic animate-pulse">Processing command...</p>
                 </div>
               </div>
             )}
@@ -133,7 +133,7 @@ export default function FounderCopilotPanel({ isOpen, onClose }: { isOpen: boole
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask AI to build, fix, or give status..."
-                className="w-full bg-[#07090D] border border-gray-700 rounded-lg pl-4 pr-12 py-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500/50 font-mono"
+                className="w-full bg-[#07090D] border border-gray-700  pl-4 pr-12 py-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500/50 font-mono"
               />
               <button onClick={handleSend} className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 hover:text-blue-300 transition-colors">
                 <Send className="w-5 h-5" />

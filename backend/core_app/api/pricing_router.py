@@ -30,7 +30,7 @@ router = APIRouter(prefix="/api/v1", tags=["Pricing"])
 
 
 @router.post("/public/roi/calc", include_in_schema=True)
-async def roi(payload: dict[str, Any], request: Request):
+async def roi(payload: dict[str, Any], _request: Request):
     calls = float(payload.get("calls_per_month", 0))
     avg = float(payload.get("avg_reimbursement", 0))
     return {"estimated_revenue": calls * avg, "assumptions": payload}
@@ -48,7 +48,7 @@ async def signup(
     system_tenant = settings.system_tenant_id
     try:
         tenant_uuid = uuid.UUID(system_tenant) if system_tenant else uuid.uuid4()
-    except Exception:
+    except ValueError:
         tenant_uuid = uuid.uuid4()
     svc = DominationService(db, get_event_publisher())
     application = await svc.create(
@@ -94,7 +94,7 @@ async def signup(
             addon_codes=addon_codes,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     if quote.requires_quote:
         return {
@@ -155,9 +155,9 @@ async def stripe_webhook(
             sig_header=sig,
         )
     except StripeNotConfigured as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=400, detail="invalid_signature")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="invalid_signature") from exc
 
     event_id = event.get("id")
     metadata = event.get("data", {}).get("object", {}).get("metadata", {}) or {}
@@ -171,7 +171,7 @@ async def stripe_webhook(
             if settings_system_tenant
             else uuid.uuid4()
         )
-    except Exception:
+    except ValueError:
         system_uuid = uuid.uuid4()
 
     idempotency_tenant = system_uuid
@@ -207,7 +207,7 @@ async def _handle_onboarding_payment(
     db: Session,
     application_id: str,
     event: dict,
-    request: Request,
+    _request: Request,
 ) -> None:
     from core_app.services.tenant_provisioning import provision_tenant_from_application
 
@@ -249,7 +249,7 @@ async def _handle_onboarding_payment(
         result = await provision_tenant_from_application(
             db, application_id, dict(app_row), event
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.error(
             "provision_tenant_from_application failed for application %s: %s",
             application_id,
@@ -297,7 +297,7 @@ async def _handle_tenant_billing_event(
         pi_id = pi_obj.get("id")
         try:
             tenant_uuid = uuid.UUID(str(tenant_id))
-        except Exception:
+        except ValueError:
             tenant_uuid = uuid.uuid4()
         publisher = get_event_publisher()
         await emit_payment_confirmed(

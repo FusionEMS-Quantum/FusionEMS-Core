@@ -178,8 +178,8 @@ function PatientPreferencesContent() {
               ) : (
                 <div className="space-y-3">
                   {preferences.map((pref) => (
-                    <div key={pref.id} className="bg-bg-panel border border-border-subtle chamfer-8 p-4 space-y-3">
-                      <div className="text-sm font-semibold text-text-primary">Contact Channel Permissions</div>
+                    <div key={pref.id} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
+                      <div className="text-sm font-semibold text-zinc-100">Contact Channel Permissions</div>
                       <div className="flex flex-wrap gap-2">
                         {boolChip('SMS', pref.sms_allowed)}
                         {boolChip('CALL', pref.call_allowed)}
@@ -192,13 +192,13 @@ function PatientPreferencesContent() {
                       </div>
 
                       {(pref.preferred_time_start || pref.preferred_time_end) && (
-                        <div className="text-xs text-text-muted">
+                        <div className="text-xs text-zinc-500">
                           Preferred contact window: {pref.preferred_time_start || '—'} to {pref.preferred_time_end || '—'}
                         </div>
                       )}
 
                       {pref.facility_callback_preference && (
-                        <div className="text-xs text-text-muted">
+                        <div className="text-xs text-zinc-500">
                           Facility callback preference: {pref.facility_callback_preference}
                         </div>
                       )}
@@ -220,8 +220,8 @@ function PatientPreferencesContent() {
               ) : (
                 <div className="space-y-3">
                   {languagePreferences.map((lang) => (
-                    <div key={lang.id} className="bg-bg-panel border border-border-subtle chamfer-8 p-4 space-y-2">
-                      <div className="text-sm font-semibold text-text-primary">Language Configuration</div>
+                    <div key={lang.id} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-2">
+                      <div className="text-sm font-semibold text-zinc-100">Language Configuration</div>
                       <div className="flex flex-wrap gap-2">
                         <StatusChip status="info" size="sm">PRIMARY: {lang.primary_language?.toUpperCase()}</StatusChip>
                         {lang.secondary_language && (
@@ -250,12 +250,12 @@ function PatientPreferencesContent() {
                   icon="clock"
                 />
               ) : (
-                <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+                <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-border-subtle">
                         {['Action', 'Channel', 'Reason', 'Timestamp', 'Notes'].map((header) => (
-                          <th key={header} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">
+                          <th key={header} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">
                             {header}
                           </th>
                         ))}
@@ -263,18 +263,18 @@ function PatientPreferencesContent() {
                     </thead>
                     <tbody>
                       {optOutEvents.map((event) => (
-                        <tr key={event.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
+                        <tr key={event.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
                           <td className="px-4 py-3">
                             <StatusChip status={event.action === 'opt_out' ? 'critical' : 'active'} size="sm">
                               {event.action.replace(/_/g, ' ')}
                             </StatusChip>
                           </td>
-                          <td className="px-4 py-3 text-sm text-text-primary font-semibold">{event.channel.toUpperCase()}</td>
-                          <td className="px-4 py-3 text-sm text-text-secondary">{event.reason}</td>
-                          <td className="px-4 py-3 text-xs text-text-muted font-mono">
+                          <td className="px-4 py-3 text-sm text-zinc-100 font-semibold">{event.channel.toUpperCase()}</td>
+                          <td className="px-4 py-3 text-sm text-zinc-400">{event.reason}</td>
+                          <td className="px-4 py-3 text-xs text-zinc-500 font-mono">
                             {new Date(event.created_at).toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 text-sm text-text-muted">{event.notes || '—'}</td>
+                          <td className="px-4 py-3 text-sm text-zinc-500">{event.notes || '—'}</td>
                         </tr>
                       ))}
                     </tbody>

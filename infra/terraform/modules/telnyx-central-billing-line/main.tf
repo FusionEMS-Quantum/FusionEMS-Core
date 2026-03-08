@@ -11,7 +11,7 @@ data "aws_secretsmanager_secret_version" "telnyx" {
 }
 
 locals {
-  secret_json = try(jsondecode(data.aws_secretsmanager_secret_version.telnyx.secret_string), {})
+  secret_json    = try(jsondecode(data.aws_secretsmanager_secret_version.telnyx.secret_string), {})
   telnyx_api_key = try(local.secret_json.TELNYX_API_KEY, "")
 }
 

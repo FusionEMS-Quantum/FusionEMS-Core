@@ -190,7 +190,7 @@ function PatientPayPageContent() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-base)',
+        background: '#050505',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -207,7 +207,7 @@ function PatientPayPageContent() {
               fontWeight: 600,
               letterSpacing: 'var(--tracking-micro)',
               textTransform: 'uppercase',
-              color: 'var(--color-brand-orange)',
+              color: '#FF4D00',
               marginBottom: 6,
             }}
           >
@@ -234,7 +234,7 @@ function PatientPayPageContent() {
         {/* Bill Summary */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             border: '1px solid var(--color-border-default)',
             borderLeft: '3px solid var(--color-system-billing)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -338,7 +338,7 @@ function PatientPayPageContent() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: 'var(--text-h3)',
                   fontWeight: 700,
-                  color: 'var(--color-brand-orange)',
+                  color: '#FF4D00',
                 }}
               >
                 ${balanceDue.toFixed(2)}
@@ -350,7 +350,7 @@ function PatientPayPageContent() {
         {/* Payment Form */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             border: '1px solid var(--color-border-default)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
             padding: 24,
@@ -452,7 +452,7 @@ function PatientPayPageContent() {
               disabled={submitting || loadingStatement || !statement || balanceDue <= 0}
               style={{
                 marginTop: 4,
-                background: submitting ? 'var(--color-brand-orange-dim)' : 'var(--color-brand-orange)',
+                background: submitting ? 'var(--color-brand-orange-dim)' : '#FF4D00',
                 color: '#000',
                 fontFamily: 'var(--font-label)',
                 fontSize: 'var(--text-label)',

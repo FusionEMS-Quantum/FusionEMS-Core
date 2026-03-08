@@ -39,19 +39,19 @@ export function AuditEventList({
   return (
     <div
       className={cn(
-        'bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4',
+        'bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4',
         className
       )}
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-label text-label uppercase tracking-wider text-text-secondary">
+        <h3 className="font-label text-label uppercase tracking-wider text-zinc-400">
           {title}
-          <span className="text-text-muted ml-2">({events.length})</span>
+          <span className="text-zinc-500 ml-2">({events.length})</span>
         </h3>
         {(hasMore || onViewAll) && (
           <button
             onClick={onViewAll}
-            className="text-label font-label text-orange hover:text-orange-bright transition-colors duration-fast"
+            className="text-label font-label text-[#FF4D00] hover:text-[#FF4D00]-bright transition-colors duration-fast"
             type="button"
           >
             View All →
@@ -63,14 +63,14 @@ export function AuditEventList({
         <div className="space-y-2">
           {[0, 1, 2, 3].map(i => (
             <div key={i} className="animate-pulse flex items-center gap-3 py-2">
-              <div className="h-2 w-2 rounded-full bg-bg-overlay flex-shrink-0" />
-              <div className="h-3 flex-1 bg-bg-overlay rounded" />
-              <div className="h-3 w-20 bg-bg-overlay rounded" />
+              <div className="h-2 w-2  bg-bg-overlay flex-shrink-0" />
+              <div className="h-3 flex-1 bg-bg-overlay " />
+              <div className="h-3 w-20 bg-bg-overlay " />
             </div>
           ))}
         </div>
       ) : visible.length === 0 ? (
-        <p className="text-body text-text-muted text-center py-6">No audit events recorded.</p>
+        <p className="text-body text-zinc-500 text-center py-6">No audit events recorded.</p>
       ) : (
         <div className="divide-y divide-[var(--color-border-subtle)]">
           {visible.map((event) => (
@@ -79,21 +79,21 @@ export function AuditEventList({
                 <div className="flex items-start gap-2 min-w-0 flex-1">
                   {event.status && (
                     <span
-                      className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
+                      className="w-2 h-2  flex-shrink-0 mt-1.5"
                       style={{ backgroundColor: STATUS_COLOR_MAP[event.status] }}
                       title={STATUS_DISPLAY[event.status]}
                       aria-hidden
                     />
                   )}
                   <div className="min-w-0">
-                    <p className="text-body text-text-primary truncate">
+                    <p className="text-body text-zinc-100 truncate">
                       <span className="font-medium">{event.action}</span>
                       {event.domain && (
-                        <span className="text-text-muted ml-1">· {event.domain}</span>
+                        <span className="text-zinc-500 ml-1">· {event.domain}</span>
                       )}
                     </p>
                     {event.detail && (
-                      <p className="text-label text-text-muted mt-0.5 truncate">
+                      <p className="text-label text-zinc-500 mt-0.5 truncate">
                         {event.detail}
                       </p>
                     )}

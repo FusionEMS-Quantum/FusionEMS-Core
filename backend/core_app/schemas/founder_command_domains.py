@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -66,18 +67,18 @@ class ConnectorSyncJobResponse(BaseModel):
 
 class ConnectorSyncJobCreateRequest(BaseModel):
     tenant_connector_install_id: UUID
-    direction: str
-    state: str = "QUEUED"
-    records_attempted: int = 0
-    records_succeeded: int = 0
-    records_failed: int = 0
-    error_summary: dict = Field(default_factory=dict)
+    direction: Literal["INBOUND", "OUTBOUND"]
+    state: Literal["QUEUED"] = "QUEUED"
+    records_attempted: int = Field(default=0, ge=0)
+    records_succeeded: int = Field(default=0, ge=0)
+    records_failed: int = Field(default=0, ge=0)
+    error_summary: dict[str, object] = Field(default_factory=dict)
 
 
 class SyncDeadLetterCreateRequest(BaseModel):
     external_record_ref: str
     reason: str
-    payload: dict = Field(default_factory=dict)
+    payload: dict[str, object] = Field(default_factory=dict)
 
 
 class SyncDeadLetterResponse(BaseModel):

@@ -11,7 +11,7 @@ const NAV_DOMAINS = [
     id: 'executive',
     label: '1 · Executive',
     icon: '◈',
-    color: 'var(--q-orange)',
+    color: '#FF4D00',
     links: [
       { href: '/founder', label: 'Overview' },
       { href: '/founder/quantum', label: 'Quantum Taxes' },
@@ -103,6 +103,7 @@ const NAV_DOMAINS = [
     icon: '◈',
     color: 'var(--q-yellow)',
     links: [
+      { href: '/founder/roi', label: 'ROI Overview' },
       { href: '/founder/roi/analytics', label: 'ROI Analytics' },
       { href: '/founder/roi/funnel', label: 'Funnel Dashboard' },
       { href: '/founder/roi/pricing-simulator', label: 'Pricing Simulator' },
@@ -138,7 +139,7 @@ const NAV_DOMAINS = [
     id: 'founder-tools',
     label: '11 · Founder Tools',
     icon: '◈',
-    color: 'var(--q-orange)',
+    color: '#FF4D00',
     links: [
       { href: '/founder/tools/calendar', label: 'Calendar' },
       { href: '/founder/tools/documents', label: 'Documents' },
@@ -164,6 +165,8 @@ const NAV_DOMAINS = [
       { href: '/founder/ops/fleet', label: 'Fleet & Telemetry' },
       { href: '/founder/ops/staffing', label: 'Staffing Readiness' },
       { href: '/founder/ops/transportlink', label: 'TransportLink' },
+      { href: '/founder/ops/transportlink/transport-billing-payment', label: 'Transport Billing Payment' },
+      { href: '/founder/ops/transportlink/third-party-payment', label: 'Third-Party Payment' },
       { href: '/portal/cases', label: 'Cases (Cross-Portal)' },
     ],
   },
@@ -171,7 +174,7 @@ const NAV_DOMAINS = [
     id: 'pricing',
     label: '13 · Pricing',
     icon: '◈',
-    color: 'var(--q-orange)',
+    color: '#FF4D00',
     links: [
       { href: '/founder/pricing/studio', label: 'Pricing Studio' },
       { href: '/founder/revenue/stripe', label: 'Stripe Dashboard' },
@@ -211,7 +214,7 @@ function SidebarSection({
       <button
         onClick={onToggle}
         className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-widest transition-colors ${
-          hasActive ? 'text-text-primary' : 'text-[rgba(255,255,255,0.42)] hover:text-[rgba(255,255,255,0.72)]'
+          hasActive ? 'text-zinc-100' : 'text-[rgba(255,255,255,0.42)] hover:text-[rgba(255,255,255,0.72)]'
         }`}
         style={{ letterSpacing: '0.1em' }}
       >
@@ -229,10 +232,10 @@ function SidebarSection({
               <Link
                 key={link.href}
                 href={link.href}
-                className={`block px-3 py-1.5 text-xs rounded transition-colors ${
+                className={`block px-3 py-1.5 text-xs  transition-colors ${
                   active
-                    ? 'text-text-primary bg-[rgba(255,107,26,0.15)] border-l-2 border-orange-DEFAULT pl-2'
-                    : 'text-[rgba(255,255,255,0.5)] hover:text-text-primary hover:bg-[rgba(255,255,255,0.05)]'
+                    ? 'text-zinc-100 bg-[rgba(255,107,26,0.15)] border-l-2 border-orange-DEFAULT pl-2'
+                    : 'text-[rgba(255,255,255,0.5)] hover:text-zinc-100 hover:bg-[rgba(255,255,255,0.05)]'
                 }`}
                 style={active ? { borderLeftColor: domain.color } : {}}
               >
@@ -262,7 +265,7 @@ function TopBar({ sidebarOpen, setSidebarOpen, onCopilotToggle }: { sidebarOpen:
       </button>
 
       <Link href="/founder" className="flex items-center gap-2 flex-shrink-0">
-        <div className="w-7 h-7 bg-orange flex items-center justify-center text-[10px] font-black text-text-inverse" style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
+        <div className="w-7 h-7 bg-[#FF4D00] flex items-center justify-center text-[10px] font-black text-black" style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
           FQ
         </div>
         <span className="text-xs font-semibold text-[rgba(255,255,255,0.9)] hidden sm:block">FOUNDER OS</span>
@@ -273,16 +276,16 @@ function TopBar({ sidebarOpen, setSidebarOpen, onCopilotToggle }: { sidebarOpen:
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Global search — claims, tenants, exports, invoices..."
-          className="flex-1 h-7 bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 text-xs text-text-primary placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-orange rounded-sm"
+          className="flex-1 h-7 bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 text-xs text-zinc-100 placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-orange "
         />
         <input
           value={aiInput}
           onChange={(e) => setAiInput(e.target.value)}
           placeholder="Ask Quantum..."
-          className="w-48 h-7 bg-orange-ghost border border-[rgba(255,107,26,0.25)] px-3 text-xs text-text-primary placeholder-[rgba(255,107,26,0.45)] focus:outline-none focus:border-orange rounded-sm"
+          className="w-48 h-7 bg-[#FF4D00]-ghost border border-[rgba(255,107,26,0.25)] px-3 text-xs text-zinc-100 placeholder-[rgba(255,107,26,0.45)] focus:outline-none focus:border-orange "
         />
       </div>
-      <button onClick={onCopilotToggle} className="ml-4 text-blue-400 hover:text-blue-300 transition-colors p-1 rounded-full hover:bg-blue-500/10">
+      <button onClick={onCopilotToggle} className="ml-4 text-blue-400 hover:text-blue-300 transition-colors p-1  hover:bg-blue-500/10">
         <Bot className="w-5 h-5" />
       </button>
     </header>
@@ -298,18 +301,18 @@ function AIContextPanel() {
   };
   if (collapsed) {
     return (
-      <aside className="w-8 border-l border-border-subtle bg-bg-base flex flex-col items-center pt-3">
-        <button onClick={() => setCollapsed(false)} className="text-orange-dim hover:text-orange text-xs">
+      <aside className="w-8 border-l border-border-subtle bg-[#050505] flex flex-col items-center pt-3">
+        <button onClick={() => setCollapsed(false)} className="text-[#FF4D00]-dim hover:text-[#FF4D00] text-xs">
           ◁
         </button>
       </aside>
     );
   }
   return (
-    <aside className="w-64 flex-shrink-0 border-l border-border-subtle bg-bg-base flex flex-col">
+    <aside className="w-64 flex-shrink-0 border-l border-border-subtle bg-[#050505] flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-border-subtle">
         <span className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,107,26,0.8)]">Quantum AI</span>
-        <button onClick={() => setCollapsed(true)} className="text-[rgba(255,255,255,0.3)] hover:text-text-primary text-xs">▷</button>
+        <button onClick={() => setCollapsed(true)} className="text-[rgba(255,255,255,0.3)] hover:text-zinc-100 text-xs">▷</button>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         <div>
@@ -321,8 +324,8 @@ function AIContextPanel() {
             { text: '2 credential expirations in 30d', urgency: 'HIGH' as const },
           ].map((item, i) => (
             <div key={i} className={`flex items-start gap-2 py-1.5 border-b border-border-subtle last:border-0`}>
-              <span className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${urgencyDotClass[item.urgency]}`} />
-              <span className="text-xs text-text-secondary">{item.text}</span>
+              <span className={`mt-1 w-1.5 h-1.5  flex-shrink-0 ${urgencyDotClass[item.urgency]}`} />
+              <span className="text-xs text-zinc-400">{item.text}</span>
             </div>
           ))}
         </div>
@@ -334,7 +337,7 @@ function AIContextPanel() {
             { text: 'Compliance: NEMSIS v3.5 current', level: 'ok' },
           ].map((item, i) => (
             <div key={i} className="flex items-start gap-2 py-1.5 border-b border-border-subtle last:border-0">
-              <span className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.level === 'ok' ? 'bg-status-active' : 'bg-red'}`} />
+              <span className={`mt-1 w-1.5 h-1.5  flex-shrink-0 ${item.level === 'ok' ? 'bg-status-active' : 'bg-red'}`} />
               <span className="text-xs text-[rgba(255,255,255,0.55)]">{item.text}</span>
             </div>
           ))}
@@ -353,7 +356,7 @@ function AIContextPanel() {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)] mb-1.5">Quick Fix</div>
-          <button className="w-full text-left px-2 py-1.5 bg-orange-ghost border border-[rgba(255,107,26,0.2)] text-xs text-orange rounded-sm hover:bg-[rgba(255,107,26,0.14)] transition-colors">
+          <button className="w-full text-left px-2 py-1.5 bg-[#FF4D00]-ghost border border-[rgba(255,107,26,0.2)] text-xs text-[#FF4D00]  hover:bg-[rgba(255,107,26,0.14)] transition-colors">
             View top denial fix recommendations →
           </button>
         </div>
@@ -380,11 +383,11 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <div className="flex flex-col h-screen bg-bg-void text-text-primary overflow-hidden">
+    <div className="flex flex-col h-screen bg-black text-zinc-100 overflow-hidden">
       <TopBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onCopilotToggle={() => setCopilotOpen(v => !v)} />
       <div className="flex flex-1 overflow-hidden">
         {sidebarOpen && (
-          <aside className="w-52 flex-shrink-0 border-r border-border-subtle bg-bg-void overflow-y-auto">
+          <aside className="w-52 flex-shrink-0 border-r border-border-subtle bg-black overflow-y-auto">
             <div className="px-2 py-3">
               {NAV_DOMAINS.map((domain) => (
                 <SidebarSection
@@ -398,7 +401,7 @@ export default function FounderLayout({ children }: { children: React.ReactNode 
             </div>
           </aside>
         )}
-        <main className="flex-1 overflow-y-auto bg-bg-base">
+        <main className="flex-1 overflow-y-auto bg-[#050505]">
           {children}
         </main>
         <FounderCopilotPanel isOpen={copilotOpen} onClose={() => setCopilotOpen(false)} />

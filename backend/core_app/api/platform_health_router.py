@@ -5,6 +5,7 @@ No hardcoded values. All probe results are measured at request time.
 """
 from __future__ import annotations
 
+# pylint: disable=broad-exception-caught,unused-argument
 import logging
 import time
 from datetime import UTC, datetime
@@ -13,6 +14,8 @@ from typing import Any
 import redis.asyncio as aioredis
 import sqlalchemy
 from fastapi import APIRouter, Depends
+from redis.exceptions import RedisError
+from sqlalchemy.exc import SQLAlchemyError
 
 from core_app.api.dependencies import get_current_user
 from core_app.core.config import get_settings
@@ -32,7 +35,7 @@ async def _probe_db() -> dict[str, Any]:
             await conn.execute(sqlalchemy.text("SELECT 1"))
         latency = int((time.monotonic() - start) * 1000)
         return {"name": "PostgreSQL", "status": "GREEN", "latency_ms": latency, "uptime": "live"}
-    except Exception as exc:
+    except (SQLAlchemyError, OSError, TimeoutError) as exc:
         logger.warning("DB probe failed: %s", exc)
         latency = int((time.monotonic() - start) * 1000)
         return {
@@ -52,7 +55,7 @@ async def _probe_redis() -> dict[str, Any]:
             await r.ping()
         latency = int((time.monotonic() - start) * 1000)
         return {"name": "Redis", "status": "GREEN", "latency_ms": latency, "uptime": "live"}
-    except Exception as exc:
+    except (RedisError, OSError, TimeoutError) as exc:
         logger.warning("Redis probe failed: %s", exc)
         latency = int((time.monotonic() - start) * 1000)
         return {"name": "Redis", "status": "RED", "latency_ms": latency, "uptime": "unreachable"}
@@ -82,7 +85,7 @@ def _overall_status(score: int) -> str:
 
 @router.get("/health")
 async def get_platform_health(
-    current: CurrentUser = Depends(get_current_user),
+    _current: CurrentUser = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Live platform health — all values measured at request time."""
     services = [

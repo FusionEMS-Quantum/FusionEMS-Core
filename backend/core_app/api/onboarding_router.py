@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+# ruff: noqa: I001
+
+# pylint: disable=raise-missing-from,broad-exception-caught
+
 import json
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
@@ -67,9 +72,9 @@ async def nppes_lookup(npi_number: str):
     try:
         with urlopen(url, timeout=8) as resp:  # nosec B310
             payload = json.loads(resp.read().decode("utf-8"))
-    except Exception as exc:
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
         logger.warning("NPPES lookup failed for NPI %s: %s", npi, exc)
-        raise HTTPException(status_code=502, detail="nppes_lookup_failed")
+        raise HTTPException(status_code=502, detail="nppes_lookup_failed") from exc
 
     results = payload.get("results") or []
     if not results:
@@ -105,7 +110,12 @@ def _get_stripe_price_ids(
 ) -> dict[str, str]:
     try:
         import boto3
+        from botocore.exceptions import BotoCoreError, ClientError
+    except ImportError as exc:
+        logger.warning("SSM price ID lookup unavailable: %s", exc)
+        return {}
 
+    try:
         ssm = boto3.client("ssm", region_name=aws_region or "us-east-1")
         prefix = f"/fusionems/{stage}/stripe/prices"
         names = [f"{prefix}/{lk}" for lk in lookup_keys]
@@ -113,7 +123,7 @@ def _get_stripe_price_ids(
         return {
             p["Name"].split("/")[-1]: p["Value"] for p in resp.get("Parameters", [])
         }
-    except Exception as exc:
+    except (BotoCoreError, ClientError, KeyError, TypeError, ValueError) as exc:
         logger.warning(
             "SSM price ID lookup failed: %s — will use price_data fallback", exc
         )
@@ -298,7 +308,7 @@ async def onboarding_apply(
             addon_codes=addon_codes,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     row = (
         db.execute(
@@ -488,7 +498,7 @@ async def legal_packet_sign(
     try:
         updated = svc.sign_packet(packet_id, signing_data)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     db.execute(
         text(
@@ -575,7 +585,7 @@ async def checkout_start(
                 addon_codes=addon_codes,
             )
         except ValueError as exc:
-            raise HTTPException(status_code=422, detail=str(exc))
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
 
         if quote.requires_quote:
             raise HTTPException(
@@ -610,7 +620,7 @@ async def checkout_start(
                 )
 
                 unit_amount = _lookup_key_to_cents(
-                    lk, SCHEDULING_TIERS, BILLING_TIERS, ADDONS, quote
+                    lk, SCHEDULING_TIERS, BILLING_TIERS, ADDONS
                 )
                 entry = {
                     "price_data": {
@@ -662,7 +672,7 @@ async def checkout_start(
             application_id,
             exc,
         )
-        raise HTTPException(status_code=500, detail=f"Stripe error: {str(exc)}")
+        raise HTTPException(status_code=500, detail=f"Stripe error: {str(exc)}") from exc
 
 
 def _lookup_key_to_cents(
@@ -670,7 +680,6 @@ def _lookup_key_to_cents(
     scheduling_tiers: Any,
     billing_tiers: Any,
     addons: Any,
-    quote: Any,
 ) -> int:
     for t in scheduling_tiers.values():
         if t.lookup_key == lookup_key:

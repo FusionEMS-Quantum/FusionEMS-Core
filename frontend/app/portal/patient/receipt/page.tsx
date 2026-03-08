@@ -94,7 +94,7 @@ function PatientReceiptPageContent() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-base)',
+        background: '#050505',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -157,7 +157,7 @@ function PatientReceiptPageContent() {
         {/* Receipt card */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             border: '1px solid var(--color-border-default)',
             borderLeft: '3px solid var(--color-status-active)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -285,7 +285,7 @@ function PatientReceiptPageContent() {
           <button
             onClick={() => window.print()}
             style={{
-              background: 'var(--color-bg-panel)',
+              background: '#0A0A0B',
               border: '1px solid var(--color-border-strong)',
               color: 'var(--color-text-primary)',
               fontFamily: 'var(--font-label)',
@@ -306,7 +306,7 @@ function PatientReceiptPageContent() {
             href="/portal/patient/statements"
             style={{
               display: 'block',
-              background: 'var(--color-brand-orange)',
+              background: '#FF4D00',
               color: '#000',
               fontFamily: 'var(--font-label)',
               fontSize: 'var(--text-label)',
@@ -339,7 +339,7 @@ function PatientReceiptPageContent() {
               textDecorationColor: 'rgba(255,255,255,0.15)',
             }}
             onClick={() => {
-              // NOTE: no fake success alerts; this action is intentionally informational-only until
+              // NOTE: no optimistic success alerts; this action is intentionally informational-only until
               // verified email delivery status is available from backend events.
             }}
           >

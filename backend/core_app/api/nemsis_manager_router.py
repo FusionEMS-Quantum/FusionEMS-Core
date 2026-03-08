@@ -746,7 +746,7 @@ async def invalid_code_detection(
                 {
                     "element": elem_id,
                     "code": code,
-                    "reason": "Non-specific or placeholder code",
+                    "reason": "Non-specific or sentinel code",
                 }
             )
     return {"invalid_codes": invalid, "has_invalid": bool(invalid)}

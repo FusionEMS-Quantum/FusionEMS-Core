@@ -99,8 +99,8 @@ function WizardPageInner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-base flex items-center justify-center">
-        <p className="text-text-muted text-sm">Loading wizard state…</p>
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <p className="text-zinc-500 text-sm">Loading wizard state…</p>
       </div>
     );
   }
@@ -108,20 +108,20 @@ function WizardPageInner() {
   const goLiveComplete = completedSteps.length === STEPS.length;
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary">
+    <div className="min-h-screen bg-[#050505] text-zinc-100">
       <div className="border-b border-border-subtle px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-text-muted hover:text-text-primary text-sm">← Back</button>
+        <button onClick={() => router.back()} className="text-zinc-500 hover:text-zinc-100 text-sm">← Back</button>
         <div className="flex-1">
-          <h1 className="text-lg font-bold text-text-primary">1-Day Go-Live Wizard</h1>
-          <p className="text-xs text-text-muted">KitLink AR · Trans 309 · Wisconsin</p>
+          <h1 className="text-lg font-bold text-zinc-100">1-Day Go-Live Wizard</h1>
+          <p className="text-xs text-zinc-500">KitLink AR · Trans 309 · Wisconsin</p>
         </div>
-        <div className="text-sm text-text-muted">
+        <div className="text-sm text-zinc-500">
           {completedSteps.length}/{STEPS.length} steps
         </div>
       </div>
 
       {goLiveComplete && (
-        <div className="mx-6 mt-4 p-4 rounded-lg border border-emerald-700 bg-emerald-900/20 flex items-center gap-3">
+        <div className="mx-6 mt-4 p-4  border border-emerald-700 bg-emerald-900/20 flex items-center gap-3">
           <span className="text-emerald-400 text-xl">✓</span>
           <div>
             <p className="text-sm font-semibold text-emerald-300">Setup Complete — You&apos;re Live!</p>
@@ -129,7 +129,7 @@ function WizardPageInner() {
           </div>
           <a
             href={`/portal/kitlink?tenant_id=${tenantId}`}
-            className="ml-auto px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 rounded text-xs font-medium transition-colors"
+            className="ml-auto px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600  text-xs font-medium transition-colors"
           >
             Open KitLink
           </a>
@@ -137,7 +137,7 @@ function WizardPageInner() {
       )}
 
       {wizardError && (
-        <div className="mx-6 mt-4 p-3 rounded-lg border border-red-700/50 bg-red-900/20 text-xs text-red-300">
+        <div className="mx-6 mt-4 p-3  border border-red-700/50 bg-red-900/20 text-xs text-red-300">
           {wizardError}
         </div>
       )}
@@ -152,11 +152,11 @@ function WizardPageInner() {
                 <button
                   key={step.id}
                   onClick={() => setCurrentStep(idx)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors text-sm ${
-                    active ? "bg-blue-900/40 text-blue-300" : done ? "text-emerald-400 hover:bg-bg-raised" : "text-text-muted hover:bg-bg-raised"
+                  className={`w-full flex items-center gap-3 px-3 py-2  text-left transition-colors text-sm ${
+                    active ? "bg-blue-900/40 text-blue-300" : done ? "text-emerald-400 hover:bg-bg-raised" : "text-zinc-500 hover:bg-bg-raised"
                   }`}
                 >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${done ? "bg-emerald-700 text-text-primary" : active ? "bg-blue-700 text-text-primary" : "bg-bg-overlay text-text-muted"}`}>
+                  <span className={`w-5 h-5  flex items-center justify-center text-xs flex-shrink-0 ${done ? "bg-emerald-700 text-zinc-100" : active ? "bg-blue-700 text-zinc-100" : "bg-bg-overlay text-zinc-500"}`}>
                     {done ? "✓" : idx + 1}
                   </span>
                   <span className="truncate">{step.title}</span>
@@ -196,12 +196,12 @@ function StepPanel({
   return (
     <div className="max-w-xl">
       <div className="flex items-start gap-3 mb-5">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${completed ? "bg-emerald-700" : "bg-blue-700"}`}>
+        <div className={`w-8 h-8  flex items-center justify-center text-sm font-bold ${completed ? "bg-emerald-700" : "bg-blue-700"}`}>
           {completed ? "✓" : "→"}
         </div>
         <div>
-          <h2 className="text-lg font-bold text-text-primary">{step.title}</h2>
-          <p className="text-sm text-text-muted mt-0.5">{step.description}</p>
+          <h2 className="text-lg font-bold text-zinc-100">{step.title}</h2>
+          <p className="text-sm text-zinc-500 mt-0.5">{step.description}</p>
         </div>
       </div>
 
@@ -224,10 +224,10 @@ function StepPanel({
       <button
         onClick={() => onComplete(stepData)}
         disabled={submitting}
-        className={`mt-5 px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+        className={`mt-5 px-6 py-2.5  text-sm font-semibold transition-colors ${
           completed
             ? "bg-emerald-700/40 text-emerald-400 border border-emerald-700"
-            : "bg-blue-600 hover:bg-blue-500 text-text-primary"
+            : "bg-blue-600 hover:bg-blue-500 text-zinc-100"
         } disabled:opacity-50`}
       >
         {submitting ? "Saving…" : completed ? "Step Completed — Continue" : "Mark Complete & Continue"}
@@ -266,20 +266,20 @@ function PackStep({ tenantId, stepData, setStepData }: { tenantId: string; stepD
   return (
     <div className="space-y-3">
       {packs.map((pack) => (
-        <div key={pack.pack_key} className={`rounded-lg border p-4 ${pack.active ? "border-emerald-700 bg-emerald-900/20" : "border-border-subtle bg-bg-panel"}`}>
+        <div key={pack.pack_key} className={` border p-4 ${pack.active ? "border-emerald-700 bg-emerald-900/20" : "border-border-subtle bg-[#0A0A0B]"}`}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-text-primary">{pack.title}</p>
-              <p className="text-xs text-text-muted mt-0.5">{pack.state} · v{pack.version} · {pack.unit_profiles?.join(", ")}</p>
-              <p className="text-xs text-text-muted mt-1">{pack.rules?.length ?? 0} rules</p>
+              <p className="text-sm font-medium text-zinc-100">{pack.title}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{pack.state} · v{pack.version} · {pack.unit_profiles?.join(", ")}</p>
+              <p className="text-xs text-zinc-500 mt-1">{pack.rules?.length ?? 0} rules</p>
             </div>
             {pack.active ? (
-              <span className="px-2 py-1 bg-emerald-800/50 text-emerald-400 text-xs rounded">Active</span>
+              <span className="px-2 py-1 bg-emerald-800/50 text-emerald-400 text-xs ">Active</span>
             ) : (
               <button
                 onClick={() => activate(pack.pack_key)}
                 disabled={activating === pack.pack_key}
-                className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 rounded text-xs font-medium transition-colors"
+                className="px-3 py-1.5 bg-blue-700 hover:bg-blue-600  text-xs font-medium transition-colors"
               >
                 {activating === pack.pack_key ? "Activating…" : "Activate"}
               </button>
@@ -295,18 +295,18 @@ function UnitSetupStep({ stepData, setStepData }: { stepData: any; setStepData: 
   return (
     <div className="space-y-3">
       <div>
-        <label className="text-xs text-text-muted block mb-1">Unit ID</label>
+        <label className="text-xs text-zinc-500 block mb-1">Unit ID</label>
         <input
-          className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+          className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100 placeholder-gray-500"
           placeholder="e.g. M12"
           value={stepData?.unit_id ?? ""}
           onChange={(e) => setStepData({ ...stepData, unit_id: e.target.value })}
         />
       </div>
       <div>
-        <label className="text-xs text-text-muted block mb-1">Unit Profile</label>
+        <label className="text-xs text-zinc-500 block mb-1">Unit Profile</label>
         <select
-          className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary"
+          className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100"
           value={stepData?.unit_profile ?? "PARAMEDIC"}
           onChange={(e) => setStepData({ ...stepData, unit_profile: e.target.value })}
         >
@@ -341,37 +341,37 @@ function FormularyStep({ tenantId, stepData: _stepData, setStepData: _setStepDat
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
         <input
-          className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+          className="px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100 placeholder-gray-500"
           placeholder="Drug/fluid name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <input
-          className="px-3 py-2 bg-bg-raised border border-border-DEFAULT rounded text-sm text-text-primary placeholder-gray-500"
+          className="px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100 placeholder-gray-500"
           placeholder="Schedule (II, III, IV, V)"
           value={form.controlled_schedule}
           onChange={(e) => setForm({ ...form, controlled_schedule: e.target.value })}
         />
       </div>
       <div className="flex items-center gap-3">
-        <label className="flex items-center gap-2 text-sm text-text-secondary">
-          <input type="checkbox" checked={form.is_fluid} onChange={(e) => setForm({ ...form, is_fluid: e.target.checked })} className="rounded" />
+        <label className="flex items-center gap-2 text-sm text-zinc-400">
+          <input type="checkbox" checked={form.is_fluid} onChange={(e) => setForm({ ...form, is_fluid: e.target.checked })} className="" />
           IV Fluid
         </label>
         <button
           onClick={addItem}
           disabled={!form.name}
-          className="px-4 py-1.5 bg-blue-700 hover:bg-blue-600 disabled:opacity-50 rounded text-xs font-medium transition-colors"
+          className="px-4 py-1.5 bg-blue-700 hover:bg-blue-600 disabled:opacity-50  text-xs font-medium transition-colors"
         >
           Add to Formulary
         </button>
       </div>
       {added.length > 0 && (
-        <div className="p-3 bg-bg-panel rounded border border-border-subtle">
-          <p className="text-xs text-text-muted mb-1">Added:</p>
+        <div className="p-3 bg-[#0A0A0B]  border border-border-subtle">
+          <p className="text-xs text-zinc-500 mb-1">Added:</p>
           <div className="flex flex-wrap gap-2">
             {added.map((n) => (
-              <span key={n} className="px-2 py-0.5 bg-bg-overlay text-text-secondary rounded text-xs">{n}</span>
+              <span key={n} className="px-2 py-0.5 bg-bg-overlay text-zinc-400  text-xs">{n}</span>
             ))}
           </div>
         </div>
@@ -404,10 +404,10 @@ function StarterTemplatesStep({ tenantId, stepData: _stepData, setStepData: _set
   return (
     <div className="space-y-3">
       {starters.map((s) => (
-        <div key={s.key} className={`rounded-lg border p-3 flex items-center justify-between gap-3 ${cloned.includes(s.key) ? "border-emerald-800 bg-emerald-900/10" : "border-border-subtle bg-bg-panel"}`}>
+        <div key={s.key} className={` border p-3 flex items-center justify-between gap-3 ${cloned.includes(s.key) ? "border-emerald-800 bg-emerald-900/10" : "border-border-subtle bg-[#0A0A0B]"}`}>
           <div>
-            <p className="text-sm font-medium text-text-primary">{s.label}</p>
-            <p className="text-xs text-text-muted">{s.desc}</p>
+            <p className="text-sm font-medium text-zinc-100">{s.label}</p>
+            <p className="text-xs text-zinc-500">{s.desc}</p>
           </div>
           {cloned.includes(s.key) ? (
             <span className="text-xs text-emerald-400">Loaded</span>
@@ -415,7 +415,7 @@ function StarterTemplatesStep({ tenantId, stepData: _stepData, setStepData: _set
             <button
               onClick={() => clone(s.key)}
               disabled={loading === s.key}
-              className="px-3 py-1.5 bg-bg-overlay hover:bg-bg-overlay rounded text-xs font-medium transition-colors"
+              className="px-3 py-1.5 bg-bg-overlay hover:bg-bg-overlay  text-xs font-medium transition-colors"
             >
               {loading === s.key ? "Loading…" : "Load"}
             </button>
@@ -435,7 +435,7 @@ function GenericStep({ step }: { step: typeof STEPS[number] }) {
     go_live: "All steps complete! Your KitLink setup is verified. Crew can now start scanning.",
   };
   return (
-    <div className="p-4 rounded-lg border border-border-subtle bg-bg-panel/50 text-sm text-text-secondary">
+    <div className="p-4  border border-border-subtle bg-[#0A0A0B]/50 text-sm text-zinc-400">
       {hints[step.id] ?? "Complete this step in the KitLink dashboard."}
     </div>
   );
@@ -443,7 +443,7 @@ function GenericStep({ step }: { step: typeof STEPS[number] }) {
 
 export default function WizardPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-bg-base flex items-center justify-center text-text-muted">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#050505] flex items-center justify-center text-zinc-500">Loading...</div>}>
       <WizardPageInner />
     </Suspense>
   );

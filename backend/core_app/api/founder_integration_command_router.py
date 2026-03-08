@@ -25,17 +25,17 @@ router = APIRouter(
 
 @router.get("/summary", response_model=IntegrationCommandSummary)
 def get_integration_command_summary(
-    current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = Depends(require_role("founder")),
     db: Session = Depends(db_session_dependency),
 ) -> IntegrationCommandSummary:
     svc = FounderCommandDomainService(db)
-    return IntegrationCommandSummary(**svc.get_integration_command_summary())
+    return svc.get_integration_command_summary()
 
 
 @router.get("/failed-sync-jobs", response_model=list[ConnectorSyncJobResponse])
 def list_failed_sync_jobs(
     limit: int = Query(default=50, ge=1, le=250),
-    current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = Depends(require_role("founder")),
     db: Session = Depends(db_session_dependency),
 ) -> list[ConnectorSyncJobResponse]:
     svc = FounderCommandDomainService(db)

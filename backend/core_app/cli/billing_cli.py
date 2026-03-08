@@ -12,25 +12,20 @@ app = typer.Typer(help="FusionEMS Billing CLI")
 
 
 def get_sync_db():
-    # Placeholder for getting a synchronous DB session
-    # In a real CLI, we'd initialise the engine and sessionmaker
-    pass
+    raise RuntimeError("Sync DB session wiring is required before using billing CLI commands.")
 
 @app.command()
 def audit_claims(tenant_id: str):
     """
     Run AI Audit on all DRAFT claims for a tenant.
     """
-    # db = next(get_sync_db())
-    AIAssistantService()
-
-    # Placeholder logic since we don't have a sync DB session readily available
-    # in this context without more setup.
-    print(f"Auditing claims for {tenant_id}...")
-
-    # claims = db.query(Claim).filter(...)
-    # for claim in claims:
-    #     ai.audit_claim(claim)
+    _ = AIAssistantService()
+    typer.echo(
+        f"audit_claims is disabled until sync DB wiring is configured (tenant_id={tenant_id})."
+    )
+    raise typer.Exit(
+        code=2,
+    )
 
 
 
@@ -39,7 +34,12 @@ def generate_narratives(tenant_id: str):
     """
     Generate AI Narratives for claims missing them.
     """
-    print("Generating narratives (Placeholder implementation)...")
+    typer.echo(
+        f"generate_narratives is disabled until sync DB wiring is configured (tenant_id={tenant_id})."
+    )
+    raise typer.Exit(
+        code=2,
+    )
 
 
 if __name__ == "__main__":

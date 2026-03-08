@@ -7,10 +7,10 @@ export default function StripePage() {
     <div className="p-5 min-h-screen">
       <div className="hud-rail pb-3 mb-6">
         <div className="micro-caps mb-1">Revenue</div>
-        <h1 className="text-h2 font-bold text-text-primary">Stripe Integration</h1>
-        <p className="text-body text-text-muted mt-1">Manage payment processing, subscriptions, and Stripe webhook events.</p>
+        <h1 className="text-h2 font-bold text-zinc-100">Stripe Integration</h1>
+        <p className="text-body text-zinc-500 mt-1">Manage payment processing, subscriptions, and Stripe webhook events.</p>
       </div>
-      <div className="bg-bg-panel border border-border-DEFAULT chamfer-8 shadow-elevation-1">
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 shadow-elevation-1">
         <QuantumEmptyState
           title="Not Yet Configured"
           description="This module is scheduled for an upcoming release. Contact your account manager for early access."
@@ -24,7 +24,7 @@ export default function StripePage() {
           action={
             <Link
               href="/founder"
-              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-orange hover:text-orange-bright transition-colors duration-fast"
+              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-[#FF4D00] hover:text-[#FF4D00]-bright transition-colors duration-fast"
             >
               &larr; Back to Command Center
             </Link>

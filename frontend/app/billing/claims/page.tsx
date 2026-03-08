@@ -66,7 +66,7 @@ export default function ClaimsPage() {
 
   const filterBtnStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 14px',
-    background: active ? 'var(--color-brand-orange)' : 'var(--color-bg-panel-raised)',
+    background: active ? '#FF4D00' : 'var(--color-bg-panel-raised)',
     clipPath: 'var(--chamfer-4)',
     border: active ? 'none' : '1px solid var(--color-border-default)',
     color: active ? 'rgba(0,0,0,0.92)' : 'var(--color-text-secondary)',
@@ -114,7 +114,7 @@ export default function ClaimsPage() {
               <div
                 key={s.label}
                 style={{
-                  background: 'var(--color-bg-panel)',
+                  background: '#0A0A0B',
                   clipPath: 'var(--chamfer-8)',
                   padding: '16px 20px',
                   boxShadow: 'var(--elevation-1)',
@@ -147,7 +147,7 @@ export default function ClaimsPage() {
         {/* Filter Bar */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             clipPath: 'var(--chamfer-8)',
             padding: '16px 20px',
             marginBottom: '16px',
@@ -213,7 +213,7 @@ export default function ClaimsPage() {
         {/* Claims Table */}
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             clipPath: 'var(--chamfer-8)',
             overflow: 'hidden',
             boxShadow: 'var(--elevation-1)',

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# pylint: disable=broad-exception-caught
 import json
 from typing import Any
 
@@ -52,7 +53,7 @@ Explain each issue in plain English for an EMS clinical administrator and provid
             if not isinstance(result, dict):
                 raise ValueError("not a dict")
             return result
-        except Exception as exc:
+        except (json.JSONDecodeError, TypeError, ValueError, RuntimeError) as exc:
             return {
                 "summary": f"Unable to generate AI explanation: {exc}. Please review the issues list manually.",
                 "actions": [

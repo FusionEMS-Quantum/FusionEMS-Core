@@ -7,9 +7,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
-        {sub && <span className="text-xs text-text-muted">{sub}</span>}
+        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
+        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
     </div>
   );
@@ -22,7 +22,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
       className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
       style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
     >
-      <span className="w-1 h-1 rounded-full" style={{ background: c[status] }} />
+      <span className="w-1 h-1 " style={{ background: c[status] }} />
       {label}
     </span>
   );
@@ -31,7 +31,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -42,12 +42,12 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div
-      className="bg-bg-panel border border-border-DEFAULT p-4"
+      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -55,9 +55,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+    <div className="h-1.5 bg-zinc-950/[0.06]  overflow-hidden">
       <motion.div
-        className="h-full rounded-full"
+        className="h-full "
         style={{ background: color }}
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
@@ -99,7 +99,7 @@ export default function ProposalTrackerPage() {
   const [newVolume, setNewVolume] = useState('');
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-6">
+    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
@@ -108,9 +108,9 @@ export default function ProposalTrackerPage() {
               MODULE 8 · ROI &amp; SALES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>Proposal Tracker</h1>
-            <p className="text-xs text-text-muted mt-1">Track sent proposals · follow up · conversion analytics</p>
+            <p className="text-xs text-zinc-500 mt-1">Track sent proposals · follow up · conversion analytics</p>
           </div>
-          <Link href="/founder" className="text-body text-text-muted hover:text-status-warning transition-colors font-mono">
+          <Link href="/founder" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
             ← Back to Founder OS
           </Link>
         </div>
@@ -148,7 +148,7 @@ export default function ProposalTrackerPage() {
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Agency', 'Sent Date', 'Value/yr', 'Status', 'Days Open', 'Action'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-text-muted font-semibold uppercase tracking-wider text-micro">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -161,12 +161,12 @@ export default function ProposalTrackerPage() {
                   filter === 'Declined' ? p.statusKey === 'error' : true
                 )
                 .map((p, i) => (
-                  <tr key={i} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                    <td className="py-2 pr-4 font-semibold text-text-primary">{p.agency}</td>
-                    <td className="py-2 pr-4 text-text-secondary">{p.sent}</td>
+                  <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                    <td className="py-2 pr-4 font-semibold text-zinc-100">{p.agency}</td>
+                    <td className="py-2 pr-4 text-zinc-400">{p.sent}</td>
                     <td className="py-2 pr-4 font-mono text-status-warning">{p.value}</td>
                     <td className="py-2 pr-4"><Badge label={p.statusLabel} status={p.statusKey} /></td>
-                    <td className="py-2 pr-4 text-text-secondary">{p.days} days</td>
+                    <td className="py-2 pr-4 text-zinc-400">{p.days} days</td>
                     <td className="py-2 pr-4">
                       <button
                         className="text-micro font-semibold px-2 py-0.5 chamfer-4"
@@ -194,16 +194,16 @@ export default function ProposalTrackerPage() {
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Agency', 'Date', 'Value/yr', 'Closed', 'MRR'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-text-muted font-semibold uppercase tracking-wider text-micro">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {ACCEPTED_PROPOSALS.map((p, i) => (
-                <tr key={i} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                  <td className="py-2 pr-4 font-semibold text-text-primary">{p.agency}</td>
-                  <td className="py-2 pr-4 text-text-secondary">{p.date}</td>
-                  <td className="py-2 pr-4 font-mono text-text-secondary">{p.value}</td>
+                <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                  <td className="py-2 pr-4 font-semibold text-zinc-100">{p.agency}</td>
+                  <td className="py-2 pr-4 text-zinc-400">{p.date}</td>
+                  <td className="py-2 pr-4 font-mono text-zinc-400">{p.value}</td>
                   <td className="py-2 pr-4"><Badge label={p.closed} status="ok" /></td>
                   <td className="py-2 pr-4 font-mono font-bold text-status-active">{p.mrr}/mo</td>
                 </tr>
@@ -225,14 +225,14 @@ export default function ProposalTrackerPage() {
         <div className="mt-4 space-y-3">
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-body text-text-secondary">Accept Rate</span>
+              <span className="text-body text-zinc-400">Accept Rate</span>
               <span className="text-body font-bold text-status-active">66.7%</span>
             </div>
             <ProgressBar value={66.7} max={100} color="var(--color-status-active)" />
           </div>
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-body text-text-secondary">Pipeline Coverage (ARR target)</span>
+              <span className="text-body text-zinc-400">Pipeline Coverage (ARR target)</span>
               <span className="text-body font-bold text-status-warning">43%</span>
             </div>
             <ProgressBar value={43} max={100} color="var(--color-status-warning)" />
@@ -248,13 +248,13 @@ export default function ProposalTrackerPage() {
             <div key={i} className="flex items-center justify-between p-3 bg-bg-input border border-amber-500/[0.1] chamfer-4">
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[12px] font-semibold text-text-primary">{f.agency}</span>
+                  <span className="text-[12px] font-semibold text-zinc-100">{f.agency}</span>
                   <Badge label={f.status} status="warn" />
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-micro text-text-muted">Sent {f.sent}</span>
-                  <span className="text-micro text-text-muted">·</span>
-                  <span className="text-micro text-text-muted">Last contact: {f.lastContact}</span>
+                  <span className="text-micro text-zinc-500">Sent {f.sent}</span>
+                  <span className="text-micro text-zinc-500">·</span>
+                  <span className="text-micro text-zinc-500">Last contact: {f.lastContact}</span>
                   <span className="text-micro font-mono text-status-warning">{f.value}/yr</span>
                 </div>
               </div>
@@ -274,32 +274,32 @@ export default function ProposalTrackerPage() {
         <SectionHeader number="6" title="Create Proposal" sub="Quick ROI proposal generator" />
         <div className="grid grid-cols-3 gap-3 mb-3">
           <div>
-            <label className="text-micro text-text-muted block mb-1">Agency Name</label>
+            <label className="text-micro text-zinc-500 block mb-1">Agency Name</label>
             <input
               value={newAgency}
               onChange={(e) => setNewAgency(e.target.value)}
               placeholder="Agency H"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <div>
-            <label className="text-micro text-text-muted block mb-1">Contact Email</label>
+            <label className="text-micro text-zinc-500 block mb-1">Contact Email</label>
             <input
               type="email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="contact@agencyh.com"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <div>
-            <label className="text-micro text-text-muted block mb-1">Monthly Call Volume</label>
+            <label className="text-micro text-zinc-500 block mb-1">Monthly Call Volume</label>
             <input
               type="number"
               value={newVolume}
               onChange={(e) => setNewVolume(e.target.value)}
               placeholder="200"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-text-primary px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
         </div>

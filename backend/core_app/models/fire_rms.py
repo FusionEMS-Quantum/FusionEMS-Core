@@ -5,6 +5,8 @@ for the inspection workflow.
 NOTE: Core NERIS incident, preplan, hydrant, and inspection models live in fire.py.
       This module adds the InspectionViolation detail table only.
 """
+# pylint: disable=not-callable,unsubscriptable-object
+
 import uuid
 from datetime import datetime
 

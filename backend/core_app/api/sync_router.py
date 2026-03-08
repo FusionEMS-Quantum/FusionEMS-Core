@@ -58,8 +58,11 @@ async def sync_push(
                 version=1
             )
             db.add(new_incident)
-            # Trigger Real-time Event (AppSync Stub)
-            # event_publisher.publish("incident.created", new_incident)
+            logger.info(
+                "sync_incident_created tenant_id=%s incident_id=%s",
+                current.tenant_id,
+                new_incident.id,
+            )
 
         except Exception as e:
             logger.error(f"Failed to sync incident {trip_data.get('id')}: {e}")

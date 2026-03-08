@@ -44,9 +44,13 @@ data "aws_caller_identity" "current" {}
 
 locals {
   common_tags = {
-    Project     = var.project
-    Environment = var.environment
-    ManagedBy   = "terraform"
+    Application        = var.application
+    Environment        = var.environment
+    Owner              = var.owner
+    ManagedBy          = "Terraform"
+    CostCenter         = var.cost_center
+    DataClassification = var.data_classification
+    Project            = var.project
   }
 
   alb_arn_suffix        = replace(module.ecs_cluster.alb_arn, "/^.*:loadbalancer\\//", "")
@@ -58,15 +62,21 @@ locals {
 module "networking" {
   source = "../../modules/networking"
 
-  environment          = var.environment
-  project              = var.project
-  region               = var.aws_region
-  vpc_cidr             = var.vpc_cidr
-  availability_zones   = var.availability_zones
-  public_subnet_cidrs  = var.public_subnet_cidrs
-  private_subnet_cidrs = var.private_subnet_cidrs
-  acm_certificate_arn  = module.acm.certificate_arn
-  tags                 = local.common_tags
+  environment               = var.environment
+  project                   = var.project
+  application               = var.application
+  owner                     = var.owner
+  cost_center               = var.cost_center
+  data_classification       = var.data_classification
+  region                    = var.aws_region
+  vpc_cidr                  = var.vpc_cidr
+  availability_zones        = var.availability_zones
+  public_subnet_cidrs       = var.public_subnet_cidrs
+  private_app_subnet_cidrs  = var.private_app_subnet_cidrs
+  private_data_subnet_cidrs = var.private_data_subnet_cidrs
+  nat_gateway_mode          = var.nat_gateway_mode
+  acm_certificate_arn       = module.acm.certificate_arn
+  tags                      = local.common_tags
 }
 
 # ─── 2. IAM ──────────────────────────────────────────────────────────────────
@@ -167,7 +177,7 @@ module "rds" {
   environment           = var.environment
   project               = var.project
   vpc_id                = module.networking.vpc_id
-  private_subnet_ids    = module.networking.private_subnet_ids
+  private_subnet_ids    = module.networking.data_subnet_ids
   ecs_security_group_id = module.networking.ecs_security_group_id
   rds_security_group_id = module.networking.rds_security_group_id
   instance_class        = var.db_instance_class
@@ -182,7 +192,7 @@ module "redis" {
   environment             = var.environment
   project                 = var.project
   vpc_id                  = module.networking.vpc_id
-  private_subnet_ids      = module.networking.private_subnet_ids
+  private_subnet_ids      = module.networking.data_subnet_ids
   redis_security_group_id = module.networking.redis_security_group_id
   node_type               = var.redis_node_type
   tags                    = local.common_tags

@@ -10,7 +10,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
       <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
         {number} · {title}
       </div>
-      {sub && <p className="text-body text-text-muted">{sub}</p>}
+      {sub && <p className="text-body text-zinc-500">{sub}</p>}
     </div>
   );
 }
@@ -18,7 +18,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className}`}
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
       {children}
@@ -48,9 +48,9 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <Panel>
-      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
       <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-text-muted mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
     </Panel>
   );
 }
@@ -58,9 +58,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
 function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="h-2 rounded-full bg-white/[0.07] overflow-hidden w-full">
+    <div className="h-2  bg-zinc-950/[0.07] overflow-hidden w-full">
       <div
-        className="h-full rounded-full transition-all duration-700"
+        className="h-full  transition-all duration-700"
         style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
       />
     </div>
@@ -127,17 +127,17 @@ const batteryColor = (b: number) => b > 50 ? 'var(--color-status-active)' : b > 
 
 export default function CrewLinkPage() {
   return (
-    <div className="p-5 min-h-screen bg-bg-void">
+    <div className="p-5 min-h-screen bg-black">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
         <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
           9 · PWA &amp; MOBILE
         </div>
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">CrewLink · Mobile Field App</h1>
+          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">CrewLink · Mobile Field App</h1>
           <Badge label="LIVE" status="ok" />
         </div>
-        <p className="text-xs text-text-muted mt-1">Field crew mobile platform · Device management · Real-time sync</p>
+        <p className="text-xs text-zinc-500 mt-1">Field crew mobile platform · Device management · Real-time sync</p>
       </motion.div>
 
       {/* MODULE 1 — Mobile Deployment Status */}
@@ -159,7 +159,7 @@ export default function CrewLinkPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-text-muted border-b border-border-subtle">
+                <tr className="text-zinc-500 border-b border-border-subtle">
                   {['Crew Member', 'Unit', 'Last Activity', 'Status', 'Device'].map(h => (
                     <th key={h} className="text-left pb-2 pr-4 font-bold uppercase tracking-widest text-micro">{h}</th>
                   ))}
@@ -168,11 +168,11 @@ export default function CrewLinkPage() {
               <tbody>
                 {crewActivity.map((row, i) => (
                   <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-2.5 pr-4 text-text-primary font-medium">{row.name}</td>
-                    <td className="py-2.5 pr-4 text-text-secondary">{row.unit}</td>
-                    <td className="py-2.5 pr-4 text-text-secondary">{row.activity}</td>
+                    <td className="py-2.5 pr-4 text-zinc-100 font-medium">{row.name}</td>
+                    <td className="py-2.5 pr-4 text-zinc-400">{row.unit}</td>
+                    <td className="py-2.5 pr-4 text-zinc-400">{row.activity}</td>
                     <td className="py-2.5 pr-4"><Badge label={row.status} status={statusMap[row.status]} /></td>
-                    <td className="py-2.5 text-text-secondary">{row.device}</td>
+                    <td className="py-2.5 text-zinc-400">{row.device}</td>
                   </tr>
                 ))}
               </tbody>
@@ -188,11 +188,11 @@ export default function CrewLinkPage() {
           {syncCategories.map((cat, i) => (
             <Panel key={i}>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-body font-bold text-text-primary uppercase tracking-widest">{cat.label}</span>
-                <span className="text-body text-text-secondary">{cat.synced.toLocaleString()} {cat.unit}</span>
+                <span className="text-body font-bold text-zinc-100 uppercase tracking-widest">{cat.label}</span>
+                <span className="text-body text-zinc-400">{cat.synced.toLocaleString()} {cat.unit}</span>
               </div>
               <ProgressBar value={cat.synced} max={cat.max} color={cat.color} />
-              <div className="text-micro text-text-muted mt-1.5">{Math.round((cat.synced / cat.max) * 100)}% synced</div>
+              <div className="text-micro text-zinc-500 mt-1.5">{Math.round((cat.synced / cat.max) * 100)}% synced</div>
             </Panel>
           ))}
         </div>
@@ -205,9 +205,9 @@ export default function CrewLinkPage() {
           <div className="space-y-3 mb-4">
             {notifications.map((n) => (
               <div key={n.id} className="flex items-start gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
-                <span className="text-micro text-text-muted mt-0.5 w-10 shrink-0">{n.time}</span>
+                <span className="text-micro text-zinc-500 mt-0.5 w-10 shrink-0">{n.time}</span>
                 <Badge label={n.type} status={notifTypeMap[n.type]} />
-                <span className="text-xs text-text-primary">{n.text}</span>
+                <span className="text-xs text-zinc-100">{n.text}</span>
               </div>
             ))}
           </div>
@@ -227,7 +227,7 @@ export default function CrewLinkPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {offlineTypes.map((type, i) => (
             <Panel key={i} className="flex flex-col gap-2">
-              <div className="text-xs font-bold text-text-primary">{type}</div>
+              <div className="text-xs font-bold text-zinc-100">{type}</div>
               <Badge label="Available Offline" status="ok" />
             </Panel>
           ))}
@@ -240,23 +240,23 @@ export default function CrewLinkPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {devices.map((d, i) => (
             <Panel key={i}>
-              <div className="text-xs font-bold text-text-primary mb-2">{d.name}</div>
+              <div className="text-xs font-bold text-zinc-100 mb-2">{d.name}</div>
               <div className="space-y-1.5 text-body">
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Battery</span>
+                  <span className="text-zinc-500">Battery</span>
                   <span style={{ color: batteryColor(d.battery) }} className="font-bold">{d.battery}%</span>
                 </div>
                 <ProgressBar value={d.battery} max={100} color={batteryColor(d.battery)} />
                 <div className="flex justify-between">
-                  <span className="text-text-muted">OS</span>
-                  <span className="text-text-primary">{d.os}</span>
+                  <span className="text-zinc-500">OS</span>
+                  <span className="text-zinc-100">{d.os}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-muted">App</span>
-                  <span className="text-text-primary">{d.app}</span>
+                  <span className="text-zinc-500">App</span>
+                  <span className="text-zinc-100">{d.app}</span>
                 </div>
                 <div className="flex justify-between items-center mt-1">
-                  <span className="text-text-muted">Status</span>
+                  <span className="text-zinc-500">Status</span>
                   <Badge label={d.status === 'ok' ? 'Healthy' : d.status === 'warn' ? 'Degraded' : 'Critical'} status={d.status} />
                 </div>
               </div>
@@ -276,7 +276,7 @@ export default function CrewLinkPage() {
         </div>
       </motion.div>
 
-      <Link href="/founder" className="text-xs text-orange-dim hover:text-orange transition-colors">
+      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00] transition-colors">
         &larr; Back to Founder Command OS
       </Link>
     </div>

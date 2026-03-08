@@ -89,7 +89,13 @@ async def per_tenant_export_status(
     db: Session = Depends(db_session_dependency),
 ):
     svc = _svc(db)
-    jobs = svc.repo("export_jobs").list(tenant_id=tenant_id, limit=10000)
+    try:
+        tenant_uuid = uuid.UUID(tenant_id)
+    except ValueError as exc:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=422, detail="invalid_tenant_id") from exc
+    jobs = svc.repo("export_jobs").list(tenant_id=tenant_uuid, limit=10000)
     total = len(jobs)
     successful = sum(1 for j in jobs if _data(j).get("status") == "completed")
     failed = sum(1 for j in jobs if _data(j).get("status") == "failed")
@@ -128,7 +134,12 @@ async def batch_export_scheduler(
         }
         for s in schedules
     ]
-    run_times = [_data(s).get("run_at") for s in schedules if _data(s).get("run_at")]
+    run_times = [
+        run_at
+        for s in schedules
+        for run_at in [_data(s).get("run_at")]
+        if isinstance(run_at, str) and run_at
+    ]
     next_window = min(run_times) if run_times else None
     return {"scheduled_batches": batches, "next_window": next_window}
 
@@ -180,11 +191,12 @@ async def export_retry_engine(
         patch={"status": "retry_queued", "attempt": attempt, "next_retry_at": _now()},
         correlation_id=getattr(request.state, "correlation_id", None),
     )
+    updated_data = _data(updated) if isinstance(updated, dict) else {}
     return {
         "job_id": str(job_id),
         "status": "retry_queued",
         "attempt": attempt,
-        "next_retry_at": _data(updated).get("next_retry_at", _now()),
+        "next_retry_at": updated_data.get("next_retry_at", _now()),
     }
 
 
@@ -798,10 +810,12 @@ async def export_sla_monitor(
     total = len(jobs) or 1
     breach_rate = round(breached / total * 100, 2)
     deadlines = [
-        _data(j).get("sla_deadline")
+        sla_deadline
         for j in jobs
+        for sla_deadline in [_data(j).get("sla_deadline")]
         if _data(j).get("sla_deadline")
         and _data(j).get("status") in ("queued", "processing")
+        and isinstance(sla_deadline, str)
     ]
     next_deadline = min(deadlines) if deadlines else None
     return {
@@ -1531,7 +1545,7 @@ async def export_throughput_monitor(
             hour = ts[11:13]
             hours_by_count[hour] = hours_by_count.get(hour, 0) + 1
     peak_hour = (
-        max(hours_by_count, key=hours_by_count.get, default="00")
+        max(hours_by_count, key=lambda hour: hours_by_count[hour], default="00")
         if hours_by_count
         else "00"
     )
@@ -1799,7 +1813,7 @@ async def export_preview_viewer(
             "schema": d.get("schema_version", "NEMSIS-3.5.0"),
             "incident_count": d.get("incident_count", 1),
             "fields": list(d.keys()),
-            "sample": d,
+            "record": d,
         },
     }
 

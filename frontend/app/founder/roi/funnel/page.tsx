@@ -9,9 +9,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text-primary">{title}</h2>
-        {sub && <span className="text-xs text-text-muted">{sub}</span>}
+        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
+        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
     </div>
   );
@@ -20,7 +20,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-bg-panel border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -46,20 +46,20 @@ export default function FunnelPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg-void text-text-primary p-6 space-y-6">
+    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-orange-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[#FF4D00]-dim font-mono tracking-widest uppercase">
             MODULE 09 · ROI & GROWTH
           </span>
-          <Link href="/founder/roi" className="text-body text-text-muted hover:text-orange transition-colors">
+          <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
             ← Back to ROI
           </Link>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-100" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
           Funnel Intelligence
         </h1>
-        <p className="text-xs text-text-muted mt-1">Lead tracking · conversion velocity · pipeline stages</p>
+        <p className="text-xs text-zinc-500 mt-1">Lead tracking · conversion velocity · pipeline stages</p>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
@@ -71,7 +71,7 @@ export default function FunnelPage() {
             { label: 'Conversion Rate', value: `${kpis?.proposal_to_paid_conversion_pct ?? '-'}%` },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-micro text-text-muted uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-zinc-500 uppercase tracking-wider">{s.label}</span>
               <span className="text-xl font-bold" style={{ color: 'var(--color-status-info)' }}>{s.value}</span>
             </Panel>
           ))}
@@ -82,14 +82,14 @@ export default function FunnelPage() {
         <Panel>
           <SectionHeader number="2" title="Funnel Stages" />
           <div className="space-y-4">
-            {funnelData.length === 0 ? <p className="text-xs text-text-muted">No events logged yet.</p> : null}
+            {funnelData.length === 0 ? <p className="text-xs text-zinc-500">No events logged yet.</p> : null}
             {funnelData.map((s, i) => {
               const maxCount = Math.max(...funnelData.map(d => d.count), 1);
               const width = Math.max((s.count / maxCount) * 100, 5);
               return (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="w-32 text-xs text-text-primary uppercase tracking-wider">{s.stage}</div>
-                  <div className="flex-1 h-3 bg-white/5 chamfer-4 overflow-hidden relative">
+                  <div className="w-32 text-xs text-zinc-100 uppercase tracking-wider">{s.stage}</div>
+                  <div className="flex-1 h-3 bg-zinc-950/5 chamfer-4 overflow-hidden relative">
                     <div 
                       className="absolute top-0 left-0 h-full transition-all duration-1000"
                       style={{ width: `${width}%`, background: 'var(--color-brand-cyan)' }}
@@ -104,7 +104,7 @@ export default function FunnelPage() {
       </motion.div>
 
       <div className="pt-2">
-        <Link href="/founder/roi" className="text-body text-text-muted hover:text-orange transition-colors">
+        <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
           ← Back to ROI Overview
         </Link>
       </div>

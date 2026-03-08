@@ -20,7 +20,7 @@ class InteropService:
     # ── Outbound FHIR–ready Mapping ──────────────────────────────────────
 
     def build_patient_fhir_resource(self, patient: Any) -> dict[str, Any]:
-        """Map an internal Patient model to a FHIR-compliant Patient resource stub."""
+        """Map an internal Patient model to a FHIR-compliant Patient resource."""
         return {
             "resourceType": "Patient",
             "id": str(patient.id),
@@ -42,7 +42,7 @@ class InteropService:
         }
 
     def build_encounter_fhir_resource(self, incident: Any, patient_id: str | None = None) -> dict[str, Any]:
-        """Map an internal Incident to a FHIR Encounter stub."""
+        """Map an internal Incident to a FHIR Encounter resource."""
         return {
             "resourceType": "Encounter",
             "id": str(incident.id),

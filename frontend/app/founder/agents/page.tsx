@@ -203,7 +203,7 @@ export default function AgentsIntelligenceMatrix() {
                       </div>
 
                       <div className="flex-1 px-4 flex items-center space-x-3">
-                         <div className={`w-3 h-3 rounded-full flex-shrink-0 ${sub.status === 'idle' ? 'bg-[#00ffcc]/20' : 'bg-[#00ffcc] animate-pulse shadow-[0_0_10px_#00ffcc]'}`} />
+                         <div className={`w-3 h-3  flex-shrink-0 ${sub.status === 'idle' ? 'bg-[#00ffcc]/20' : 'bg-[#00ffcc] animate-pulse shadow-[0_0_10px_#00ffcc]'}`} />
                          <div className="flex flex-col">
                            <span className="text-micro uppercase font-bold text-[#00ffcc]/80 tracking-widest">{sub.status}</span>
                            <span className="text-xs opacity-70 truncate max-w-[200px] text-white/80">{sub.last_action}</span>
@@ -262,7 +262,7 @@ export default function AgentsIntelligenceMatrix() {
             }}>
                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ffcc]"></div>
                <div className="text-micro text-[#00ffcc]/60 uppercase tracking-[0.2em] mb-2 flex items-center space-x-2">
-                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_red]"></div>
+                 <div className="w-2 h-2 bg-red-500  animate-pulse shadow-[0_0_8px_red]"></div>
                  <span>Direct Override Command</span>
                </div>
                

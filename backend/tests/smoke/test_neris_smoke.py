@@ -295,7 +295,7 @@ class TestNERISSmoke:
         step_ids = [s["id"] for s in ONBOARDING_STEPS]
         assert "department_identity" in step_ids
         assert "reporting_mode" in step_ids
-        assert "sample_incident" in step_ids
+        assert "validation_incident" in step_ids
         assert "golive_checklist" in step_ids
         assert len(WI_DSPS_GOLIVE_CHECKLIST) >= 5
 

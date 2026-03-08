@@ -117,6 +117,86 @@ export interface PortalMessageApi {
   created_at: string;
 }
 
+export interface TransportLinkRequestSummaryApi {
+  id: string;
+  data: {
+    status:
+      | 'draft'
+      | 'submitted'
+      | 'awaiting_signatures'
+      | 'missing_documentation'
+      | 'sent_to_cad'
+      | 'scheduled'
+      | 'accepted'
+      | 'rejected'
+      | 'cancelled';
+    priority?: string;
+    patient_name?: string;
+    patient_first?: string;
+    patient_last?: string;
+    mrn?: string;
+    csn?: string;
+    origin_facility?: string;
+    destination_facility?: string;
+    service_level?: string;
+    requested_service_level?: string;
+    payer?: string;
+    medical_necessity_status?: string;
+    requested_pickup_time?: string;
+    created_at?: string;
+    submitted_at?: string;
+  };
+}
+
+export interface TransportLinkDocumentFieldApi {
+  key: string;
+  label: string;
+  raw_value: string;
+  confidence: number;
+  suggestion: string;
+  confirmed: boolean;
+  rejected: boolean;
+  confirmed_value: string;
+}
+
+export interface TransportLinkDocumentAuditApi {
+  ts: string;
+  actor: string;
+  action: string;
+  detail?: string;
+}
+
+export interface TransportLinkDocumentApi {
+  id: string;
+  request_id: string | null;
+  filename: string;
+  doc_type: 'facesheet' | 'pcs' | 'aob' | 'abn' | 'other';
+  ocr_status: string;
+  s3_key: string;
+  uploaded_at: string;
+  fields: TransportLinkDocumentFieldApi[];
+  audit: TransportLinkDocumentAuditApi[];
+}
+
+export interface TransportLinkUploadUrlApi {
+  request_id: string;
+  upload: {
+    method: string;
+    url: string;
+    key?: string;
+    expires_in?: number;
+  };
+  document_id: string;
+}
+
+export interface TransportLinkRecordApi {
+  id: string;
+  data: JsonObject;
+  version?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -152,6 +232,135 @@ function asIsoDateString(value: unknown): string {
   if (typeof value === 'string' && value.trim().length > 0) return value;
   if (value instanceof Date) return value.toISOString();
   return new Date().toISOString();
+}
+
+function asErrorMessage(value: unknown, fallback: string): string {
+  if (!axios.isAxiosError(value)) {
+    return fallback;
+  }
+  const payload = asJsonObject(value.response?.data);
+  const detail = asString(payload.detail || payload.error || payload.message, '');
+  return detail || fallback;
+}
+
+const TRANSPORTLINK_ALLOWED_STATUSES: ReadonlySet<string> = new Set([
+  'draft',
+  'submitted',
+  'awaiting_signatures',
+  'missing_documentation',
+  'sent_to_cad',
+  'scheduled',
+  'accepted',
+  'rejected',
+  'cancelled',
+]);
+
+function normalizeTransportLinkStatus(value: unknown): TransportLinkRequestSummaryApi['data']['status'] {
+  const status = asString(value, 'draft').toLowerCase();
+  if (TRANSPORTLINK_ALLOWED_STATUSES.has(status)) {
+    return status as TransportLinkRequestSummaryApi['data']['status'];
+  }
+  return 'draft';
+}
+
+function normalizeTransportLinkSummary(value: unknown): TransportLinkRequestSummaryApi {
+  const row = asJsonObject(value);
+  const data = asJsonObject(row.data);
+  const serviceLevel = asString(
+    data.requested_service_level || data.service_level || row.requested_service_level || row.service_level,
+    ''
+  );
+  return {
+    id: asString(row.id || data.id),
+    data: {
+      status: normalizeTransportLinkStatus(data.status || row.status),
+      priority: asString(data.priority || row.priority) || undefined,
+      patient_name: asString(data.patient_name || row.patient_name) || undefined,
+      patient_first: asString(data.patient_first || row.patient_first) || undefined,
+      patient_last: asString(data.patient_last || row.patient_last) || undefined,
+      mrn: asString(data.mrn || row.mrn) || undefined,
+      csn: asString(data.csn || row.csn) || undefined,
+      origin_facility: asString(data.origin_facility || row.origin_facility) || undefined,
+      destination_facility: asString(data.destination_facility || row.destination_facility) || undefined,
+      service_level: serviceLevel || undefined,
+      requested_service_level: serviceLevel || undefined,
+      payer: asString(data.payer || row.payer) || undefined,
+      medical_necessity_status: asString(data.medical_necessity_status || row.medical_necessity_status) || undefined,
+      requested_pickup_time: asString(data.requested_pickup_time || row.requested_pickup_time) || undefined,
+      created_at: asString(data.created_at || row.created_at) || undefined,
+      submitted_at: asString(data.submitted_at || row.submitted_at) || undefined,
+    },
+  };
+}
+
+function normalizeTransportLinkRecord(value: unknown): TransportLinkRecordApi {
+  const row = asJsonObject(value);
+  const data = asJsonObject(row.data);
+  const version = asNumber(row.version);
+  return {
+    id: asString(row.id || data.id),
+    data,
+    version: version == null ? undefined : version,
+    created_at: asString(row.created_at) || undefined,
+    updated_at: asString(row.updated_at) || undefined,
+  };
+}
+
+function normalizeTransportLinkField(value: unknown): TransportLinkDocumentFieldApi {
+  const field = asJsonObject(value);
+  return {
+    key: asString(field.key),
+    label: asString(field.label || field.key),
+    raw_value: asString(field.raw_value),
+    confidence: asNumber(field.confidence) ?? 0,
+    suggestion: asString(field.suggestion || field.raw_value),
+    confirmed: asBoolean(field.confirmed),
+    rejected: asBoolean(field.rejected),
+    confirmed_value: asString(field.confirmed_value),
+  };
+}
+
+function normalizeTransportLinkAudit(value: unknown): TransportLinkDocumentAuditApi {
+  const audit = asJsonObject(value);
+  return {
+    ts: asString(audit.ts || audit.created_at, new Date().toISOString()),
+    actor: asString(audit.actor, 'System'),
+    action: asString(audit.action, 'updated'),
+    detail: asString(audit.detail) || undefined,
+  };
+}
+
+function normalizeTransportLinkDocument(value: unknown): TransportLinkDocumentApi {
+  const row = asJsonObject(value);
+  const data = asJsonObject(row.data);
+  const docTypeRaw = asString(data.doc_type || row.doc_type, 'other');
+  const docType = ['facesheet', 'pcs', 'aob', 'abn', 'other'].includes(docTypeRaw)
+    ? (docTypeRaw as TransportLinkDocumentApi['doc_type'])
+    : 'other';
+
+  const fieldsSource = Array.isArray(data.fields)
+    ? data.fields
+    : Array.isArray(row.fields)
+      ? row.fields
+      : [];
+
+  const auditSource = Array.isArray(data.audit)
+    ? data.audit
+    : Array.isArray(row.audit)
+      ? row.audit
+      : [];
+
+  return {
+    id: asString(row.id || data.id),
+    request_id: asString(data.request_id || row.request_id) || null,
+    filename: asString(data.filename || row.filename),
+    doc_type: docType,
+    ocr_status: asString(data.ocr_status || row.ocr_status, 'idle'),
+    s3_key: asString(data.s3_key || row.s3_key),
+    uploaded_at: asString(data.uploaded_at || row.uploaded_at, new Date().toISOString()),
+    fields: fieldsSource.map((field) => normalizeTransportLinkField(field)),
+    audit: auditSource.map((entry) => normalizeTransportLinkAudit(entry)),
+  };
 }
 
 function normalizeDominationRecord(value: unknown): JsonObject {
@@ -258,6 +467,17 @@ function aiHeaders() {
   return {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
   };
+}
+
+function transportLinkHeaders(): Record<string, string> {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+  const qsToken = localStorage.getItem('qs_token') || '';
+  if (!qsToken) {
+    return {};
+  }
+  return { Authorization: `Bearer ${qsToken}` };
 }
 
 export async function getAICommandMetrics() {
@@ -475,8 +695,8 @@ export async function getFounderFailedSyncJobs(limit = 50) {
 
 export async function createFounderSyncJob(payload: {
   tenant_connector_install_id: string;
-  direction: string;
-  state?: string;
+  direction: 'INBOUND' | 'OUTBOUND';
+  state?: 'QUEUED';
   records_attempted?: number;
   records_succeeded?: number;
   records_failed?: number;
@@ -1306,6 +1526,179 @@ export async function assessFatigue(payload: { user_id: string; hours_on_duty: n
 }
 
 // ── Patient Portal ──────────────────────────────────────────────────────────
+
+export async function loginTransportLink(payload: { email: string; password: string }): Promise<string> {
+  try {
+    const res = await API.post('/api/v1/auth/login', payload, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const response = asJsonObject(res.data);
+    const nested = asJsonObject(response.data);
+    const token = asString(response.access_token || response.token || nested.access_token, '');
+    if (!token) {
+      throw new Error('Login succeeded but no token was returned. Contact support.');
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qs_token', token);
+    }
+    return token;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('no token was returned')) {
+      throw error;
+    }
+    throw new Error(asErrorMessage(error, 'Authentication failed. Verify your credentials.'));
+  }
+}
+
+export async function submitTransportLinkAccessRequest(payload: {
+  facility_name: string;
+  department?: string;
+  requestor_name: string;
+  title?: string;
+  work_email: string;
+  callback_number?: string;
+  facility_address?: string;
+  ehr_platform?: string;
+  expected_volume?: string;
+  use_case?: string;
+  notes?: string;
+}) {
+  const res = await API.post('/api/v1/transportlink/access-requests', payload, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return res.data;
+}
+
+export async function createTransportLinkRequest(payload: Record<string, unknown>): Promise<TransportLinkRecordApi> {
+  const res = await API.post('/api/v1/transportlink/requests', payload, {
+    headers: {
+      ...transportLinkHeaders(),
+      'Content-Type': 'application/json',
+    },
+  });
+  return normalizeTransportLinkRecord(res.data);
+}
+
+export async function submitTransportLinkToCad(requestId: string, expectedVersion = 1): Promise<TransportLinkRecordApi> {
+  const res = await API.post(
+    `/api/v1/transportlink/requests/${requestId}/submit-to-cad`,
+    { expected_version: expectedVersion },
+    {
+      headers: {
+        ...transportLinkHeaders(),
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  const payload = asJsonObject(res.data);
+  const error = asString(payload.error, '');
+  if (error) {
+    throw new Error(`CAD submission failed (${error}).`);
+  }
+  return normalizeTransportLinkRecord(payload);
+}
+
+export async function requestTransportLinkUploadUrl(
+  requestId: string,
+  payload: { filename: string; content_type: string; doc_type: 'facesheet' | 'pcs' | 'aob' | 'abn' | 'other' }
+): Promise<TransportLinkUploadUrlApi> {
+  const res = await API.post(`/api/v1/transportlink/requests/${requestId}/upload-url`, payload, {
+    headers: {
+      ...transportLinkHeaders(),
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = asJsonObject(res.data);
+  const upload = asJsonObject(data.upload);
+  return {
+    request_id: asString(data.request_id),
+    document_id: asString(data.document_id),
+    upload: {
+      method: asString(upload.method, 'PUT'),
+      url: asString(upload.url),
+      key: asString(upload.key) || undefined,
+      expires_in: asNumber(upload.expires_in) ?? undefined,
+    },
+  };
+}
+
+export async function uploadTransportLinkDocumentToPresignedUrl(uploadUrl: string, file: File): Promise<void> {
+  await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  });
+}
+
+export async function triggerTransportLinkDocumentOcr(documentId: string): Promise<{ queued: boolean; document_id: string }> {
+  const res = await API.post(`/api/v1/transportlink/documents/${documentId}/process-ocr`, {}, {
+    headers: transportLinkHeaders(),
+  });
+  const data = asJsonObject(res.data);
+  return {
+    queued: asBoolean(data.queued, true),
+    document_id: asString(data.document_id || documentId),
+  };
+}
+
+export async function listTransportLinkDocuments(requestId?: string): Promise<TransportLinkDocumentApi[]> {
+  const res = await API.get('/api/v1/transportlink/documents', {
+    headers: transportLinkHeaders(),
+    params: requestId ? { request_id: requestId } : undefined,
+  });
+  const payload = res.data;
+  const items = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : [];
+  return items.map((item: unknown) => normalizeTransportLinkDocument(item));
+}
+
+export async function applyTransportLinkOcrToRequest(
+  documentId: string,
+  payload: { request_id: string | null; confirmed_fields: Record<string, string> }
+): Promise<{ applied: number; skipped: number }> {
+  const res = await API.post(`/api/v1/transportlink/documents/${documentId}/apply-ocr`, payload, {
+    headers: {
+      ...transportLinkHeaders(),
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = asJsonObject(res.data);
+  return {
+    applied: asNumber(data.applied) ?? 0,
+    skipped: asNumber(data.skipped) ?? 0,
+  };
+}
+
+export async function deleteTransportLinkDocument(documentId: string): Promise<boolean> {
+  const res = await API.delete(`/api/v1/transportlink/documents/${documentId}`, {
+    headers: transportLinkHeaders(),
+  });
+  const data = asJsonObject(res.data);
+  return asBoolean(data.deleted, true);
+}
+
+export async function listTransportLinkRequests(limit = 30): Promise<TransportLinkRequestSummaryApi[]> {
+  const res = await API.get('/api/v1/transportlink/requests', {
+    headers: transportLinkHeaders(),
+    params: { limit },
+  });
+  const payload = res.data;
+  if (Array.isArray(payload)) {
+    return payload.map((item) => normalizeTransportLinkSummary(item));
+  }
+  if (Array.isArray(payload?.items)) {
+    return payload.items.map((item: unknown) => normalizeTransportLinkSummary(item));
+  }
+  if (Array.isArray(payload?.data)) {
+    return payload.data.map((item: unknown) => normalizeTransportLinkSummary(item));
+  }
+  return [];
+}
 
 export async function getPortalStatements() {
   const res = await API.get('/api/v1/portal/statements', { headers: aiHeaders() });

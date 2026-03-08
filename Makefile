@@ -147,7 +147,7 @@ coverage: ## Run tests with coverage report
 .PHONY: lint
 lint: ## Lint backend (ruff) + frontend (eslint)
 	$(VENV)/ruff check $(BACKEND)/ --fix
-	cd $(FRONTEND) && npx next lint
+	cd $(FRONTEND) && npm run lint
 
 .PHONY: format
 format: ## Format backend code (ruff)
@@ -155,7 +155,7 @@ format: ## Format backend code (ruff)
 
 .PHONY: typecheck
 typecheck: ## Run frontend TypeScript type check
-	cd $(FRONTEND) && npx tsc --noEmit
+	cd $(FRONTEND) && ./node_modules/.bin/tsc --noEmit
 
 .PHONY: precommit
 precommit: ## Run all pre-commit hooks

@@ -68,7 +68,7 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
           <div key={step.key} className="flex items-center gap-3">
             {/* Icon */}
             <div
-              className="flex-shrink-0 w-7 h-7 chamfer-4 flex items-center justify-center"
+              className="flex-shrink-0 w-7 h-7  flex items-center justify-center"
               style={{
                 backgroundColor: isDone
                   ? 'rgba(76,175,80,0.15)'
@@ -88,12 +88,12 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
                 </svg>
               ) : isActive ? (
                 <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="var(--color-brand-orange)" strokeWidth="4" />
-                  <path className="opacity-75" fill="var(--color-brand-orange)" d="M4 12a8 8 0 018-8v8z" />
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="4" />
+                  <path className="opacity-75" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
               ) : (
                 <div
-                  className="w-2 h-2 rounded-full"
+                  className="w-2 h-2 "
                   style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
                 />
               )}
@@ -106,7 +106,7 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
                 color: isDone
                   ? 'var(--color-status-active)'
                   : isActive
-                  ? 'var(--color-brand-orange)'
+                  ? '#FF4D00'
                   : isPending
                   ? 'rgba(255,255,255,0.25)'
                   : 'rgba(255,255,255,0.65)',
@@ -118,11 +118,11 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
 
             {isActive && (
               <span
-                className="ml-1 text-xs px-1.5 py-0.5 chamfer-4"
+                className="ml-1 text-xs px-1.5 py-0.5 "
                 style={{
                   backgroundColor: 'rgba(255,107,26,0.12)',
                   border: '1px solid rgba(255,107,26,0.25)',
-                  color: 'var(--q-orange)',
+                  color: '#FF4D00',
                 }}
               >
                 In progress
@@ -198,19 +198,19 @@ export default function SuccessPage() {
 
   return (
     <div
-      className="chamfer-4 border p-6 md:p-8"
+      className=" bg-zinc-950 border border-zinc-800 p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Top success banner */}
       <div
-        className="chamfer-4 border px-5 py-4 mb-6 flex items-start gap-4"
+        className=" border px-5 py-4 mb-6 flex items-start gap-4"
         style={{
           backgroundColor: isComplete ? 'rgba(76,175,80,0.08)' : 'rgba(255,107,26,0.06)',
           borderColor:     isComplete ? 'rgba(76,175,80,0.3)'  : 'rgba(255,107,26,0.2)',
         }}
       >
         <div
-          className="flex-shrink-0 w-10 h-10 chamfer-4 flex items-center justify-center mt-0.5"
+          className="flex-shrink-0 w-10 h-10  flex items-center justify-center mt-0.5"
           style={{
             backgroundColor: isComplete ? 'rgba(76,175,80,0.15)' : 'rgba(255,107,26,0.15)',
             border: isComplete ? '1px solid rgba(76,175,80,0.4)' : '1px solid rgba(255,107,26,0.4)',
@@ -222,14 +222,14 @@ export default function SuccessPage() {
             </svg>
           ) : (
             <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="var(--color-brand-orange)" strokeWidth="4" />
-              <path className="opacity-75" fill="var(--color-brand-orange)" d="M4 12a8 8 0 018-8v8z" />
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="4" />
+              <path className="opacity-75" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
             </svg>
           )}
         </div>
         <div>
           <h1
-            className="text-base font-bold text-text-primary uppercase tracking-wider"
+            className="text-base font-bold text-zinc-100 uppercase tracking-wider"
             style={{ fontFamily: "'Barlow Condensed', 'Barlow', sans-serif" }}
           >
             {isComplete ? 'Agency Provisioned!' : 'Your Agency is Being Provisioned'}
@@ -246,7 +246,7 @@ export default function SuccessPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
         {/* Left: Provisioning steps */}
         <div
-          className="chamfer-4 border p-5"
+          className=" border p-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.08)' }}
         >
           <div
@@ -268,14 +268,14 @@ export default function SuccessPage() {
                 <span>{progress}%</span>
               </div>
               <div
-                className="w-full rounded-full overflow-hidden"
+                className="w-full  overflow-hidden"
                 style={{ height: '4px', backgroundColor: 'rgba(255,255,255,0.06)' }}
               >
                 <div
-                  className="h-full rounded-full transition-all duration-700"
+                  className="h-full  transition-all duration-700"
                   style={{
                     width: `${progress}%`,
-                    backgroundColor: isComplete ? 'var(--color-status-active)' : 'var(--color-brand-orange)',
+                    backgroundColor: isComplete ? 'var(--color-status-active)' : '#FF4D00',
                   }}
                 />
               </div>
@@ -285,7 +285,7 @@ export default function SuccessPage() {
           {/* Current step detail */}
           {statusData?.current_step && (
             <div
-              className="mt-3 text-xs px-2.5 py-1.5 chamfer-4"
+              className="mt-3 text-xs px-2.5 py-1.5 "
               style={{
                 backgroundColor: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.06)',
@@ -299,7 +299,7 @@ export default function SuccessPage() {
           {/* Poll error */}
           {pollError && (
             <div
-              className="mt-3 text-xs px-2.5 py-1.5 chamfer-4"
+              className="mt-3 text-xs px-2.5 py-1.5 "
               style={{
                 backgroundColor: 'rgba(255,59,59,0.06)',
                 border: '1px solid rgba(255,59,59,0.2)',
@@ -314,7 +314,7 @@ export default function SuccessPage() {
           {!isComplete && !pollError && (
             <div className="mt-4 flex items-center gap-2">
               <div
-                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                className="w-1.5 h-1.5  animate-pulse"
                 style={{ backgroundColor: 'var(--color-status-info)' }}
               />
               <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -326,7 +326,7 @@ export default function SuccessPage() {
 
         {/* Right: Info panel */}
         <div
-          className="chamfer-4 border p-5"
+          className=" border p-5"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.08)' }}
         >
           <div
@@ -348,7 +348,7 @@ export default function SuccessPage() {
               {
                 icon: (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="var(--color-brand-orange)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#FF4D00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ),
                 text: 'Your HIPAA-compliant tenant is being isolated and configured.',
@@ -372,7 +372,7 @@ export default function SuccessPage() {
             ].map((item, idx) => (
               <div key={idx} className="flex items-start gap-3">
                 <div
-                  className="flex-shrink-0 w-6 h-6 chamfer-4 flex items-center justify-center mt-0.5"
+                  className="flex-shrink-0 w-6 h-6  flex items-center justify-center mt-0.5"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.08)',
@@ -396,7 +396,7 @@ export default function SuccessPage() {
               <div className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 Agency
               </div>
-              <div className="text-sm font-semibold text-text-primary mt-0.5">{agencyName}</div>
+              <div className="text-sm font-semibold text-zinc-100 mt-0.5">{agencyName}</div>
             </div>
           )}
 
@@ -419,7 +419,7 @@ export default function SuccessPage() {
       {/* Provisioning error */}
       {currentStatus === 'error' && statusData?.error_message && (
         <div
-          className="chamfer-4 border px-4 py-3 text-sm mb-5"
+          className=" border px-4 py-3 text-sm mb-5"
           style={{
             backgroundColor: 'rgba(255,59,59,0.08)',
             borderColor: 'rgba(255,59,59,0.3)',
@@ -433,7 +433,7 @@ export default function SuccessPage() {
 
       {isComplete && successPayload && (
         <div
-          className="chamfer-4 border px-4 py-4 mb-5"
+          className=" border px-4 py-4 mb-5"
           style={{
             backgroundColor: 'rgba(255,255,255,0.02)',
             borderColor: 'rgba(255,255,255,0.08)',
@@ -444,25 +444,25 @@ export default function SuccessPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             {successPayload.centralized_billing?.enabled && (
-              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(255,107,26,0.25)', backgroundColor: 'rgba(255,107,26,0.07)' }}>
-                <div className="font-semibold" style={{ color: 'var(--q-orange)' }}>Centralized RCM Enabled</div>
+              <div className=" border p-3" style={{ borderColor: 'rgba(255,107,26,0.25)', backgroundColor: 'rgba(255,107,26,0.07)' }}>
+                <div className="font-semibold" style={{ color: '#FF4D00' }}>Centralized RCM Enabled</div>
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>Single billing number active. Statement prefix: {successPayload.centralized_billing.statement_prefix || 'FEM'}.</div>
               </div>
             )}
             {successPayload.export_pipeline?.enabled && (
-              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(34,211,238,0.25)', backgroundColor: 'rgba(34,211,238,0.07)' }}>
+              <div className=" border p-3" style={{ borderColor: 'rgba(34,211,238,0.25)', backgroundColor: 'rgba(34,211,238,0.07)' }}>
                 <div className="font-semibold" style={{ color: 'var(--color-status-info)' }}>Third-Party Export Mode</div>
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>Export handoff ready ({successPayload.export_pipeline.mode || 'sftp_api_handoff'}).</div>
               </div>
             )}
             {successPayload.external_cad?.ingest_ready && (
-              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(76,175,80,0.25)', backgroundColor: 'rgba(76,175,80,0.07)' }}>
+              <div className=" border p-3" style={{ borderColor: 'rgba(76,175,80,0.25)', backgroundColor: 'rgba(76,175,80,0.07)' }}>
                 <div className="font-semibold" style={{ color: 'var(--color-status-active)' }}>External 911 CAD Ingest Ready</div>
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>Webhook ingress endpoint generated for county CAD integration.</div>
               </div>
             )}
             {successPayload.hems?.aviation_profile_ready && (
-              <div className="chamfer-4 border p-3" style={{ borderColor: 'rgba(192,132,252,0.25)', backgroundColor: 'rgba(192,132,252,0.07)' }}>
+              <div className=" border p-3" style={{ borderColor: 'rgba(192,132,252,0.25)', backgroundColor: 'rgba(192,132,252,0.07)' }}>
                 <div className="font-semibold" style={{ color: '#c084fc' }}>HEMS Aviation Profile Ready</div>
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>Tail/base aviation setup initialized for mission readiness workflows.</div>
               </div>
@@ -484,17 +484,17 @@ export default function SuccessPage() {
         {isComplete ? (
           <button
             onClick={() => router.push('/login')}
-            className="bg-orange text-text-inverse font-bold px-6 py-2.5 text-sm uppercase tracking-wider hover:bg-orange-bright transition-colors chamfer-4"
+            className="bg-[#FF4D00] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all "
           >
             Login Now →
           </button>
         ) : (
           <div className="flex items-center gap-2">
             <div
-              className="w-2 h-2 rounded-full animate-pulse"
-              style={{ backgroundColor: 'var(--color-brand-orange)' }}
+              className="w-2 h-2  animate-pulse"
+              style={{ backgroundColor: '#FF4D00' }}
             />
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--q-orange)' }}>
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF4D00' }}>
               Provisioning…
             </span>
           </div>

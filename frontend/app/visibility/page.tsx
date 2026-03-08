@@ -125,7 +125,7 @@ type EndpointRestrictions = {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-panel p-4">
+    <div className=" border border-border bg-panel p-4">
       <div className="text-xs text-muted">{label}</div>
       <div className="mt-1 text-2xl font-bold">{value}</div>
       {sub && <div className="mt-1 text-xs text-muted">{sub}</div>}
@@ -143,10 +143,10 @@ function Badge({ color, label }: { color: string; label: string }) {
     red: "bg-red-900/40 text-red-300 border-red-700",
     yellow: "bg-yellow-900/40 text-yellow-300 border-yellow-700",
     blue: "bg-blue-900/40 text-blue-300 border-blue-700",
-    gray: "bg-bg-raised text-text-secondary border-border-strong",
+    gray: "bg-bg-raised text-zinc-400 border-border-strong",
   };
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs border font-medium ${colors[color] ?? colors.gray}`}>
+    <span className={`inline-flex items-center  px-2 py-0.5 text-xs border font-medium ${colors[color] ?? colors.gray}`}>
       {label}
     </span>
   );
@@ -156,7 +156,7 @@ function RuleCard({ rule, onDelete }: { rule: Rule; onDelete: (_id: string) => v
   const d = rule.data;
   const actionColor = d.action === "show" ? "green" : d.action === "mask" ? "yellow" : "red";
   return (
-    <div className="rounded-xl border border-border bg-panel p-4 flex flex-col gap-2">
+    <div className=" border border-border bg-panel p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="font-semibold text-sm">{d.rule_name || "Unnamed Rule"}</span>
         <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ function RuleCard({ rule, onDelete }: { rule: Rule; onDelete: (_id: string) => v
       {d.fields && d.fields.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {d.fields.map((f) => (
-            <span key={f} className="rounded bg-[rgba(255,255,255,0.07)] px-2 py-0.5 text-xs">{f}</span>
+            <span key={f} className=" bg-[rgba(255,255,255,0.07)] px-2 py-0.5 text-xs">{f}</span>
           ))}
         </div>
       )}
@@ -378,7 +378,7 @@ export default function VisibilityRuleMakerPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-border bg-panel p-6">
+      <div className=" border border-border bg-panel p-6">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-xl font-bold">Visibility Rule Maker</div>
@@ -386,7 +386,7 @@ export default function VisibilityRuleMakerPage() {
           </div>
           <div className="flex items-center gap-2">
             {killSwitchStatus && (
-              <div className={`rounded-lg px-3 py-1 text-xs font-semibold border ${killSwitchStatus.kill_switch_active ? "bg-red-900/40 border-red-700 text-red-300" : "bg-green-900/40 border-green-700 text-green-300"}`}>
+              <div className={` px-3 py-1 text-xs font-semibold border ${killSwitchStatus.kill_switch_active ? "bg-red-900/40 border-red-700 text-red-300" : "bg-green-900/40 border-green-700 text-green-300"}`}>
                 Kill Switch: {killSwitchStatus.kill_switch_active ? "ACTIVE" : "OFF"}
               </div>
             )}
@@ -395,7 +395,7 @@ export default function VisibilityRuleMakerPage() {
       </div>
 
       {msg && (
-        <div className="rounded-xl border border-green-700 bg-green-900/20 px-4 py-3 text-sm text-green-300 flex items-center justify-between">
+        <div className=" border border-green-700 bg-green-900/20 px-4 py-3 text-sm text-green-300 flex items-center justify-between">
           <span>{msg}</span>
           <button onClick={() => setMsg("")} className="text-green-400 hover:text-green-200">×</button>
         </div>
@@ -407,7 +407,7 @@ export default function VisibilityRuleMakerPage() {
             <Tabs.Trigger
               key={t.id}
               value={t.id}
-              className="rounded-lg px-3 py-2 text-xs font-medium text-muted hover:text-text data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-text"
+              className=" px-3 py-2 text-xs font-medium text-muted hover:text-text data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-text"
             >
               {t.label}
             </Tabs.Trigger>
@@ -430,7 +430,7 @@ export default function VisibilityRuleMakerPage() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {viewModes && (
-                <div className="rounded-xl border border-border bg-panel p-4">
+                <div className=" border border-border bg-panel p-4">
                   <SectionTitle title="View Mode Permissions" />
                   <div className="space-y-2">
                     {Object.entries(viewModes.modes).map(([k, v]) => (
@@ -444,7 +444,7 @@ export default function VisibilityRuleMakerPage() {
               )}
 
               {moduleGates && (
-                <div className="rounded-xl border border-border bg-panel p-4">
+                <div className=" border border-border bg-panel p-4">
                   <SectionTitle title="Module Access Gates" />
                   <div className="flex flex-wrap gap-2">
                     {moduleGates.all_modules.map((m) => (
@@ -461,7 +461,7 @@ export default function VisibilityRuleMakerPage() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {accessScore && (
-                <div className="rounded-xl border border-border bg-panel p-4">
+                <div className=" border border-border bg-panel p-4">
                   <SectionTitle title="Access Trust Score" />
                   <div className="flex items-end gap-3">
                     <div className="text-4xl font-bold">{accessScore.access_score}</div>
@@ -472,14 +472,14 @@ export default function VisibilityRuleMakerPage() {
               )}
 
               {heatmap && heatmap.heatmap.length > 0 && (
-                <div className="rounded-xl border border-border bg-panel p-4">
+                <div className=" border border-border bg-panel p-4">
                   <SectionTitle title="Visibility Heatmap (Top Fields)" />
                   <div className="space-y-1.5">
                     {heatmap.heatmap.slice(0, 8).map((h) => (
                       <div key={h.field} className="flex items-center gap-2 text-xs">
                         <span className="w-28 truncate text-muted">{h.field}</span>
-                        <div className="flex-1 rounded bg-[rgba(255,255,255,0.06)] h-2">
-                          <div className="h-2 rounded bg-billing" style={{ width: `${Math.min(h.rule_count * 20, 100)}%` }} />
+                        <div className="flex-1  bg-[rgba(255,255,255,0.06)] h-2">
+                          <div className="h-2  bg-billing" style={{ width: `${Math.min(h.rule_count * 20, 100)}%` }} />
                         </div>
                         <span className="w-6 text-right">{h.rule_count}</span>
                       </div>
@@ -490,12 +490,12 @@ export default function VisibilityRuleMakerPage() {
             </div>
 
             {endpointRestrictions && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Accessible Endpoints (Current Role: {endpointRestrictions.role})" />
                 <div className="space-y-2">
                   {Object.entries(endpointRestrictions.accessible_endpoints).map(([ep, roles]) => (
                     <div key={ep} className="flex items-center gap-2 text-xs">
-                      <code className="rounded bg-[rgba(255,255,255,0.06)] px-2 py-0.5 text-muted">{ep}</code>
+                      <code className=" bg-[rgba(255,255,255,0.06)] px-2 py-0.5 text-muted">{ep}</code>
                       <div className="flex flex-wrap gap-1">
                         {roles.map((r) => <Badge key={r} color="blue" label={r} />)}
                       </div>
@@ -505,15 +505,15 @@ export default function VisibilityRuleMakerPage() {
               </div>
             )}
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title="Global Kill-Switch" />
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted">Emergency visibility shutdown for all non-founder roles</div>
                 <div className="flex gap-2 ml-auto">
-                  <button onClick={() => triggerKillSwitch(true)} className="rounded-lg bg-red-700 px-4 py-2 text-xs font-semibold text-text-primary hover:bg-red-600">
+                  <button onClick={() => triggerKillSwitch(true)} className=" bg-red-700 px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-red-600">
                     Activate Kill Switch
                   </button>
-                  <button onClick={() => triggerKillSwitch(false)} className="rounded-lg border border-border px-4 py-2 text-xs hover:bg-[rgba(255,255,255,0.05)]">
+                  <button onClick={() => triggerKillSwitch(false)} className=" border border-border px-4 py-2 text-xs hover:bg-[rgba(255,255,255,0.05)]">
                     Deactivate
                   </button>
                 </div>
@@ -525,17 +525,17 @@ export default function VisibilityRuleMakerPage() {
         {/* RULES */}
         <Tabs.Content value="rules">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Create Visibility Rule" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <input
-                  className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                  className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                   placeholder="Rule name"
                   value={newRule.rule_name}
                   onChange={(e) => setNewRule({ ...newRule, rule_name: e.target.value })}
                 />
                 <select
-                  className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                  className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                   value={newRule.role}
                   onChange={(e) => setNewRule({ ...newRule, role: e.target.value })}
                 >
@@ -544,7 +544,7 @@ export default function VisibilityRuleMakerPage() {
                   ))}
                 </select>
                 <select
-                  className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                  className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                   value={newRule.action}
                   onChange={(e) => setNewRule({ ...newRule, action: e.target.value })}
                 >
@@ -553,13 +553,13 @@ export default function VisibilityRuleMakerPage() {
                   <option value="deny">Deny</option>
                 </select>
                 <input
-                  className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                  className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                   placeholder="Fields (comma-separated): ssn, dob, patient_name"
                   value={newRule.fields}
                   onChange={(e) => setNewRule({ ...newRule, fields: e.target.value })}
                 />
                 <input
-                  className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none md:col-span-2"
+                  className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none md:col-span-2"
                   placeholder="Explanation (optional)"
                   value={newRule.explanation}
                   onChange={(e) => setNewRule({ ...newRule, explanation: e.target.value })}
@@ -568,7 +568,7 @@ export default function VisibilityRuleMakerPage() {
               <button
                 onClick={createRule}
                 disabled={loading}
-                className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90 disabled:opacity-50"
+                className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? "Creating..." : "Create Rule"}
               </button>
@@ -577,7 +577,7 @@ export default function VisibilityRuleMakerPage() {
             <div>
               <SectionTitle title={`Active Rules (${rules.length})`} />
               {rules.length === 0 ? (
-                <div className="rounded-xl border border-border bg-panel p-6 text-center text-sm text-muted">No rules created yet. Create your first rule above.</div>
+                <div className=" border border-border bg-panel p-6 text-center text-sm text-muted">No rules created yet. Create your first rule above.</div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {rules.map((rule) => (
@@ -588,7 +588,7 @@ export default function VisibilityRuleMakerPage() {
             </div>
 
             {roleMatrix && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Role-Field Visibility Matrix" />
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -608,7 +608,7 @@ export default function VisibilityRuleMakerPage() {
                             ) : (
                               <div className="flex flex-wrap gap-1">
                                 {(roleMatrix.matrix[role] || []).map((f) => (
-                                  <span key={f} className="rounded bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5">{f}</span>
+                                  <span key={f} className=" bg-[rgba(255,255,255,0.06)] px-1.5 py-0.5">{f}</span>
                                 ))}
                               </div>
                             )}
@@ -626,13 +626,13 @@ export default function VisibilityRuleMakerPage() {
         {/* EVALUATE */}
         <Tabs.Content value="evaluate">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Evaluate Rules Against Context" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div>
                   <label className="text-xs text-muted">Role</label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={evalContext.role}
                     onChange={(e) => setEvalContext({ ...evalContext, role: e.target.value })}
                   >
@@ -644,7 +644,7 @@ export default function VisibilityRuleMakerPage() {
                 <div>
                   <label className="text-xs text-muted">Claim Status</label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     placeholder="e.g. denied, approved"
                     value={evalContext.claim_status}
                     onChange={(e) => setEvalContext({ ...evalContext, claim_status: e.target.value })}
@@ -653,7 +653,7 @@ export default function VisibilityRuleMakerPage() {
                 <div>
                   <label className="text-xs text-muted">Payer Type</label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     placeholder="e.g. medicare, medicaid"
                     value={evalContext.payer_type}
                     onChange={(e) => setEvalContext({ ...evalContext, payer_type: e.target.value })}
@@ -662,22 +662,22 @@ export default function VisibilityRuleMakerPage() {
               </div>
               <button
                 onClick={evaluateRules}
-                className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90"
+                className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90"
               >
                 Evaluate
               </button>
 
               {evalResult && (
                 <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <div className="rounded-lg border border-green-700 bg-green-900/20 p-3">
+                  <div className=" border border-green-700 bg-green-900/20 p-3">
                     <div className="text-xs font-semibold text-green-300 mb-2">Visible Fields ({evalResult.visible_fields.length})</div>
                     {evalResult.visible_fields.length === 0 ? <div className="text-xs text-muted">None</div> : evalResult.visible_fields.map((f) => <div key={f} className="text-xs">{f}</div>)}
                   </div>
-                  <div className="rounded-lg border border-yellow-700 bg-yellow-900/20 p-3">
+                  <div className=" border border-yellow-700 bg-yellow-900/20 p-3">
                     <div className="text-xs font-semibold text-yellow-300 mb-2">Masked Fields ({evalResult.masked_fields.length})</div>
                     {evalResult.masked_fields.length === 0 ? <div className="text-xs text-muted">None</div> : evalResult.masked_fields.map((f) => <div key={f} className="text-xs">{f}</div>)}
                   </div>
-                  <div className="rounded-lg border border-red-700 bg-red-900/20 p-3">
+                  <div className=" border border-red-700 bg-red-900/20 p-3">
                     <div className="text-xs font-semibold text-red-300 mb-2">Denied Fields ({evalResult.denied_fields.length})</div>
                     {evalResult.denied_fields.length === 0 ? <div className="text-xs text-muted">None</div> : evalResult.denied_fields.map((f) => <div key={f} className="text-xs">{f}</div>)}
                   </div>
@@ -685,13 +685,13 @@ export default function VisibilityRuleMakerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Data Minimization Check" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
                   <label className="text-xs text-muted">Purpose</label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={minimizePurpose}
                     onChange={(e) => setMinimizePurpose(e.target.value)}
                   >
@@ -701,17 +701,17 @@ export default function VisibilityRuleMakerPage() {
                 <div>
                   <label className="text-xs text-muted">Requested Fields (comma-separated)</label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     value={minimizeFields}
                     onChange={(e) => setMinimizeFields(e.target.value)}
                   />
                 </div>
               </div>
-              <button onClick={runMinimization} className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90">
+              <button onClick={runMinimization} className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90">
                 Check Minimization
               </button>
               {minimizeResult && (
-                <div className={`mt-3 rounded-lg border p-3 text-sm ${(minimizeResult as Record<string, unknown>).compliant ? "border-green-700 bg-green-900/20 text-green-300" : "border-red-700 bg-red-900/20 text-red-300"}`}>
+                <div className={`mt-3  border p-3 text-sm ${(minimizeResult as Record<string, unknown>).compliant ? "border-green-700 bg-green-900/20 text-green-300" : "border-red-700 bg-red-900/20 text-red-300"}`}>
                   <div className="font-semibold">{(minimizeResult as Record<string, unknown>).compliant ? "Compliant - No excessive fields" : "Non-compliant - Excessive fields detected"}</div>
                   {((minimizeResult as Record<string, unknown[]>).excessive_fields || []).length > 0 && (
                     <div className="mt-1 text-xs">Excessive: {((minimizeResult as Record<string, string[]>).excessive_fields || []).join(", ")}</div>
@@ -727,12 +727,12 @@ export default function VisibilityRuleMakerPage() {
         <Tabs.Content value="phi">
           <div className="space-y-5">
             {phiFields && (
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="PHI Field Classification" />
                 <div className="mb-3 text-xs text-muted">Role: <span className="text-text font-medium">{phiFields.masked_for_role}</span> | Masked fields: <span className="text-yellow-300">{phiFields.masked.length}</span></div>
                 <div className="flex flex-wrap gap-2">
                   {phiFields.phi_fields.map((f) => (
-                    <span key={f} className={`rounded px-2 py-1 text-xs border ${phiFields.masked.includes(f) ? "border-yellow-700 bg-yellow-900/20 text-yellow-300" : "border-green-700 bg-green-900/20 text-green-300"}`}>
+                    <span key={f} className={` px-2 py-1 text-xs border ${phiFields.masked.includes(f) ? "border-yellow-700 bg-yellow-900/20 text-yellow-300" : "border-green-700 bg-green-900/20 text-green-300"}`}>
                       {phiFields.masked.includes(f) ? "*** " : ""}{f}
                     </span>
                   ))}
@@ -740,13 +740,13 @@ export default function VisibilityRuleMakerPage() {
               </div>
             )}
 
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Data Redaction Preview" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
                   <label className="text-xs text-muted">Template</label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={redactionTemplate}
                     onChange={(e) => setRedactionTemplate(e.target.value)}
                   >
@@ -756,40 +756,40 @@ export default function VisibilityRuleMakerPage() {
                 <div>
                   <label className="text-xs text-muted">Record JSON</label>
                   <textarea
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs font-mono outline-none"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs font-mono outline-none"
                     rows={3}
                     value={redactionRecord}
                     onChange={(e) => setRedactionRecord(e.target.value)}
                   />
                 </div>
               </div>
-              <button onClick={runRedaction} className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90">
+              <button onClick={runRedaction} className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90">
                 Preview Redaction
               </button>
               {redactionResult && (
-                <div className="mt-3 rounded-lg border border-border bg-[rgba(255,255,255,0.03)] p-3">
+                <div className="mt-3  border border-border bg-[rgba(255,255,255,0.03)] p-3">
                   <div className="text-xs font-semibold text-muted mb-2">Redacted Output</div>
                   <pre className="text-xs overflow-auto">{JSON.stringify((redactionResult as Record<string, unknown>).redacted, null, 2)}</pre>
                 </div>
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="De-identification" />
               <div>
                 <label className="text-xs text-muted">Record JSON</label>
                 <textarea
-                  className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs font-mono outline-none"
+                  className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-xs font-mono outline-none"
                   rows={3}
                   value={deidentInput}
                   onChange={(e) => setDeidentInput(e.target.value)}
                 />
               </div>
-              <button onClick={runDeidentify} className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90">
+              <button onClick={runDeidentify} className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90">
                 De-identify
               </button>
               {deidentResult && (
-                <div className="mt-3 rounded-lg border border-border bg-[rgba(255,255,255,0.03)] p-3">
+                <div className="mt-3  border border-border bg-[rgba(255,255,255,0.03)] p-3">
                   <div className="text-xs font-semibold text-muted mb-1">Fields removed: {String((deidentResult as Record<string, unknown>).fields_removed)}</div>
                   <pre className="text-xs overflow-auto">{JSON.stringify((deidentResult as Record<string, unknown>).deidentified, null, 2)}</pre>
                 </div>
@@ -801,13 +801,13 @@ export default function VisibilityRuleMakerPage() {
         {/* ACCESS CONTROL */}
         <Tabs.Content value="access">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Zero-Trust Access Check" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
                   <label className="text-xs text-muted">Resource</label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={zeroTrustInput.resource}
                     onChange={(e) => setZeroTrustInput({ ...zeroTrustInput, resource: e.target.value })}
                   >
@@ -827,18 +827,18 @@ export default function VisibilityRuleMakerPage() {
                         type="checkbox"
                         checked={zeroTrustInput[key as keyof typeof zeroTrustInput] as boolean}
                         onChange={(e) => setZeroTrustInput({ ...zeroTrustInput, [key]: e.target.checked })}
-                        className="rounded"
+                        className=""
                       />
                       <span className="text-sm">{label}</span>
                     </label>
                   ))}
                 </div>
               </div>
-              <button onClick={runZeroTrust} className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90">
+              <button onClick={runZeroTrust} className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90">
                 Check Zero-Trust
               </button>
               {zeroTrustResult && (
-                <div className={`mt-3 rounded-lg border p-4 ${zeroTrustResult.allowed ? "border-green-700 bg-green-900/20" : "border-red-700 bg-red-900/20"}`}>
+                <div className={`mt-3  border p-4 ${zeroTrustResult.allowed ? "border-green-700 bg-green-900/20" : "border-red-700 bg-red-900/20"}`}>
                   <div className={`font-semibold text-sm ${zeroTrustResult.allowed ? "text-green-300" : "text-red-300"}`}>
                     {zeroTrustResult.allowed ? "ACCESS GRANTED" : "ACCESS DENIED"}
                   </div>
@@ -851,13 +851,13 @@ export default function VisibilityRuleMakerPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Elevated Access Grants" />
                 {elevatedAccess.length === 0 ? (
                   <div className="text-sm text-muted">No active elevated access</div>
                 ) : (
                   elevatedAccess.map((ea) => (
-                    <div key={ea.id} className="rounded-lg border border-border p-3 text-xs space-y-1">
+                    <div key={ea.id} className=" border border-border p-3 text-xs space-y-1">
                       <div>Target: {ea.data.target_user_id}</div>
                       <div>Duration: {ea.data.duration_minutes}m</div>
                       <Badge color={ea.data.status === "active" ? "green" : "gray"} label={ea.data.status || "active"} />
@@ -866,13 +866,13 @@ export default function VisibilityRuleMakerPage() {
                 )}
               </div>
 
-              <div className="rounded-xl border border-border bg-panel p-4">
+              <div className=" border border-border bg-panel p-4">
                 <SectionTitle title="Time-Based Windows" />
                 {timeWindows.length === 0 ? (
                   <div className="text-sm text-muted">No time windows configured</div>
                 ) : (
                   timeWindows.slice(0, 5).map((tw) => (
-                    <div key={tw.id} className="rounded-lg border border-border p-3 text-xs space-y-1 mb-2">
+                    <div key={tw.id} className=" border border-border p-3 text-xs space-y-1 mb-2">
                       <div>Field: {tw.data.field}</div>
                       <div className="text-muted">{tw.data.start_utc} → {tw.data.end_utc}</div>
                     </div>
@@ -886,7 +886,7 @@ export default function VisibilityRuleMakerPage() {
         {/* SANDBOX */}
         <Tabs.Content value="sandbox">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Rule Testing Sandbox" />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div className="space-y-3">
@@ -894,14 +894,14 @@ export default function VisibilityRuleMakerPage() {
                     <label className="text-xs text-muted">Test Rule</label>
                     <div className="mt-1 grid grid-cols-2 gap-2">
                       <select
-                        className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                        className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                         value={sandboxRule.role}
                         onChange={(e) => setSandboxRule({ ...sandboxRule, role: e.target.value })}
                       >
                         {["billing", "ems", "compliance", "viewer"].map((r) => <option key={r} value={r}>{r}</option>)}
                       </select>
                       <select
-                        className="rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                        className=" border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                         value={sandboxRule.action}
                         onChange={(e) => setSandboxRule({ ...sandboxRule, action: e.target.value })}
                       >
@@ -911,7 +911,7 @@ export default function VisibilityRuleMakerPage() {
                       </select>
                     </div>
                     <input
-                      className="mt-2 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                      className="mt-2 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                       placeholder="Fields: ssn, dob, ..."
                       value={sandboxRule.fields}
                       onChange={(e) => setSandboxRule({ ...sandboxRule, fields: e.target.value })}
@@ -921,25 +921,25 @@ export default function VisibilityRuleMakerPage() {
                 <div className="space-y-3">
                   <label className="text-xs text-muted">Test Context</label>
                   <select
-                    className="w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className="w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={sandboxContext.role}
                     onChange={(e) => setSandboxContext({ ...sandboxContext, role: e.target.value })}
                   >
                     {["billing", "ems", "compliance", "viewer"].map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                   <input
-                    className="w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
+                    className="w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm outline-none"
                     placeholder="claim_status"
                     value={sandboxContext.claim_status}
                     onChange={(e) => setSandboxContext({ ...sandboxContext, claim_status: e.target.value })}
                   />
                 </div>
               </div>
-              <button onClick={runSandbox} className="mt-3 rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90">
+              <button onClick={runSandbox} className="mt-3  bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90">
                 Test Rule
               </button>
               {sandboxResult && (
-                <div className={`mt-3 rounded-lg border p-4 ${sandboxResult.would_apply ? "border-green-700 bg-green-900/20" : "border-border bg-[rgba(255,255,255,0.03)]"}`}>
+                <div className={`mt-3  border p-4 ${sandboxResult.would_apply ? "border-green-700 bg-green-900/20" : "border-border bg-[rgba(255,255,255,0.03)]"}`}>
                   <div className={`font-semibold text-sm ${sandboxResult.would_apply ? "text-green-300" : "text-muted"}`}>
                     Rule would {sandboxResult.would_apply ? "" : "NOT "}apply
                   </div>
@@ -950,27 +950,27 @@ export default function VisibilityRuleMakerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-5">
+            <div className=" border border-border bg-panel p-5">
               <SectionTitle title="Role Simulation Testing" />
               <div className="flex items-end gap-3">
                 <div className="flex-1">
                   <label className="text-xs text-muted">Simulate as Role</label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
+                    className="mt-1 w-full  border border-border bg-[rgba(255,255,255,0.04)] px-3 py-2 text-sm"
                     value={simRole}
                     onChange={(e) => setSimRole(e.target.value)}
                   >
                     {["billing", "ems", "compliance", "viewer", "agency_admin"].map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
-                <button onClick={runRoleSimulation} className="rounded-lg bg-billing px-5 py-2 text-sm font-semibold text-text-inverse hover:opacity-90">
+                <button onClick={runRoleSimulation} className=" bg-billing px-5 py-2 text-sm font-semibold text-black hover:opacity-90">
                   Simulate
                 </button>
               </div>
               {simResult && (
                 <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
                   {["visible", "masked", "denied"].map((type) => (
-                    <div key={type} className={`rounded-lg border p-3 ${type === "visible" ? "border-green-700 bg-green-900/20" : type === "masked" ? "border-yellow-700 bg-yellow-900/20" : "border-red-700 bg-red-900/20"}`}>
+                    <div key={type} className={` border p-3 ${type === "visible" ? "border-green-700 bg-green-900/20" : type === "masked" ? "border-yellow-700 bg-yellow-900/20" : "border-red-700 bg-red-900/20"}`}>
                       <div className={`text-xs font-semibold mb-2 ${type === "visible" ? "text-green-300" : type === "masked" ? "text-yellow-300" : "text-red-300"}`}>
                         {type.charAt(0).toUpperCase() + type.slice(1)} ({((simResult as Record<string, string[]>)[type] || []).length})
                       </div>
@@ -990,14 +990,14 @@ export default function VisibilityRuleMakerPage() {
         {/* POLICIES */}
         <Tabs.Content value="policies">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title="Visibility Policies" />
               {policies.length === 0 ? (
                 <div className="text-sm text-muted">No policies created yet.</div>
               ) : (
                 <div className="space-y-2">
                   {policies.map((p) => (
-                    <div key={p.id} className="rounded-lg border border-border p-3 flex items-center justify-between text-sm">
+                    <div key={p.id} className=" border border-border p-3 flex items-center justify-between text-sm">
                       <div>
                         <span className="font-medium">{p.data.policy_name || "Unnamed"}</span>
                         <span className="ml-2 text-xs text-muted">v{p.data.version}</span>
@@ -1009,13 +1009,13 @@ export default function VisibilityRuleMakerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title="Compliance Locks" />
               {complianceLocks.length === 0 ? (
                 <div className="text-sm text-muted">No compliance locks active.</div>
               ) : (
                 complianceLocks.map((lock) => (
-                  <div key={lock.id} className="rounded-lg border border-border p-3 text-sm mb-2">
+                  <div key={lock.id} className=" border border-border p-3 text-sm mb-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{lock.data.lock_type} lock</span>
                       <Badge color={lock.data.active ? "red" : "gray"} label={lock.data.active ? "LOCKED" : "Released"} />
@@ -1026,13 +1026,13 @@ export default function VisibilityRuleMakerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title="Approval Queue" />
               {approvals.length === 0 ? (
                 <div className="text-sm text-muted">No pending approvals.</div>
               ) : (
                 approvals.map((a) => (
-                  <div key={a.id} className="rounded-lg border border-border p-3 text-sm mb-2">
+                  <div key={a.id} className=" border border-border p-3 text-sm mb-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted">By: {a.data.requested_by}</span>
                       <Badge color={a.data.status === "pending" ? "yellow" : a.data.status === "approved" ? "green" : "red"} label={a.data.status || "pending"} />
@@ -1048,14 +1048,14 @@ export default function VisibilityRuleMakerPage() {
         {/* ALERTS */}
         <Tabs.Content value="alerts">
           <div className="space-y-5">
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title={`Access Alerts (${alerts.length})`} />
               {alerts.length === 0 ? (
                 <div className="text-sm text-muted">No access alerts.</div>
               ) : (
                 <div className="space-y-2">
                   {alerts.map((a) => (
-                    <div key={a.id} className="rounded-lg border border-border p-3 flex items-start justify-between text-sm">
+                    <div key={a.id} className=" border border-border p-3 flex items-start justify-between text-sm">
                       <div>
                         <div className="font-medium">{a.data.alert_type}</div>
                         {a.data.description && <div className="text-xs text-muted mt-0.5">{a.data.description}</div>}
@@ -1067,14 +1067,14 @@ export default function VisibilityRuleMakerPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title={`Anomaly Events (${anomalies.length})`} />
               {anomalies.length === 0 ? (
                 <div className="text-sm text-muted">No anomaly events detected.</div>
               ) : (
                 <div className="space-y-2">
                   {anomalies.map((a) => (
-                    <div key={a.id} className="rounded-lg border border-border p-3 flex items-start justify-between text-sm">
+                    <div key={a.id} className=" border border-border p-3 flex items-start justify-between text-sm">
                       <div>
                         <div className="font-medium">{a.data.anomaly_type}</div>
                         {a.data.description && <div className="text-xs text-muted mt-0.5">{a.data.description}</div>}
@@ -1095,7 +1095,7 @@ export default function VisibilityRuleMakerPage() {
               [
                 !IS_PROD
                   ? {
-                      title: "Demo Mode",
+                      title: "Presentation Mode",
                       config: {
                         phi_replaced_with_synthetic: true,
                         financial_data_zeroed: true,
@@ -1115,11 +1115,11 @@ export default function VisibilityRuleMakerPage() {
                 },
               ].filter(Boolean) as Array<{ title: string; config: Record<string, unknown> }>
             ).map(({ title, config }) => (
-              <div key={title} className="rounded-xl border border-border bg-panel p-4">
+              <div key={title} className=" border border-border bg-panel p-4">
                 <SectionTitle title={title} />
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(config).map(([k, v]) => (
-                    <div key={k} className="rounded-lg border border-border px-3 py-1.5 text-xs">
+                    <div key={k} className=" border border-border px-3 py-1.5 text-xs">
                       <span className="text-muted">{k.replace(/_/g, " ")}: </span>
                       <span className="text-text font-medium">{String(v)}</span>
                     </div>
@@ -1128,17 +1128,17 @@ export default function VisibilityRuleMakerPage() {
               </div>
             ))}
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title="Classification Labels" />
               <div className="flex flex-wrap gap-3">
                 {[
                   { label: "PHI", color: "bg-red-900/40 text-red-300 border-red-700", desc: "HIPAA Protected Health Information" },
-                  { label: "PII", color: "bg-orange-900/40 text-orange-300 border-orange-700", desc: "Personally Identifiable Information" },
+                  { label: "PII", color: "bg-[#FF4D00]-900/40 text-[#FF4D00]-300 border-orange-700", desc: "Personally Identifiable Information" },
                   { label: "FINANCIAL", color: "bg-yellow-900/40 text-yellow-300 border-yellow-700", desc: "PCI / financial policy" },
                   { label: "OPERATIONAL", color: "bg-blue-900/40 text-blue-300 border-blue-700", desc: "Internal use" },
                   { label: "PUBLIC", color: "bg-green-900/40 text-green-300 border-green-700", desc: "Non-sensitive" },
                 ].map(({ label, color, desc }) => (
-                  <div key={label} className={`rounded-lg border px-3 py-2 text-xs ${color}`}>
+                  <div key={label} className={` border px-3 py-2 text-xs ${color}`}>
                     <div className="font-semibold">{label}</div>
                     <div className="mt-0.5 opacity-80">{desc}</div>
                   </div>
@@ -1146,7 +1146,7 @@ export default function VisibilityRuleMakerPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-panel p-4">
+            <div className=" border border-border bg-panel p-4">
               <SectionTitle title="Clipboard & Screenshot Policies" />
               <div className="space-y-2 text-sm">
                 {[
@@ -1155,7 +1155,7 @@ export default function VisibilityRuleMakerPage() {
                   { label: "Screenshot warning", value: "Enabled on sensitive views" },
                   { label: "Read-only safe mode", value: "Available for all roles" },
                 ].map(({ label, value }) => (
-                  <div key={label} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+                  <div key={label} className="flex items-center justify-between  border border-border px-3 py-2">
                     <span className="text-muted">{label}</span>
                     <span className="text-xs font-medium">{value}</span>
                   </div>

@@ -59,12 +59,12 @@ export default function PortalDashboardPage() {
             <Link
               key={card.href}
               href={card.href}
-              className="group block bg-bg-void border border-[var(--color-border-default)] chamfer-8 p-5 hover:border-brand-orange/35 transition-colors"
+              className="group block bg-black border border-[var(--color-border-default)] chamfer-8 p-5 hover:border-brand-orange/35 transition-colors"
             >
-              <div className="text-micro uppercase tracking-widest text-text-muted mb-3 group-hover:text-brand-orange/70 transition-colors">
+              <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3 group-hover:text-brand-orange/70 transition-colors">
                 {card.label}
               </div>
-              <div className="text-3xl font-bold text-text-primary">{card.value}</div>
+              <div className="text-3xl font-bold text-zinc-100">{card.value}</div>
             </Link>
           ))}
         </div>

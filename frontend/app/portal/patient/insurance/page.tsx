@@ -58,7 +58,7 @@ function InsuranceSection({
   return (
     <div
       style={{
-        background: 'var(--color-bg-panel)',
+        background: '#0A0A0B',
         border: '1px solid var(--color-border-default)',
         borderLeft: `3px solid ${accent}`,
         clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -113,8 +113,8 @@ function InsuranceSection({
               onClick={onAdd}
               style={{
                 background: 'var(--color-brand-orange-ghost)',
-                border: '1px solid var(--color-brand-orange)',
-                color: 'var(--color-brand-orange)',
+                border: '1px solid #FF4D00',
+                color: '#FF4D00',
                 fontFamily: 'var(--font-label)',
                 fontSize: 'var(--text-label)',
                 fontWeight: 700,
@@ -209,7 +209,7 @@ export default function PatientInsurancePage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-base)',
+        background: '#050505',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -226,7 +226,7 @@ export default function PatientInsurancePage() {
               fontWeight: 600,
               letterSpacing: 'var(--tracking-micro)',
               textTransform: 'uppercase',
-              color: 'var(--color-brand-orange)',
+              color: '#FF4D00',
               marginBottom: 6,
             }}
           >
@@ -246,7 +246,7 @@ export default function PatientInsurancePage() {
 
         <InsuranceSection
           title="Primary Insurance"
-          accent="var(--color-brand-orange)"
+          accent="#FF4D00"
           data={primary}
           onChange={handlePrimaryChange}
         />
@@ -263,7 +263,7 @@ export default function PatientInsurancePage() {
         <button
           onClick={handleSave}
           style={{
-            background: 'var(--color-brand-orange)',
+            background: '#FF4D00',
             color: '#000',
             fontFamily: 'var(--font-label)',
             fontSize: 'var(--text-label)',

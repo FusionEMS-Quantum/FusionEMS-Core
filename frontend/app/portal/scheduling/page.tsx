@@ -72,7 +72,7 @@ const HOURS = Array.from({ length: 16 }, (_, i) => `${String(i + 6).padStart(2, 
 
 const SHIFT_COLORS: Record<string, string> = {
   ACTIVE: 'bg-green-500/20 border-green-500/40 text-green-300',
-  DRAFT: 'bg-gray-700/50 border-gray-600 text-gray-400',
+  DRAFT: 'bg-gray-700/50 border-gray-600 text-zinc-500',
   PUBLISHED: 'bg-blue-900/30 border-blue-500/40 text-blue-300',
   COMPLETED: 'bg-purple-900/30 border-purple-500/40 text-purple-300',
   CANCELLED: 'bg-red-900/20 border-red-500/30 text-red-400',
@@ -95,16 +95,16 @@ function WeekCalendar({ shifts, weekOffset }: { shifts: ShiftInstance[]; weekOff
     shifts.filter(s => new Date(s.start_time).toDateString() === date.toDateString());
 
   return (
-    <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+    <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
       <div className="grid grid-cols-8 border-b border-border-subtle">
-        <div className="px-3 py-2 text-micro text-text-muted">UTC</div>
+        <div className="px-3 py-2 text-micro text-zinc-500">UTC</div>
         {dayDates.map((d, i) => {
           const isToday = d.toDateString() === today.toDateString();
           const dayShifts = shiftsForDay(d);
           return (
             <div key={i} className={`px-2 py-2 text-center border-l border-border-subtle ${isToday ? 'bg-brand-orange/5' : ''}`}>
-              <div className={`text-micro uppercase tracking-wider ${isToday ? 'text-brand-orange' : 'text-text-muted'}`}>{DAYS[i]}</div>
-              <div className={`text-sm font-bold mt-0.5 ${isToday ? 'text-brand-orange' : 'text-text-secondary'}`}>{d.getDate()}</div>
+              <div className={`text-micro uppercase tracking-wider ${isToday ? 'text-brand-orange' : 'text-zinc-500'}`}>{DAYS[i]}</div>
+              <div className={`text-sm font-bold mt-0.5 ${isToday ? 'text-brand-orange' : 'text-zinc-400'}`}>{d.getDate()}</div>
               {dayShifts.length > 0 && (
                 <div className="text-micro text-green-400 mt-0.5">{dayShifts.length} shift{dayShifts.length > 1 ? 's' : ''}</div>
               )}
@@ -117,7 +117,7 @@ function WeekCalendar({ shifts, weekOffset }: { shifts: ShiftInstance[]; weekOff
           const hourNum = parseInt(hour.split(':')[0], 10);
           return (
             <div key={hour} className="grid grid-cols-8 border-b border-border-subtle min-h-[40px]">
-              <div className="px-3 py-1 text-micro text-text-muted">{hour}</div>
+              <div className="px-3 py-1 text-micro text-zinc-500">{hour}</div>
               {dayDates.map((d, colIdx) => {
                 const activeSifts = shiftsForDay(d).filter(s => {
                   const start = new Date(s.start_time).getHours();
@@ -159,52 +159,52 @@ function CoverageView({ coverage, fatigue }: { coverage: CoverageDashboard; fati
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'Coverage %', value: `${Math.round(pct)}%`, color: pct >= 80 ? 'text-green-400' : pct >= 60 ? 'text-yellow-400' : 'text-red-400' },
-          { label: 'Uncovered Shifts', value: (coverage.uncovered_shifts ?? 0).toString(), color: 'text-text-primary' },
+          { label: 'Uncovered Shifts', value: (coverage.uncovered_shifts ?? 0).toString(), color: 'text-zinc-100' },
           { label: 'On-Call Available', value: (coverage.on_call_available ?? 0).toString(), color: 'text-blue-400' },
-          { label: 'Fatigue Flags', value: (coverage.fatigue_flags ?? 0).toString(), color: (coverage.fatigue_flags ?? 0) > 0 ? 'text-orange-400' : 'text-text-muted' },
+          { label: 'Fatigue Flags', value: (coverage.fatigue_flags ?? 0).toString(), color: (coverage.fatigue_flags ?? 0) > 0 ? 'text-[#FF7A33]' : 'text-zinc-500' },
         ].map(m => (
-          <div key={m.label} className="bg-bg-panel border border-border-subtle chamfer-8 px-4 py-3">
+          <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
             <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
-            <div className="text-micro text-text-muted mt-0.5">{m.label}</div>
+            <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 p-4">
-          <div className="text-micro uppercase tracking-widest text-text-muted mb-3">Coverage by Day</div>
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
+          <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Coverage by Day</div>
           <div className="space-y-2">
             {DAYS.map(day => {
               const v = byDay[day] ?? 0;
               return (
                 <div key={day} className="flex items-center gap-3">
-                  <span className="text-micro text-text-muted w-8">{day}</span>
-                  <div className="flex-1 h-4 bg-white/[0.04] chamfer-4 overflow-hidden">
+                  <span className="text-micro text-zinc-500 w-8">{day}</span>
+                  <div className="flex-1 h-4 bg-zinc-950/[0.04] chamfer-4 overflow-hidden">
                     <div
                       className={`h-full chamfer-4 transition-all ${v >= 80 ? 'bg-green-500/50' : v >= 60 ? 'bg-yellow-500/50' : v > 0 ? 'bg-red-500/40' : 'bg-gray-600/30'}`}
                       style={{ width: `${v}%` }}
                     />
                   </div>
-                  <span className="text-micro text-text-muted w-10 text-right">{v}%</span>
+                  <span className="text-micro text-zinc-500 w-10 text-right">{v}%</span>
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 p-4">
-          <div className="text-micro uppercase tracking-widest text-text-muted mb-3">Fatigue & Hours Risk</div>
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
+          <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Fatigue & Hours Risk</div>
           {(fatigue?.flagged_crew || []).length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-sm text-text-muted">
+            <div className="flex flex-col items-center justify-center h-40 text-sm text-zinc-500">
               ✓ No fatigue flags this period
             </div>
           ) : (
             <div className="space-y-2">
               {(fatigue?.flagged_crew || []).map((fc, i) => (
-                <div key={i} className="flex items-center justify-between px-3 py-2 bg-white/[0.03] chamfer-4 border border-border-subtle">
-                  <span className="text-sm text-text-secondary">{fc.name}</span>
+                <div key={i} className="flex items-center justify-between px-3 py-2 bg-zinc-950/[0.03] chamfer-4 border border-border-subtle">
+                  <span className="text-sm text-zinc-400">{fc.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-micro text-text-muted">{fc.hours_last_7d}h/7d</span>
+                    <span className="text-micro text-zinc-500">{fc.hours_last_7d}h/7d</span>
                     <span className={`text-micro font-bold px-1.5 py-0.5 chamfer-4 border ${
                       fc.risk_level === 'HIGH' ? 'bg-red-900/30 border-red-500/40 text-red-300' :
                       'bg-yellow-900/30 border-yellow-500/40 text-yellow-300'
@@ -236,9 +236,9 @@ function SwapRequestsView({ swaps, onRefresh }: { swaps: SwapRequest[]; onRefres
           { label: 'Time Off', value: swaps.filter(s => s.request_type === 'timeoff').length },
           { label: 'Approved', value: swaps.filter(s => s.state === 'APPROVED').length },
         ].map(m => (
-          <div key={m.label} className="bg-bg-panel border border-border-subtle chamfer-8 px-4 py-3">
-            <div className="text-2xl font-black text-text-primary">{m.value}</div>
-            <div className="text-micro text-text-muted mt-0.5">{m.label}</div>
+          <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
+            <div className="text-2xl font-black text-zinc-100">{m.value}</div>
+            <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
           </div>
         ))}
       </div>
@@ -250,37 +250,37 @@ function SwapRequestsView({ swaps, onRefresh }: { swaps: SwapRequest[]; onRefres
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 text-micro font-semibold capitalize chamfer-4 border transition-colors ${
               filter === f ? 'bg-brand-orange/15 border-brand-orange/35 text-brand-orange' :
-              'bg-white/[0.03] border-border-subtle text-text-muted hover:text-text-secondary'
+              'bg-zinc-950/[0.03] border-border-subtle text-zinc-500 hover:text-zinc-400'
             }`}
           >
             {f === 'timeoff' ? 'Time Off' : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
-        <button onClick={onRefresh} className="ml-auto quantum-btn-sm text-text-muted hover:text-text-primary">↺ Refresh</button>
+        <button onClick={onRefresh} className="ml-auto quantum-btn-sm text-zinc-500 hover:text-zinc-100">↺ Refresh</button>
       </div>
 
       {filtered.length === 0 ? (
         <QuantumEmptyState title="No requests" description="No pending scheduling requests match your filter." icon="calendar" />
       ) : (
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Crew Member', 'Type', 'Shift Date', 'Reason', 'Submitted', 'Status'].map(h => (
-                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map(swap => (
-                <tr key={swap.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 text-sm font-semibold text-text-primary">{swap.requester_name || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-text-secondary capitalize">{swap.request_type}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                <tr key={swap.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                  <td className="px-4 py-3 text-sm font-semibold text-zinc-100">{swap.requester_name || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 capitalize">{swap.request_type}</td>
+                  <td className="px-4 py-3 text-sm font-mono text-zinc-400">
                     {swap.shift_date ? new Date(swap.shift_date).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-text-muted max-w-xs truncate">{swap.reason || '—'}</td>
-                  <td className="px-4 py-3 text-xs font-mono text-text-muted">
+                  <td className="px-4 py-3 text-sm text-zinc-500 max-w-xs truncate">{swap.reason || '—'}</td>
+                  <td className="px-4 py-3 text-xs font-mono text-zinc-500">
                     {swap.submitted_at ? new Date(swap.submitted_at).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3">
@@ -288,7 +288,7 @@ function SwapRequestsView({ swaps, onRefresh }: { swaps: SwapRequest[]; onRefres
                       swap.state === 'PENDING' ? 'bg-yellow-900/30 border-yellow-500/40 text-yellow-300' :
                       swap.state === 'APPROVED' ? 'bg-green-900/30 border-green-500/40 text-green-300' :
                       swap.state === 'DENIED' ? 'bg-red-900/30 border-red-500/40 text-red-300' :
-                      'bg-gray-800/50 border-gray-600 text-gray-400'
+                      'bg-zinc-900/50 border-gray-600 text-zinc-500'
                     }`}>
                       {swap.state}
                     </span>
@@ -331,8 +331,8 @@ function AIDraftsView({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-text-secondary">AI-generated schedule drafts — review completeness scores before approving</div>
-          <div className="text-micro text-text-muted mt-0.5">Drafts are generated by GPT-4o-mini and require human approval before publishing</div>
+          <div className="text-sm text-zinc-400">AI-generated schedule drafts — review completeness scores before approving</div>
+          <div className="text-micro text-zinc-500 mt-0.5">Drafts are generated by GPT-4o-mini and require human approval before publishing</div>
         </div>
         <button
           onClick={handleGenerate}
@@ -349,9 +349,9 @@ function AIDraftsView({
           { label: 'Approved This Cycle', value: drafts.filter(d => d.state === 'APPROVED').length },
           { label: 'Total Drafts', value: drafts.length },
         ].map(m => (
-          <div key={m.label} className="bg-bg-panel border border-border-subtle chamfer-8 px-4 py-3">
-            <div className="text-2xl font-black text-text-primary">{m.value}</div>
-            <div className="text-micro text-text-muted mt-0.5">{m.label}</div>
+          <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
+            <div className="text-2xl font-black text-zinc-100">{m.value}</div>
+            <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
           </div>
         ))}
       </div>
@@ -359,32 +359,32 @@ function AIDraftsView({
       {drafts.length === 0 ? (
         <QuantumEmptyState title="No AI drafts" description="Generate a draft to get started. AI will propose optimal shift coverage based on historical patterns." icon="sparkles" />
       ) : (
-        <div className="bg-bg-panel border border-border-subtle chamfer-8 overflow-hidden">
+        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Draft ID', 'Horizon', 'Generated', 'Shifts', 'Score', 'Status', 'Action'].map(h => (
-                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-text-muted">{h}</th>
+                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {drafts.map(draft => (
-                <tr key={draft.id} className="border-b border-border-subtle hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 text-xs font-mono text-text-muted">{draft.id.slice(0, 12)}</td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">{draft.horizon_days ?? '—'}d</td>
-                  <td className="px-4 py-3 text-xs font-mono text-text-muted">
+                <tr key={draft.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                  <td className="px-4 py-3 text-xs font-mono text-zinc-500">{draft.id.slice(0, 12)}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400">{draft.horizon_days ?? '—'}d</td>
+                  <td className="px-4 py-3 text-xs font-mono text-zinc-500">
                     {draft.generated_at ? new Date(draft.generated_at).toLocaleString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">{draft.shifts_count ?? '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400">{draft.shifts_count ?? '—'}</td>
                   <td className="px-4 py-3">
                     {draft.score != null ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${draft.score >= 80 ? 'bg-green-500' : draft.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                        <div className="w-16 h-1.5 bg-zinc-950/10  overflow-hidden">
+                          <div className={`h-full  ${draft.score >= 80 ? 'bg-green-500' : draft.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
                                style={{ width: `${draft.score}%` }} />
                         </div>
-                        <span className="text-micro text-text-muted">{draft.score}%</span>
+                        <span className="text-micro text-zinc-500">{draft.score}%</span>
                       </div>
                     ) : '—'}
                   </td>
@@ -392,7 +392,7 @@ function AIDraftsView({
                     <span className={`text-xs font-semibold px-2 py-0.5 chamfer-4 border ${
                       draft.state === 'PENDING' ? 'bg-yellow-900/30 border-yellow-500/40 text-yellow-300' :
                       draft.state === 'APPROVED' ? 'bg-green-900/30 border-green-500/40 text-green-300' :
-                      'bg-gray-800/50 border-gray-600 text-gray-400'
+                      'bg-zinc-900/50 border-gray-600 text-zinc-500'
                     }`}>
                       {draft.state}
                     </span>
@@ -428,7 +428,7 @@ function CredentialStrip({ creds }: { creds: ExpiringCredential[] }) {
       {creds.slice(0, 6).map((c, i) => (
         <span key={i} className={`text-micro px-2 py-1 chamfer-4 border ${
           (c.days_until_expiry ?? 999) <= 0 ? 'bg-red-900/30 border-red-500/40 text-red-300' :
-          (c.days_until_expiry ?? 999) <= 14 ? 'bg-orange-900/30 border-orange-500/40 text-orange-300' :
+          (c.days_until_expiry ?? 999) <= 14 ? 'bg-[rgba(255,77,0,0.3)] border-orange-500/40 text-[#FF9A66]' :
           'bg-yellow-900/30 border-yellow-500/40 text-yellow-300'
         }`}>
           {c.crew_member_name} · {c.cert_type}{c.days_until_expiry != null ? ` (${c.days_until_expiry <= 0 ? 'EXPIRED' : `${c.days_until_expiry}d`})` : ''}
@@ -510,13 +510,13 @@ export default function SchedulingPage() {
   });
 
   return (
-    <div className="flex flex-col bg-bg-void min-h-screen">
+    <div className="flex flex-col bg-black min-h-screen">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border-subtle bg-bg-panel/50 px-5 py-4">
+      <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs font-black text-text-primary uppercase tracking-widest">Scheduling Command</div>
-            <div className="text-micro text-text-muted">Shift calendar · Swap requests · Coverage monitoring · AI drafts · Fatigue tracking</div>
+            <div className="text-xs font-black text-zinc-100 uppercase tracking-widest">Scheduling Command</div>
+            <div className="text-micro text-zinc-500">Shift calendar · Swap requests · Coverage monitoring · AI drafts · Fatigue tracking</div>
           </div>
           <div className="flex items-center gap-2">
             {expiringCreds.length > 0 && (
@@ -529,14 +529,14 @@ export default function SchedulingPage() {
 
         <div className="grid grid-cols-4 gap-3 mt-4">
           {[
-            { label: "This Week's Shifts", value: weekShifts.length.toString(), color: 'text-text-primary' },
-            { label: 'Active Swaps Pending', value: swaps.filter(s => s.state === 'PENDING').length.toString(), color: swaps.filter(s => s.state === 'PENDING').length > 0 ? 'text-yellow-400' : 'text-text-muted' },
+            { label: "This Week's Shifts", value: weekShifts.length.toString(), color: 'text-zinc-100' },
+            { label: 'Active Swaps Pending', value: swaps.filter(s => s.state === 'PENDING').length.toString(), color: swaps.filter(s => s.state === 'PENDING').length > 0 ? 'text-yellow-400' : 'text-zinc-500' },
             { label: 'Coverage %', value: `${Math.round(coverage.coverage_pct ?? 0)}%`, color: (coverage.coverage_pct ?? 0) >= 80 ? 'text-green-400' : 'text-red-400' },
             { label: 'AI Drafts Pending', value: drafts.filter(d => d.state === 'PENDING').length.toString(), color: 'text-blue-400' },
           ].map(m => (
-            <div key={m.label} className="bg-bg-panel border border-border-subtle chamfer-8 px-4 py-3">
+            <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
               <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
-              <div className="text-micro text-text-muted mt-0.5">{m.label}</div>
+              <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
             </div>
           ))}
         </div>
@@ -547,7 +547,7 @@ export default function SchedulingPage() {
               key={v}
               onClick={() => setActiveView(v)}
               className={`px-4 py-2 text-micro font-semibold border-b-2 transition-colors ${
-                activeView === v ? 'border-brand-orange text-brand-orange' : 'border-transparent text-text-muted hover:text-text-secondary'
+                activeView === v ? 'border-brand-orange text-brand-orange' : 'border-transparent text-zinc-500 hover:text-zinc-400'
               }`}
             >
               {v === 'calendar' ? 'Shift Calendar' : v === 'requests' ? 'Swap Requests' : v === 'coverage' ? 'Coverage' : 'AI Drafts'}
@@ -566,13 +566,13 @@ export default function SchedulingPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button onClick={() => setWeekOffset(w => w - 1)} className="quantum-btn-sm">‹</button>
-                <span className="text-sm font-semibold text-text-primary min-w-[160px] text-center">
+                <span className="text-sm font-semibold text-zinc-100 min-w-[160px] text-center">
                   {fmt(startOfWeek)} — {fmt(endOfWeek)}
                 </span>
                 <button onClick={() => setWeekOffset(w => w + 1)} className="quantum-btn-sm">›</button>
-                <button onClick={() => setWeekOffset(0)} className="quantum-btn-sm text-text-muted">Today</button>
+                <button onClick={() => setWeekOffset(0)} className="quantum-btn-sm text-zinc-500">Today</button>
               </div>
-              <div className="text-micro text-text-muted">{weekShifts.length} shift{weekShifts.length !== 1 ? 's' : ''} this week</div>
+              <div className="text-micro text-zinc-500">{weekShifts.length} shift{weekShifts.length !== 1 ? 's' : ''} this week</div>
             </div>
             <WeekCalendar shifts={weekShifts} weekOffset={weekOffset} />
           </div>

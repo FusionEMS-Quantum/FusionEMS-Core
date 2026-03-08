@@ -53,7 +53,7 @@ export function QuantumModal({
         className={clsx(
           'relative z-10 w-full mx-4',
           sizeClass,
-          'bg-bg-panel border border-border-DEFAULT',
+          'bg-[#0A0A0B] border border-border-DEFAULT',
           'shadow-elevation-4 chamfer-12',
           'animate-fade-in',
           className,
@@ -64,7 +64,7 @@ export function QuantumModal({
             <h2 className="label-caps">{title}</h2>
             <button
               onClick={onClose}
-              className="text-text-muted hover:text-text-primary transition-colors duration-fast p-1"
+              className="text-zinc-500 hover:text-zinc-100 transition-colors duration-fast p-1"
               aria-label="Close"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">

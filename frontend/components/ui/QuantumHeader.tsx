@@ -30,11 +30,11 @@ export function QuantumHeader({
       )}
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-h1 font-bold text-text-primary truncate">
+          <h1 className="text-h1 font-bold text-zinc-100 truncate">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-body text-text-muted mt-1">{subtitle}</p>
+            <p className="text-body text-zinc-500 mt-1">{subtitle}</p>
           )}
         </div>
         {actions && (

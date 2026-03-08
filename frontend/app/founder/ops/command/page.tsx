@@ -9,10 +9,10 @@ const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div
-      className="bg-bg-panel border border-border-DEFAULT p-4"
+      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-text-muted mb-3">{title}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">{title}</div>
       {children}
     </div>
   );
@@ -21,8 +21,8 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 function StatRow({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
     <div className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
-      <span className="text-xs text-text-secondary">{label}</span>
-      <span className={`text-xs font-bold ${warn ? 'text-brand-red' : 'text-text-primary'}`}>{value}</span>
+      <span className="text-xs text-zinc-400">{label}</span>
+      <span className={`text-xs font-bold ${warn ? 'text-brand-red' : 'text-zinc-100'}`}>{value}</span>
     </div>
   );
 }
@@ -30,7 +30,7 @@ function StatRow({ label, value, warn }: { label: string; value: number | string
 function SeverityBadge({ severity }: { severity: string }) {
   const colors: Record<string, string> = {
     critical: 'bg-red-600/20 text-red-400 border-red-600/30',
-    high: 'bg-orange-600/20 text-orange-400 border-orange-600/30',
+    high: 'bg-[#FF4D00]-600/20 text-[#FF4D00]-400 border-orange-600/30',
     medium: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30',
     low: 'bg-green-600/20 text-green-400 border-green-600/30',
   };
@@ -56,7 +56,7 @@ export default function OpsCommandPage() {
   if (loading) {
     return (
       <div className="p-5 min-h-screen flex items-center justify-center">
-        <div className="text-text-muted text-sm animate-pulse">Loading Operations Intelligence...</div>
+        <div className="text-zinc-500 text-sm animate-pulse">Loading Operations Intelligence...</div>
       </div>
     );
   }
@@ -64,7 +64,7 @@ export default function OpsCommandPage() {
   if (!data) {
     return (
       <div className="p-5 min-h-screen flex items-center justify-center">
-        <div className="text-text-muted text-sm">Unable to connect to operations API.</div>
+        <div className="text-zinc-500 text-sm">Unable to connect to operations API.</div>
       </div>
     );
   }
@@ -86,13 +86,13 @@ export default function OpsCommandPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">MODULE 6</div>
-          <h1 className="text-xl font-black uppercase tracking-wider text-text-primary">Operations Command Center</h1>
-          <p className="text-xs text-text-muted mt-0.5">
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">MODULE 6</div>
+          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Operations Command Center</h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
             Real-time operational intelligence across all domains · Generated {data.generated_at ? new Date(data.generated_at).toLocaleTimeString() : 'now'}
           </p>
         </div>
-        <Link href="/founder" className="h-8 px-3 bg-white/5 border border-border-DEFAULT text-text-muted text-xs font-semibold hover:bg-white/10 transition-colors flex items-center">
+        <Link href="/founder" className="h-8 px-3 bg-zinc-950/5 border border-border-DEFAULT text-zinc-500 text-xs font-semibold hover:bg-zinc-950/10 transition-colors flex items-center">
           Back to Dashboard
         </Link>
       </div>
@@ -102,21 +102,21 @@ export default function OpsCommandPage() {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-bg-panel border border-brand-orange/[0.2] p-4"
+          className="bg-[#0A0A0B] border border-brand-orange/[0.2] p-4"
           style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange animate-pulse" />
+            <span className="w-1.5 h-1.5  bg-[#FF4D00] animate-pulse" />
             <span className="text-micro font-bold uppercase tracking-widest text-brand-orange">Top Priority Actions</span>
           </div>
           <div className="space-y-2">
             {actions.map((a: any, i: number) => (
               <div key={i} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
-                <span className="text-micro font-bold text-orange-dim font-mono w-5">{i + 1}</span>
+                <span className="text-micro font-bold text-[#FF4D00]-dim font-mono w-5">{i + 1}</span>
                 <SeverityBadge severity={a.severity} />
-                <span className="flex-1 text-xs text-text-primary">{a.action}</span>
-                <span className="text-micro uppercase tracking-wider text-text-muted bg-white/5 px-2 py-0.5">{a.domain}</span>
-                <span className="text-[10px] text-text-muted">{a.reason}</span>
+                <span className="flex-1 text-xs text-zinc-100">{a.action}</span>
+                <span className="text-micro uppercase tracking-wider text-zinc-500 bg-zinc-950/5 px-2 py-0.5">{a.domain}</span>
+                <span className="text-[10px] text-zinc-500">{a.reason}</span>
               </div>
             ))}
           </div>
@@ -130,9 +130,9 @@ export default function OpsCommandPage() {
           <StatRow label="Retrying Deployments" value={dep.retrying_deployments ?? 0} />
           {(dep.recent_failures || []).length > 0 && (
             <div className="mt-3">
-              <div className="text-[10px] text-text-muted uppercase mb-1">Recent Failures</div>
+              <div className="text-[10px] text-zinc-500 uppercase mb-1">Recent Failures</div>
               {dep.recent_failures.slice(0, 3).map((f: any) => (
-                <div key={f.id} className="text-xs text-text-secondary py-1 border-b border-white/5">
+                <div key={f.id} className="text-xs text-zinc-400 py-1 border-b border-white/5">
                   <SeverityBadge severity={f.severity?.toLowerCase() || 'high'} />
                   <span className="ml-2">{f.what_is_wrong}</span>
                 </div>
@@ -167,11 +167,11 @@ export default function OpsCommandPage() {
           <StatRow label="Total Denied Value" value={`$${((denials.total_denied_value_cents ?? 0) / 100).toLocaleString()}`} warn={(denials.total_denied_value_cents ?? 0) > 50000} />
           {(denials.top_denials || []).length > 0 && (
             <div className="mt-3">
-              <div className="text-[10px] text-text-muted uppercase mb-1">Largest Denials</div>
+              <div className="text-[10px] text-zinc-500 uppercase mb-1">Largest Denials</div>
               {denials.top_denials.map((d: any) => (
                 <div key={d.id} className="flex justify-between text-xs py-1 border-b border-white/5">
-                  <span className="text-text-secondary">{d.payer}</span>
-                  <span className="text-text-primary font-bold">${(d.total_billed_cents / 100).toLocaleString()}</span>
+                  <span className="text-zinc-400">{d.payer}</span>
+                  <span className="text-zinc-100 font-bold">${(d.total_billed_cents / 100).toLocaleString()}</span>
                 </div>
               ))}
             </div>

@@ -60,7 +60,7 @@ const STATUS_COLORS: Record<string, string> = {
   passed: 'var(--color-status-active)',
   failed: 'var(--color-brand-red)',
   approved: 'var(--color-system-compliance)',
-  merged: 'var(--color-brand-orange)',
+  merged: '#FF4D00',
 };
 
 function authHeaders(): HeadersInit {
@@ -85,7 +85,7 @@ function PlanPanel({ plan }: { plan: ActionPlan }) {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="px-2 py-0.5 text-micro font-bold uppercase tracking-widest bg-brand-orange/[0.15] text-orange chamfer-4">
+        <span className="px-2 py-0.5 text-micro font-bold uppercase tracking-widest bg-brand-orange/[0.15] text-[#FF4D00] chamfer-4">
           {plan.intent}
         </span>
         {plan.risk_level && (
@@ -97,19 +97,19 @@ function PlanPanel({ plan }: { plan: ActionPlan }) {
           </span>
         )}
       </div>
-      <p className="text-sm text-text-primary">{plan.summary}</p>
+      <p className="text-sm text-zinc-100">{plan.summary}</p>
 
       <div>
-        <div className="text-micro uppercase tracking-widest text-text-muted mb-2">
+        <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">
           Actions ({plan.actions.length})
         </div>
         <div className="space-y-2">
           {plan.actions.map((a, i) => (
-            <div key={i} className="bg-white/[0.04] border border-border-DEFAULT chamfer-4 p-3">
+            <div key={i} className="bg-zinc-950/[0.04] border border-border-DEFAULT chamfer-4 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-micro font-mono font-bold text-status-info">{a.type}</span>
               </div>
-              <pre className="text-micro text-text-secondary whitespace-pre-wrap break-all">
+              <pre className="text-micro text-zinc-400 whitespace-pre-wrap break-all">
                 {JSON.stringify(a.payload, null, 2)}
               </pre>
             </div>
@@ -118,14 +118,14 @@ function PlanPanel({ plan }: { plan: ActionPlan }) {
       </div>
 
       <div>
-        <div className="text-micro uppercase tracking-widest text-text-muted mb-2">
+        <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">
           Acceptance Tests
         </div>
         <div className="space-y-1">
           {plan.acceptance_tests.map((t, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="text-status-active text-xs">✓</span>
-              <code className="text-xs text-text-primary font-mono">{t}</code>
+              <code className="text-xs text-zinc-100 font-mono">{t}</code>
             </div>
           ))}
         </div>
@@ -133,8 +133,8 @@ function PlanPanel({ plan }: { plan: ActionPlan }) {
 
       {plan.notes && (
         <div className="bg-brand-orange/[0.06] border border-brand-orange/[0.15] chamfer-4 p-3">
-          <div className="text-micro uppercase tracking-widest text-orange-dim mb-1">Notes</div>
-          <p className="text-xs text-text-secondary">{plan.notes}</p>
+          <div className="text-micro uppercase tracking-widest text-[#FF4D00]-dim mb-1">Notes</div>
+          <p className="text-xs text-zinc-400">{plan.notes}</p>
         </div>
       )}
     </div>
@@ -144,7 +144,7 @@ function PlanPanel({ plan }: { plan: ActionPlan }) {
 function GatePanel({ results }: { results: GateResult | null }) {
   if (!results) {
     return (
-      <div className="p-4 text-sm text-text-muted italic">
+      <div className="p-4 text-sm text-zinc-500 italic">
         No gate results yet. Execute the run to trigger release gates.
       </div>
     );
@@ -169,7 +169,7 @@ function GatePanel({ results }: { results: GateResult | null }) {
             <span className={`text-sm ${passed ? 'text-status-active' : 'text-red'}`}>
               {passed ? '✓' : '✗'}
             </span>
-            <span className="text-xs font-mono text-text-primary">{gate}</span>
+            <span className="text-xs font-mono text-zinc-100">{gate}</span>
           </div>
         ))}
       </div>
@@ -180,7 +180,7 @@ function GatePanel({ results }: { results: GateResult | null }) {
 function DiffPanel({ diffText }: { diffText: string | null }) {
   if (!diffText) {
     return (
-      <div className="p-4 text-sm text-text-muted italic">
+      <div className="p-4 text-sm text-zinc-500 italic">
         No diff available yet.
       </div>
     );
@@ -209,26 +209,26 @@ function MessageBubble({ msg }: { msg: Message }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       {!isUser && (
-        <div className="w-6 h-6 flex-shrink-0 rounded-full bg-brand-orange/[0.2] border border-brand-orange/[0.4] flex items-center justify-center text-[9px] font-bold text-orange mr-2 mt-0.5">
+        <div className="w-6 h-6 flex-shrink-0  bg-brand-orange/[0.2] border border-brand-orange/[0.4] flex items-center justify-center text-[9px] font-bold text-[#FF4D00] mr-2 mt-0.5">
           AI
         </div>
       )}
       <div
         className={`max-w-[80%] px-3 py-2 chamfer-4 text-sm leading-relaxed ${
           isUser
-            ? 'bg-orange-ghost border border-brand-orange/[0.2] text-text-primary'
-            : 'bg-white/5 border border-border-DEFAULT text-text-primary'
+            ? 'bg-[#FF4D00]-ghost border border-brand-orange/[0.2] text-zinc-100'
+            : 'bg-zinc-950/5 border border-border-DEFAULT text-zinc-100'
         }`}
       >
         <p className="whitespace-pre-wrap">{msg.content_text}</p>
         {msg.content_json && (
           <div className="mt-2 pt-2 border-t border-border-DEFAULT">
-            <span className="text-micro text-orange font-semibold uppercase tracking-wider">
+            <span className="text-micro text-[#FF4D00] font-semibold uppercase tracking-wider">
               ▣ Action plan attached — see right panel
             </span>
           </div>
         )}
-        <div className="mt-1 text-micro text-text-muted">
+        <div className="mt-1 text-micro text-zinc-500">
           {new Date(msg.created_at).toLocaleTimeString()}
         </div>
       </div>
@@ -427,16 +427,16 @@ export default function FounderCopilotPage() {
   ];
 
   return (
-    <div className="flex h-full bg-bg-base text-text-primary overflow-hidden" style={{ minHeight: 0 }}>
+    <div className="flex h-full bg-[#050505] text-zinc-100 overflow-hidden" style={{ minHeight: 0 }}>
       {/* Session list */}
-      <aside className="w-52 flex-shrink-0 border-r border-border-subtle flex flex-col bg-bg-void">
+      <aside className="w-52 flex-shrink-0 border-r border-border-subtle flex flex-col bg-black">
         <div className="flex items-center justify-between px-3 py-3 border-b border-border-subtle">
           <span className="text-micro font-bold uppercase tracking-widest text-brand-orange">
             Copilot Sessions
           </span>
           <button
             onClick={newSession}
-            className="w-6 h-6 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-orange text-xs chamfer-4 hover:bg-brand-orange/[0.25] transition-colors flex items-center justify-center"
+            className="w-6 h-6 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-[#FF4D00] text-xs chamfer-4 hover:bg-brand-orange/[0.25] transition-colors flex items-center justify-center"
             title="New session"
           >
             +
@@ -444,7 +444,7 @@ export default function FounderCopilotPage() {
         </div>
         <div className="flex-1 overflow-y-auto py-1">
           {sessions.length === 0 && (
-            <div className="px-3 py-4 text-xs text-text-muted italic">No sessions yet</div>
+            <div className="px-3 py-4 text-xs text-zinc-500 italic">No sessions yet</div>
           )}
           {sessions.map((s) => (
             <button
@@ -452,12 +452,12 @@ export default function FounderCopilotPage() {
               onClick={() => selectSession(s)}
               className={`w-full text-left px-3 py-2 border-b border-border-subtle transition-colors ${
                 activeSession?.id === s.id
-                  ? 'bg-orange-ghost text-text-primary border-l-2 border-l-[var(--color-brand-orange)]'
-                  : 'text-text-secondary hover:bg-white/[0.04] hover:text-text-primary'
+                  ? 'bg-[#FF4D00]-ghost text-zinc-100 border-l-2 border-l-[#FF4D00]'
+                  : 'text-zinc-400 hover:bg-zinc-950/[0.04] hover:text-zinc-100'
               }`}
             >
               <div className="text-xs truncate">{s.title}</div>
-              <div className="text-micro text-text-muted mt-0.5">
+              <div className="text-micro text-zinc-500 mt-0.5">
                 {new Date(s.updated_at).toLocaleDateString()}
               </div>
             </button>
@@ -468,16 +468,16 @@ export default function FounderCopilotPage() {
       {/* Chat column */}
       <div className="flex flex-col flex-1 min-w-0">
         {/* Chat header */}
-        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border-subtle bg-bg-void flex-shrink-0">
+        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border-subtle bg-black flex-shrink-0">
           <div>
             <div className="text-sm font-semibold">Founder Copilot</div>
-            <div className="text-micro text-text-muted">
+            <div className="text-micro text-zinc-500">
               {activeSession ? activeSession.title : 'Select or start a session'}
             </div>
           </div>
           {activeRun && (
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-micro text-text-muted">RUN</span>
+              <span className="text-micro text-zinc-500">RUN</span>
               <span
                 className="px-2 py-0.5 text-micro font-bold uppercase chamfer-4"
                 style={{
@@ -506,16 +506,16 @@ export default function FounderCopilotPage() {
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {!activeSession && (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-12 h-12 bg-brand-orange/[0.1] border border-brand-orange/[0.2] rounded-full flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-brand-orange/[0.1] border border-brand-orange/[0.2]  flex items-center justify-center mb-4">
                 <span className="text-2xl">◈</span>
               </div>
-              <p className="text-sm text-text-secondary mb-2">Founder Copilot</p>
-              <p className="text-xs text-text-muted max-w-sm">
+              <p className="text-sm text-zinc-400 mb-2">Founder Copilot</p>
+              <p className="text-xs text-zinc-500 max-w-sm">
                 Start a new session to ask questions, generate plans, or propose code changes. All changes are staged and require your approval.
               </p>
               <button
                 onClick={newSession}
-                className="mt-4 px-4 py-2 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-orange text-xs font-semibold chamfer-4 hover:bg-brand-orange/[0.25] transition-colors"
+                className="mt-4 px-4 py-2 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-[#FF4D00] text-xs font-semibold chamfer-4 hover:bg-brand-orange/[0.25] transition-colors"
               >
                 + New Session
               </button>
@@ -531,7 +531,7 @@ export default function FounderCopilotPage() {
         {error && (
           <div className="mx-4 mb-2 px-3 py-2 bg-red-ghost border border-red-ghost chamfer-4 text-xs text-red-bright flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="ml-2 text-text-muted hover:text-text-primary">✕</button>
+            <button onClick={() => setError(null)} className="ml-2 text-zinc-500 hover:text-zinc-100">✕</button>
           </div>
         )}
 
@@ -542,7 +542,7 @@ export default function FounderCopilotPage() {
               <button
                 onClick={proposeRun}
                 disabled={!messages.some((m) => m.content_json)}
-                className="px-3 py-1.5 text-xs font-semibold bg-orange-ghost border border-brand-orange/[0.3] text-orange chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-semibold bg-[#FF4D00]-ghost border border-brand-orange/[0.3] text-[#FF4D00] chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Propose Changes
               </button>
@@ -563,14 +563,14 @@ export default function FounderCopilotPage() {
               <button
                 onClick={mergeRun}
                 disabled={!activeRun || activeRun.status !== 'approved'}
-                className="px-3 py-1.5 text-xs font-semibold bg-orange-ghost border border-brand-orange/[0.4] text-orange chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-semibold bg-[#FF4D00]-ghost border border-brand-orange/[0.4] text-[#FF4D00] chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Merge when Green
               </button>
               <button
                 onClick={exportPatch}
                 disabled={!activeRun?.diff_text}
-                className="px-3 py-1.5 text-xs font-semibold bg-white/5 border border-white/[0.12] text-text-secondary chamfer-4 hover:bg-white/[0.09] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-semibold bg-zinc-950/5 border border-white/[0.12] text-zinc-400 chamfer-4 hover:bg-zinc-950/[0.09] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Export Patch
               </button>
@@ -588,12 +588,12 @@ export default function FounderCopilotPage() {
                 }}
                 placeholder="Ask Founder Copilot… (Shift+Enter for newline)"
                 rows={2}
-                className="flex-1 bg-white/[0.04] border border-border-DEFAULT px-3 py-2 text-sm text-text-primary placeholder-text-text-muted chamfer-4 resize-none focus:outline-none focus:border-orange transition-colors"
+                className="flex-1 bg-zinc-950/[0.04] border border-border-DEFAULT px-3 py-2 text-sm text-zinc-100 placeholder-text-zinc-500 chamfer-4 resize-none focus:outline-none focus:border-orange transition-colors"
               />
               <button
                 onClick={sendMessage}
                 disabled={sending || !inputText.trim()}
-                className="px-4 bg-orange text-text-inverse text-xs font-bold chamfer-4 hover:bg-orange-bright transition-colors disabled:opacity-40 disabled:cursor-not-allowed self-stretch"
+                className="px-4 bg-[#FF4D00] text-black text-xs font-bold chamfer-4 hover:bg-[#FF4D00]-bright transition-colors disabled:opacity-40 disabled:cursor-not-allowed self-stretch"
               >
                 {sending ? '…' : 'Send'}
               </button>
@@ -603,7 +603,7 @@ export default function FounderCopilotPage() {
       </div>
 
       {/* Right panel */}
-      <aside className="w-96 flex-shrink-0 border-l border-border-subtle flex flex-col bg-bg-void">
+      <aside className="w-96 flex-shrink-0 border-l border-border-subtle flex flex-col bg-black">
         <div className="flex border-b border-border-subtle overflow-x-auto flex-shrink-0">
           {RIGHT_TABS.map((tab) => (
             <button
@@ -611,8 +611,8 @@ export default function FounderCopilotPage() {
               onClick={() => setRightTab(tab.id)}
               className={`px-3 py-2.5 text-micro font-semibold uppercase tracking-wider whitespace-nowrap transition-colors flex-shrink-0 ${
                 rightTab === tab.id
-                  ? 'text-orange border-b-2 border-orange'
-                  : 'text-text-muted hover:text-text-primary'
+                  ? 'text-[#FF4D00] border-b-2 border-orange'
+                  : 'text-zinc-500 hover:text-zinc-100'
               }`}
             >
               {tab.label}
@@ -621,20 +621,20 @@ export default function FounderCopilotPage() {
         </div>
         <div className="flex-1 overflow-y-auto">
           {rightTab === 'plan' && (currentPlan ? <PlanPanel plan={currentPlan} /> : (
-            <div className="p-4 text-sm text-text-muted italic">No plan yet. Ask the copilot to propose a change.</div>
+            <div className="p-4 text-sm text-zinc-500 italic">No plan yet. Ask the copilot to propose a change.</div>
           ))}
           {rightTab === 'diff' && <DiffPanel diffText={activeRun?.diff_text ?? null} />}
           {rightTab === 'migrations' && (
             <div className="p-4 space-y-3">
               {currentPlan?.actions.filter((a) => a.type === 'GENERATE_MIGRATION').length ? (
                 currentPlan.actions.filter((a) => a.type === 'GENERATE_MIGRATION').map((a, i) => (
-                  <div key={i} className="bg-white/[0.04] border border-border-DEFAULT chamfer-4 p-3">
+                  <div key={i} className="bg-zinc-950/[0.04] border border-border-DEFAULT chamfer-4 p-3">
                     <div className="text-micro text-status-info font-bold mb-1">GENERATE_MIGRATION</div>
-                    <pre className="text-micro text-text-secondary whitespace-pre-wrap">{JSON.stringify(a.payload, null, 2)}</pre>
+                    <pre className="text-micro text-zinc-400 whitespace-pre-wrap">{JSON.stringify(a.payload, null, 2)}</pre>
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-text-muted italic">No migration actions in this plan.</div>
+                <div className="text-sm text-zinc-500 italic">No migration actions in this plan.</div>
               )}
             </div>
           )}
@@ -642,13 +642,13 @@ export default function FounderCopilotPage() {
             <div className="p-4 space-y-3">
               {currentPlan?.actions.filter((a) => a.type === 'UPDATE_CLOUDFORMATION').length ? (
                 currentPlan.actions.filter((a) => a.type === 'UPDATE_CLOUDFORMATION').map((a, i) => (
-                  <div key={i} className="bg-white/[0.04] border border-border-DEFAULT chamfer-4 p-3">
+                  <div key={i} className="bg-zinc-950/[0.04] border border-border-DEFAULT chamfer-4 p-3">
                     <div className="text-micro text-status-warning font-bold mb-1">UPDATE_CLOUDFORMATION</div>
-                    <pre className="text-micro text-text-secondary whitespace-pre-wrap">{String((a.payload as Record<string, unknown>).patch || JSON.stringify(a.payload, null, 2))}</pre>
+                    <pre className="text-micro text-zinc-400 whitespace-pre-wrap">{String((a.payload as Record<string, unknown>).patch || JSON.stringify(a.payload, null, 2))}</pre>
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-text-muted italic">No CloudFormation actions in this plan.</div>
+                <div className="text-sm text-zinc-500 italic">No CloudFormation actions in this plan.</div>
               )}
             </div>
           )}
@@ -657,22 +657,22 @@ export default function FounderCopilotPage() {
             <div className="p-4 space-y-3">
               {activeRun ? (
                 <>
-                  <div className="text-micro uppercase tracking-widest text-text-muted mb-2">Run Details</div>
+                  <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">Run Details</div>
                   <div className="space-y-2 text-xs">
-                    <div className="flex justify-between"><span className="text-text-muted">Run ID</span><code className="text-text-primary font-mono text-micro">{activeRun.id.slice(0, 12)}…</code></div>
-                    <div className="flex justify-between"><span className="text-text-muted">Status</span><span style={{ color: STATUS_COLORS[activeRun.status] || 'var(--color-text-muted)' }} className="font-semibold">{activeRun.status}</span></div>
-                    <div className="flex justify-between"><span className="text-text-muted">Created</span><span className="text-text-primary">{new Date(activeRun.created_at).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-zinc-500">Run ID</span><code className="text-zinc-100 font-mono text-micro">{activeRun.id.slice(0, 12)}…</code></div>
+                    <div className="flex justify-between"><span className="text-zinc-500">Status</span><span style={{ color: STATUS_COLORS[activeRun.status] || 'var(--color-text-muted)' }} className="font-semibold">{activeRun.status}</span></div>
+                    <div className="flex justify-between"><span className="text-zinc-500">Created</span><span className="text-zinc-100">{new Date(activeRun.created_at).toLocaleString()}</span></div>
                     {activeRun.gh_run_url && <div className="pt-2"><a href={activeRun.gh_run_url} target="_blank" rel="noopener noreferrer" className="text-status-info hover:underline text-xs">View GitHub Actions run ↗</a></div>}
                   </div>
                   {currentPlan?.summary && (
-                    <div className="mt-4 p-3 bg-white/[0.04] border border-border-DEFAULT chamfer-4">
-                      <div className="text-micro uppercase tracking-widest text-text-muted mb-1">Summary</div>
-                      <p className="text-xs text-text-primary">{currentPlan.summary}</p>
+                    <div className="mt-4 p-3 bg-zinc-950/[0.04] border border-border-DEFAULT chamfer-4">
+                      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">Summary</div>
+                      <p className="text-xs text-zinc-100">{currentPlan.summary}</p>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="text-sm text-text-muted italic">No run active.</div>
+                <div className="text-sm text-zinc-500 italic">No run active.</div>
               )}
             </div>
           )}

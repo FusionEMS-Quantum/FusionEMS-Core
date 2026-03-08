@@ -19,9 +19,9 @@ function SkeletonPrimitive({
 }: Omit<QuantumSkeletonProps, 'count'>) {
   const baseClass = 'animate-pulse bg-bg-overlay';
   const variantClass = {
-    line: 'h-4 rounded chamfer-4',
-    rect: 'rounded chamfer-8',
-    circle: 'rounded-full',
+    line: 'h-4  chamfer-4',
+    rect: ' chamfer-8',
+    circle: '',
   }[variant];
 
   return (
@@ -53,12 +53,12 @@ export function QuantumCardSkeleton({ className, title }: { className?: string; 
   return (
     <div
       className={clsx(
-        'bg-bg-panel border border-border-DEFAULT chamfer-8 p-4 space-y-3',
+        'bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 p-4 space-y-3',
         className,
       )}
     >
       {title && (
-        <div className="text-label text-text-muted mb-1">{title}</div>
+        <div className="text-label text-zinc-500 mb-1">{title}</div>
       )}
       <QuantumSkeleton variant="line" width="40%" height={12} />
       <QuantumSkeleton variant="line" width="100%" height={28} />

@@ -18,35 +18,27 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'bg-orange text-text-inverse',
-          'chamfer-8',
-          'hover:bg-orange-bright',
-          'shadow-elevation-1',
-          'hover:shadow-[0_0_12px_2px_var(--color-brand-orange-glow)]',
+          'quantum-btn-primary',
         ],
         secondary: [
-          'bg-bg-panel text-text-primary',
-          'chamfer-8',
-          'border border-border-DEFAULT',
-          'hover:border-orange hover:text-orange',
-          'shadow-elevation-1',
+          'quantum-btn',
         ],
         danger: [
-          'bg-red text-text-primary',
+          'bg-red text-zinc-100',
           'chamfer-8',
           'hover:bg-red-bright',
           'shadow-elevation-1',
           'hover:shadow-[0_0_12px_2px_var(--color-brand-red-ghost)]',
         ],
         ghost: [
-          'bg-transparent text-text-secondary',
+          'bg-transparent text-zinc-400',
           'chamfer-4',
-          'hover:bg-bg-panel hover:text-text-primary',
+          'hover:bg-[#0A0A0B] hover:text-zinc-100',
         ],
         icon: [
-          'bg-transparent text-text-secondary',
+          'bg-transparent text-zinc-400',
           'chamfer-4',
-          'hover:bg-bg-panel hover:text-text-primary',
+          'hover:bg-[#0A0A0B] hover:text-zinc-100',
           '!px-0',
         ],
       },
@@ -109,7 +101,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <LoadingSpinner />
         ) : leftIcon ? (
-          <span className="shrink-0">{leftIcon}</span>
+          <span className="shrink-0 quantum-btn-icon">{leftIcon}</span>
         ) : null}
 
         {children && (
@@ -119,7 +111,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
 
         {!loading && rightIcon ? (
-          <span className="shrink-0">{rightIcon}</span>
+          <span className="shrink-0 quantum-btn-icon">{rightIcon}</span>
         ) : null}
       </button>
     );

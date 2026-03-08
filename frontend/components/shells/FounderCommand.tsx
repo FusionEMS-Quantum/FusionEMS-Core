@@ -38,11 +38,11 @@ export function CrossModuleHealth({ domains, compact = false, className }: Cross
         return (
           <div
             key={d.domain}
-            className="bg-bg-panel border border-[var(--color-border-default)] chamfer-4 p-3 relative overflow-hidden"
+            className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-4 p-3 relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: color }} />
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-micro font-label uppercase tracking-wider text-text-muted truncate">
+              <span className="text-micro font-label uppercase tracking-wider text-zinc-500 truncate">
                 {DOMAIN_LABEL[d.domain]}
               </span>
               {d.alertCount > 0 && (
@@ -59,7 +59,7 @@ export function CrossModuleHealth({ domains, compact = false, className }: Cross
                 'text-micro mb-0.5',
                 d.trend === 'up' && 'text-status-active',
                 d.trend === 'down' && 'text-red',
-                d.trend === 'stable' && 'text-text-muted'
+                d.trend === 'stable' && 'text-zinc-500'
               )}>
                 {d.trend === 'up' ? '▲' : d.trend === 'down' ? '▼' : '—'}
               </span>
@@ -100,31 +100,31 @@ export function CrossModuleActions({ actions, maxVisible = 3, className }: Cross
 
   if (visible.length === 0) {
     return (
-      <div className={cn('bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4 text-center', className)}>
-        <p className="text-body text-text-muted">No critical actions right now. You are up to date.</p>
+      <div className={cn('bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4 text-center', className)}>
+        <p className="text-body text-zinc-500">No critical actions right now. You are up to date.</p>
       </div>
     );
   }
 
   return (
     <div className={cn('space-y-2', className)}>
-      <h3 className="font-label text-label uppercase tracking-wider text-text-secondary">
+      <h3 className="font-label text-label uppercase tracking-wider text-zinc-400">
         Top Actions
       </h3>
       {visible.map((action) => {
         const domainColor = DOMAIN_COLOR_MAP[action.domain];
         const severityColor = action.severity === 'BLOCKING' ? 'var(--color-brand-red)'
-          : action.severity === 'HIGH' ? 'var(--q-orange)'
+          : action.severity === 'HIGH' ? '#FF4D00'
           : 'var(--q-yellow)';
 
         const content = (
           <div
-            className="flex items-center gap-3 p-3 bg-bg-panel border border-[var(--color-border-default)] chamfer-4
+            className="flex items-center gap-3 p-3 bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-4
                        hover:bg-bg-overlay transition-colors duration-fast cursor-pointer"
           >
             <div className="w-1 h-8 chamfer-4 flex-shrink-0" style={{ backgroundColor: severityColor }} />
             <div className="flex-1 min-w-0">
-              <p className="text-body text-text-primary truncate">{action.label}</p>
+              <p className="text-body text-zinc-100 truncate">{action.label}</p>
               <span className="text-micro font-label uppercase tracking-wider" style={{ color: domainColor }}>
                 {DOMAIN_LABEL[action.domain]}
               </span>
@@ -166,7 +166,7 @@ export function DomainNavCard({ domain, href, description, score, alertCount, cl
     <a
       href={href}
       className={cn(
-        'block bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4 relative overflow-hidden',
+        'block bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4 relative overflow-hidden',
         'hover:bg-bg-overlay hover:border-[var(--color-border-strong)] transition-all duration-fast',
         'group',
         className
@@ -175,7 +175,7 @@ export function DomainNavCard({ domain, href, description, score, alertCount, cl
       <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: color }} />
 
       <div className="flex items-center justify-between mb-2">
-        <span className="text-h3 font-sans font-bold text-text-primary group-hover:text-orange transition-colors duration-fast">
+        <span className="text-h3 font-sans font-bold text-zinc-100 group-hover:text-[#FF4D00] transition-colors duration-fast">
           {DOMAIN_LABEL[domain]}
         </span>
         {alertCount !== undefined && alertCount > 0 && (
@@ -186,7 +186,7 @@ export function DomainNavCard({ domain, href, description, score, alertCount, cl
       </div>
 
       {description && (
-        <p className="text-label text-text-muted mb-3">{description}</p>
+        <p className="text-label text-zinc-500 mb-3">{description}</p>
       )}
 
       {score !== undefined && (
@@ -200,7 +200,7 @@ export function DomainNavCard({ domain, href, description, score, alertCount, cl
               }}
             />
           </div>
-          <span className="text-micro font-label text-text-muted">{score}%</span>
+          <span className="text-micro font-label text-zinc-500">{score}%</span>
         </div>
       )}
     </a>
@@ -227,13 +227,13 @@ export function FounderStatusBar({
 }: FounderStatusBarProps) {
   return (
     <div className={cn(
-      'flex items-center gap-4 px-4 py-1.5 border-b border-[var(--color-border-subtle)] bg-bg-void text-micro',
+      'flex items-center gap-4 px-4 py-1.5 border-b border-[var(--color-border-subtle)] bg-black text-micro',
       className
     )}>
       {/* Live indicator */}
       <div className="flex items-center gap-1.5">
         <span className={cn(
-          'h-1.5 w-1.5 rounded-full',
+          'h-1.5 w-1.5 ',
           isLive ? 'bg-status-active animate-pulse' : 'bg-red'
         )} />
         <span className={cn(
@@ -247,7 +247,7 @@ export function FounderStatusBar({
       {/* Incidents */}
       {activeIncidents > 0 && (
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-red animate-pulse" />
+          <span className="h-1.5 w-1.5  bg-red animate-pulse" />
           <span className="font-label uppercase tracking-wider text-red">
             {activeIncidents} INCIDENT{activeIncidents > 1 ? 'S' : ''}
           </span>
@@ -256,7 +256,7 @@ export function FounderStatusBar({
 
       {/* API Health */}
       {apiHealth !== undefined && (
-        <div className="flex items-center gap-1.5 text-text-muted">
+        <div className="flex items-center gap-1.5 text-zinc-500">
           <span className="font-label uppercase tracking-wider text-text-disabled">API</span>
           <span className={cn(
             'font-label',
@@ -269,9 +269,9 @@ export function FounderStatusBar({
 
       {/* Tenant count */}
       {tenantCount !== undefined && (
-        <div className="flex items-center gap-1.5 text-text-muted ml-auto">
+        <div className="flex items-center gap-1.5 text-zinc-500 ml-auto">
           <span className="font-label uppercase tracking-wider text-text-disabled">TENANTS</span>
-          <span className="text-text-secondary">{tenantCount}</span>
+          <span className="text-zinc-400">{tenantCount}</span>
         </div>
       )}
     </div>

@@ -115,7 +115,7 @@ export default function ReportsPage() {
             <div
               key={card.title}
               style={{
-                background: 'var(--color-bg-panel)',
+                background: '#0A0A0B',
                 clipPath: 'var(--chamfer-8)',
                 padding: '20px',
                 boxShadow: 'var(--elevation-1)',
@@ -175,7 +175,7 @@ export default function ReportsPage() {
                 <button
                   style={{
                     padding: '5px 14px',
-                    background: 'var(--color-brand-orange)',
+                    background: '#FF4D00',
                     clipPath: 'var(--chamfer-4)',
                     border: 'none',
                     color: 'rgba(0,0,0,0.92)',
@@ -207,7 +207,7 @@ export default function ReportsPage() {
         </div>
         <div
           style={{
-            background: 'var(--color-bg-panel)',
+            background: '#0A0A0B',
             clipPath: 'var(--chamfer-8)',
             overflow: 'hidden',
             boxShadow: 'var(--elevation-1)',
@@ -298,7 +298,7 @@ export default function ReportsPage() {
                       }}
                       onMouseEnter={(e) =>
                         ((e.currentTarget as HTMLButtonElement).style.color =
-                          'var(--color-brand-orange)')
+                          '#FF4D00')
                       }
                       onMouseLeave={(e) =>
                         ((e.currentTarget as HTMLButtonElement).style.color =

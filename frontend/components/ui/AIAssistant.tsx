@@ -43,7 +43,7 @@ export function AIExplanationCard({
   return (
     <div
       className={cn(
-        'bg-bg-panel border border-[var(--color-border-default)] chamfer-8 overflow-hidden',
+        'bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 overflow-hidden',
         requiresReview && 'border-l-4 border-l-[#818cf8]',
         className
       )}
@@ -65,7 +65,7 @@ export function AIExplanationCard({
             AI Insight
           </span>
           {domain && (
-            <span className="text-micro font-label uppercase tracking-wider text-text-muted">
+            <span className="text-micro font-label uppercase tracking-wider text-zinc-500">
               · {DOMAIN_LABEL[domain]}
             </span>
           )}
@@ -80,7 +80,7 @@ export function AIExplanationCard({
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-text-muted hover:text-text-primary transition-colors duration-fast p-1"
+            className="text-zinc-500 hover:text-zinc-100 transition-colors duration-fast p-1"
             type="button"
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
@@ -91,7 +91,7 @@ export function AIExplanationCard({
           {onDismiss && (
             <button
               onClick={onDismiss}
-              className="text-text-muted hover:text-text-primary transition-colors duration-fast p-1"
+              className="text-zinc-500 hover:text-zinc-100 transition-colors duration-fast p-1"
               type="button"
               aria-label="Dismiss"
             >
@@ -110,19 +110,19 @@ export function AIExplanationCard({
             <span className="text-micro font-label uppercase tracking-wider text-text-disabled block mb-1">
               What happened
             </span>
-            <p className="text-body text-text-primary leading-snug">{what}</p>
+            <p className="text-body text-zinc-100 leading-snug">{what}</p>
           </div>
           <div>
             <span className="text-micro font-label uppercase tracking-wider text-text-disabled block mb-1">
               Why it matters
             </span>
-            <p className="text-body text-text-muted leading-snug">{why}</p>
+            <p className="text-body text-zinc-500 leading-snug">{why}</p>
           </div>
           <div>
             <span className="text-micro font-label uppercase tracking-wider text-text-disabled block mb-1">
               Do this next
             </span>
-            <p className="text-body text-text-secondary font-medium leading-snug">→ {next}</p>
+            <p className="text-body text-zinc-400 font-medium leading-snug">→ {next}</p>
           </div>
 
           {requiresReview && (
@@ -189,7 +189,7 @@ export function AIContextPanel({
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
             placeholder="Ask AI about this screen..."
-            className="flex-1 bg-bg-input border border-[var(--color-border-default)] text-text-primary 
+            className="flex-1 bg-bg-input border border-[var(--color-border-default)] text-zinc-100 
                        text-label px-3 py-2 chamfer-4 placeholder:text-text-disabled
                        focus:outline-none focus:border-[#818cf8]"
           />
@@ -210,15 +210,15 @@ export function AIContextPanel({
       {loading ? (
         <div className="space-y-3">
           {[0, 1].map(i => (
-            <div key={i} className="animate-pulse bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-4 space-y-2">
-              <div className="h-3 w-24 bg-bg-overlay rounded" />
-              <div className="h-3 w-full bg-bg-overlay rounded" />
-              <div className="h-3 w-3/4 bg-bg-overlay rounded" />
+            <div key={i} className="animate-pulse bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4 space-y-2">
+              <div className="h-3 w-24 bg-bg-overlay " />
+              <div className="h-3 w-full bg-bg-overlay " />
+              <div className="h-3 w-3/4 bg-bg-overlay " />
             </div>
           ))}
         </div>
       ) : suggestions.length === 0 ? (
-        <div className="text-center py-6 text-label text-text-muted">
+        <div className="text-center py-6 text-label text-zinc-500">
           No AI insights for this screen right now.
         </div>
       ) : (
@@ -257,19 +257,19 @@ export function SimpleModeSummary({
   return (
     <div
       className={cn(
-        'bg-bg-panel border border-[var(--color-border-default)] chamfer-8 p-5',
+        'bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-5',
         className
       )}
     >
       <div className="flex items-center gap-2 mb-4">
-        <svg className="w-5 h-5 text-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+        <svg className="w-5 h-5 text-[#FF4D00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h8m-8 6h16" />
         </svg>
-        <h3 className="text-h3 font-sans font-bold text-text-primary">
+        <h3 className="text-h3 font-sans font-bold text-zinc-100">
           {screenName}
         </h3>
         {domain && (
-          <span className="text-micro font-label uppercase tracking-wider text-text-muted ml-auto">
+          <span className="text-micro font-label uppercase tracking-wider text-zinc-500 ml-auto">
             {DOMAIN_LABEL[domain]}
           </span>
         )}
@@ -280,7 +280,7 @@ export function SimpleModeSummary({
           <p className="text-micro font-label uppercase tracking-wider text-text-disabled mb-1">
             What this area does
           </p>
-          <p className="text-body text-text-primary leading-relaxed">{whatThisDoes}</p>
+          <p className="text-body text-zinc-100 leading-relaxed">{whatThisDoes}</p>
         </div>
 
         {whatIsWrong && (
@@ -288,7 +288,7 @@ export function SimpleModeSummary({
             <p className="text-micro font-label uppercase tracking-wider text-red mb-1">
               What is wrong here
             </p>
-            <p className="text-body text-text-primary leading-relaxed">{whatIsWrong}</p>
+            <p className="text-body text-zinc-100 leading-relaxed">{whatIsWrong}</p>
           </div>
         )}
 
@@ -296,14 +296,14 @@ export function SimpleModeSummary({
           <p className="text-micro font-label uppercase tracking-wider text-text-disabled mb-1">
             What matters most
           </p>
-          <p className="text-body text-text-secondary leading-relaxed">{whatMatters}</p>
+          <p className="text-body text-zinc-400 leading-relaxed">{whatMatters}</p>
         </div>
 
-        <div className="p-3 bg-orange-ghost border border-orange/20 chamfer-4">
-          <p className="text-micro font-label uppercase tracking-wider text-orange mb-1">
+        <div className="p-3 bg-[#FF4D00]-ghost border border-orange/20 chamfer-4">
+          <p className="text-micro font-label uppercase tracking-wider text-[#FF4D00] mb-1">
             What to click next
           </p>
-          <p className="text-body text-text-primary font-medium leading-relaxed">→ {whatToClickNext}</p>
+          <p className="text-body text-zinc-100 font-medium leading-relaxed">→ {whatToClickNext}</p>
         </div>
 
         {requiresReview && (
