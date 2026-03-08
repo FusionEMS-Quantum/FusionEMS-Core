@@ -140,9 +140,11 @@ def resolve_tenant_brand(db: Session, tenant_id: str) -> BrandIdentity:
         )
 
     policy = row.get("policy_json") or {}
-    overrides: dict = policy.get("brand_overrides") if isinstance(policy, dict) else {}
-    if not isinstance(overrides, dict):
-        overrides = {}
+    overrides: dict[str, str] = {}
+    if isinstance(policy, dict):
+        raw_overrides = policy.get("brand_overrides")
+        if isinstance(raw_overrides, dict):
+            overrides = raw_overrides
 
     phone_override = str(overrides.get("billing_phone_e164") or "").strip()
     phone = phone_override or default.billing_phone_e164
