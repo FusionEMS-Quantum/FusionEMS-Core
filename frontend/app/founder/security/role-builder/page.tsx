@@ -80,6 +80,10 @@ export default function RoleBuilderPage() {
       setRoles(rolesData);
       setAssignments(assignData);
       setLoading(false);
+    }).catch((err) => {
+      console.error('[RoleBuilder] load failed:', err);
+      setError('Failed to load roles and assignments. Please refresh.');
+      setLoading(false);
     });
   }, []);
 

@@ -276,6 +276,7 @@ class BillingCommunicationService:
         try:
             import requests as _req
 
+            brand = resolve_tenant_brand(self.db, tenant_id)
             lob_payload = {
                 "description": f"Statement for claim {claim_id}",
                 "to": {
@@ -288,7 +289,7 @@ class BillingCommunicationService:
                     "address_country": "US",
                 },
                 "from": {
-                    "name": recipient.get("from_name", "FusionEMS Billing"),
+                    "name": recipient.get("from_name", brand.lob_from_name),
                     "address_line1": recipient.get("from_address1", ""),
                     "address_city": recipient.get("from_city", ""),
                     "address_state": recipient.get("from_state", ""),

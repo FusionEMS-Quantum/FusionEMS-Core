@@ -306,14 +306,18 @@ export default function StaffPage() {
   const [shifts, setShifts] = useState<ShiftInstance[]>([]);
   const [auditLog, setAuditLog] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<ActiveView>('roster');
 
   const refresh = useCallback(async () => {
+    setLoadError(null);
+    let anyFailed = false;
     try {
       const [readData, shiftData] = await Promise.all([
-        getStaffingReadiness().catch(() => null),
-        listShiftInstances().catch(() => []),
+        getStaffingReadiness().catch((err) => { anyFailed = true; console.error('[Staff] readiness failed:', err); return null; }),
+        listShiftInstances().catch((err) => { anyFailed = true; console.error('[Staff] shifts failed:', err); return []; }),
       ]);
+      if (anyFailed) setLoadError('Some staff data failed to load. Displayed data may be incomplete.');
       setReadiness(readData || {});
       setShifts(Array.isArray(shiftData) ? shiftData : shiftData?.shifts || []);
     } finally {
@@ -346,6 +350,11 @@ export default function StaffPage() {
 
   return (
     <div className="flex flex-col bg-black min-h-screen">
+      {loadError && (
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+          ⚠ {loadError}
+        </div>
+      )}
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
         <div className="flex items-center justify-between">

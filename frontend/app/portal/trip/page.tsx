@@ -390,14 +390,18 @@ export default function TRIPPage() {
   const [reconciliation, setReconciliation] = useState<TRIPReconciliation | null>(null);
   const [settings, setSettings] = useState<TRIPSettings>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
+    let anyFailed = false;
     try {
       const [debtData, settingsData] = await Promise.all([
-        listTRIPDebts().catch(() => []),
-        getTRIPSettings().catch(() => ({})),
+        listTRIPDebts().catch((err) => { anyFailed = true; console.error('[TRIP] debts failed:', err); return []; }),
+        getTRIPSettings().catch((err) => { anyFailed = true; console.error('[TRIP] settings failed:', err); return {}; }),
       ]);
+      if (anyFailed) setLoadError('Some TRIP data failed to load. Displayed data may be incomplete.');
       setDebts(Array.isArray(debtData) ? debtData : debtData?.debts || []);
       setSettings(settingsData || {});
     } finally {
@@ -443,6 +447,11 @@ export default function TRIPPage() {
 
   return (
     <div className="flex flex-col bg-black min-h-screen">
+      {loadError && (
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+          ⚠ {loadError}
+        </div>
+      )}
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
         <div className="flex items-center justify-between">

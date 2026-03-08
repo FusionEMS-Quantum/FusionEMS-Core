@@ -339,17 +339,21 @@ export default function BillingOpsPage() {
   const [fraud, setFraud] = useState<FraudAnomaly[]>([]);
   const [alerts, setAlerts] = useState<BillingAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [batchSubmitting, setBatchSubmitting] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
+    let anyFailed = false;
     try {
       const [kpiData, trendData, healthData, alertData] = await Promise.all([
-        getBillingKPIs().catch(() => null),
-        getRevenueTrend().catch(() => []),
-        getBillingHealth().catch(() => null),
-        getBillingAlerts().catch(() => []),
+        getBillingKPIs().catch((err) => { anyFailed = true; console.error('[BillingOps] KPIs failed:', err); return null; }),
+        getRevenueTrend().catch((err) => { anyFailed = true; console.error('[BillingOps] trend failed:', err); return []; }),
+        getBillingHealth().catch((err) => { anyFailed = true; console.error('[BillingOps] health failed:', err); return null; }),
+        getBillingAlerts().catch((err) => { anyFailed = true; console.error('[BillingOps] alerts failed:', err); return []; }),
       ]);
+      if (anyFailed) setLoadError('Some billing data failed to load. Displayed metrics may be incomplete.');
 
       const rawKPIs = kpiData?.kpis || kpiData || {};
       setKPIs([
@@ -406,6 +410,11 @@ export default function BillingOpsPage() {
 
   return (
     <div className="flex flex-col bg-black min-h-screen">
+      {loadError && (
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+          ⚠ {loadError}
+        </div>
+      )}
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
         <div className="flex items-center justify-between">

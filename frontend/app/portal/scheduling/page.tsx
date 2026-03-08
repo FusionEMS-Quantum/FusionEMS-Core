@@ -451,17 +451,21 @@ export default function SchedulingPage() {
   const [fatigue, setFatigue] = useState<FatigueReport | null>(null);
   const [expiringCreds, setExpiringCreds] = useState<ExpiringCredential[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
+    let anyFailed = false;
     try {
       const [shiftData, swapData, covData, credData] = await Promise.all([
-        listShiftInstances().catch(() => []),
-        listSchedulingSwaps().catch(() => []),
-        getSchedulingCoverageDashboard().catch(() => ({})),
-        getExpiringCredentials().catch(() => []),
+        listShiftInstances().catch((err) => { anyFailed = true; console.error('[Scheduling] shifts failed:', err); return []; }),
+        listSchedulingSwaps().catch((err) => { anyFailed = true; console.error('[Scheduling] swaps failed:', err); return []; }),
+        getSchedulingCoverageDashboard().catch((err) => { anyFailed = true; console.error('[Scheduling] coverage failed:', err); return {}; }),
+        getExpiringCredentials().catch((err) => { anyFailed = true; console.error('[Scheduling] credentials failed:', err); return []; }),
       ]);
+      if (anyFailed) setLoadError('Some scheduling data failed to load. Displayed data may be incomplete.');
       setShifts(Array.isArray(shiftData) ? shiftData : shiftData?.shifts || []);
       setSwaps(Array.isArray(swapData) ? swapData : swapData?.swaps || []);
       setCoverage(covData || {});
@@ -511,6 +515,11 @@ export default function SchedulingPage() {
 
   return (
     <div className="flex flex-col bg-black min-h-screen">
+      {loadError && (
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+          ⚠ {loadError}
+        </div>
+      )}
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
         <div className="flex items-center justify-between">

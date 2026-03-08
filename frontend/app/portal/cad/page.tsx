@@ -507,6 +507,7 @@ export default function CADDispatchPage() {
   const [calls, setCalls] = useState<CADCall[]>([]);
   const [units, setUnits] = useState<CADUnit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showNewCall, setShowNewCall] = useState(false);
   const [activeView, setActiveView] = useState<'dispatch' | 'units' | 'history'>('dispatch');
@@ -514,13 +515,21 @@ export default function CADDispatchPage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
+    setLoadError(null);
+    let anyFailed = false;
     try {
       const [callData, unitData] = await Promise.all([
-        getActiveCADCalls().catch(() => []),
-        listCADUnits().catch(() => []),
+        getActiveCADCalls().catch((err) => { anyFailed = true; console.error('[CAD] calls load failed:', err); return [] as CADCall[]; }),
+        listCADUnits().catch((err) => { anyFailed = true; console.error('[CAD] units load failed:', err); return [] as CADUnit[]; }),
       ]);
+      if (anyFailed) {
+        setLoadError('Some CAD data failed to load — displayed calls or units may be incomplete. Refresh immediately.');
+      }
       setCalls(callData as CADCall[]);
       setUnits(unitData as CADUnit[]);
+    } catch (err) {
+      setLoadError('CAD data failed to load. Please refresh immediately.');
+      console.error('[CAD] refresh failed:', err);
     } finally {
       setLoading(false);
     }
@@ -566,6 +575,11 @@ export default function CADDispatchPage() {
 
   return (
     <>
+      {loadError && (
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+          ⚠ {loadError}
+        </div>
+      )}
       <ModuleDashboardShell
         title="CAD Dispatch Command"
         subtitle="Live incident orchestration · Unit assignment · Audit-ready dispatch lifecycle"
