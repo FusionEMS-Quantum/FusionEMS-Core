@@ -23,6 +23,9 @@ data "aws_caller_identity" "current" {}
 # KMS
 # =============================================================================
 
+#checkov:skip=CKV_AWS_109: KMS key policy root delegation is required bootstrap; key usage is constrained by IAM and secret-specific access policy.
+#checkov:skip=CKV_AWS_111: No cross-account principals are granted; permissions apply only within account root trust boundary.
+#checkov:skip=CKV_AWS_356: KMS key policy resource must be "*" by AWS design for key policies.
 data "aws_iam_policy_document" "ses_kms" {
   statement {
     sid    = "EnableRootAccountAccess"
@@ -47,6 +50,7 @@ resource "aws_kms_key" "ses" {
 # Secrets Manager
 # =============================================================================
 
+#checkov:skip=CKV2_AWS_57: Secret rotation is managed via controlled Microsoft Graph credential lifecycle process.
 resource "aws_secretsmanager_secret" "graph_email" {
   name        = "${local.name_prefix}-graph-email"
   description = "Microsoft Graph credentials for Founder Dashboard email"

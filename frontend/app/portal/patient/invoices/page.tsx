@@ -52,22 +52,26 @@ function InvoicesContent() {
   const filterParam = searchParams.get('status') || 'all';
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [filter, setFilter] = useState(filterParam);
 
   useEffect(() => {
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
     fetch(`${apiBase}/api/v1/portal/statements?limit=50`, { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : Promise.resolve({ statements: [] })))
+      .then((r) => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
       .then((d) => setInvoices(Array.isArray(d?.statements) ? d.statements : []))
-      .catch(() => setInvoices([]))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load invoices'))
       .finally(() => setLoading(false));
   }, []);
 
   const displayed = filter === 'all' ? invoices : invoices.filter((i) => i.data?.status === filter);
 
   return (
-    <div style={S.page}>
-      <div style={S.header}>
+    <div style={S.page}>      {fetchError && (
+        <div style={{ padding: '12px 20px', background: 'rgba(239,68,68,0.08)', borderBottom: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5', fontSize: '13px' }}>
+          Unable to load invoices. Please refresh the page or contact billing support.
+        </div>
+      )}      <div style={S.header}>
         <div>
           <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>PATIENT BILLING PORTAL</div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>Invoices &amp; Statements</h1>

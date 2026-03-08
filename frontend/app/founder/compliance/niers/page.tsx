@@ -24,7 +24,7 @@ export default function NiersPage() {
           action={
             <Link
               href="/founder"
-              className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-[#FF4D00] hover:text-[#FF4D00]-bright transition-colors duration-fast"
+                className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-[#FF4D00] hover:text-[#FF4D00] transition-colors duration-fast"
             >
               &larr; Back to Command Center
             </Link>

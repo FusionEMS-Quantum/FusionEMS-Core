@@ -1,13 +1,45 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+
+type ExpenseEntry = {
+  id: string;
+  expense_date: string;
+  vendor: string;
+  category: string;
+  amount_cents: number;
+  description: string;
+  receipt_attached: boolean;
+};
+
+type CategoryBreakdown = {
+  label: string;
+  amount_cents: number;
+  pct: number;
+};
+
+type ExpenseSummary = {
+  month_total_cents: number;
+  total_cents: number;
+  entry_count: number;
+  receipt_missing_count: number;
+  quickbooks_sync_status: string;
+};
+
+type ExpenseLedgerResponse = {
+  summary: ExpenseSummary;
+  category_breakdown: CategoryBreakdown[];
+  entries: ExpenseEntry[];
+};
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
         {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
@@ -39,35 +71,19 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
   );
 }
 
-const EXPENSES = [
-  { date: 'Jan 25', vendor: 'AWS', category: 'Infrastructure', amount: 1247, description: 'Monthly cloud services', receipt: true },
-  { date: 'Jan 24', vendor: 'Stripe', category: 'Software', amount: 0, description: 'Payment processor (usage-based)', receipt: true },
-  { date: 'Jan 23', vendor: 'Telnyx', category: 'Communications', amount: 84, description: 'SMS/Voice credits', receipt: true },
-  { date: 'Jan 22', vendor: 'LOB.com', category: 'Mailing', amount: 42, description: 'Physical statements', receipt: true },
-  { date: 'Jan 20', vendor: 'OpenAI', category: 'AI/ML', amount: 180, description: 'API usage', receipt: true },
-  { date: 'Jan 18', vendor: 'GitHub', category: 'Software', amount: 21, description: 'Teams plan', receipt: true },
-  { date: 'Jan 15', vendor: 'Linear', category: 'Software', amount: 16, description: 'Project management', receipt: true },
-  { date: 'Jan 14', vendor: 'Figma', category: 'Software', amount: 45, description: 'Design tool', receipt: true },
-  { date: 'Jan 12', vendor: 'Google Workspace', category: 'Software', amount: 72, description: 'Email/docs', receipt: true },
-  { date: 'Jan 10', vendor: 'Legal Counsel', category: 'Legal', amount: 450, description: 'Contract review', receipt: true },
-  { date: 'Jan 8', vendor: 'Domain renewal', category: 'Software', amount: 28, description: 'fusionemsquantum.com', receipt: true },
-  { date: 'Jan 5', vendor: 'Office supplies', category: 'Other', amount: 84, description: 'Misc supplies', receipt: false },
-  { date: 'Jan 3', vendor: 'Marketing ads', category: 'Marketing', amount: 340, description: 'Google/LinkedIn', receipt: true },
-  { date: 'Jan 2', vendor: 'Postage / printing', category: 'Other', amount: 38, description: 'Physical mail', receipt: true },
-  { date: 'Jan 1', vendor: 'Annual software', category: 'Software', amount: 195, description: 'Zoom annual', receipt: true },
-];
-
-const CATEGORY_BREAKDOWN = [
-  { label: 'Infrastructure', pct: 32, amount: '$1,247', status: 'error' as const },
-  { label: 'Software', pct: 22, amount: '$847', status: 'info' as const },
-  { label: 'AI/ML', pct: 14, amount: '$538', status: 'info' as const },
-  { label: 'Communications', pct: 11, amount: '$423', status: 'info' as const },
-  { label: 'Marketing', pct: 9, amount: '$340', status: 'warn' as const },
-  { label: 'Other', pct: 12, amount: '$447', status: 'warn' as const },
-];
-
 export default function ExpenseLedgerPage() {
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [entries, setEntries] = useState<ExpenseEntry[]>([]);
+  const [categoryBreakdown, setCategoryBreakdown] = useState<CategoryBreakdown[]>([]);
+  const [summary, setSummary] = useState<ExpenseSummary>({
+    month_total_cents: 0,
+    total_cents: 0,
+    entry_count: 0,
+    receipt_missing_count: 0,
+    quickbooks_sync_status: 'unknown',
+  });
   const [expenseForm, setExpenseForm] = useState({
     date: '',
     amount: '',
@@ -76,12 +92,100 @@ export default function ExpenseLedgerPage() {
     vendor: '',
   });
 
+  const fetchLedger = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+    const res = await fetch(`${API}/api/v1/founder/business/expense-ledger?limit=500`, { headers });
+    if (!res.ok) {
+      throw new Error(`Expense ledger request failed (${res.status})`);
+    }
+    const payload = (await res.json()) as ExpenseLedgerResponse;
+    setEntries(payload.entries ?? []);
+    setCategoryBreakdown(payload.category_breakdown ?? []);
+    setSummary(payload.summary ?? summary);
+  };
+
+  useEffect(() => {
+    fetchLedger()
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : 'Unable to load expense ledger');
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const monthTotalDollars = summary.month_total_cents / 100;
+  const largestCategory = categoryBreakdown[0];
+  const softwareSpend = categoryBreakdown
+    .filter((c) => c.label.toLowerCase().includes('software'))
+    .reduce((acc, c) => acc + c.amount_cents, 0);
+
+  const exportCsv = useMemo(() => {
+    if (entries.length === 0) return '';
+    const header = ['expense_date', 'vendor', 'category', 'amount_cents', 'description', 'receipt_attached'];
+    const lines = entries.map((entry) => [
+      entry.expense_date,
+      entry.vendor,
+      entry.category,
+      String(entry.amount_cents),
+      entry.description.replaceAll(',', ' '),
+      String(entry.receipt_attached),
+    ].join(','));
+    return [header.join(','), ...lines].join('\n');
+  }, [entries]);
+
+  const downloadContent = (filename: string, content: string, contentType: string) => {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const saveExpense = async () => {
+    const amount = Number(expenseForm.amount);
+    if (!expenseForm.vendor || !expenseForm.category || !Number.isFinite(amount) || amount <= 0) {
+      setError('Provide vendor, category, and a valid amount before saving.');
+      return;
+    }
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API}/api/v1/founder/business/expense-ledger/entries`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        vendor: expenseForm.vendor,
+        category: expenseForm.category,
+        amount_cents: Math.round(amount * 100),
+        description: expenseForm.description,
+        expense_date: expenseForm.date || new Date().toISOString().slice(0, 10),
+        receipt_attached: false,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to save expense (${res.status})`);
+    }
+
+    setExpenseForm({ date: '', amount: '', category: 'AWS', description: '', vendor: '' });
+    setShowForm(false);
+    await fetchLedger();
+  };
+
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-[#FF4D00]-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[#FF4D00]/70 font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
           <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
@@ -98,10 +202,14 @@ export default function ExpenseLedgerPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total MTD', value: '$3,842', status: 'info' as const },
-            { label: 'AWS Infrastructure', value: '$1,247', status: 'error' as const },
-            { label: 'Software & Tools', value: '$480', status: 'warn' as const },
-            { label: 'Marketing', value: '$340', status: 'warn' as const },
+            { label: 'Total MTD', value: `$${monthTotalDollars.toLocaleString()}`, status: 'info' as const },
+            {
+              label: largestCategory ? `${largestCategory.label}` : 'Largest Category',
+              value: largestCategory ? `$${(largestCategory.amount_cents / 100).toLocaleString()}` : '$0',
+              status: 'error' as const,
+            },
+            { label: 'Software & Tools', value: `$${(softwareSpend / 100).toLocaleString()}`, status: 'warn' as const },
+            { label: 'Receipt Gaps', value: String(summary.receipt_missing_count), status: summary.receipt_missing_count > 0 ? 'warn' as const : 'ok' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
               <span className="text-micro text-zinc-500 uppercase tracking-wider">{s.label}</span>
@@ -186,8 +294,9 @@ export default function ExpenseLedgerPage() {
                   className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
                   style={{ background: '#FF4D00', color: '#000' }}
                   onClick={() => {
-                    setExpenseForm({ date: '', amount: '', category: 'AWS', description: '', vendor: '' });
-                    setShowForm(false);
+                    saveExpense().catch((e: unknown) => {
+                      setError(e instanceof Error ? e.message : 'Unable to save expense');
+                    });
                   }}
                 >
                   Save
@@ -214,17 +323,17 @@ export default function ExpenseLedgerPage() {
                 </tr>
               </thead>
               <tbody>
-                {EXPENSES.map((exp, i) => (
-                  <tr key={i} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
-                    <td className="py-1.5 px-2 font-mono text-brand-orange text-body">{exp.date}</td>
+                {entries.map((exp) => (
+                  <tr key={exp.id} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
+                    <td className="py-1.5 px-2 font-mono text-brand-orange text-body">{exp.expense_date.slice(0, 10)}</td>
                     <td className="py-1.5 px-2 text-zinc-100 font-medium">{exp.vendor}</td>
                     <td className="py-1.5 px-2 text-zinc-500">{exp.category}</td>
                     <td className="py-1.5 px-2 font-mono text-zinc-100 font-semibold">
-                      ${exp.amount.toLocaleString()}
+                      ${(exp.amount_cents / 100).toLocaleString()}
                     </td>
-                    <td className="py-1.5 px-2 text-zinc-500">{exp.description}</td>
+                    <td className="py-1.5 px-2 text-zinc-500">{exp.description || '—'}</td>
                     <td className="py-1.5 px-2 text-center">
-                      {exp.receipt ? (
+                      {exp.receipt_attached ? (
                         <span className="text-status-active font-bold">&#10003;</span>
                       ) : (
                         <span className="text-zinc-500">—</span>
@@ -243,7 +352,7 @@ export default function ExpenseLedgerPage() {
         <Panel>
           <SectionHeader number="4" title="Category Breakdown" sub="% of total spend" />
           <div className="space-y-3">
-            {CATEGORY_BREAKDOWN.map((cat) => (
+            {categoryBreakdown.map((cat) => (
               <div key={cat.label} className="flex items-center gap-3">
                 <span className="text-xs text-zinc-400 w-32 shrink-0">{cat.label}</span>
                 <div className="flex-1 h-2 bg-zinc-950/5  overflow-hidden">
@@ -251,17 +360,16 @@ export default function ExpenseLedgerPage() {
                     className="h-full  transition-all"
                     style={{
                       width: `${cat.pct}%`,
-                      background:
-                        cat.status === 'error'
-                          ? 'var(--color-brand-red)'
-                          : cat.status === 'warn'
+                      background: cat.pct >= 30
+                        ? 'var(--color-brand-red)'
+                        : cat.pct >= 15
                           ? 'var(--color-status-warning)'
                           : 'var(--color-status-info)',
                     }}
                   />
                 </div>
                 <span className="text-micro font-mono text-zinc-400 w-8 text-right">{cat.pct}%</span>
-                <span className="text-body font-mono font-semibold text-zinc-100 w-16 text-right">{cat.amount}</span>
+                <span className="text-body font-mono font-semibold text-zinc-100 w-16 text-right">${(cat.amount_cents / 100).toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -282,23 +390,40 @@ export default function ExpenseLedgerPage() {
                 key={btn.label}
                 className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
                 style={btn.style}
+                onClick={() => {
+                  if (btn.label === 'Export CSV') {
+                    downloadContent(`expense-ledger-${new Date().toISOString().slice(0, 10)}.csv`, exportCsv, 'text/csv;charset=utf-8;');
+                    return;
+                  }
+                  if (btn.label === 'Export PDF') {
+                    const printable = JSON.stringify({ summary, entries, categoryBreakdown }, null, 2);
+                    downloadContent(`expense-ledger-${new Date().toISOString().slice(0, 10)}.json`, printable, 'application/json;charset=utf-8;');
+                    return;
+                  }
+                  const receiptsOnly = entries.filter((entry) => entry.receipt_attached);
+                  downloadContent(`expense-receipts-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(receiptsOnly, null, 2), 'application/json;charset=utf-8;');
+                }}
               >
                 {btn.label}
               </button>
             ))}
             <div className="flex items-center gap-2">
-              <button
-                className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 opacity-60 cursor-not-allowed"
-                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}
-                disabled
-              >
-                Sync to QuickBooks
-              </button>
-              <Badge label="QuickBooks" status="info" />
+              <span className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                QuickBooks: {summary.quickbooks_sync_status}
+              </span>
+              <Badge label="Accounting" status="info" />
             </div>
           </div>
         </Panel>
       </motion.div>
+
+      {(loading || error) && (
+        <Panel>
+          <div className="text-xs text-zinc-500">
+            {loading ? 'Synchronizing ledger data...' : error}
+          </div>
+        </Panel>
+      )}
 
       <div className="pt-2">
         <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">

@@ -133,7 +133,7 @@ export default function ConfigurationPage() {
           </div>
           {completeness.missing_keys.length > 0 && (
             <div className="mt-2">
-              <span className="text-[10px] text-[#FF4D00]-400 font-semibold">Missing: </span>
+                <span className="text-[10px] text-[#FF4D00] font-semibold">Missing: </span>
               <span className="text-[10px] text-zinc-500">{completeness.missing_keys.join(', ')}</span>
             </div>
           )}

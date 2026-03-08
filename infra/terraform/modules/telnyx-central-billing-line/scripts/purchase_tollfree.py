@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""Provision a Telnyx toll-free number and register CNAM for FusionEMS Quantum.
+
+Called as a Terraform external data source.  Reads JSON on stdin, writes JSON on stdout.
+"""
 from __future__ import annotations
 
 import json
@@ -21,11 +25,41 @@ def _headers(api_key: str) -> dict[str, str]:
     }
 
 
+def _register_cnam(api_key: str, number_id: str, cnam_display_name: str) -> str:
+    """Submit CNAM registration via Telnyx Number Update API.
+
+    Returns the CNAM listing status from the API response.
+    Telnyx propagates CNAM to the national LIDB database within 24-48h.
+    """
+    if not number_id or number_id in ("existing", "unknown"):
+        return "skipped_no_number_id"
+
+    update_body = {
+        "cnam_listing": {
+            "cnam_listing_enabled": True,
+            "cnam_listing_caller_name": cnam_display_name,
+        },
+    }
+    update_req = Request(
+        f"https://api.telnyx.com/v2/phone_numbers/{number_id}",
+        data=json.dumps(update_body).encode("utf-8"),
+        headers=_headers(api_key),
+        method="PATCH",
+    )
+    try:
+        resp = _resp_json(update_req)
+        cnam_data = (resp.get("data") or {}).get("cnam_listing") or {}
+        return cnam_data.get("cnam_listing_details") or "submitted"
+    except Exception as exc:
+        return f"cnam_registration_error: {exc}"
+
+
 def main() -> None:
     payload = json.loads(sys.stdin.read() or "{}")
     api_key = (payload.get("telnyx_api_key") or "").strip()
     existing = (payload.get("existing_phone_e164") or "").strip()
     desired_prefix = (payload.get("desired_tollfree_prefix") or "800").strip()
+    cnam_display_name = (payload.get("cnam_display_name") or "FusionEMS Quantum").strip()
 
     now = datetime.now(UTC).isoformat()
 
@@ -36,6 +70,8 @@ def main() -> None:
                     "phone_e164": existing,
                     "number_id": "existing",
                     "purchased_at": now,
+                    "cnam_display_name": cnam_display_name,
+                    "cnam_status": "skipped_existing_number",
                 }
             )
         )
@@ -89,12 +125,17 @@ def main() -> None:
     if not number_id:
         number_id = selected.get("id") or ""
 
+    # 3) register CNAM caller ID — patients see "FusionEMS Quantum" on outbound calls
+    cnam_status = _register_cnam(api_key, number_id, cnam_display_name)
+
     print(
         json.dumps(
             {
                 "phone_e164": phone_number,
                 "number_id": number_id or "unknown",
                 "purchased_at": now,
+                "cnam_display_name": cnam_display_name,
+                "cnam_status": cnam_status,
             }
         )
     )

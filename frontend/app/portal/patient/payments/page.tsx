@@ -34,13 +34,14 @@ const S: Record<string, React.CSSProperties> = {
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
     fetch(`${apiBase}/api/v1/portal/payments?limit=100`, { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : Promise.resolve({ payments: [] })))
+      .then((r) => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
       .then((d) => setPayments(Array.isArray(d?.payments) ? d.payments : []))
-      .catch(() => setPayments([]))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load payment history'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -60,6 +61,11 @@ export default function PaymentsPage() {
         </div>
       </div>
       <div style={S.inner}>
+        {fetchError && (
+          <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5', fontSize: '13px' }}>
+            Unable to load payment history. Please refresh the page or contact billing support.
+          </div>
+        )}
         <div style={S.statsRow}>
           <div style={S.stat}>
             <div style={S.statLabel}>Total Paid</div>

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import stripe
 
@@ -37,6 +37,10 @@ def create_connect_checkout_session(
     lob_letter_id: str | None,
     success_url: str,
     cancel_url: str,
+    application_fee_amount_cents: int | None = None,
+    metadata_extra: dict[str, str] | None = None,
+    product_name: str = "Medical Transport — Balance Due",
+    product_description: str | None = None,
 ) -> dict[str, Any]:
     """
     Create a Stripe Checkout Session on the agency's connected account.
@@ -52,6 +56,14 @@ def create_connect_checkout_session(
         metadata["patient_account_ref"] = patient_account_ref
     if lob_letter_id:
         metadata["lob_letter_id"] = lob_letter_id
+    if metadata_extra:
+        metadata.update(metadata_extra)
+
+    description = product_description or f"Statement {statement_id}"
+
+    payment_intent_data = cast(Any, {"metadata": metadata})
+    if application_fee_amount_cents is not None and application_fee_amount_cents > 0:
+        payment_intent_data["application_fee_amount"] = application_fee_amount_cents
 
     session = stripe.checkout.Session.create(
         mode="payment",
@@ -60,8 +72,8 @@ def create_connect_checkout_session(
                 "price_data": {
                     "currency": currency,
                     "product_data": {
-                        "name": "Medical Transport — Balance Due",
-                        "description": f"Statement {statement_id}",
+                        "name": product_name,
+                        "description": description,
                     },
                     "unit_amount": amount_cents,
                 },
@@ -71,7 +83,7 @@ def create_connect_checkout_session(
         success_url=success_url,
         cancel_url=cancel_url,
         metadata=metadata,
-        payment_intent_data={"metadata": metadata},
+        payment_intent_data=payment_intent_data,
         stripe_account=connected_account_id,
     )
 

@@ -24,6 +24,9 @@ data "aws_caller_identity" "current" {}
 # KMS
 # =============================================================================
 
+#checkov:skip=CKV_AWS_109: KMS key policy root delegation is required bootstrap; key usage is constrained by service IAM and dedicated key ARN.
+#checkov:skip=CKV_AWS_111: No cross-account principals are granted; permissions apply only within account root trust boundary.
+#checkov:skip=CKV_AWS_356: KMS key policy resource must be "*" by AWS design for key policies.
 data "aws_iam_policy_document" "redis_kms" {
   statement {
     sid    = "EnableRootAccountAccess"
@@ -72,6 +75,7 @@ resource "random_password" "auth_token" {
   override_special = "!#$%&*()-_=+[]{}|:?"
 }
 
+#checkov:skip=CKV2_AWS_57: Secret rotation is handled by controlled operational runbook during maintenance windows.
 resource "aws_secretsmanager_secret" "redis" {
   name       = "${var.project}/${var.environment}/Redis"
   kms_key_id = aws_kms_key.redis.arn

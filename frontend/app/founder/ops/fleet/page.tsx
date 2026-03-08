@@ -152,7 +152,7 @@ export default function FleetTelemetryPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-1 block">← Ops Command</Link>
+            <Link href="/founder/ops" className="text-body text-[#FF4D00] hover:text-[#FF4D00] mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">Fleet & Telemetry</h1>
           <p className="text-sm text-zinc-500 mt-1">
             Live unit readiness · OBD-II ingestion · Fault detection · Maintenance alerts
@@ -346,7 +346,7 @@ export default function FleetTelemetryPage() {
                 </div>
                 <div>
                   <div className="text-micro text-zinc-500">Alerts Created</div>
-                  <div className="text-sm font-bold text-[#FF4D00]-400">{(ingestResult.alerts_created as string[])?.length ?? 0}</div>
+                    <div className="text-sm font-bold text-[#FF4D00]">{(ingestResult.alerts_created as string[])?.length ?? 0}</div>
                 </div>
               </div>
             </div>

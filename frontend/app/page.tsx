@@ -60,7 +60,7 @@ export default function LandingPage() {
   const lift = quantumCollected - currentCollected;
 
   return (
-    <div className="min-h-screen bg-[#060608] text-gray-200 selection:bg-[#FF4D00]/20 selection:text-[#FF4D00]-bright overflow-x-hidden font-sans relative">
+    <div className="min-h-screen bg-[#060608] text-gray-200 selection:bg-[#FF4D00]/20 selection:text-[#FF4D00] overflow-x-hidden font-sans relative">
       
       {/* GLOBAL BACKGROUND SYSTEM */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -355,7 +355,7 @@ export default function LandingPage() {
                 <TechIcon icon={ShieldCheck} className="mb-6" />
                 <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">Module 6 — Compliance Command</h3>
                 <p className="text-sm text-zinc-500 leading-relaxed">
-                  Auditability, reporting readiness, structured workflows, oversight, and architecture built for long-term public safety compliance evolution.
+                  DEA/CMS-ready operational compliance command with controlled-substance custody checks, CMS gate monitoring, NEMSIS validation, HIPAA controls, billing compliance, and accreditation readiness — built for inspection-ready public safety agencies.
                 </p>
               </Link>
 
@@ -386,11 +386,11 @@ export default function LandingPage() {
               <div className="text-[0.65rem] font-bold tracking-[0.2em] text-zinc-500 uppercase mb-4">Portals</div>
               <h2 className="text-4xl font-black tracking-tight text-white mb-4">Role-based access into the platform</h2>
               <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
-                FusionEMS Quantum is designed around structured entry points. No more weak links losing patient data. Network perimeters divide patient access, reps, and agency command.
+                FusionEMS Quantum is designed around structured entry points. No more weak links losing patient data. Network perimeters divide patient access, reps, and agency command. Compliance tooling supports agency-level controls and is jurisdiction- and counsel-dependent.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
               {/* TransportLink Patient Access */}
               <div className="border border-green-500/30 bg-[#060608] p-8 flex flex-col relative overflow-hidden group shadow-[0_0_20px_rgba(34,197,94,0.05)]">
                 <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent pointer-events-none"></div>
@@ -437,6 +437,36 @@ export default function LandingPage() {
                   Facility Login <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
+
+              {/* DEA/CMS Compliance Command */}
+              <div className="border border-blue-500/30 bg-[#060608] p-8 flex flex-col relative group">
+                <div className="absolute inset-0 bg-blue-500/5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4">
+                  DEA / CMS Command
+                  <ShieldCheck className="w-4 h-4 text-blue-400" />
+                </h3>
+                <p className="text-sm text-zinc-500 mb-8 flex-1">
+                  Wisconsin-first DEA/CMS readiness command. Run narcotics chain-of-custody audits, monitor CMS gate pass/fail trends, and generate inspection-ready evidence bundles.
+                </p>
+                <Link href="/portal/dea-cms" className="text-xs font-bold uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2">
+                  Open Compliance Command <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              {/* Legal Requests Command */}
+              <div className="border border-sky-500/30 bg-[#060608] p-8 flex flex-col relative group">
+                <div className="absolute inset-0 bg-sky-500/5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4">
+                  Legal Requests
+                  <ShieldCheck className="w-4 h-4 text-sky-400" />
+                </h3>
+                <p className="text-sm text-zinc-500 mb-8 flex-1">
+                  Submit attorney/legal requests with intake triage, checklist validation, default redaction, and secure one-time delivery controls.
+                </p>
+                <Link href="/portal/legal/requests/new" className="text-xs font-bold uppercase tracking-widest text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-2">
+                  Open Legal Intake <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -471,6 +501,9 @@ export default function LandingPage() {
           </div>
           <div className="text-xs font-bold tracking-[0.15em] text-gray-600 uppercase">
             © {new Date().getFullYear()} FusionEMS Quantum. All rights reserved.
+          </div>
+          <div className="text-[9px] text-zinc-700 text-center max-w-lg leading-relaxed">
+            FusionEMS provides compliance workflow tooling to support agency operations. It does not provide legal, regulatory, or medical advice. Compliance determinations are the responsibility of each agency and its counsel.
           </div>
           <div className="flex gap-8 text-[0.65rem] font-bold tracking-[0.15em] text-zinc-500 uppercase">
             <Link href="/login" className="hover:text-white transition-colors">Core</Link>

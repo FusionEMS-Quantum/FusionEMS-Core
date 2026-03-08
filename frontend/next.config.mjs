@@ -2,6 +2,21 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
+const parseApiBase = (apiBase) => {
+  if (!apiBase) {
+    return null;
+  }
+  try {
+    return new URL(apiBase);
+  } catch {
+    throw new Error(
+      `Invalid NEXT_PUBLIC_API_BASE value: ${apiBase}. Use a fully-qualified URL, e.g. https://api.example.com`
+    );
+  }
+};
+
+const parsedApiBase = parseApiBase(API_BASE);
+
 // NOTE:
 // - In AWS, the ALB/CloudFront path rules route /api/* directly to the backend.
 // - In local/docker, we often use http://localhost:8000.
@@ -18,10 +33,6 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
-
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -29,22 +40,20 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60,
-    remotePatterns: API_BASE
+    remotePatterns: parsedApiBase
       ? [
           {
-            protocol: new URL(API_BASE).protocol.replace(":", ""),
-            hostname: new URL(API_BASE).hostname,
+            protocol: parsedApiBase.protocol.replace(":", ""),
+            hostname: parsedApiBase.hostname,
           },
         ]
       : [],
   },
 
   async rewrites() {
-    if (!API_BASE) return [];
+    if (!parsedApiBase) return [];
 
-    const parsed = new URL(API_BASE);
-
-    if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:" && !_isLocalHost(parsed.hostname)) {
+    if (process.env.NODE_ENV === "production" && parsedApiBase.protocol !== "https:" && !_isLocalHost(parsedApiBase.hostname)) {
       throw new Error(
         `NEXT_PUBLIC_API_BASE must use HTTPS for non-local hosts (got ${API_BASE}).`
       );
@@ -64,14 +73,7 @@ const nextConfig = {
 
   async redirects() {
     return [
-      // Legacy marketing aliases -> canonical public routes
-      { source: "/founder/platform", destination: "/platform", permanent: false },
-      { source: "/founder/roi", destination: "/roi", permanent: false },
-      { source: "/founder/ops/staffing", destination: "/scheduling", permanent: false },
-      { source: "/founder/comms/phone-system", destination: "/communications", permanent: false },
-
-      // Legacy auth aliases -> canonical secure entry
-      { source: "/billing/login", destination: "/login", permanent: false },
+      // Intentionally left empty to avoid shadowing active App Router pages.
     ];
   },
 

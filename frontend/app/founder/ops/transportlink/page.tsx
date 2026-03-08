@@ -146,7 +146,7 @@ export default function TransportLinkPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-1 block">← Ops Command</Link>
+            <Link href="/founder/ops" className="text-body text-[#FF4D00] hover:text-[#FF4D00] mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">TransportLink — Interfacility Intake</h1>
           <p className="text-sm text-zinc-500 mt-1">
             Facility request intake · Validation · CAD injection · Request audit trail
@@ -156,7 +156,7 @@ export default function TransportLinkPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/founder/ops/transportlink/transport-billing-payment"
-              className="px-3 py-1.5 bg-[#FF4D00]-500/[0.12] border border-orange-400/[0.35] text-[#FF4D00]-300 text-body font-bold chamfer-8 hover:bg-[#FF4D00]-500/[0.2]"
+                className="px-3 py-1.5 bg-[rgba(255,77,0,0.12)] border border-orange-400/[0.35] text-[#FF4D00] text-body font-bold chamfer-8 hover:bg-[#FF4D00]/[0.2]"
             >
               Transport Billing Payment
             </Link>
@@ -191,7 +191,7 @@ export default function TransportLinkPage() {
               <span className="text-micro text-zinc-500 ml-1">PENDING REVIEW</span>
             </div>
             <div className="px-3 py-1.5 bg-brand-orange/[0.1] border border-brand-orange/[0.3] chamfer-8">
-              <span className="text-[#FF4D00]-400 text-sm font-bold">{injected.length}</span>
+                <span className="text-[#FF4D00] text-sm font-bold">{injected.length}</span>
               <span className="text-micro text-zinc-500 ml-1">IN CAD</span>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function TransportLinkPage() {
                       )}
                       {['REQUEST_CREATED', 'REQUEST_VALIDATED'].includes(d.state) && (
                         <button onClick={() => injectToCad(req.id)}
-                          className="px-4 py-1.5 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-[#FF4D00]-400 text-body font-bold chamfer-8 hover:bg-brand-orange/[0.2]">
+                            className="px-4 py-1.5 bg-brand-orange/[0.15] border border-brand-orange/[0.3] text-[#FF4D00] text-body font-bold chamfer-8 hover:bg-brand-orange/[0.2]">
                           📡 Inject to CAD
                         </button>
                       )}

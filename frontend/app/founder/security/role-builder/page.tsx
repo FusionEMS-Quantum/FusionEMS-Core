@@ -196,7 +196,7 @@ export default function RoleBuilderPage() {
                 placeholder="User UUID…"
                 className="flex-1 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-orange font-mono" />
               <button onClick={assignRole} disabled={assigning || !assignUserId.trim()}
-                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors disabled:opacity-50">
+                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
                 {assigning ? 'Assigning…' : 'Assign'}
               </button>
             </div>

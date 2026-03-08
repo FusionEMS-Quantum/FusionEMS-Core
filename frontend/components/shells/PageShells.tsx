@@ -259,7 +259,7 @@ export function SettingsShell({
               className={cn(
                 'w-full flex items-center gap-2 px-4 py-2.5 text-left text-body transition-colors duration-fast',
                 section.id === activeSection
-                  ? 'text-[#FF4D00] bg-[#FF4D00]-ghost border-r-2 border-orange'
+                  ? 'text-[#FF4D00] bg-[rgba(255,77,0,0.12)] border-r-2 border-orange'
                   : 'text-zinc-500 hover:text-zinc-100 hover:bg-bg-overlay'
               )}
               type="button"

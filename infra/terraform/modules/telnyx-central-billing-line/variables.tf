@@ -23,6 +23,17 @@ variable "existing_phone_e164" {
   description = "Optional pre-provisioned centralized billing number. If set, purchase is skipped."
 }
 
+variable "cnam_display_name" {
+  type        = string
+  default     = "FusionEMS Quantum"
+  description = "CNAM caller ID name displayed to patients on outbound billing calls (max 15 chars)"
+
+  validation {
+    condition     = length(var.cnam_display_name) <= 15
+    error_message = "CNAM display name must be 15 characters or fewer per CNAM/LIDB standards."
+  }
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

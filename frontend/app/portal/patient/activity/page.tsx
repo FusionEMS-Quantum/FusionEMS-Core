@@ -76,13 +76,14 @@ function groupByDate(events: ActivityEvent[]): Array<{ date: string; events: Act
 export default function ActivityPage() {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
     fetch(`${apiBase}/api/v1/portal/activity`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => setEvents(Array.isArray(d) ? d : d.items ?? []))
-      .catch(() => setEvents(MOCK_EVENTS))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load activity'))
       .finally(() => setLoading(false));
   }, [apiBase]);
 
@@ -98,6 +99,12 @@ export default function ActivityPage() {
         </div>
         <p className="text-sm text-zinc-500 ml-5">Complete timeline of all activity on your billing account.</p>
       </div>
+
+      {fetchError && (
+        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
+          Unable to load account activity. Please refresh the page or contact billing support.
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">
@@ -191,13 +198,4 @@ export default function ActivityPage() {
   );
 }
 
-const MOCK_EVENTS: ActivityEvent[] = [
-  { id: '1', event_type: 'statement_created',  description: 'Monthly statement generated for transport on 2026-01-05.',       created_at: '2026-01-15T09:00:00Z' },
-  { id: '2', event_type: 'statement_sent',     description: 'Statement emailed to patient@example.com.',                       created_at: '2026-01-15T09:01:00Z' },
-  { id: '3', event_type: 'payment_link_sent',  description: 'Secure payment link sent via SMS.',                               created_at: '2026-01-16T10:30:00Z' },
-  { id: '4', event_type: 'portal_login',       description: 'Patient portal accessed.',                                        created_at: '2026-01-18T14:22:00Z', metadata: { method: 'secure-login' } },
-  { id: '5', event_type: 'invoice_viewed',     description: 'Invoice #INV-00391 viewed in patient portal.',                    created_at: '2026-01-18T14:23:00Z' },
-  { id: '6', event_type: 'payment_initiated',  description: 'Payment of $150.00 initiated via hosted payment form.',           created_at: '2026-02-01T11:00:00Z', metadata: { amount_cents: 15000, method: 'card' } },
-  { id: '7', event_type: 'payment_posted',     description: 'Payment of $150.00 posted to account.',                          created_at: '2026-02-01T11:05:00Z', metadata: { confirmation: 'PMT-00391' } },
-  { id: '8', event_type: 'receipt_generated',  description: 'Receipt PMT-00391 generated and emailed.',                       created_at: '2026-02-01T11:06:00Z' },
-];
+

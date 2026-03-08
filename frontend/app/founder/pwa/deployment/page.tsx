@@ -254,7 +254,7 @@ export default function DeploymentPage() {
         </div>
       </motion.div>
 
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00] transition-colors">
+        <Link href="/founder" className="text-xs text-orange-dim hover:text-[#FF4D00] transition-colors">
         &larr; Back to Founder Command OS
       </Link>
     </div>

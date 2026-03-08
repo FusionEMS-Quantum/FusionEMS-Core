@@ -30,7 +30,7 @@ function StatRow({ label, value, warn }: { label: string; value: number | string
 function SeverityBadge({ severity }: { severity: string }) {
   const colors: Record<string, string> = {
     critical: 'bg-red-600/20 text-red-400 border-red-600/30',
-    high: 'bg-[#FF4D00]-600/20 text-[#FF4D00]-400 border-orange-600/30',
+    high: 'bg-[rgba(230,69,0,0.20)] text-[#FF4D00] border-orange-600/30',
     medium: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30',
     low: 'bg-green-600/20 text-green-400 border-green-600/30',
   };
@@ -86,7 +86,7 @@ export default function OpsCommandPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">MODULE 6</div>
+            <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">MODULE 6</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Operations Command Center</h1>
           <p className="text-xs text-zinc-500 mt-0.5">
             Real-time operational intelligence across all domains · Generated {data.generated_at ? new Date(data.generated_at).toLocaleTimeString() : 'now'}
@@ -112,7 +112,7 @@ export default function OpsCommandPage() {
           <div className="space-y-2">
             {actions.map((a: any, i: number) => (
               <div key={i} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
-                <span className="text-micro font-bold text-[#FF4D00]-dim font-mono w-5">{i + 1}</span>
+                  <span className="text-micro font-bold text-orange-dim font-mono w-5">{i + 1}</span>
                 <SeverityBadge severity={a.severity} />
                 <span className="flex-1 text-xs text-zinc-100">{a.action}</span>
                 <span className="text-micro uppercase tracking-wider text-zinc-500 bg-zinc-950/5 px-2 py-0.5">{a.domain}</span>

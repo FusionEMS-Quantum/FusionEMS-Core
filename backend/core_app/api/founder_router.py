@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import (
@@ -17,6 +18,447 @@ from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher
 
 router = APIRouter(prefix="/api/v1/founder", tags=["Founder"])
+
+
+class FounderExpenseCreateRequest(BaseModel):
+    vendor: str = Field(min_length=1, max_length=120)
+    category: str = Field(min_length=1, max_length=80)
+    amount_cents: int = Field(gt=0, le=5_000_000_00)
+    description: str = Field(default="", max_length=500)
+    expense_date: str | None = None
+    receipt_attached: bool = False
+
+
+class FounderInvoiceLineItemRequest(BaseModel):
+    desc: str = Field(min_length=1, max_length=200)
+    amount_cents: int = Field(ge=0, le=1_000_000_00)
+
+
+class FounderInvoiceCreateRequest(BaseModel):
+    client: str = Field(min_length=1, max_length=180)
+    invoice_date: str
+    due_date: str
+    description: str = Field(default="", max_length=500)
+    line_items: list[FounderInvoiceLineItemRequest] = Field(default_factory=list)
+
+
+class FounderInvoiceReminderRequest(BaseModel):
+    channel: str = Field(default="email", max_length=32)
+
+
+class FounderInvoiceSettingsRequest(BaseModel):
+    company: str = Field(min_length=1, max_length=180)
+    address: str = Field(min_length=1, max_length=250)
+    terms: str = Field(min_length=1, max_length=120)
+    late_fee: str = Field(alias="lateFee", min_length=1, max_length=180)
+
+    model_config = {"populate_by_name": True}
+
+
+def _parse_ts(value: str) -> float:
+    """Parse an ISO-8601 timestamp string to a UTC epoch float; returns 0.0 on parse failure."""
+    try:
+        return datetime.fromisoformat(value).timestamp()
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def _expense_entries_for_tenant(
+    svc: DominationService,
+    tenant_id: uuid.UUID,
+    *,
+    limit: int,
+) -> list[dict[str, Any]]:
+    rows = svc.repo("ledger_entries").list(tenant_id=tenant_id, limit=max(limit, 50), offset=0)
+    entries = [
+        r
+        for r in rows
+        if (r.get("data") or {}).get("entry_type") == "founder.expense"
+    ]
+    entries.sort(
+        key=lambda row: (row.get("data") or {}).get("expense_date") or row.get("created_at") or "",
+        reverse=True,
+    )
+    return entries[:limit]
+
+
+def _default_invoice_settings() -> dict[str, str]:
+    return {
+        "company": "FusionEMS Quantum LLC",
+        "address": "123 Founder St, Austin, TX 78701",
+        "terms": "Net 30",
+        "lateFee": "1.5% per month after due date",
+    }
+
+
+def _find_invoice_settings_record(
+    svc: DominationService,
+    tenant_id: uuid.UUID,
+) -> dict[str, Any] | None:
+    configs = svc.repo("tenant_billing_config").list(tenant_id=tenant_id, limit=200, offset=0)
+    for cfg in configs:
+        data = cfg.get("data") or {}
+        if data.get("key") == "founder_invoice_settings":
+            return cfg
+    return None
+
+
+@router.get("/business/expense-ledger")
+async def business_expense_ledger(
+    limit: int = 250,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin"])
+    svc = DominationService(db, get_event_publisher())
+
+    safe_limit = min(max(limit, 1), 500)
+    rows = _expense_entries_for_tenant(svc, current.tenant_id, limit=safe_limit)
+
+    now = datetime.now(UTC)
+    month_prefix = now.strftime("%Y-%m")
+
+    total_cents = 0
+    month_total_cents = 0
+    receipt_missing = 0
+    by_category: dict[str, int] = {}
+
+    entries: list[dict[str, Any]] = []
+    for row in rows:
+        data = row.get("data") or {}
+        amount_cents = int(data.get("amount_cents") or 0)
+        category = str(data.get("category") or "Uncategorized")
+        expense_date = str(data.get("expense_date") or row.get("created_at") or "")
+        receipt_attached = bool(data.get("receipt_attached", False))
+
+        total_cents += amount_cents
+        if expense_date.startswith(month_prefix):
+            month_total_cents += amount_cents
+        if not receipt_attached:
+            receipt_missing += 1
+        by_category[category] = by_category.get(category, 0) + amount_cents
+
+        entries.append(
+            {
+                "id": str(row.get("id")),
+                "expense_date": expense_date,
+                "vendor": str(data.get("vendor") or "Unknown"),
+                "category": category,
+                "amount_cents": amount_cents,
+                "description": str(data.get("description") or ""),
+                "receipt_attached": receipt_attached,
+                "created_at": row.get("created_at"),
+            }
+        )
+
+    category_rows = sorted(by_category.items(), key=lambda item: item[1], reverse=True)
+    category_breakdown = [
+        {
+            "label": label,
+            "amount_cents": amount,
+            "pct": round((amount / total_cents * 100), 2) if total_cents > 0 else 0,
+        }
+        for label, amount in category_rows
+    ]
+
+    return {
+        "summary": {
+            "month_total_cents": month_total_cents,
+            "total_cents": total_cents,
+            "entry_count": len(entries),
+            "receipt_missing_count": receipt_missing,
+            "quickbooks_sync_status": "not_configured",
+            "as_of": now.isoformat(),
+        },
+        "category_breakdown": category_breakdown,
+        "entries": entries,
+    }
+
+
+@router.post("/business/expense-ledger/entries")
+async def create_business_expense_entry(
+    payload: FounderExpenseCreateRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin"])
+    svc = DominationService(db, get_event_publisher())
+
+    expense_date = payload.expense_date or datetime.now(UTC).date().isoformat()
+    created = await svc.create(
+        table="ledger_entries",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data={
+            "entry_type": "founder.expense",
+            "expense_date": expense_date,
+            "vendor": payload.vendor,
+            "category": payload.category,
+            "amount_cents": payload.amount_cents,
+            "description": payload.description,
+            "receipt_attached": payload.receipt_attached,
+            "created_by": str(current.user_id),
+        },
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {
+        "id": str(created["id"]),
+        "data": created.get("data", {}),
+        "created_at": created.get("created_at"),
+    }
+
+
+@router.get("/business/invoices")
+async def business_invoices(
+    limit: int = 250,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "billing"])
+    svc = DominationService(db, get_event_publisher())
+    safe_limit = min(max(limit, 1), 500)
+
+    rows = svc.repo("invoices").list(tenant_id=current.tenant_id, limit=safe_limit, offset=0)
+    invoices: list[dict[str, Any]] = []
+
+    now = datetime.now(UTC)
+    month_prefix = now.strftime("%Y-%m")
+    total_invoiced_cents = 0
+    total_paid_cents = 0
+    invoices_this_month = 0
+    paid_count = 0
+    outstanding_count = 0
+
+    for row in rows:
+        data = row.get("data") or {}
+        total_cents = int(data.get("total_cents") or 0)
+        paid_cents = int(data.get("paid_cents") or 0)
+        status = str(data.get("status") or "outstanding").lower()
+        invoice_date = str(data.get("invoice_date") or row.get("created_at") or "")
+
+        total_invoiced_cents += total_cents
+        total_paid_cents += paid_cents
+        if invoice_date.startswith(month_prefix):
+            invoices_this_month += 1
+        if status == "paid":
+            paid_count += 1
+        elif status in {"outstanding", "overdue"}:
+            outstanding_count += 1
+
+        invoices.append(
+            {
+                "id": str(row.get("id")),
+                "invoice_number": str(data.get("invoice_number") or ""),
+                "client": str(data.get("client") or "Unknown"),
+                "invoice_date": invoice_date,
+                "due_date": str(data.get("due_date") or ""),
+                "description": str(data.get("description") or ""),
+                "line_items": data.get("line_items") or [],
+                "total_cents": total_cents,
+                "paid_cents": paid_cents,
+                "status": status,
+                "reminder_count": int(data.get("reminder_count") or 0),
+                "last_reminder_at": data.get("last_reminder_at"),
+                "created_at": row.get("created_at"),
+                "updated_at": row.get("updated_at"),
+            }
+        )
+
+    return {
+        "summary": {
+            "invoices_this_month": invoices_this_month,
+            "total_invoiced_cents": total_invoiced_cents,
+            "total_paid_cents": total_paid_cents,
+            "paid_count": paid_count,
+            "outstanding_count": outstanding_count,
+            "as_of": now.isoformat(),
+        },
+        "invoices": invoices,
+    }
+
+
+@router.post("/business/invoices")
+async def create_business_invoice(
+    payload: FounderInvoiceCreateRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "billing"])
+    svc = DominationService(db, get_event_publisher())
+
+    total_cents = sum(int(item.amount_cents) for item in payload.line_items)
+    invoice_number = f"INV-{datetime.now(UTC).strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+    created = await svc.create(
+        table="invoices",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data={
+            "invoice_number": invoice_number,
+            "client": payload.client,
+            "invoice_date": payload.invoice_date,
+            "due_date": payload.due_date,
+            "description": payload.description,
+            "line_items": [item.model_dump() for item in payload.line_items],
+            "total_cents": total_cents,
+            "paid_cents": 0,
+            "status": "outstanding",
+            "reminder_count": 0,
+            "created_by": str(current.user_id),
+        },
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+
+    return {
+        "id": str(created.get("id")),
+        "invoice_number": invoice_number,
+        "total_cents": total_cents,
+        "status": "outstanding",
+        "created_at": created.get("created_at"),
+    }
+
+
+@router.post("/business/invoices/{invoice_id}/send-reminder")
+async def send_invoice_reminder(
+    invoice_id: uuid.UUID,
+    payload: FounderInvoiceReminderRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "billing"])
+    svc = DominationService(db, get_event_publisher())
+    invoice = svc.repo("invoices").get(tenant_id=current.tenant_id, record_id=invoice_id)
+    if not invoice:
+        return {"error": "invoice_not_found"}
+
+    data = dict(invoice.get("data") or {})
+    data["reminder_count"] = int(data.get("reminder_count") or 0) + 1
+    data["last_reminder_at"] = datetime.now(UTC).isoformat()
+    data["last_reminder_channel"] = payload.channel
+    if str(data.get("status") or "").lower() == "draft":
+        data["status"] = "outstanding"
+
+    updated = await svc.update(
+        table="invoices",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        record_id=invoice_id,
+        expected_version=invoice.get("version", 1),
+        patch=data,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    if not updated:
+        return {"error": "invoice_update_conflict"}
+
+    return {
+        "status": "sent",
+        "invoice_id": str(invoice_id),
+        "channel": payload.channel,
+        "reminder_count": data["reminder_count"],
+        "last_reminder_at": data["last_reminder_at"],
+    }
+
+
+@router.post("/business/invoices/{invoice_id}/mark-paid")
+async def mark_invoice_paid(
+    invoice_id: uuid.UUID,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "billing"])
+    svc = DominationService(db, get_event_publisher())
+    invoice = svc.repo("invoices").get(tenant_id=current.tenant_id, record_id=invoice_id)
+    if not invoice:
+        return {"error": "invoice_not_found"}
+
+    data = dict(invoice.get("data") or {})
+    total_cents = int(data.get("total_cents") or 0)
+    data["status"] = "paid"
+    data["paid_cents"] = total_cents
+    data["paid_at"] = datetime.now(UTC).isoformat()
+
+    updated = await svc.update(
+        table="invoices",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        record_id=invoice_id,
+        expected_version=invoice.get("version", 1),
+        patch=data,
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    if not updated:
+        return {"error": "invoice_update_conflict"}
+
+    return {
+        "status": "paid",
+        "invoice_id": str(invoice_id),
+        "paid_cents": total_cents,
+        "paid_at": data["paid_at"],
+    }
+
+
+@router.get("/business/invoice-settings")
+async def get_business_invoice_settings(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "billing"])
+    svc = DominationService(db, get_event_publisher())
+    existing = _find_invoice_settings_record(svc, current.tenant_id)
+    if not existing:
+        return _default_invoice_settings()
+
+    data = existing.get("data") or {}
+    settings = data.get("settings") or {}
+    merged = {**_default_invoice_settings(), **settings}
+    return merged
+
+
+@router.put("/business/invoice-settings")
+async def put_business_invoice_settings(
+    payload: FounderInvoiceSettingsRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    require_role(current, ["founder", "admin", "billing"])
+    svc = DominationService(db, get_event_publisher())
+    settings_payload = payload.model_dump(by_alias=True)
+    existing = _find_invoice_settings_record(svc, current.tenant_id)
+
+    if existing:
+        updated = await svc.update(
+            table="tenant_billing_config",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            record_id=uuid.UUID(str(existing["id"])),
+            expected_version=existing.get("version", 1),
+            patch={
+                "key": "founder_invoice_settings",
+                "settings": settings_payload,
+                "updated_by": str(current.user_id),
+            },
+            correlation_id=getattr(request.state, "correlation_id", None),
+        )
+        if not updated:
+            return {"error": "settings_update_conflict"}
+        return {"updated": True, "settings": settings_payload}
+
+    created = await svc.create(
+        table="tenant_billing_config",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data={
+            "key": "founder_invoice_settings",
+            "settings": settings_payload,
+            "created_by": str(current.user_id),
+        },
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {"updated": True, "settings": settings_payload, "id": str(created["id"])}
 
 
 @router.get("/tenants", dependencies=[Depends(require_role("founder", "admin"))])
@@ -170,10 +612,21 @@ async def founder_dashboard(
         if s.get("data", {}).get("status") == "active"
     )
 
+    one_hour_ago = (datetime.now(UTC).timestamp() - 3600)
+    system_alerts = svc.repo("system_alerts").list(
+        tenant_id=current.tenant_id, limit=10000
+    )
+    error_count_1h = sum(
+        1
+        for a in system_alerts
+        if a.get("data", {}).get("severity") in ("error", "critical")
+        and _parse_ts(a.get("data", {}).get("created_at", "")) >= one_hour_ago
+    )
+
     return {
         "mrr_cents": mrr,
         "tenant_count": len(active_tenants),
-        "error_count_1h": 0,
+        "error_count_1h": error_count_1h,
         "as_of": datetime.now(UTC).isoformat(),
     }
 
@@ -295,9 +748,6 @@ async def compliance_status(
     db: Session = Depends(db_session_dependency),
 ):
     require_role(current, ["founder", "admin"])
-    from core_app.services.domination_service import DominationService
-    from core_app.services.event_publisher import get_event_publisher
-
     svc = DominationService(db, get_event_publisher())
 
     nemsis_jobs = svc.repo("nemsis_export_jobs").list(

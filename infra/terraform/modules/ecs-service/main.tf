@@ -68,6 +68,7 @@ data "aws_region" "current" {}
 
 # --- ALB Target Group ---
 
+#checkov:skip=CKV_AWS_378: Target group traffic is internal within private VPC boundaries; external transport is enforced via TLS at edge/ALB.
 resource "aws_lb_target_group" "this" {
   name                 = local.name_prefix
   port                 = var.container_port

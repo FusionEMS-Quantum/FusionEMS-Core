@@ -122,14 +122,14 @@ export default function RenewalExpansionPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · GROWTH</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">SUCCESS · GROWTH</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Renewal & Expansion</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Renewal risks · expansion opportunities · stakeholders · value milestones</p>
       </div>
 
       {/* Renewal Risk Signals */}
       <div>
-        <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">RENEWAL RISK SIGNALS ({risks.filter((r) => !r.is_resolved).length} active)</div>
+        <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">RENEWAL RISK SIGNALS ({risks.filter((r) => !r.is_resolved).length} active)</div>
         {risks.length === 0 ? (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No renewal risks detected.</div>
         ) : (
@@ -143,7 +143,7 @@ export default function RenewalExpansionPage() {
                     <div className="text-sm text-zinc-100">{r.description}</div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-micro font-bold ${r.severity === 'CRITICAL' ? 'text-red-400' : r.severity === 'HIGH' ? 'text-[#FF4D00]-400' : 'text-yellow-400'}`}>{r.severity}</div>
+                    <div className={`text-micro font-bold ${r.severity === 'CRITICAL' ? 'text-red-400' : r.severity === 'HIGH' ? 'text-[#FF4D00]' : 'text-yellow-400'}`}>{r.severity}</div>
                     {r.is_resolved && <div className="text-micro text-green-400">Resolved</div>}
                   </div>
                 </div>
@@ -155,7 +155,7 @@ export default function RenewalExpansionPage() {
 
       {/* Expansion Readiness */}
       <div>
-        <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">EXPANSION READINESS ({readiness.length} signals)</div>
+        <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">EXPANSION READINESS ({readiness.length} signals)</div>
         {readiness.length === 0 ? (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No expansion readiness signals.</div>
         ) : (
@@ -175,7 +175,7 @@ export default function RenewalExpansionPage() {
 
       {/* Expansion Opportunities */}
       <div>
-        <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">EXPANSION OPPORTUNITIES ({opportunities.length})</div>
+        <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">EXPANSION OPPORTUNITIES ({opportunities.length})</div>
         {opportunities.length === 0 ? (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No expansion opportunities identified yet.</div>
         ) : (
@@ -198,7 +198,7 @@ export default function RenewalExpansionPage() {
 
       {/* Value Milestones */}
       <div>
-        <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">VALUE MILESTONES</div>
+        <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">VALUE MILESTONES</div>
         {milestones.length === 0 ? (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No value milestones recorded yet.</div>
         ) : (
@@ -224,7 +224,7 @@ export default function RenewalExpansionPage() {
 
       {/* Stakeholder Notes */}
       <div>
-        <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">STAKEHOLDER ENGAGEMENT ({notes.length})</div>
+        <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">STAKEHOLDER ENGAGEMENT ({notes.length})</div>
         {notes.length === 0 ? (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No stakeholder notes recorded yet.</div>
         ) : (
@@ -245,7 +245,7 @@ export default function RenewalExpansionPage() {
         )}
       </div>
 
-      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

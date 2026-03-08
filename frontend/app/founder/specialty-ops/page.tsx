@@ -66,7 +66,7 @@ export default function FounderSpecialtyOpsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-[#FF4D00]-400/80">Founder Command</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[#FF4D00]/80">Founder Command</div>
         <h1 className="text-2xl font-black text-white">Specialty Ops Command Center</h1>
       </div>
 
@@ -94,7 +94,7 @@ export default function FounderSpecialtyOpsPage() {
                 )}
                 {summary.top_actions.map((action, idx) => (
                   <div key={`${action.summary}-${idx}`} className=" border border-white/10 bg-black/20 p-3">
-                    <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]-300">{action.severity}</div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]">{action.severity}</div>
                     <div className="mt-1 text-sm font-semibold text-white">{action.summary}</div>
                     <div className="mt-1 text-sm text-white/70">{action.recommended_action}</div>
                   </div>

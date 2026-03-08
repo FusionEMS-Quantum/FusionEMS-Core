@@ -155,13 +155,13 @@ export default function CadDispatchPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-1 block">← Ops Command</Link>
+            <Link href="/founder/ops" className="text-body text-[#FF4D00] hover:text-[#FF4D00] mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">CAD / Dispatch</h1>
           <p className="text-sm text-zinc-500 mt-1">Mission intake · State machine · Unit & crew assignment · Full audit trail</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 bg-brand-orange/[0.1] border border-brand-orange/[0.3] chamfer-8">
-            <span className="text-[#FF4D00]-400 text-sm font-bold">{active.length}</span>
+              <span className="text-[#FF4D00] text-sm font-bold">{active.length}</span>
             <span className="text-micro text-zinc-500 ml-1">ACTIVE</span>
           </div>
           <div className="px-3 py-1.5 bg-red-600/[0.1] border border-red-600/[0.3] chamfer-8">
@@ -207,7 +207,7 @@ export default function CadDispatchPage() {
             className="h-9 bg-zinc-950/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-text-zinc-500" />
         </div>
         <button onClick={createRequest} disabled={creating || !newRequest.origin_address}
-          className="px-6 py-2 bg-[#FF4D00]-600 text-white text-sm font-bold chamfer-8 hover:bg-[#FF4D00]-500 disabled:opacity-40 transition-colors">
+            className="px-6 py-2 bg-[#E64500] text-white text-sm font-bold chamfer-8 hover:bg-[#FF4D00] disabled:opacity-40 transition-colors">
           {creating ? 'Creating…' : '+ Create Mission'}
         </button>
       </Panel>
@@ -215,9 +215,9 @@ export default function CadDispatchPage() {
       {/* ── Filter ── */}
       <div className="flex items-center gap-2">
         <span className="text-micro uppercase tracking-widest text-zinc-500">Filter by state:</span>
-        <button onClick={() => setFilterState('')} className={`px-2 py-1 chamfer-4 text-micro font-bold ${!filterState ? 'bg-[#FF4D00]-600 text-white' : 'bg-zinc-950/[0.06] text-zinc-400'}`}>ALL</button>
+          <button onClick={() => setFilterState('')} className={`px-2 py-1 chamfer-4 text-micro font-bold ${!filterState ? 'bg-[#E64500] text-white' : 'bg-zinc-950/[0.06] text-zinc-400'}`}>ALL</button>
         {['NEW_REQUEST','READY_FOR_ASSIGNMENT','ASSIGNED','EN_ROUTE','ON_SCENE','TRANSPORTING'].map(s => (
-          <button key={s} onClick={() => setFilterState(s)} className={`px-2 py-1 chamfer-4 text-micro font-bold ${filterState === s ? 'bg-[#FF4D00]-600 text-white' : 'bg-zinc-950/[0.06] text-zinc-400'}`}>
+            <button key={s} onClick={() => setFilterState(s)} className={`px-2 py-1 chamfer-4 text-micro font-bold ${filterState === s ? 'bg-[#E64500] text-white' : 'bg-zinc-950/[0.06] text-zinc-400'}`}>
             {s.replace(/_/g, ' ')}
           </button>
         ))}
@@ -282,7 +282,7 @@ export default function CadDispatchPage() {
                           className="w-full h-8 bg-brand-orange/[0.1] border border-brand-orange/[0.3] px-3 text-body text-white chamfer-8 focus:outline-none placeholder-text-zinc-500" />
                         <button onClick={() => transition(m.id, selected?.data?.state || '', true)}
                           disabled={!overrideReason}
-                          className="px-4 py-1.5 bg-[#FF4D00]-700 text-white text-body font-bold chamfer-8 hover:bg-[#FF4D00]-600 disabled:opacity-40">
+                            className="px-4 py-1.5 bg-[#E64500] text-white text-body font-bold chamfer-8 hover:bg-[#FF4D00] disabled:opacity-40">
                           Apply Manual Override
                         </button>
                       </div>

@@ -3,6 +3,7 @@ import { QuantumTableSkeleton } from '@/components/ui';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BILLING_PHONE_DISPLAY, BILLING_PHONE_TEL } from '@/lib/phone';
 
 type StatementStatus = 'paid' | 'pending' | 'overdue' | 'in_review';
 
@@ -405,13 +406,13 @@ export default function PatientStatementsPage() {
             </a>
             {' '}or call{' '}
             <a
-              href="tel:18005551234"
+              href={BILLING_PHONE_TEL}
               style={{
                 color: 'var(--color-text-secondary)',
                 textDecoration: 'none',
               }}
             >
-              1-800-555-1234
+              {BILLING_PHONE_DISPLAY}
             </a>
           </p>
         </div>

@@ -39,6 +39,9 @@ class ButtonWarning:
 
 
 def normalize_route(route: str) -> str:
+    route = route.split("?", 1)[0].split("#", 1)[0]
+    if route == "":
+        route = "/"
     if not route.startswith("/"):
         route = f"/{route}"
     if route != "/":

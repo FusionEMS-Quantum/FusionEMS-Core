@@ -1,3 +1,5 @@
+# pylint: disable=not-callable,broad-exception-caught
+
 """
 Platform Admin AI Assistant Service — Rule-based issue diagnosis with
 structured 9-field output, silent mutation guards, confidence scoring.
@@ -5,7 +7,6 @@ structured 9-field output, silent mutation guards, confidence scoring.
 Implements Part 8 of the Master Platform Core Directive.
 AI is isolated from core domain logic — failure never breaks workflows.
 """
-# pylint: disable=not-callable
 from __future__ import annotations
 
 import logging
@@ -70,7 +71,7 @@ class PlatformAdminAssistantService:
         for rule in rules:
             try:
                 issues.extend(rule())
-            except Exception:  # pylint: disable=broad-exception-caught
+            except (ValueError, TypeError, KeyError, AttributeError, RuntimeError, LookupError, OSError):
                 logger.exception("AI diagnostic rule failed: %s", rule.__name__)
                 # Never break on AI failure — continue to next rule
         return issues
@@ -86,7 +87,7 @@ class PlatformAdminAssistantService:
         for rule in rules:
             try:
                 issues.extend(rule())
-            except Exception:  # pylint: disable=broad-exception-caught
+            except (ValueError, TypeError, KeyError, AttributeError, RuntimeError, LookupError, OSError):
                 logger.exception("AI tenant diagnostic rule failed for %s", tenant_id)
         return issues
 

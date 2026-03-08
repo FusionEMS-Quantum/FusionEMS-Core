@@ -353,6 +353,8 @@ module "backend_service" {
     { name = "S3_PROPOSALS_BUCKET", value = module.s3.proposals_bucket_name },
     { name = "CENTRAL_BILLING_PHONE_E164", value = module.telnyx_central_billing_line.phone_e164 },
     { name = "TELNYX_CENTRAL_BILLING_NUMBER_ID", value = module.telnyx_central_billing_line.number_id },
+    { name = "CNAM_DISPLAY_NAME", value = module.telnyx_central_billing_line.cnam_display_name },
+    { name = "CNAM_STATUS", value = module.telnyx_central_billing_line.cnam_status },
     { name = "FOUNDER_BILLING_ESCALATION_PHONE_E164", value = var.founder_billing_escalation_phone_e164 },
 
     # NERIS queues – inject directly so backend doesn't depend on Secrets Manager keys.
@@ -438,6 +440,8 @@ module "frontend_service" {
     { name = "NEXT_PUBLIC_API_URL", value = "https://${var.api_domain_name}" },
     { name = "NEXT_PUBLIC_COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
     { name = "NEXT_PUBLIC_COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
+    { name = "NEXT_PUBLIC_BILLING_PHONE", value = module.telnyx_central_billing_line.phone_e164 },
+    { name = "NEXT_PUBLIC_CNAM_DISPLAY_NAME", value = module.telnyx_central_billing_line.cnam_display_name },
   ]
 
   secrets = []

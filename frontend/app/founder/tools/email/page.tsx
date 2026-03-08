@@ -137,7 +137,7 @@ export default function FounderEmailPage() {
     <div className="p-5 space-y-5 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">FOUNDER TOOLS · MICROSOFT GRAPH</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">FOUNDER TOOLS · MICROSOFT GRAPH</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Inbox</h1>
           <p className="text-body text-zinc-500 mt-0.5">Application permissions · Founder mailbox only · No delegated access</p>
         </div>

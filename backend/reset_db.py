@@ -1,3 +1,7 @@
+"""Utility script to reset local development database."""
+
+# pylint: disable=no-member
+
 import psycopg
 from psycopg import sql
 

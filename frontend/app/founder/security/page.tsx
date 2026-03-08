@@ -14,7 +14,7 @@ export default function SecurityPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">DOMAIN 6 · VISIBILITY & SECURITY</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">DOMAIN 6 · VISIBILITY & SECURITY</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Visibility & Security</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Role builder · field masking · access logs · OPA policy sandbox</p>
       </div>
@@ -28,7 +28,7 @@ export default function SecurityPage() {
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+      <Link href="/founder" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

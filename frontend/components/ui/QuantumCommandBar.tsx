@@ -29,7 +29,7 @@ export function QuantumCommandBar({
     <div
       className={clsx(
         'flex items-center justify-between gap-4',
-        'px-4 py-3 bg-[#0A0A0B]-raised border border-border-DEFAULT chamfer-8',
+        'px-4 py-3 bg-[#0A0A0B] border border-border-DEFAULT chamfer-8',
         'animate-fade-in',
         className,
       )}
@@ -52,7 +52,7 @@ export function QuantumCommandBar({
       <div className="flex items-center gap-2">
         {actions.map((action, i) => {
           const variantClass = {
-            primary: 'bg-[#FF4D00] text-black hover:bg-[#FF4D00]-bright',
+            primary: 'bg-[#FF4D00] text-black hover:bg-[#E64500]',
             danger: 'bg-red-ghost text-red hover:bg-red-dim hover:text-zinc-100',
             ghost: 'text-zinc-400 hover:text-zinc-100 hover:bg-bg-overlay',
           }[action.variant ?? 'ghost'];

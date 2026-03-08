@@ -43,7 +43,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
 
           <nav className="hidden xl:flex items-center gap-1">
             {NAV_LINKS.map((item) => (
-              <Link key={item.href} href={item.href} className="px-3 py-2 text-label uppercase tracking-widest text-zinc-500 hover:text-zinc-100 hover:bg-[#0A0A0B]-raised chamfer-4 transition-colors">
+              <Link key={item.href} href={item.href} className="px-3 py-2 text-label uppercase tracking-widest text-zinc-500 hover:text-zinc-100 hover:bg-[#0A0A0B] chamfer-4 transition-colors">
                 {item.label}
               </Link>
             ))}

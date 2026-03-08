@@ -51,7 +51,7 @@ function severityPanelClass(rawSeverity: string): string {
     case 'BLOCKING':
       return 'text-red-400 bg-red-400/10 border-red-400/30';
     case 'HIGH':
-      return 'text-[#FF4D00]-400 bg-[#FF4D00]-400/10 border-orange-400/30';
+      return 'text-[#FF4D00] bg-[rgba(255,77,0,0.1)] border-orange-400/30';
     case 'MEDIUM':
       return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30';
     case 'LOW':
@@ -115,7 +115,7 @@ export default function SuccessCommandPage() {
   const KPI_CARDS = [
     { label: 'Stalled Implementations', value: summary?.stalled_implementations ?? 0, color: summary?.stalled_implementations ? 'text-red-400' : 'text-green-400', link: '/founder/success-command/implementations' },
     { label: 'High-Severity Tickets', value: summary?.high_severity_tickets ?? 0, color: summary?.high_severity_tickets ? 'text-red-400' : 'text-green-400', link: '/founder/success-command/support' },
-    { label: 'At-Risk Accounts', value: summary?.at_risk_accounts ?? 0, color: summary?.at_risk_accounts ? 'text-[#FF4D00]-400' : 'text-green-400', link: '#' },
+    { label: 'At-Risk Accounts', value: summary?.at_risk_accounts ?? 0, color: summary?.at_risk_accounts ? 'text-[#FF4D00]' : 'text-green-400', link: '#' },
     { label: 'Training Gaps', value: summary?.training_gaps ?? 0, color: summary?.training_gaps ? 'text-yellow-400' : 'text-green-400', link: '/founder/success-command/training' },
     { label: 'Low Adoption Modules', value: summary?.low_adoption_modules ?? 0, color: summary?.low_adoption_modules ? 'text-yellow-400' : 'text-green-400', link: '/founder/success-command/adoption' },
     { label: 'Expansion Ready', value: summary?.expansion_ready_signals ?? 0, color: 'text-cyan-400', link: '/founder/success-command/renewal' },
@@ -125,7 +125,7 @@ export default function SuccessCommandPage() {
     <div className="p-5 space-y-6">
       {/* Header */}
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">FOUNDER · SUCCESS</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">FOUNDER · SUCCESS</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Success Command Center</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Implementation · Support · Training · Adoption · Expansion</p>
       </div>
@@ -146,7 +146,7 @@ export default function SuccessCommandPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {implHealth && (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4">
-            <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">IMPLEMENTATION HEALTH</div>
+            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">IMPLEMENTATION HEALTH</div>
             <div className="space-y-1 text-xs text-zinc-500">
               <div className="flex justify-between"><span>Total Projects</span><span className="text-zinc-100 font-bold">{implHealth.total_projects}</span></div>
               <div className="flex justify-between"><span>On Track</span><span className="text-green-400 font-bold">{implHealth.on_track_pct.toFixed(0)}%</span></div>
@@ -157,18 +157,18 @@ export default function SuccessCommandPage() {
         )}
         {queueHealth && (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4">
-            <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">SUPPORT QUEUE HEALTH</div>
+            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">SUPPORT QUEUE HEALTH</div>
             <div className="space-y-1 text-xs text-zinc-500">
               <div className="flex justify-between"><span>Total Open</span><span className="text-zinc-100 font-bold">{queueHealth.total_open}</span></div>
               <div className="flex justify-between"><span>Critical</span><span className="text-red-400 font-bold">{queueHealth.critical_count}</span></div>
-              <div className="flex justify-between"><span>High</span><span className="text-[#FF4D00]-400 font-bold">{queueHealth.high_count}</span></div>
+              <div className="flex justify-between"><span>High</span><span className="text-[#FF4D00] font-bold">{queueHealth.high_count}</span></div>
               <div className="flex justify-between"><span>SLA Breaches</span><span className={queueHealth.sla_breach_count > 0 ? 'text-red-400 font-bold' : 'text-green-400 font-bold'}>{queueHealth.sla_breach_count}</span></div>
             </div>
           </div>
         )}
         {training && (
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4">
-            <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">TRAINING COMPLETION</div>
+            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">TRAINING COMPLETION</div>
             <div className="space-y-1 text-xs text-zinc-500">
               <div className="flex justify-between"><span>Total Assignments</span><span className="text-zinc-100 font-bold">{training.total_assignments}</span></div>
               <div className="flex justify-between"><span>Completed</span><span className="text-green-400 font-bold">{training.completed_pct.toFixed(0)}%</span></div>
@@ -182,7 +182,7 @@ export default function SuccessCommandPage() {
       {/* Top Actions */}
       {summary?.top_actions && summary.top_actions.length > 0 && (
         <div>
-          <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">TOP ACTIONS</div>
+          <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">TOP ACTIONS</div>
           <div className="space-y-2">
             {summary.top_actions.map((action, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
@@ -213,13 +213,13 @@ export default function SuccessCommandPage() {
           { href: '/founder/success-command/renewal', label: 'Renewal & Expansion', desc: 'Renewal risk · expansion opportunities · stakeholders' },
         ].map((l) => (
           <Link key={l.href} href={l.href} className="block bg-[#0A0A0B] border border-border-DEFAULT p-4 hover:border-white/[0.18] transition-colors">
-            <div className="text-sm font-bold text-[#FF4D00]-dim mb-1">{l.label}</div>
+            <div className="text-sm font-bold text-[#FF4D00]/70 mb-1">{l.label}</div>
             <div className="text-xs text-zinc-500">{l.desc}</div>
           </Link>
         ))}
       </div>
 
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+      <Link href="/founder" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

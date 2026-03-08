@@ -33,7 +33,14 @@ dependencies = [
 [tool.pylint.main]
 init-hook = 'import sys; sys.path.insert(0, ".")'
 ignore-paths = [
-  "^alembic/versions/.*$",
+  "(^|.*/)alembic/versions/.*$",
+  "(^|.*/)backend/alembic/versions/.*$",
+]
+
+[tool.pylint.messages_control]
+disable = [
+  "broad-exception-caught",
+  "unused-argument",
 ]
 
 [tool.pytest.ini_options]

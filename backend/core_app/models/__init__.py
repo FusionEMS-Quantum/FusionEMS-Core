@@ -1,5 +1,8 @@
 # Core Models
-from . import governance  # noqa: F401  # ensure governance tables register with metadata
+from . import (
+    governance,  # noqa: F401  # ensure governance tables register with metadata
+    legal_requests,  # noqa: F401  # ensure legal request tables register with metadata
+)
 from .agency import (
     AgencyBillingPolicy,
     AgencyCollectionsPolicy,

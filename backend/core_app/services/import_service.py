@@ -118,7 +118,7 @@ class ImportService:
                     correlation_id=correlation_id,
                 )
                 batch.imported_count += 1
-            except Exception as exc:
+            except (ValueError, TypeError, KeyError, AttributeError, RuntimeError, LookupError, OSError) as exc:
                 batch.errors.append({
                     "row": idx + 1,
                     "error": str(exc),

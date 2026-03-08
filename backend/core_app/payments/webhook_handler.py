@@ -88,7 +88,11 @@ class StripeWebhookHandler:
     def _handle_invoice_payment_failed(self, event: dict) -> dict:
         invoice = event["data"]["object"]
         # Trigger automated dunning or notification service
-        logger.warning(f"Invoice {invoice['id']} payment failed. Customer: {invoice.get('customer')}")
+        logger.warning(
+            "Invoice %s payment failed. Customer: %s",
+            invoice["id"],
+            invoice.get("customer"),
+        )
         return {
             "invoice_id": invoice["id"],
             "customer": invoice.get("customer"),
@@ -100,7 +104,11 @@ class StripeWebhookHandler:
         sub = event["data"]["object"]
         sub_id = sub["id"]
         customer_id = sub.get("customer")
-        logger.info(f"Subscription {sub_id} created for customer {customer_id}. Triggering provisioning.")
+        logger.info(
+            "Subscription %s created for customer %s. Triggering provisioning.",
+            sub_id,
+            customer_id,
+        )
 
         provisioning_state = "not_configured"
         provisioning_job_id: str | None = None

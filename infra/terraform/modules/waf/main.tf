@@ -268,7 +268,8 @@ resource "aws_wafv2_web_acl" "this" {
 
 resource "aws_cloudwatch_log_group" "waf" {
   name              = "aws-waf-logs-${var.project}-${var.environment}"
-  retention_in_days = 90
+  retention_in_days = 365
+  kms_key_id        = "alias/aws/logs"
 
   tags = merge(var.tags, {
     Name = "aws-waf-logs-${var.project}-${var.environment}"

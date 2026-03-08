@@ -455,6 +455,49 @@ async def create_support_request(
 # Document Upload
 # ---------------------------------------------------------------------------
 
+@router.get("/documents")
+async def list_patient_documents(
+    patient_account_id: uuid.UUID | None = None,
+    limit: int = 200,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Return the patient's uploaded documents and billing statements combined."""
+    svc = DominationService(db, get_event_publisher())
+
+    uploads = svc.repo("patient_documents").list(
+        tenant_id=current.tenant_id, limit=min(limit, 500)
+    )
+    statements = svc.repo("billing_statements").list(
+        tenant_id=current.tenant_id, limit=min(limit, 500)
+    )
+
+    if patient_account_id:
+        pid = str(patient_account_id)
+        uploads = [u for u in uploads if u.get("data", {}).get("patient_account_id") == pid]
+        statements = [s for s in statements if s.get("data", {}).get("patient_account_id") == pid]
+
+    # Normalise statements to the same shape as uploaded documents
+    normalised_statements = [
+        {
+            "id": s.get("id"),
+            "data": {
+                "type": "statement",
+                "name": s.get("data", {}).get("name", "Billing Statement"),
+                "created_at": s.get("data", {}).get("created_at"),
+                "file_url": s.get("data", {}).get("file_url"),
+                "description": s.get("data", {}).get("description"),
+                "size_bytes": s.get("data", {}).get("size_bytes"),
+                "status": s.get("data", {}).get("status"),
+            },
+        }
+        for s in statements
+    ]
+
+    items = list(uploads) + normalised_statements
+    return {"items": items, "total": len(items)}
+
+
 @router.post("/documents", status_code=201)
 async def upload_patient_document(
     request: Request,

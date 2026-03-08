@@ -12,7 +12,7 @@ const badgeVariants = cva(
     variants: {
       severity: {
         BLOCKING: 'bg-red-ghost text-red border border-red/30',
-        HIGH: 'bg-[#FF4D00]-ghost text-[#FF4D00] border border-orange/30',
+        HIGH: 'bg-[rgba(255,77,0,0.12)] text-[#FF4D00] border border-orange/30',
         MEDIUM: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
         LOW: 'bg-sky-500/10 text-sky-400 border border-sky-500/20',
         INFORMATIONAL: 'bg-gray-500/10 text-zinc-500 border border-gray-500/20',

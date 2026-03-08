@@ -52,7 +52,7 @@ variable "redis_cluster_id" {
 variable "log_retention_days" {
   description = "Number of days to retain audit log events"
   type        = number
-  default     = 30
+  default     = 365
 }
 
 variable "kms_key_arn" {

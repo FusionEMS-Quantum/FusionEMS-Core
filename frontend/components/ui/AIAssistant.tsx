@@ -299,7 +299,7 @@ export function SimpleModeSummary({
           <p className="text-body text-zinc-400 leading-relaxed">{whatMatters}</p>
         </div>
 
-        <div className="p-3 bg-[#FF4D00]-ghost border border-orange/20 chamfer-4">
+        <div className="p-3 bg-[rgba(255,77,0,0.12)] border border-orange/20 chamfer-4">
           <p className="text-micro font-label uppercase tracking-wider text-[#FF4D00] mb-1">
             What to click next
           </p>

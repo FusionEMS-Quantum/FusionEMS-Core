@@ -20,7 +20,7 @@ interface PlatformAdminIssue {
 
 const SEVERITY_COLORS: Record<string, string> = {
   BLOCKING: 'text-red-400 bg-red-500/10 border-red-500/30',
-  HIGH: 'text-[#FF4D00]-400 bg-[#FF4D00]-500/10 border-orange-500/30',
+  HIGH: 'text-[#FF4D00] bg-[rgba(255,77,0,0.10)] border-orange-500/30',
   MEDIUM: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
   LOW: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
 };
@@ -28,7 +28,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 const CONFIDENCE_COLORS: Record<string, string> = {
   HIGH: 'text-green-400',
   MEDIUM: 'text-yellow-400',
-  LOW: 'text-[#FF4D00]-400',
+  LOW: 'text-[#FF4D00]',
 };
 
 export default function AIDiagnosisPage() {

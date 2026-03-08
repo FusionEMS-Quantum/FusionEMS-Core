@@ -40,6 +40,21 @@ export default function PortalDashboardPage() {
       title="Agency Dashboard"
       subtitle="Live real-time operational data"
     >
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Link
+          href="/portal/dea-cms"
+          className="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+        >
+          DEA / CMS Command
+        </Link>
+        <Link
+          href="/portal/cases"
+          className="px-3 py-1.5 text-xs font-semibold border border-border-DEFAULT text-zinc-300 hover:bg-zinc-900 transition-colors"
+        >
+          Open Cases CMS Gate
+        </Link>
+      </div>
+
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <QuantumCardSkeleton />

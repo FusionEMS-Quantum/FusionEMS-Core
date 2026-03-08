@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# pyright: reportMissingImports=false
+
 # ruff: noqa: I001
 
 # pylint: disable=import-error
@@ -11,8 +13,8 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+import sqlalchemy as sa
+import sqlalchemy.orm as sa_orm
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +55,12 @@ def process_fax_match(message: dict) -> None:
     database_url_idem = os.environ.get("DATABASE_URL", "")
     if database_url_idem:
         try:
-            _engine = create_engine(database_url_idem, pool_pre_ping=True)
-            _Session = sessionmaker(bind=_engine)
+            _engine = sa.create_engine(database_url_idem, pool_pre_ping=True)
+            _Session = sa_orm.sessionmaker(bind=_engine)
             db = _Session()
             try:
                 existing = db.execute(
-                    text(
+                    sa.text(
                         "SELECT data->>'match_status' as status FROM document_matches WHERE data->>'fax_id' = :fid AND tenant_id = :tid LIMIT 1"
                     ),
                     {"fid": fax_id, "tid": str(tenant_id)},
@@ -70,7 +72,7 @@ def process_fax_match(message: dict) -> None:
                         existing.status,
                         correlation_id,
                     )
-                    return {"skipped": True, "reason": "already_processed", "fax_id": fax_id}
+                    return
             finally:
                 db.close()
                 _engine.dispose()
@@ -221,12 +223,9 @@ def _match_by_qr(
     if not database_url:
         return None
     try:
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
-
-        engine = create_engine(database_url, pool_pre_ping=True)
-        Session = sessionmaker(bind=engine)
-        db = Session()
+        engine = sa.create_engine(database_url, pool_pre_ping=True)
+        session_factory = sa_orm.sessionmaker(bind=engine)
+        db = session_factory()
         try:
             from core_app.fax.claim_matcher import ClaimMatcher
 
@@ -256,12 +255,9 @@ def _match_probabilistic(
     if not database_url:
         return []
     try:
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
-
-        engine = create_engine(database_url, pool_pre_ping=True)
-        Session = sessionmaker(bind=engine)
-        db = Session()
+        engine = sa.create_engine(database_url, pool_pre_ping=True)
+        session_factory = sa_orm.sessionmaker(bind=engine)
+        db = session_factory()
         try:
             from core_app.fax.claim_matcher import ClaimMatcher
 
@@ -286,12 +282,9 @@ def _attach_claim(
     if not database_url:
         return
     try:
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
-
-        engine = create_engine(database_url, pool_pre_ping=True)
-        Session = sessionmaker(bind=engine)
-        db = Session()
+        engine = sa.create_engine(database_url, pool_pre_ping=True)
+        session_factory = sa_orm.sessionmaker(bind=engine)
+        db = session_factory()
         try:
             from core_app.fax.claim_matcher import ClaimMatcher
 

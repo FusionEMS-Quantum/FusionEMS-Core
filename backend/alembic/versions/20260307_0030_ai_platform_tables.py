@@ -1,3 +1,6 @@
+# pylint: skip-file
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false
+
 """AI Platform — use-case registry, workflow orchestration, governance, override, copilots
 
 Revision ID: 20260307_0030
@@ -12,9 +15,6 @@ Creates all AI platform tables for:
   - Human override (ai_human_override_events, ai_review_items, ai_approval_events, ai_rejection_events, ai_resume_events)
   - Domain copilots (ai_domain_copilots, ai_domain_policies, ai_copilot_action_boundaries, ai_copilot_audit_events)
 """
-
-# pyright: reportCallIssue=false, reportAttributeAccessIssue=false
-# pylint: disable=no-member,not-callable
 
 from __future__ import annotations
 

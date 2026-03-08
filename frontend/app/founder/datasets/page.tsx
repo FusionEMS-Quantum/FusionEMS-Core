@@ -22,6 +22,8 @@ import {
   AlertTriangle
 } from "lucide-react";
 
+const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || "";
+
 export default function GodModeDatasets() {
   const [activeTab, setActiveTab] = useState<'status' | 'nemsis_ai' | 'exports' | 'templates'>('status');
   const [systemStatus, setSystemStatus] = useState<any>(null);
@@ -57,7 +59,7 @@ export default function GodModeDatasets() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/datasets/status`);
+        const res = await fetch(`${API}/api/datasets/status`);
         const data = await res.json();
         setSystemStatus(data);
       } catch (e) {
@@ -69,14 +71,14 @@ export default function GodModeDatasets() {
 
   const loadExports = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/datasets/exports`);
+      const res = await fetch(`${API}/api/datasets/exports`);
       setExportData(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const loadDevices = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/datasets/active-devices`);
+      const res = await fetch(`${API}/api/datasets/active-devices`);
       setActiveDevices(await res.json());
     } catch (e) { console.error(e); }
   };
@@ -94,7 +96,7 @@ export default function GodModeDatasets() {
     setThinking(true);
     setAiResult(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/datasets/ai-expression-builder`, {
+      const res = await fetch(`${API}/api/datasets/ai-expression-builder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ natural_language: naturalQuery })
@@ -109,7 +111,7 @@ export default function GodModeDatasets() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090D] text-white selection:bg-[#FF4D00]-500 selection:text-black font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#07090D] text-white selection:bg-[#FF4D00] selection:text-black font-sans relative overflow-hidden">
       {/* Background Effect */}
       <div className="fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-yellow-900/20 via-black to-black opacity-90 pointer-events-none" />
 
@@ -128,12 +130,12 @@ export default function GodModeDatasets() {
               exit={{ scale: 0.95, y: 20 }}
               className="bg-[#0f1115] border border-orange-500/30  w-full max-w-4xl shadow-[0_0_15px_rgba(0,0,0,0.6)] overflow-hidden shadow-orange-900/20"
             >
-              <div className="bg-[#FF4D00]-500/10 border-b border-orange-500/20 p-4 flex justify-between items-center">
+              <div className="bg-[rgba(255,77,0,0.10)] border-b border-orange-500/20 p-4 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Ghost className="w-6 h-6 text-[#FF4D00]-400 animate-pulse" />
+                  <Ghost className="w-6 h-6 text-[#FF4D00] animate-pulse" />
                   <div>
-                    <h3 className="text-[#FF4D00]-400 font-bold tracking-widest uppercase">GHOST MODE : ACTIVE SESSIONS</h3>
-                    <p className="text-[#FF4D00]-500/60 text-xs font-mono">Intercepting live tenant websockets for remote assist...</p>
+                    <h3 className="text-[#FF4D00] font-bold tracking-widest uppercase">GHOST MODE : ACTIVE SESSIONS</h3>
+                    <p className="text-[rgba(255,77,0,0.60)] text-xs font-mono">Intercepting live tenant websockets for remote assist...</p>
                   </div>
                 </div>
                 <button onClick={() => setShowGhostMode(false)} className="text-zinc-500 hover:text-white transition-colors">
@@ -155,7 +157,7 @@ export default function GodModeDatasets() {
                     {activeDevices.map(dev => (
                       <tr key={dev.id} className="border-b border-gray-800/50 hover:bg-zinc-950/5 transition-colors">
                         <td className="py-4 font-mono text-zinc-500">
-                          <span className="text-[#FF4D00]-300">{dev.device_type}</span><br/>
+                          <span className="text-[#FF4D00]">{dev.device_type}</span><br/>
                           <span className="text-xs">{dev.ip}</span>
                         </td>
                         <td className="py-4 text-gray-300">{dev.agency}</td>
@@ -168,7 +170,7 @@ export default function GodModeDatasets() {
                         <td className="py-4 text-right">
                           <button
                             onClick={() => startInfiltration(dev)}
-                            className="bg-[#FF4D00]-600 hover:bg-[#FF4D00]-500 text-black font-bold text-xs px-4 py-2  shadow shrink-0"
+                            className="bg-[#E64500] hover:bg-[#FF4D00] text-black font-bold text-xs px-4 py-2  shadow shrink-0"
                           >
                             INFILTRATE
                           </button>
@@ -180,7 +182,7 @@ export default function GodModeDatasets() {
 
                 {infiltratedDevice && (
                   <div className="mt-6 border border-orange-500/20  p-4 bg-black/40">
-                    <p className="text-xs font-mono text-[#FF4D00]-400 mb-2">
+                    <p className="text-xs font-mono text-[#FF4D00] mb-2">
                       Active Session: {infiltratedDevice.user} · {infiltratedDevice.ip}
                     </p>
                     <div className="space-y-1 max-h-36 overflow-y-auto">
@@ -218,10 +220,10 @@ export default function GodModeDatasets() {
           <div className="flex gap-4">
             <div 
               onClick={() => setShowGhostMode(true)}
-              className="px-4 py-2  bg-[#FF4D00]-500/10 border border-orange-500/30 flex items-center gap-2 cursor-pointer hover:bg-[#FF4D00]-500/20 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.2)]"
+              className="px-4 py-2  bg-[rgba(255,77,0,0.10)] border border-orange-500/30 flex items-center gap-2 cursor-pointer hover:bg-[rgba(255,77,0,0.20)] transition-colors shadow-[0_0_15px_rgba(249,115,22,0.2)]"
             >
-              <Ghost className="w-4 h-4 text-[#FF4D00]-400" />
-              <span className="text-[#FF4D00]-400 font-mono text-sm tracking-wide">GHOST MODE</span>
+              <Ghost className="w-4 h-4 text-[#FF4D00]" />
+              <span className="text-[#FF4D00] font-mono text-sm tracking-wide">GHOST MODE</span>
             </div>
           </div>
         </motion.div>

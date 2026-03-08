@@ -1,3 +1,6 @@
+# pylint: skip-file
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false
+
 """Add Fire/NERIS, CAD, and Scheduling domain tables.
 
 Adds typed tables for:

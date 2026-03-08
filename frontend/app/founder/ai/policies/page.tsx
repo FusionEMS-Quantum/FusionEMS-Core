@@ -71,7 +71,7 @@ export default function AiPoliciesPage() {
     <div className="p-5 min-h-screen space-y-6">
       {/* Header */}
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">AI GOVERNANCE</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">AI GOVERNANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">AI Governance & Policies</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Guardrail rules · protected actions · enforcement levels</p>
       </div>
@@ -180,7 +180,7 @@ export default function AiPoliciesPage() {
         </>
       )}
 
-      <Link href="/founder/ai" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to AI Governance</Link>
+        <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[#FF4D00]">← Back to AI Governance</Link>
     </div>
   );
 }

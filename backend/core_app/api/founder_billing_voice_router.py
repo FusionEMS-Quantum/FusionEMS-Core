@@ -571,3 +571,254 @@ async def takeover_escalation(
     db.commit()
 
     return {"status": "ok", "escalation_id": escalation_id, "session_id": str(row["session_id"])}
+
+
+# ── Phone Stack Status + CNAM ────────────────────────────────────────────────
+
+
+@router.get("/phone-status")
+async def phone_stack_status(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+) -> dict[str, Any]:
+    """Live phone stack status: provisioned number, CNAM, voice config, routing health."""
+    _require_founder(current)
+    settings = get_settings()
+
+    central_phone = (settings.central_billing_phone_e164 or "").strip()
+    number_id = (settings.telnyx_central_billing_number_id or "").strip()
+    cnam_name = (settings.cnam_display_name or "").strip()
+    cnam_status = (settings.cnam_status or "").strip()
+    escalation_phone = (settings.founder_billing_escalation_phone_e164 or "").strip()
+    telnyx_from = (settings.telnyx_from_number or "").strip()
+    telephony_engine = (settings.billing_telephony_engine or "telnyx").strip()
+
+    # Live query: active billing lines from DB
+    active_lines: list[dict[str, Any]] = []
+    try:
+        rows = db.execute(
+            text(
+                "SELECT id, line_label, phone_e164, is_active, purchased_at "
+                "FROM central_billing_lines ORDER BY purchased_at DESC LIMIT 10"
+            )
+        ).mappings().all()
+        active_lines = [
+            {
+                "id": str(r["id"]),
+                "label": r.get("line_label") or "",
+                "phone_e164": r.get("phone_e164") or "",
+                "is_active": bool(r.get("is_active")),
+                "purchased_at": _isoformat_or_none(r.get("purchased_at")),
+            }
+            for r in rows
+        ]
+    except SQLAlchemyError:
+        logger.warning("central_billing_lines table not available — skipping live line query")
+
+    # Per-tenant CNAM overrides
+    tenant_overrides: list[dict[str, Any]] = []
+    try:
+        t_rows = db.execute(
+            text(
+                "SELECT tenant_id, policy_json->'cnam_override' AS cnam_override "
+                "FROM billing_phone_policies "
+                "WHERE policy_json->'cnam_override' IS NOT NULL "
+                "LIMIT 50"
+            )
+        ).mappings().all()
+        tenant_overrides = [
+            {
+                "tenant_id": str(r["tenant_id"]),
+                "cnam_override": r.get("cnam_override"),
+            }
+            for r in t_rows
+        ]
+    except SQLAlchemyError:
+        logger.warning("billing_phone_policies cnam_override query failed — skipping")
+
+    provisioned = bool(central_phone and central_phone != "+18005550123")
+    cnam_registered = cnam_status in ("submitted", "active", "approved")
+
+    return {
+        "provisioned": provisioned,
+        "central_billing_phone_e164": central_phone,
+        "telnyx_number_id": number_id,
+        "telnyx_from_number": telnyx_from,
+        "telephony_engine": telephony_engine,
+        "cnam": {
+            "display_name": cnam_name,
+            "status": cnam_status or ("not_registered" if provisioned else "not_provisioned"),
+            "registered": cnam_registered,
+        },
+        "escalation_phone_e164": escalation_phone,
+        "active_lines": active_lines,
+        "tenant_cnam_overrides": tenant_overrides,
+        "health": {
+            "telnyx_api_key_set": bool(settings.telnyx_api_key),
+            "telnyx_public_key_set": bool(settings.telnyx_public_key),
+            "ivr_audio_base_url_set": bool(settings.ivr_audio_base_url),
+            "messaging_profile_set": bool(settings.telnyx_messaging_profile_id),
+            "central_phone_provisioned": provisioned,
+            "cnam_registered": cnam_registered,
+        },
+    }
+
+
+@router.put("/tenant-cnam/{tenant_id}")
+async def set_tenant_cnam_override(
+    tenant_id: str,
+    payload: dict[str, Any],
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+) -> dict[str, Any]:
+    """Set per-tenant CNAM caller ID override. Default is FusionEMS Quantum."""
+    _require_founder(current)
+
+    cnam_name = str(payload.get("cnam_display_name") or "").strip()
+    if not cnam_name:
+        raise HTTPException(status_code=422, detail="cnam_display_name is required")
+    if len(cnam_name) > 15:
+        raise HTTPException(status_code=422, detail="CNAM display name must be 15 characters or fewer")
+
+    try:
+        UUID(tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Invalid tenant_id UUID") from exc
+
+    now = datetime.now(UTC).isoformat()
+
+    # Upsert the cnam_override into the policy_json
+    row = db.execute(
+        text(
+            "SELECT policy_json FROM billing_phone_policies WHERE tenant_id = :tid::uuid LIMIT 1"
+        ),
+        {"tid": tenant_id},
+    ).mappings().first()
+
+    if row is None:
+        # Create new policy row with CNAM override
+        policy_json = {"cnam_override": {"display_name": cnam_name, "updated_at": now}}
+        db.execute(
+            text(
+                "INSERT INTO billing_phone_policies "
+                "(tenant_id, billing_mode, allow_ai_balance_inquiry, allow_ai_payment_link_resend, "
+                "allow_ai_statement_resend, allow_ai_address_confirmation, allow_ai_payment_plan_intake, "
+                "collections_enabled, debt_setoff_enabled, require_human_for_disputes, "
+                "require_human_for_legal_threat, escalation_priority, policy_json, created_at, updated_at) "
+                "VALUES (:tid::uuid, 'FUSION_RCM', true, true, true, false, false, false, false, true, true, "
+                "'normal', :pj::jsonb, :now, :now)"
+            ),
+            {"tid": tenant_id, "pj": json.dumps(policy_json), "now": now},
+        )
+    else:
+        policy_json = dict(row.get("policy_json") or {})
+        policy_json["cnam_override"] = {"display_name": cnam_name, "updated_at": now}
+        db.execute(
+            text(
+                "UPDATE billing_phone_policies SET policy_json = :pj::jsonb, updated_at = :now "
+                "WHERE tenant_id = :tid::uuid"
+            ),
+            {"tid": tenant_id, "pj": json.dumps(policy_json), "now": now},
+        )
+
+    db.commit()
+    logger.info(
+        "tenant_cnam_override_set tenant_id=%s cnam_display_name=%s",
+        tenant_id,
+        cnam_name,
+    )
+
+    return {
+        "status": "ok",
+        "tenant_id": tenant_id,
+        "cnam_display_name": cnam_name,
+    }
+
+
+@router.get("/cnam/live-status")
+async def cnam_live_status(
+    current: CurrentUser = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Query Telnyx API for live CNAM registration status of the central billing number."""
+    from core_app.telnyx import client as telnyx_client
+
+    _require_founder(current)
+    settings = get_settings()
+
+    number_id = (settings.telnyx_central_billing_number_id or "").strip()
+    api_key = (settings.telnyx_api_key or "").strip()
+
+    if not number_id or number_id in ("existing", "unknown"):
+        return {
+            "status": "not_queryable",
+            "reason": "number_id not available — number was pre-provisioned or not yet purchased",
+            "config_cnam_display_name": settings.cnam_display_name,
+            "config_cnam_status": settings.cnam_status,
+        }
+
+    if not api_key:
+        return {
+            "status": "not_queryable",
+            "reason": "TELNYX_API_KEY not configured",
+            "config_cnam_display_name": settings.cnam_display_name,
+            "config_cnam_status": settings.cnam_status,
+        }
+
+    try:
+        live = telnyx_client.get_cnam_status(api_key=api_key, number_id=number_id)
+    except (telnyx_client.TelnyxApiError, telnyx_client.TelnyxNotConfigured) as exc:
+        logger.warning("cnam_live_status_query_failed number_id=%s error=%s", number_id, exc)
+        return {
+            "status": "query_failed",
+            "error": str(exc),
+            "config_cnam_display_name": settings.cnam_display_name,
+            "config_cnam_status": settings.cnam_status,
+        }
+
+    return {
+        "status": "ok",
+        "live": live,
+        "config_cnam_display_name": settings.cnam_display_name,
+        "config_cnam_status": settings.cnam_status,
+    }
+
+
+@router.post("/cnam/update")
+async def update_cnam_registration(
+    payload: dict[str, Any],
+    current: CurrentUser = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Submit CNAM update to Telnyx for the central billing number."""
+    from core_app.telnyx import client as telnyx_client
+
+    _require_founder(current)
+    settings = get_settings()
+
+    display_name = str(payload.get("cnam_display_name") or "").strip()
+    if not display_name:
+        raise HTTPException(status_code=422, detail="cnam_display_name is required")
+    if len(display_name) > 15:
+        raise HTTPException(status_code=422, detail="CNAM display name must be 15 characters or fewer")
+
+    number_id = (settings.telnyx_central_billing_number_id or "").strip()
+    api_key = (settings.telnyx_api_key or "").strip()
+
+    if not number_id or number_id in ("existing", "unknown"):
+        raise HTTPException(status_code=409, detail="Cannot update CNAM: number_id not available")
+    if not api_key:
+        raise HTTPException(status_code=409, detail="Cannot update CNAM: TELNYX_API_KEY not configured")
+
+    try:
+        result = telnyx_client.update_cnam(api_key=api_key, number_id=number_id, display_name=display_name)
+    except telnyx_client.TelnyxApiError as exc:
+        logger.error("cnam_update_failed number_id=%s display_name=%s error=%s", number_id, display_name, exc)
+        raise HTTPException(status_code=502, detail=f"Telnyx CNAM update failed: {exc}") from exc
+    except telnyx_client.TelnyxNotConfigured as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    logger.info("cnam_update_submitted number_id=%s display_name=%s", number_id, display_name)
+    return {
+        "status": "ok",
+        "submitted_display_name": display_name,
+        "telnyx_response": result,
+    }

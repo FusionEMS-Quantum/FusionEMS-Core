@@ -143,7 +143,8 @@ resource "aws_cloudwatch_log_group" "waf" {
   provider = aws.us_east_1
 
   name              = "aws-waf-logs-${local.name_prefix}-edge"
-  retention_in_days = 90
+  retention_in_days = 365
+  kms_key_id        = "alias/aws/logs"
 
   tags = local.common_tags
 }
@@ -232,15 +233,55 @@ resource "aws_cloudfront_cache_policy" "static" {
   }
 }
 
+# ========================= CloudFront Access Logs =============================
+
+resource "aws_s3_bucket" "cloudfront_logs" {
+  bucket = "${local.name_prefix}-cloudfront-logs"
+
+  tags = merge(local.common_tags, {
+    Name    = "${local.name_prefix}-cloudfront-logs"
+    Purpose = "cloudfront-access-logs"
+  })
+}
+
+resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
 # ========================= CloudFront Distribution ============================
 
+#checkov:skip=CKV_AWS_310: Single ALB origin is intentional; origin failover is provided at ECS service and multi-AZ layers.
+#checkov:skip=CKV_AWS_374: Platform is national scope and must serve all geographies; geo-blocking is enforced at application policy layer.
+#checkov:skip=CKV2_AWS_47: Associated CloudFront WAF ACL includes AWSManagedRulesKnownBadInputsRuleSet for Log4j coverage.
 resource "aws_cloudfront_distribution" "this" {
-  enabled         = true
-  is_ipv6_enabled = true
-  http_version    = "http2and3"
-  web_acl_id      = aws_wafv2_web_acl.cloudfront.arn
-  aliases         = [var.root_domain_name, "www.${var.root_domain_name}", var.api_domain_name]
-  price_class     = "PriceClass_100"
+  enabled             = true
+  is_ipv6_enabled     = true
+  http_version        = "http2and3"
+  web_acl_id          = aws_wafv2_web_acl.cloudfront.arn
+  default_root_object = "index.html"
+  aliases             = [var.root_domain_name, "www.${var.root_domain_name}", var.api_domain_name]
+  price_class         = "PriceClass_100"
+
+  logging_config {
+    bucket          = aws_s3_bucket.cloudfront_logs.bucket_domain_name
+    include_cookies = false
+    prefix          = "distribution/"
+  }
 
   origin {
     domain_name = var.alb_dns_name

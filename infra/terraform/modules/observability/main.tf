@@ -24,7 +24,7 @@ locals {
 
 resource "aws_sns_topic" "alerts" {
   name              = "${local.name_prefix}-alerts"
-  kms_master_key_id = var.kms_key_arn
+  kms_master_key_id = var.kms_key_arn != "" ? var.kms_key_arn : "alias/aws/sns"
 
   tags = local.common_tags
 }
@@ -42,7 +42,7 @@ resource "aws_sns_topic_subscription" "email" {
 resource "aws_cloudwatch_log_group" "audit" {
   name              = "/audit/${local.name_prefix}"
   retention_in_days = var.log_retention_days
-  kms_key_id        = var.kms_key_arn
+  kms_key_id        = var.kms_key_arn != "" ? var.kms_key_arn : "alias/aws/logs"
 
   tags = local.common_tags
 }

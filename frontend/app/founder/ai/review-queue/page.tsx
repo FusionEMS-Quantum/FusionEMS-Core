@@ -215,7 +215,7 @@ export default function AiReviewQueuePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={fetchQueue}
-              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-[#FF4D00] border-orange/30 hover:bg-[#FF4D00]-ghost transition-colors"
+                className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-[#FF4D00] border-orange/30 hover:bg-orange-ghost transition-colors"
             >
               Refresh
             </button>

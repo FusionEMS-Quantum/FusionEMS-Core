@@ -127,14 +127,14 @@ export default function CrewLinkPagingPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-1 block">← Ops Command</Link>
+            <Link href="/founder/ops" className="text-body text-[#FF4D00] hover:text-[#FF4D00] mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">CrewLink Paging</h1>
           <p className="text-sm text-zinc-500 mt-1">
             Android push paging · ACK/Accept/Decline · Escalation · Backup crew · Audit
           </p>
         </div>
         <div className="px-3 py-2 chamfer-4-xl border border-brand-orange/[0.4] bg-brand-orange/[0.1]">
-          <div className="text-micro uppercase tracking-wider text-[#FF4D00]-400">Boundary Enforced</div>
+            <div className="text-micro uppercase tracking-wider text-[#FF4D00]">Boundary Enforced</div>
           <div className="text-body text-white">Operations only · No billing content</div>
         </div>
       </div>
@@ -233,7 +233,7 @@ export default function CrewLinkPagingPage() {
                 className="w-full flex items-center gap-4 p-4 text-left hover:bg-zinc-950/[0.03] transition-colors">
                 <div className="flex-shrink-0 text-center w-16">
                   <StateBadge state={d.state} />
-                  {d.is_backup && <div className="text-[9px] text-[#FF4D00]-400 mt-1 uppercase font-bold">BACKUP</div>}
+                    {d.is_backup && <div className="text-[9px] text-[#FF4D00] mt-1 uppercase font-bold">BACKUP</div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-white">{d.mission_title || d.mission_id?.slice(0, 8)}</div>

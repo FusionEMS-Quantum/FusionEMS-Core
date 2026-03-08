@@ -1,9 +1,12 @@
+# pylint: disable=unused-argument
+
 """
 Platform Core API Router — Tenant lifecycle, user provisioning, implementation,
 feature flags, release/environment, system configuration, founder command center.
 
 All endpoints use RBAC (require_role), tenant scoping, structured error responses.
 """
+
 from __future__ import annotations
 
 from uuid import UUID

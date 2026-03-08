@@ -39,7 +39,7 @@ export default function AccessShell({ title, subtitle, children }: { title: stri
               ['Audit Trail', 'Enabled'],
               ['Session Guard', 'Active'],
             ].map(([label, value]) => (
-              <div key={label} className="border border-border-subtle bg-[#0A0A0B]-raised/50 chamfer-8 p-2">
+              <div key={label} className="border border-border-subtle bg-[rgba(10,10,11,0.5)] chamfer-8 p-2">
                 <div className="text-micro uppercase tracking-[0.14em] text-zinc-500">{label}</div>
                 <div className="text-label font-semibold text-zinc-100 mt-1">{value}</div>
               </div>

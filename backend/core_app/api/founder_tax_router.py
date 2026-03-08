@@ -1,10 +1,25 @@
+from __future__ import annotations
+
 import asyncio
 import json
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import HTMLResponse, StreamingResponse
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from core_app.models.founder_tax import TaxDocumentType, TaxEntityBucket
+from core_app.api.dependencies import (
+    db_session_dependency,
+    get_current_user,
+    require_role,
+)
+from core_app.models.founder_tax import (
+    FounderExpense,
+    TaxDocumentType,
+    TaxDocumentVault,
+    TaxEntityBucket,
+)
+from core_app.schemas.auth import CurrentUser
 from core_app.services.ai_platform.tax_advisor_service import (
     AIReceiptTaxAdvisor,
     S3DocumentVaultService,
@@ -17,37 +32,31 @@ def get_s3_vault_service() -> S3DocumentVaultService:
     return S3DocumentVaultService()
 
 @tax_advisor_router.get("/vault/documents")
-async def list_vault_documents():
+async def list_vault_documents(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+) -> dict:
     """
-    Returns the virtualized list of documents in the KMS-Encrypted S3 Vault.
-    In production, this queries the TaxDocumentVault table.
+    Returns the list of documents stored in the KMS-Encrypted S3 Vault,
+    queried from the TaxDocumentVault table.
     """
+    require_role(current, ["founder", "admin"])
+    docs = (
+        db.execute(select(TaxDocumentVault).order_by(TaxDocumentVault.created_at.desc()))
+        .scalars()
+        .all()
+    )
     return {
         "documents": [
             {
-                "id": "doc-001",
-                "name": "Sec195_Capitalization_Election_2025.pdf",
-                "type": "TAX_RETURN",
-                "bucket": "BUSINESS_LLC",
-                "date_uploaded": "2026-03-01",
-                "status": "ENCRYPTED_KMS"
-            },
-            {
-                "id": "doc-002",
-                "name": "Accountable_Plan_Commingling_Resolution.pdf",
-                "type": "BOARD_MINUTES",
-                "bucket": "BUSINESS_LLC",
-                "date_uploaded": "2026-03-05",
-                "status": "ENCRYPTED_KMS"
-            },
-            {
-                "id": "doc-003",
-                "name": "W2_Dependent_Shift.pdf",
-                "type": "W2",
-                "bucket": "FAMILY_DEPENDENT",
-                "date_uploaded": "2026-01-31",
-                "status": "ENCRYPTED_KMS"
+                "id": str(doc.id),
+                "name": doc.document_name,
+                "type": doc.document_type,
+                "bucket": doc.bucket_classification,
+                "date_uploaded": doc.created_at.date().isoformat(),
+                "status": "ENCRYPTED_KMS" if doc.is_encrypted_at_rest else "UNENCRYPTED",
             }
+            for doc in docs
         ]
     }
 
@@ -177,37 +186,67 @@ async def scan_android_receipt(
 
 @tax_advisor_router.get("/forecast")
 async def get_forward_looking_forecast(
-    ai_advisor: AIReceiptTaxAdvisor = Depends()
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+    ai_advisor: AIReceiptTaxAdvisor = Depends(),
 ) -> dict:
     """
-    Returns quarter-by-quarter insights on estimated taxes for Federal + Wisconsin.
+    Returns quarter-by-quarter insights on estimated taxes for Federal + Wisconsin,
+    computed from actual YTD expenses in the founder_expenses table.
     """
-    # Fetch all YTD expenses from the database normally
-    mock_expenses = []
-
-    forecast_data = await ai_advisor.generate_tax_forecast(mock_expenses)
-
+    require_role(current, ["founder", "admin"])
+    expenses = (
+        db.execute(
+            select(FounderExpense)
+            .order_by(FounderExpense.transaction_date.desc())
+            .limit(1000)
+        )
+        .scalars()
+        .all()
+    )
+    forecast_data = await ai_advisor.generate_tax_forecast(list(expenses))
     return {
         "forward_direction": "Positive",
-        "quarterly_estimates": forecast_data
+        "quarterly_estimates": forecast_data,
     }
 
 
 @tax_advisor_router.post("/efile/transmit/wisconsin")
 async def generate_wisconsin_wt4(
-    ai_advisor: AIReceiptTaxAdvisor = Depends()
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
 ) -> dict:
     """
-    Simulates compiling the internal ledger into the exact JSON specification
-    required by the Wisconsin Department of Revenue MyTax Account API.
+    Compiles the founder expense ledger into the JSON specification required by
+    the Wisconsin Department of Revenue MyTax Account API (DRAFT stage).
+    PaymentAmount is computed from recorded net income once revenue is present;
+    in the pre-revenue phase it will be $0.00 (no estimated payments due).
     """
+    require_role(current, ["founder", "admin"])
+    expenses = (
+        db.execute(select(FounderExpense).order_by(FounderExpense.transaction_date.desc()).limit(1000))
+        .scalars()
+        .all()
+    )
+    total_deductible = round(sum(e.total_amount for e in expenses), 2)
+    ongoing_expenses = round(
+        sum(e.total_amount for e in expenses if not e.is_startup_expense_sec195), 2
+    )
+    # Wisconsin income tax is owed only on net income (revenue - deductions).
+    # In the pre-revenue phase net income = 0, so estimated payment = $0.
+    # This value will become non-zero once annual revenue data is available.
+    wi_estimated_payment = 0.00
     return {
         "status": "DRAFT",
         "form": "WI_WT4 / Estimated Payments",
         "compiled_json_schema": {
             "Taxpayer": "LLC / Sole Proprietor",
             "State": "WI",
-            "PaymentAmount": 850.00
+            "TotalDeductibleExpenses": total_deductible,
+            "OngoingBusinessExpenses": ongoing_expenses,
+            "ExpenseCount": len(expenses),
+            "PaymentAmount": wi_estimated_payment,
+            "note": "Estimated payment will be non-zero once annual revenue is recorded.",
         },
-        "next_step": "Transmit to State API Gateway"
+        "next_step": "Transmit to State API Gateway",
     }

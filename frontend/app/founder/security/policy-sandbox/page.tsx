@@ -246,7 +246,7 @@ export default function PolicySandboxPage() {
         </div>
         <div className="flex gap-2">
           <button onClick={openCreate}
-            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors">
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors">
             + New Policy
           </button>
           <Link href="/founder/security"
@@ -318,7 +318,7 @@ export default function PolicySandboxPage() {
               </div>
               <div className="flex gap-2">
                 <button onClick={savePolicy} disabled={saving || !formKey.trim()}
-                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors disabled:opacity-50">
+                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
                   {saving ? 'Saving…' : 'Save'}
                 </button>
                 <button onClick={() => setMode('list')}
@@ -377,7 +377,7 @@ export default function PolicySandboxPage() {
                       className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none focus:border-orange resize-none mb-3" />
                     <div className="flex gap-2">
                       <button onClick={requestApproval} disabled={requestingApproval}
-                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors disabled:opacity-50">
+                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
                         {requestingApproval ? 'Requesting…' : 'Submit for Approval'}
                       </button>
                       <button onClick={() => setShowApprovalPanel(false)}

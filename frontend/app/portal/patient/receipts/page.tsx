@@ -62,13 +62,14 @@ export default function ReceiptsPage() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'posted' | 'pending'>('all');
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
     fetch(`${apiBase}/api/v1/portal/payments`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => setReceipts(Array.isArray(d) ? d : d.items ?? []))
-      .catch(() => setReceipts(MOCK_RECEIPTS))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load receipts'))
       .finally(() => setLoading(false));
   }, [apiBase]);
 
@@ -89,6 +90,12 @@ export default function ReceiptsPage() {
         </div>
         <p className="text-sm text-zinc-500 ml-5">Complete record of all payments processed on your account.</p>
       </div>
+
+      {fetchError && (
+        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+          Unable to load receipts. Please refresh the page or contact billing support.
+        </div>
+      )}
 
       {/* Summary bar */}
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -228,9 +235,4 @@ export default function ReceiptsPage() {
   );
 }
 
-// Mock data for dev/offline
-const MOCK_RECEIPTS: Receipt[] = [
-  { id: '1', data: { amount: 15000, posted_at: '2026-02-15', method: 'card', status: 'posted', confirmation: 'PMT-00391', invoice_id: 'inv-001' } },
-  { id: '2', data: { amount: 8500,  posted_at: '2026-01-20', method: 'ach',  status: 'cleared', confirmation: 'PMT-00287', invoice_id: 'inv-001' } },
-  { id: '3', data: { amount: 25000, posted_at: '2025-12-08', method: 'check', status: 'cleared', reference: 'CHK-3821' } },
-];
+

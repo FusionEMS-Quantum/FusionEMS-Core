@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+# ruff: noqa: TRY200
+
 import logging
 import uuid
 from datetime import UTC, datetime
 
 import stripe
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency
@@ -13,6 +16,7 @@ from core_app.core.config import get_settings
 from core_app.payments.stripe_service import StripeConfig, verify_webhook_signature
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher
+from core_app.services.legal_requests_service import LegalRequestsService
 from core_app.services.sqs_publisher import enqueue
 
 logger = logging.getLogger(__name__)
@@ -74,14 +78,14 @@ async def stripe_webhook(
             payload=raw_body,
             sig_header=stripe_signature,
         )
-    except stripe.error.SignatureVerificationError as exc:
+    except stripe.error.SignatureVerificationError as exc:  # noqa: B904, TRY200
         logger.warning(
             "stripe_sig_invalid correlation_id=%s sig=%.20s error=%s",
             correlation_id,
             stripe_signature,
             exc,
         )
-        raise HTTPException(status_code=400, detail="invalid_stripe_signature")
+        return JSONResponse(status_code=400, content={"detail": "invalid_stripe_signature"})
 
     event_id: str = event.get("id", str(uuid.uuid4()))
     event_type: str = event.get("type", "unknown")
@@ -122,6 +126,21 @@ async def stripe_webhook(
         },
         correlation_id=correlation_id,
     )
+
+    # Apply legal request payment transitions immediately for deterministic fulfillment holds.
+    try:
+        LegalRequestsService(db).apply_stripe_webhook_event(
+            event=event,
+            correlation_id=correlation_id,
+        )
+        db.commit()
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "legal_stripe_webhook_apply_failed event_id=%s correlation_id=%s error=%s",
+            event_id,
+            correlation_id,
+            str(exc),
+        )
 
     # ── Enqueue to Stripe events queue (billing/statements worker) ───────────
     queue_url = settings.stripe_events_queue_url

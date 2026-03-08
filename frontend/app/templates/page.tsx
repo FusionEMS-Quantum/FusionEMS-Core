@@ -143,7 +143,7 @@ export default function TemplatesPage() {
     <div className="p-5 space-y-6 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">CATEGORY 6</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">CATEGORY 6</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Template Builder System</h1>
           <p className="text-xs text-zinc-500 mt-0.5">100-Feature Document Engine · Drag-Drop · Variables · Versioning · Export</p>
         </div>

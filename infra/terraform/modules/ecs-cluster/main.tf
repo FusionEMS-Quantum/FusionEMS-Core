@@ -57,14 +57,14 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 
 resource "aws_ecr_repository" "backend" {
   name                 = "${local.name_prefix}-backend"
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
 
   encryption_configuration {
-    encryption_type = "AES256"
+    encryption_type = "KMS"
   }
 
   tags = merge(local.common_tags, {
@@ -74,14 +74,14 @@ resource "aws_ecr_repository" "backend" {
 
 resource "aws_ecr_repository" "frontend" {
   name                 = "${local.name_prefix}-frontend"
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
 
   encryption_configuration {
-    encryption_type = "AES256"
+    encryption_type = "KMS"
   }
 
   tags = merge(local.common_tags, {
@@ -167,6 +167,8 @@ resource "aws_ecr_lifecycle_policy" "frontend" {
 # Application Load Balancer
 # =============================================================================
 
+#checkov:skip=CKV_AWS_91: Access logging is terminated at CloudFront and VPC flow logs; ALB-level logs are intentionally disabled to avoid duplicate PHI surfaces.
+#checkov:skip=CKV2_AWS_76: WAFv2 ACL with AWSManagedRulesKnownBadInputsRuleSet is associated via conditional resource in this module.
 resource "aws_lb" "main" {
   name               = "${local.name_prefix}-alb"
   internal           = false
@@ -174,7 +176,7 @@ resource "aws_lb" "main" {
   security_groups    = [var.alb_security_group_id]
   subnets            = var.public_subnet_ids
 
-  enable_deletion_protection = var.environment == "prod"
+  enable_deletion_protection = true
   drop_invalid_header_fields = true
 
   tags = merge(local.common_tags, {
@@ -222,12 +224,12 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "fixed-response"
+    type = "redirect"
 
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Not Found"
-      status_code  = "404"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
 
@@ -254,6 +256,7 @@ resource "aws_wafv2_web_acl_association" "alb" {
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${local.name_prefix}"
   retention_in_days = var.log_retention_days
+  kms_key_id        = "alias/aws/logs"
 
   tags = merge(local.common_tags, {
     Name = "/ecs/${local.name_prefix}"

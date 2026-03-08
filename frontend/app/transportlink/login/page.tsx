@@ -107,7 +107,7 @@ function TransportLinkLoginInner() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Password</label>
-                  <Link href="/transportlink/forgot-password" className="text-[9px] text-[#FF4D00]/70 hover:text-[#FF4D00] transition-colors">
+                  <Link href="/forgot-password" className="text-[9px] text-[#FF4D00]/70 hover:text-[#FF4D00] transition-colors">
                     Forgot password?
                   </Link>
                 </div>

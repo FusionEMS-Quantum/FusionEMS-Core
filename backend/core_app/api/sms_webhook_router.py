@@ -13,8 +13,6 @@ from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency
 from core_app.core.config import get_settings
-
-# from core_app.services.ai_narrative_service import AiNarrativeService # TODO: distinct service
 from core_app.services.ai_assistant_service import AIAssistantService  # Use existing service
 from core_app.telnyx.client import TelnyxApiError, send_sms
 from core_app.telnyx.signature import verify_telnyx_webhook
@@ -50,7 +48,7 @@ def _insert_event(
         },
     )
     db.commit()
-    return (result.rowcount or 0) > 0
+    return int(getattr(result, "rowcount", 0) or 0) > 0
 
 
 def _resolve_tenant_by_did(db: Session, to_number: str) -> str | None:
@@ -425,8 +423,8 @@ async def telnyx_sms_webhook(
 
     try:
         payload = json.loads(raw_body)
-    except Exception:
-        raise HTTPException(status_code=400, detail="invalid_json")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="invalid_json") from exc
 
     data = payload.get("data", {})
     event_id: str = data.get("id") or str(uuid.uuid4())

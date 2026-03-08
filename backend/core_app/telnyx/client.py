@@ -259,3 +259,92 @@ def download_media(*, api_key: str, media_url: str) -> bytes:
         if chunk:
             chunks.append(chunk)
     return b"".join(chunks)
+
+
+# ── Outbound Call ─────────────────────────────────────────────────────────────
+
+
+def initiate_outbound_call(
+    *,
+    api_key: str,
+    to: str,
+    from_: str,
+    connection_id: str = "",
+    webhook_url: str = "",
+    client_state: str = "",
+) -> dict[str, Any]:
+    """Initiate an outbound call via Telnyx Call Control.
+
+    The CNAM caller ID is set at the number level (via CNAM registration
+    on the provisioned toll-free number), not per-call.  The `from_` field
+    determines which number — and therefore which CNAM entry — is displayed.
+    """
+    payload: dict[str, Any] = {
+        "to": to,
+        "from": from_,
+    }
+    if connection_id:
+        payload["connection_id"] = connection_id
+    if webhook_url:
+        payload["webhook_url"] = webhook_url
+    if client_state:
+        import base64
+
+        payload["client_state"] = base64.b64encode(client_state.encode()).decode()
+
+    r = requests.post(
+        f"{TELNYX_API}/calls",
+        headers=_headers(api_key),
+        json=payload,
+        timeout=15,
+    )
+    _raise_for(r, "initiate_outbound_call")
+    return r.json()
+
+
+# ── CNAM Management ───────────────────────────────────────────────────────────
+
+
+def get_cnam_status(*, api_key: str, number_id: str) -> dict[str, Any]:
+    """Query CNAM listing status for a provisioned number."""
+    r = requests.get(
+        f"{TELNYX_API}/phone_numbers/{number_id}",
+        headers=_headers(api_key),
+        timeout=10,
+    )
+    _raise_for(r, "get_cnam_status")
+    data = r.json().get("data") or {}
+    cnam = data.get("cnam_listing") or {}
+    return {
+        "phone_number": data.get("phone_number"),
+        "cnam_listing_enabled": cnam.get("cnam_listing_enabled", False),
+        "cnam_listing_caller_name": cnam.get("cnam_listing_caller_name", ""),
+        "cnam_listing_details": cnam.get("cnam_listing_details", ""),
+    }
+
+
+def update_cnam(
+    *, api_key: str, number_id: str, display_name: str
+) -> dict[str, Any]:
+    """Register or update CNAM caller ID for a number."""
+    if len(display_name) > 15:
+        raise TelnyxApiError("CNAM display name must be 15 characters or fewer", status_code=422)
+    r = requests.patch(
+        f"{TELNYX_API}/phone_numbers/{number_id}",
+        headers=_headers(api_key),
+        json={
+            "cnam_listing": {
+                "cnam_listing_enabled": True,
+                "cnam_listing_caller_name": display_name,
+            }
+        },
+        timeout=10,
+    )
+    _raise_for(r, "update_cnam")
+    data = r.json().get("data") or {}
+    cnam = data.get("cnam_listing") or {}
+    return {
+        "cnam_listing_enabled": cnam.get("cnam_listing_enabled", False),
+        "cnam_listing_caller_name": cnam.get("cnam_listing_caller_name", ""),
+        "cnam_listing_details": cnam.get("cnam_listing_details", ""),
+    }

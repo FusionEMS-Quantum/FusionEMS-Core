@@ -7,7 +7,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
         {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
@@ -122,7 +122,7 @@ export default function TaskCenterPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-[#FF4D00]-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[#FF4D00]/70 font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
           <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
@@ -229,7 +229,7 @@ export default function TaskCenterPage() {
               <tbody>
                 {allTasks.map((t, i) => (
                   <tr key={t.id} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
-                    <td className="py-1.5 px-2 font-mono text-[#FF4D00]-dim text-body">{i + 1}</td>
+                    <td className="py-1.5 px-2 font-mono text-[#FF4D00]/70 text-body">{i + 1}</td>
                     <td
                       className="py-1.5 px-2"
                       style={{

@@ -211,7 +211,7 @@ export default function AccessLogsPage() {
         <input type="datetime-local" value={toDt} onChange={e => setToDt(e.target.value)}
           className="w-48 bg-bg-page border border-border-DEFAULT px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-orange" />
         <button type="submit"
-          className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#FF4D00]-bright transition-colors">
+          className="px-4 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors">
           Search
         </button>
       </form>

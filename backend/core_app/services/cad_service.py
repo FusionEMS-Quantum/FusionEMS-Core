@@ -60,7 +60,6 @@ class CADService:
         )
         self.db.add(call)
         await self._add_timeline(
-            tenant_id=tenant_id,
             call_id=call.id,
             event_type="CALL_CREATED",
             description="Call created",
@@ -123,7 +122,6 @@ class CADService:
             setattr(call, ts_field, now)
 
         await self._add_timeline(
-            tenant_id=tenant_id,
             call_id=call_id,
             event_type="STATE_TRANSITION",
             description=f"{old_state} → {new_state}",
@@ -273,7 +271,6 @@ class CADService:
         )
         self.db.add(assignment)
         await self._add_timeline(
-            tenant_id=tenant_id,
             call_id=call_id,
             event_type="UNIT_ASSIGNED",
             description=f"Unit {unit_id} assigned",
@@ -295,7 +292,6 @@ class CADService:
     async def _add_timeline(
         self,
         *,
-        tenant_id: uuid.UUID,  # noqa: ARG002 — kept for call-site compatibility
         call_id: uuid.UUID,
         event_type: str,
         description: str,
@@ -318,7 +314,9 @@ class CADService:
     ) -> list[CADTimelineEvent]:
         stmt = (
             select(CADTimelineEvent)
+            .join(CADCall, CADCall.id == CADTimelineEvent.call_id)
             .where(
+                CADCall.tenant_id == tenant_id,
                 CADTimelineEvent.call_id == call_id,
             )
             .order_by(CADTimelineEvent.occurred_at)

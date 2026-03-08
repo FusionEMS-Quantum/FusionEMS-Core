@@ -41,6 +41,7 @@ from core_app.api.cases_router import router as cases_router  # noqa: E402
 from core_app.api.claim_packet_router import router as claim_packet_router  # noqa: E402
 from core_app.api.clinical_workflow_router import router as clinical_workflow_router  # noqa: E402
 from core_app.api.cms_gate_router import router as cms_gate_router  # noqa: E402
+from core_app.api.compliance_command_router import router as compliance_command_router  # noqa: E402
 from core_app.api.compliance_pack_index_router import (  # noqa: E402
     router as compliance_pack_index_router,
 )
@@ -49,6 +50,7 @@ from core_app.api.crewlink_paging_router import router as crewlink_paging_router
 from core_app.api.crewlink_router import router as crewlink_router  # noqa: E402
 from core_app.api.customer_success_router import router as customer_success_router  # noqa: E402
 from core_app.api.dataset_router import router as dataset_router  # noqa: E402
+from core_app.api.dea_compliance_router import router as dea_compliance_router  # noqa: E402
 from core_app.api.dispatch_router import router as dispatch_router  # noqa: E402
 from core_app.api.doc_kit_router import router as doc_kit_router  # noqa: E402
 from core_app.api.documents_router import router as documents_router  # noqa: E402
@@ -56,6 +58,11 @@ from core_app.api.epcr_capture_router import router as epcr_capture_router  # no
 from core_app.api.epcr_customization_router import router as epcr_customization_router  # noqa: E402
 from core_app.api.epcr_router import router as epcr_router  # noqa: E402
 from core_app.api.events_router import router as events_router  # noqa: E402
+from core_app.api.export_offboarding_router import (  # noqa: E402
+    founder_export_router,
+    offboarding_router,
+    router as export_offboarding_router,
+)
 from core_app.api.export_status_router import router as export_status_router  # noqa: E402
 from core_app.api.exports_router import router as exports_router  # noqa: E402
 from core_app.api.facility_router import router as facility_router  # noqa: E402
@@ -101,6 +108,7 @@ from core_app.api.incident_router import router as incident_router  # noqa: E402
 from core_app.api.interop_router import router as interop_router  # noqa: E402
 from core_app.api.kitlink_compliance_router import router as kitlink_compliance_router  # noqa: E402
 from core_app.api.kitlink_router import router as kitlink_router  # noqa: E402
+from core_app.api.legal_requests_router import router as legal_requests_router  # noqa: E402
 from core_app.api.lob_router import router as lob_router  # noqa: E402
 from core_app.api.lob_webhook_router import router as lob_webhook_router  # noqa: E402
 from core_app.api.mdt_router import router as mdt_router  # noqa: E402
@@ -135,6 +143,7 @@ from core_app.api.patient_portal_router import router as patient_portal_router  
 from core_app.api.patient_router import router as patient_router  # noqa: E402
 from core_app.api.payments_router import router as payments_router  # noqa: E402
 from core_app.api.platform_core_router import router as platform_core_router  # noqa: E402
+from core_app.api.portal_billing_router import router as portal_billing_router  # noqa: E402
 from core_app.api.platform_health_router import router as platform_health_router  # noqa: E402
 from core_app.api.platform_incidents_router import router as platform_incidents_router  # noqa: E402
 from core_app.api.policy_router import router as policy_router  # noqa: E402
@@ -259,6 +268,8 @@ app.include_router(cad_units_router)
 app.include_router(cases_router)
 app.include_router(claim_packet_router)
 app.include_router(cms_gate_router)
+app.include_router(compliance_command_router)
+app.include_router(dea_compliance_router)
 app.include_router(compliance_pack_index_router)
 app.include_router(crewlink_router)
 app.include_router(doc_kit_router)
@@ -270,6 +281,7 @@ app.include_router(epcr_router)
 app.include_router(clinical_workflow_router)
 app.include_router(founder_clinical_router)
 app.include_router(events_router)
+app.include_router(export_offboarding_router)
 app.include_router(export_status_router)
 app.include_router(exports_router)
 app.include_router(fax_router)
@@ -294,6 +306,7 @@ app.include_router(icd10_router)
 app.include_router(imports_router)
 app.include_router(kitlink_compliance_router)
 app.include_router(kitlink_router)
+app.include_router(legal_requests_router)
 app.include_router(lob_router)
 app.include_router(lob_webhook_router)
 app.include_router(mdt_router)
@@ -318,6 +331,9 @@ app.include_router(public_pricing_router)
 app.include_router(roi_funnel_router)
 app.include_router(scheduling_router)
 app.include_router(patient_portal_router)
+app.include_router(portal_billing_router)
+app.include_router(offboarding_router)
+app.include_router(founder_export_router)
 app.include_router(signatures_router)
 app.include_router(sms_webhook_router)
 app.include_router(statements_router)

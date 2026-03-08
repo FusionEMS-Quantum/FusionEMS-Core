@@ -110,13 +110,14 @@ export default function PaymentPlansPage() {
   const [requestSent, setRequestSent] = useState(false);
   const [simulatorBalance, setSimulatorBalance] = useState('50000');
   const [simulatorMonths, setSimulatorMonths] = useState('6');
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
     fetch(`${apiBase}/api/v1/portal/payment-plans`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => setPlans(Array.isArray(d) ? d : d.items ?? []))
-      .catch(() => setPlans(MOCK_PLANS))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load payment plans'))
       .finally(() => setLoading(false));
   }, [apiBase]);
 
@@ -152,6 +153,12 @@ export default function PaymentPlansPage() {
         </div>
         <p className="text-sm text-zinc-500 ml-5">Manage your active payment plans and installment schedules.</p>
       </div>
+
+      {fetchError && (
+        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+          Unable to load payment plans. Please refresh the page or contact billing support.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Plans list */}
@@ -368,20 +375,4 @@ export default function PaymentPlansPage() {
   );
 }
 
-const MOCK_PLANS: PaymentPlan[] = [
-  {
-    id: 'plan-001',
-    data: {
-      status: 'active',
-      total_balance_cents: 45000,
-      amount_paid_cents: 15000,
-      installment_amount_cents: 7500,
-      installments_total: 6,
-      installments_remaining: 4,
-      next_due_date: '2026-04-01',
-      started_at: '2026-01-01',
-      frequency: 'monthly',
-      invoice_id: 'inv-001',
-    },
-  },
-];
+

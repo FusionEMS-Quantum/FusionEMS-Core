@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { BILLING_PHONE_DISPLAY, BILLING_PHONE_TEL } from '@/lib/phone';
 
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#050505', color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' },
@@ -113,7 +114,7 @@ export default function PatientPortalEntryPage() {
             <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '14px' }}>
               AI-assisted support 24/7. Human billing specialists available Mon–Fri 8am–6pm.
             </div>
-            <div style={{ color: '#FF4D00', fontWeight: 900, fontSize: '15px' }}>(800) 555-0100</div>
+            <a href={BILLING_PHONE_TEL} style={{ color: '#FF4D00', fontWeight: 900, fontSize: '15px', textDecoration: 'none' }}>{BILLING_PHONE_DISPLAY}</a>
           </div>
           <div style={S.infoCard}>
             <div style={S.label}>Pay by Mail</div>

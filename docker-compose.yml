@@ -188,6 +188,8 @@ services:
         NEXT_PUBLIC_API_BASE: http://localhost:8000
         NEXT_PUBLIC_WS_URL: ws://localhost:8000/ws
         NEXT_PUBLIC_ROOT_DOMAIN: http://localhost:3000
+        NEXT_PUBLIC_BILLING_PHONE: ${CENTRAL_BILLING_PHONE_E164:-}
+        NEXT_PUBLIC_CNAM_DISPLAY_NAME: ${CNAM_DISPLAY_NAME:-FusionEMS Quantum}
     container_name: fusionems-frontend
     restart: unless-stopped
     ports:

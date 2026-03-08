@@ -53,7 +53,7 @@ export function ConfirmDialog({
         {/* Icon */}
         <div className={cn(
           'w-10 h-10  flex items-center justify-center mb-4',
-          destructive ? 'bg-red-ghost' : 'bg-[#FF4D00]-ghost'
+          destructive ? 'bg-red-ghost' : 'bg-[rgba(255,77,0,0.12)]'
         )}>
           {destructive ? (
             <svg className="w-5 h-5 text-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
@@ -93,7 +93,7 @@ export function ConfirmDialog({
               'transition-colors duration-fast disabled:opacity-50',
               destructive
                 ? 'bg-red text-white hover:bg-red-bright'
-                : 'bg-[#FF4D00] text-black hover:bg-[#FF4D00]-bright'
+                : 'bg-[#FF4D00] text-black hover:bg-[#E64500]'
             )}
             type="button"
           >
@@ -291,7 +291,7 @@ export function DegradedModeWarning({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 px-3 py-2 bg-[#FF4D00]-ghost border border-orange/20 chamfer-4 text-label text-[#FF4D00]',
+        'flex items-center gap-2 px-3 py-2 bg-[rgba(255,77,0,0.12)] border border-orange/20 chamfer-4 text-label text-[#FF4D00]',
         className
       )}
       role="alert"

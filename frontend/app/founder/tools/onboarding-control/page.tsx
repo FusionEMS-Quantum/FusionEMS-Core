@@ -245,7 +245,7 @@ function DetailDrawer({
         <div className="flex-1 px-5 py-4 space-y-5">
           {/* Fields */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70 mb-3">
               Application Data
             </p>
             <div className="space-y-2.5">
@@ -276,7 +276,7 @@ function DetailDrawer({
 
           {/* Sign Events Timeline */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70 mb-3">
               Legal Packet Sign Events
             </p>
             {loadingEvents ? (
@@ -323,7 +323,7 @@ function DetailDrawer({
 
           {/* Action buttons repeated */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70 mb-3">
               Actions
             </p>
             <div className="flex flex-wrap gap-2">
@@ -569,7 +569,7 @@ export default function OnboardingControlPage() {
 
       {/* Page header */}
       <div className="mb-5">
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">
           FOUNDER TOOLS · ONBOARDING
         </div>
         <h1 className="text-lg font-black uppercase tracking-wider text-zinc-100">

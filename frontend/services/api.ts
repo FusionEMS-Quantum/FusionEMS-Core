@@ -2155,3 +2155,316 @@ export async function getDenialPredictor(payload: Record<string, unknown>) {
   const res = await API.post('/api/v1/billing-command/denial-predictor', payload, { headers: csHeaders() });
   return res.data;
 }
+
+// ── Legal Requests Command ───────────────────────────────────────────────────
+
+export type LegalRequestType = 'hipaa_roi' | 'subpoena' | 'court_order';
+export type LegalRequestStatus =
+  | 'received'
+  | 'triage_complete'
+  | 'missing_docs'
+  | 'under_review'
+  | 'packet_building'
+  | 'delivered'
+  | 'closed';
+
+export interface LegalMissingItemCard {
+  code: string;
+  title: string;
+  detail: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface LegalChecklistItem {
+  code: string;
+  label: string;
+  required: boolean;
+  satisfied: boolean;
+}
+
+export interface LegalTriageSummary {
+  classification: LegalRequestType;
+  classification_confidence: number;
+  likely_invalid_or_incomplete: boolean;
+  urgency_level: 'low' | 'normal' | 'high' | 'critical';
+  deadline_risk: 'none' | 'watch' | 'high';
+  mismatch_signals: string[];
+  rationale: string;
+}
+
+export interface LegalIntakePayload {
+  request_type?: LegalRequestType;
+  requesting_party: string;
+  requester_name: string;
+  requesting_entity?: string;
+  requester_category?:
+    | 'patient'
+    | 'patient_representative'
+    | 'attorney'
+    | 'insurance'
+    | 'government_agency'
+    | 'employer'
+    | 'other_third_party_manual_review';
+  patient_first_name?: string;
+  patient_last_name?: string;
+  patient_dob?: string;
+  mrn?: string;
+  csn?: string;
+  date_range_start?: string;
+  date_range_end?: string;
+  request_documents?: string[];
+  delivery_preference?: 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup';
+  requested_page_count?: number;
+  jurisdiction_state?: string;
+  print_mail_requested?: boolean;
+  rush_requested?: boolean;
+  deadline_at?: string;
+  notes?: string;
+}
+
+export interface LegalIntakeResponse {
+  request_id: string;
+  intake_token: string;
+  status: LegalRequestStatus;
+  request_type: LegalRequestType;
+  triage_summary: LegalTriageSummary;
+  missing_items: LegalMissingItemCard[];
+  required_document_checklist: LegalChecklistItem[];
+  workflow_state?: string;
+  payment_status?: string;
+  payment_required?: boolean;
+  margin_status?: string;
+  fee_quote?: Record<string, unknown>;
+}
+
+export interface LegalPricingQuoteResponse {
+  request_id: string;
+  currency: string;
+  total_due_cents: number;
+  agency_payout_cents: number;
+  platform_fee_cents: number;
+  margin_status: string;
+  payment_required: boolean;
+  workflow_state: string;
+  requester_category: string;
+  delivery_mode: 'secure_digital' | 'print_and_mail' | 'manual_pickup';
+  line_items: Array<{ code: string; label: string; amount_cents: number; payee: string; note?: string }>;
+  costs: {
+    estimated_processor_fee_cents: number;
+    estimated_labor_cost_cents: number;
+    estimated_lob_cost_cents: number;
+    estimated_platform_margin_cents: number;
+  };
+  hold_reasons: string[];
+}
+
+export interface LegalCheckoutResponse {
+  request_id: string;
+  payment_id: string;
+  payment_status: string;
+  workflow_state: string;
+  checkout_url: string;
+  checkout_session_id: string;
+  connected_account_id: string;
+  amount_due_cents: number;
+  agency_payout_cents: number;
+  platform_fee_cents: number;
+}
+
+export interface LegalPaymentRecord {
+  payment_id: string;
+  request_id: string;
+  status: string;
+  amount_due_cents: number;
+  amount_collected_cents: number;
+  platform_fee_cents: number;
+  agency_payout_cents: number;
+  currency: string;
+  stripe_connected_account_id?: string;
+  stripe_checkout_session_id?: string;
+  stripe_payment_intent_id?: string;
+  check_reference?: string;
+  paid_at?: string;
+  failed_at?: string;
+  refunded_at?: string;
+}
+
+export interface LegalQueueItem {
+  id: string;
+  request_type: LegalRequestType;
+  status: LegalRequestStatus;
+  requester_name: string;
+  requesting_party: string;
+  requesting_entity?: string;
+  deadline_at?: string;
+  deadline_risk: 'none' | 'watch' | 'high';
+  missing_count: number;
+  redaction_mode: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LegalSummary {
+  total_open: number;
+  lane_counts: Record<string, number>;
+  urgent_deadlines: number;
+  high_risk_requests: number;
+}
+
+export async function classifyLegalRequest(payload: {
+  request_type?: LegalRequestType;
+  notes?: string;
+  request_documents?: string[];
+  deadline_at?: string;
+  date_range_start?: string;
+  date_range_end?: string;
+}) {
+  const res = await API.post('/api/v1/legal-requests/classify', payload);
+  return res.data;
+}
+
+export async function createLegalRequestIntake(payload: LegalIntakePayload): Promise<LegalIntakeResponse> {
+  const res = await API.post('/api/v1/legal-requests/intake', payload);
+  return res.data as LegalIntakeResponse;
+}
+
+export async function createLegalUploadPresign(
+  requestId: string,
+  payload: { intake_token: string; document_kind: string; file_name: string; content_type: string }
+) {
+  const res = await API.post(`/api/v1/legal-requests/${requestId}/uploads/presign`, payload);
+  return res.data;
+}
+
+export async function uploadLegalDocumentToPresignedUrl(uploadUrl: string, file: File): Promise<void> {
+  await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  });
+}
+
+export async function completeLegalUpload(
+  requestId: string,
+  payload: { intake_token: string; upload_id: string; byte_size: number; checksum_sha256?: string }
+) {
+  const res = await API.post(`/api/v1/legal-requests/${requestId}/uploads/complete`, payload);
+  return res.data;
+}
+
+export async function previewLegalPricingQuote(
+  requestId: string,
+  payload: {
+    intake_token: string;
+    requested_page_count?: number;
+    print_mail_requested?: boolean;
+    rush_requested?: boolean;
+  }
+): Promise<LegalPricingQuoteResponse> {
+  const res = await API.post(`/api/v1/legal-requests/${requestId}/pricing/quote`, payload);
+  return res.data as LegalPricingQuoteResponse;
+}
+
+export async function createLegalPaymentCheckout(
+  requestId: string,
+  payload: { intake_token: string; success_url?: string; cancel_url?: string }
+): Promise<LegalCheckoutResponse> {
+  const res = await API.post(`/api/v1/legal-requests/${requestId}/payment/checkout`, payload);
+  return res.data as LegalCheckoutResponse;
+}
+
+export async function getFounderLegalSummary(): Promise<LegalSummary> {
+  const res = await API.get('/api/v1/legal-requests/founder/summary', { headers: aiHeaders() });
+  return res.data as LegalSummary;
+}
+
+export async function getFounderLegalQueue(lane?: string, limit = 100): Promise<LegalQueueItem[]> {
+  const res = await API.get('/api/v1/legal-requests/founder/queue', {
+    headers: aiHeaders(),
+    params: { lane, limit },
+  });
+  return Array.isArray(res.data) ? (res.data as LegalQueueItem[]) : [];
+}
+
+export async function getFounderLegalRequestDetail(requestId: string) {
+  const res = await API.get(`/api/v1/legal-requests/founder/requests/${requestId}`, {
+    headers: aiHeaders(),
+  });
+  return res.data;
+}
+
+export async function reviewFounderLegalRequest(
+  requestId: string,
+  payload: {
+    authority_valid: boolean;
+    identity_verified: boolean;
+    completeness_valid: boolean;
+    document_sufficient: boolean;
+    minimum_necessary_scope: boolean;
+    redaction_mode:
+      | 'court_safe_minimum_necessary'
+      | 'expanded_disclosure_reviewed'
+      | 'expanded_disclosure_patient_authorized'
+      | 'expanded_disclosure_legal_override';
+    delivery_method: 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup';
+    decision: 'approve' | 'request_more_docs' | 'reject';
+    decision_notes?: string;
+  }
+) {
+  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/review`, payload, {
+    headers: aiHeaders(),
+  });
+  return res.data;
+}
+
+export async function buildFounderLegalPacket(requestId: string) {
+  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/packet-build`, {}, {
+    headers: aiHeaders(),
+  });
+  return res.data;
+}
+
+export async function createFounderLegalDeliveryLink(
+  requestId: string,
+  payload: { expires_in_hours?: number; recipient_hint?: string }
+) {
+  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/delivery-links`, payload, {
+    headers: aiHeaders(),
+  });
+  return res.data;
+}
+
+export async function revokeFounderLegalDeliveryLink(linkId: string) {
+  await API.post(`/api/v1/legal-requests/founder/delivery-links/${linkId}/revoke`, {}, {
+    headers: aiHeaders(),
+  });
+}
+
+export async function closeFounderLegalRequest(requestId: string) {
+  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/close`, {}, {
+    headers: aiHeaders(),
+  });
+  return res.data;
+}
+
+export async function getFounderLegalPaymentRecord(requestId: string): Promise<LegalPaymentRecord> {
+  const res = await API.get(`/api/v1/legal-requests/founder/requests/${requestId}/payment`, {
+    headers: aiHeaders(),
+  });
+  return res.data as LegalPaymentRecord;
+}
+
+export async function markFounderLegalCheckReceived(
+  requestId: string,
+  payload: { check_reference: string }
+): Promise<LegalPaymentRecord> {
+  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/payment/check-received`, payload, {
+    headers: aiHeaders(),
+  });
+  return res.data as LegalPaymentRecord;
+}
+
+export async function consumeLegalDeliveryLink(token: string) {
+  const res = await API.get(`/api/v1/legal-requests/delivery/${token}`);
+  return res.data;
+}

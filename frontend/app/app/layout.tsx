@@ -29,7 +29,7 @@ export default function InternalAppLayout({ children }: { children: ReactNode })
       <div className="flex flex-1 min-h-0">
         <aside className="w-56 border-r border-border-subtle bg-black p-2 overflow-y-auto">
           {MODULE_LINKS.map((item) => (
-            <Link key={item.href} href={item.href} className="block px-3 py-2 text-label uppercase tracking-widest text-zinc-500 hover:text-zinc-100 hover:bg-[#0A0A0B]-raised chamfer-4 transition-colors">
+            <Link key={item.href} href={item.href} className="block px-3 py-2 text-label uppercase tracking-widest text-zinc-500 hover:text-zinc-100 hover:bg-[#0A0A0B] chamfer-4 transition-colors">
               {item.label}
             </Link>
           ))}

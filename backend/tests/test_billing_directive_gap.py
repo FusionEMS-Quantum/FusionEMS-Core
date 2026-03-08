@@ -199,7 +199,7 @@ class TestPreSubmissionRulesEngine:
         engine.evaluate(claim)
 
         # Issues should have been added
-        assert len(db._added) >= 2
+        assert len(getattr(db, "_added")) >= 2  # noqa: SLF001
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -314,7 +314,7 @@ class TestBillingAIAppealStrategy:
         ai = BillingAIService(db)
         claim = _mock_claim()
         # Monkeypatch to force error
-        ai._compute_appeal_strategy = MagicMock(side_effect=Exception("fail"))
+        setattr(ai, "_compute_appeal_strategy", MagicMock(side_effect=Exception("fail")))  # noqa: SLF001
 
         strategy = ai.recommend_appeal_strategy(claim, "CO-4")
 

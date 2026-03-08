@@ -78,7 +78,7 @@ export default function TrainingPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · TRAINING</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">SUCCESS · TRAINING</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Training & Enablement</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Tracks · assignments · completions · verifications</p>
       </div>
@@ -89,7 +89,7 @@ export default function TrainingPage() {
           <span className="text-xs text-zinc-500">Role:</span>
           {['', 'MEDIC', 'DISPATCHER', 'SUPERVISOR', 'ADMIN', 'BILLING_SPECIALIST', 'PILOT'].map((r) => (
             <button key={r} onClick={() => setRoleFilter(r)}
-              className={`text-micro px-2 py-1 border ${roleFilter === r ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${roleFilter === r ? 'border-orange-dim text-[#FF4D00]/70 bg-[rgba(255,77,0,0.1)]' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {r || 'ALL'}
             </button>
           ))}
@@ -98,7 +98,7 @@ export default function TrainingPage() {
           <span className="text-xs text-zinc-500">Status:</span>
           {['', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'OVERDUE'].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-[#FF4D00]/70 bg-[rgba(255,77,0,0.1)]' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {s || 'ALL'}
             </button>
           ))}
@@ -138,7 +138,7 @@ export default function TrainingPage() {
 
                 {/* Progress Bar */}
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 h-1.5 bg-[#0A0A0B]-muted  overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-zinc-900/60  overflow-hidden">
                     <div className="h-full bg-green-400 transition-all" style={{ width: `${completionRate}%` }} />
                   </div>
                   <span className="text-micro text-zinc-500">{completionRate.toFixed(0)}% ({completedCount}/{trackAssignments.length})</span>
@@ -165,7 +165,7 @@ export default function TrainingPage() {
         </div>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

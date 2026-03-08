@@ -27,7 +27,6 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
             param = request.query_params.get("token")
 
         if not param and self.auto_error:
-            from fastapi import HTTPException, status
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Not authenticated",

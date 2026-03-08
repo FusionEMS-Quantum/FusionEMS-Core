@@ -39,7 +39,7 @@ interface DriftAlert {
 
 const HEALTH_COLORS: Record<string, string> = {
   healthy: 'text-green-400 bg-green-400/10 border-green-400/30',
-  degraded: 'text-[#FF4D00]-400 bg-[#FF4D00]-400/10 border-orange-400/30',
+  degraded: 'text-[#FF4D00] bg-[rgba(255,77,0,0.10)] border-orange-400/30',
   down: 'text-red-400 bg-red-400/10 border-red-400/30',
 };
 
@@ -177,7 +177,7 @@ export default function ReleasesPage() {
               <div className="text-[10px] text-zinc-500 mt-1">{d.description}</div>
               <div className="text-[10px] text-zinc-500 mt-0.5">
                 Expected: <span className="text-zinc-400">{d.expected_value}</span> ·
-                Actual: <span className="text-[#FF4D00]-400">{d.actual_value}</span>
+                  Actual: <span className="text-[#FF4D00]">{d.actual_value}</span>
               </div>
             </div>
           ))}

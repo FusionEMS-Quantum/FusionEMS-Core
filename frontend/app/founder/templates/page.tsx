@@ -13,7 +13,7 @@ export default function TemplatesPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">DOMAIN 7 · TEMPLATES</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">DOMAIN 7 · TEMPLATES</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Templates</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Proposals · invoices · contracts · reports</p>
       </div>
@@ -27,7 +27,7 @@ export default function TemplatesPage() {
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+      <Link href="/founder" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

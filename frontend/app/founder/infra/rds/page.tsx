@@ -7,7 +7,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+          <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
         {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>

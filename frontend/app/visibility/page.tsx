@@ -8,7 +8,7 @@ const BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  (!IS_PROD ? "http://localhost:8000" : "");
+  "";
 
 type Rule = {
   id: string;
@@ -1133,7 +1133,7 @@ export default function VisibilityRuleMakerPage() {
               <div className="flex flex-wrap gap-3">
                 {[
                   { label: "PHI", color: "bg-red-900/40 text-red-300 border-red-700", desc: "HIPAA Protected Health Information" },
-                  { label: "PII", color: "bg-[#FF4D00]-900/40 text-[#FF4D00]-300 border-orange-700", desc: "Personally Identifiable Information" },
+                  { label: "PII", color: "bg-[rgba(255,77,0,0.2)] text-[#FF9A66] border-orange-700", desc: "Personally Identifiable Information" },
                   { label: "FINANCIAL", color: "bg-yellow-900/40 text-yellow-300 border-yellow-700", desc: "PCI / financial policy" },
                   { label: "OPERATIONAL", color: "bg-blue-900/40 text-blue-300 border-blue-700", desc: "Internal use" },
                   { label: "PUBLIC", color: "bg-green-900/40 text-green-300 border-green-700", desc: "Non-sensitive" },

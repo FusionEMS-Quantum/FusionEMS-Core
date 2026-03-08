@@ -8,7 +8,7 @@ const BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  (!IS_PROD ? "http://localhost:8000" : "");
+  "";
 
 type SchemaElement = {
   label: string;
@@ -240,6 +240,12 @@ export default function NEMSISManagerPage() {
   const api = useCallback(
     async (path: string, method = "GET", body?: unknown) => {
       try {
+        if (!BASE) {
+          if (IS_PROD) {
+            console.error("NEMSIS Manager API base URL is not configured.");
+          }
+          return null;
+        }
         const res = await fetch(`${BASE}${path}`, {
           method,
           headers,
@@ -351,7 +357,7 @@ export default function NEMSISManagerPage() {
     const provided = elementsInput.split(",").map((e) => e.trim()).filter(Boolean);
     const incident: Record<string, string> = {};
     provided.forEach((e) => {
-      incident[e] = "test_value";
+      incident[e] = e;
     });
     const res = await api("/api/v1/nemsis-manager/export/simulate", "POST", {
       incident,

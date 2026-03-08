@@ -59,13 +59,14 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('All');
   const [uploading, setUploading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/documents`, { credentials: 'include' })
+    fetch(`${apiBase}/api/v1/portal/documents`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => setDocs(Array.isArray(d) ? d : d.items ?? []))
-      .catch(() => setDocs(MOCK_DOCS))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load documents'))
       .finally(() => setLoading(false));
   }, [apiBase]);
 
@@ -136,6 +137,12 @@ export default function DocumentsPage() {
           <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleUpload} disabled={uploading} />
         </label>
       </div>
+
+      {fetchError && (
+        <div className="mb-4 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+          Unable to load documents. Please refresh the page or contact billing support.
+        </div>
+      )}
 
       {/* Category tabs */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
@@ -248,9 +255,4 @@ export default function DocumentsPage() {
   );
 }
 
-const MOCK_DOCS: PatientDoc[] = [
-  { id: '1', data: { type: 'statement',    name: 'Statement Jan 2026',       created_at: '2026-01-15', size_bytes: 234000 } },
-  { id: '2', data: { type: 'invoice',      name: 'Invoice #INV-00391',       created_at: '2026-01-10', size_bytes: 118000 } },
-  { id: '3', data: { type: 'receipt',      name: 'Payment Receipt Dec 2025', created_at: '2025-12-20', size_bytes: 85000 } },
-  { id: '4', data: { type: 'payment_plan', name: 'Payment Plan Agreement',   created_at: '2025-11-01', size_bytes: 145000 } },
-];
+

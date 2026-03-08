@@ -1,12 +1,30 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { QuantumEmptyState } from '@/components/ui';
+import { NextBestActionCard, type NextAction } from '@/components/ui/NextBestActionCard';
+import { SeverityBadge } from '@/components/ui/SeverityBadge';
+import { DomainNavCard, FounderStatusBar } from '@/components/shells/FounderCommand';
+import type { SeverityLevel } from '@/lib/design-system/tokens';
+
+const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+
+type FetchStatus = 'idle' | 'loading' | 'ready' | 'error';
+
+type PricingSimulationResponse = {
+  plan: string;
+  modules: string[];
+  monthly_cents: number;
+  annual_cents: number;
+  annual_savings_pct: number;
+  cost_per_transport: number | null;
+};
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
         {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
@@ -27,7 +45,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   );
 }
 
-function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
       className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
@@ -110,6 +128,50 @@ export default function PricingSimulatorPage() {
   const [billingPct, setBillingPct] = useState(8);
   const [collectionRate, setCollectionRate] = useState(72);
   const [proposalEmail, setProposalEmail] = useState('');
+  const [pricingStatus, setPricingStatus] = useState<FetchStatus>('idle');
+  const [pricingError, setPricingError] = useState<string | null>(null);
+  const [pricingSimulation, setPricingSimulation] = useState<PricingSimulationResponse | null>(null);
+
+  const fetchPricingSimulation = useCallback((): void => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    setPricingStatus('loading');
+    setPricingError(null);
+
+    void fetch(`${API}/api/v1/roi-funnel/pricing-simulation`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        base_plan: 'professional',
+        modules: ['billing', 'analytics', 'compliance'],
+        call_volume: calls,
+        contract_length_months: 12,
+      }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Pricing simulation failed (${response.status})`);
+        }
+        return response.json() as Promise<PricingSimulationResponse>;
+      })
+      .then((payload) => {
+        setPricingSimulation(payload);
+        setPricingStatus('ready');
+      })
+      .catch((fetchError: unknown) => {
+        const message = fetchError instanceof Error ? fetchError.message : 'Unknown pricing simulation failure';
+        setPricingError(message);
+        setPricingStatus('error');
+      });
+  }, [calls]);
+
+  useEffect(() => {
+    fetchPricingSimulation();
+  }, [fetchPricingSimulation]);
 
   const model = computeModel(
     calls, medicare, medicaid, commercial, selfPayRate,
@@ -126,12 +188,56 @@ export default function PricingSimulatorPage() {
       ? `-$${Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
       : `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
+  const pricingSeverity: SeverityLevel = pricingStatus === 'error'
+    ? 'BLOCKING'
+    : model.saving < 0
+      ? 'HIGH'
+      : model.saving < 1000
+        ? 'MEDIUM'
+        : 'LOW';
+
+  const pricingActions = useMemo<NextAction[]>(() => {
+    const actions: NextAction[] = [
+      {
+        id: 'roi-pricing-validate-assumptions',
+        title: 'Validate payer-mix assumptions against conversion and reimbursement telemetry.',
+        severity: 'MEDIUM',
+        domain: 'ROI Analytics',
+        href: '/founder/roi/analytics',
+      },
+    ];
+
+    if (pricingStatus === 'error') {
+      actions.unshift({
+        id: 'roi-pricing-telemetry-recover',
+        title: 'Recover pricing simulation telemetry before publishing proposal pricing.',
+        severity: 'BLOCKING',
+        domain: 'Pricing Telemetry',
+        href: '/founder/roi/pricing-simulator',
+      });
+    }
+
+    if (model.saving < 0) {
+      actions.unshift({
+        id: 'roi-pricing-negative-margin',
+        title: 'Current assumptions produce negative monthly savings; recalibrate pricing model.',
+        severity: 'HIGH',
+        domain: 'Margin Posture',
+        href: '/founder/roi/proposals',
+      });
+    }
+
+    return actions;
+  }, [model.saving, pricingStatus]);
+
   function scenarioModel(c: number) {
     return computeModel(c, medicare, medicaid, commercial, selfPayRate, medicareP, medicaidP, commercialP, selfPayP, billingPct, collectionRate);
   }
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+      <FounderStatusBar isLive={pricingStatus !== 'error'} activeIncidents={pricingStatus === 'error' ? 1 : 0} />
+
       {/* Page Header */}
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
@@ -141,11 +247,42 @@ export default function PricingSimulatorPage() {
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>Pricing Simulator</h1>
             <p className="text-xs text-zinc-500 mt-1">Model different pricing scenarios · compare vs competitor billing models</p>
+            <div className="mt-2">
+              <SeverityBadge severity={pricingSeverity} size="sm" />
+            </div>
           </div>
-          <Link href="/founder" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
-            ← Back to Founder OS
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchPricingSimulation}
+              className="h-8 px-3 text-xs font-semibold border border-status-warning/35 text-status-warning hover:bg-status-warning/10 transition-colors"
+            >
+              Refresh Pricing Telemetry
+            </button>
+            <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
+              ← Back to ROI Command
+            </Link>
+          </div>
         </div>
+      </div>
+
+      <NextBestActionCard actions={pricingActions} title="Pricing Command Next Best Actions" maxVisible={4} />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <DomainNavCard
+          domain="billing"
+          href="/founder/revenue/billing-intelligence"
+          description="Cross-check modeled pricing against live collections and denial rates."
+        />
+        <DomainNavCard
+          domain="ops"
+          href="/founder/ops/command"
+          description="Ensure pricing assumptions match operational capacity and response readiness."
+        />
+        <DomainNavCard
+          domain="support"
+          href="/founder/roi/proposals"
+          description="Push validated pricing into proposal execution and follow-up workflows."
+        />
       </div>
 
       {/* MODULE 1 — Agency Input Parameters */}
@@ -239,6 +376,38 @@ export default function PricingSimulatorPage() {
         </div>
         <div className="mt-3 text-body text-zinc-500 font-mono">
           $1,200 + ({calls} × $6) = {fmt(platformCost)}/mo
+        </div>
+        <div className="mt-3">
+          {pricingStatus === 'loading' || pricingStatus === 'idle' ? (
+            <div className="text-xs text-zinc-500">Loading live pricing simulation telemetry...</div>
+          ) : pricingStatus === 'error' ? (
+            <QuantumEmptyState
+              title="Pricing telemetry unavailable"
+              description={pricingError ?? 'Unable to load pricing simulation telemetry.'}
+              icon="activity"
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <StatCard
+                label="Live Monthly Cost"
+                value={`$${((pricingSimulation?.monthly_cents ?? 0) / 100).toLocaleString()}`}
+                color="var(--color-status-warning)"
+                sub="ROI pricing simulation API"
+              />
+              <StatCard
+                label="Live Annual Cost"
+                value={`$${((pricingSimulation?.annual_cents ?? 0) / 100).toLocaleString()}`}
+                color="var(--color-status-info)"
+                sub={`Annual discount: ${pricingSimulation?.annual_savings_pct ?? 0}%`}
+              />
+              <StatCard
+                label="Cost / Transport"
+                value={pricingSimulation?.cost_per_transport != null ? `$${pricingSimulation.cost_per_transport.toFixed(2)}` : '—'}
+                color="var(--color-status-active)"
+                sub="Command telemetry"
+              />
+            </div>
+          )}
         </div>
       </Panel>
 

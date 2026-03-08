@@ -11,7 +11,7 @@ export default function ExecutivePage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">DOMAIN 1 · EXECUTIVE</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">DOMAIN 1 · EXECUTIVE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Executive Command</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Daily AI brief · risk monitor · platform overview</p>
       </div>
@@ -25,7 +25,7 @@ export default function ExecutivePage() {
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+        <Link href="/founder" className="text-xs text-orange-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

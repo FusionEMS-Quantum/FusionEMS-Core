@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -33,7 +33,7 @@ def _compute_cms_score(data: dict[str, Any]) -> dict[str, Any]:
 
     def gate(name: str, passed: bool, weight: int, failure_msg: str) -> None:
         nonlocal score
-        gates.append({"gate": name, "passed": passed, "weight": weight})
+        gates.append({"gate": name, "name": name, "passed": passed, "weight": weight})
         if passed:
             score += weight
         else:
@@ -198,10 +198,23 @@ async def evaluate_for_case(
         data={**result, "case_id": str(case_id), "input": payload},
         correlation_id=correlation_id,
     )
+    now_iso = datetime.now(UTC).isoformat()
     case_data = dict(case.get("data") or {})
     case_data["cms_gate_passed"] = result["passed"]
     case_data["cms_gate_score"] = result["score"]
     case_data["cms_gate_result"] = str(record["id"])
+    timeline = list(case_data.get("timeline") or [])
+    timeline.append(
+        {
+            "event": "cms_gate_evaluated",
+            "timestamp": now_iso,
+            "score": result["score"],
+            "passed": result["passed"],
+            "hard_block": result["hard_block"],
+            "actor_user_id": str(current.user_id),
+        }
+    )
+    case_data["timeline"] = timeline
     await svc.update(
         table="cases",
         tenant_id=current.tenant_id,
@@ -236,3 +249,102 @@ async def get_gate_result(
     if not result:
         raise HTTPException(status_code=404, detail="No CMS gate result for this case")
     return result
+
+
+@router.get("/audit/history")
+async def cms_audit_history(
+    limit: int = 25,
+    case_id: uuid.UUID | None = None,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    _check(current)
+    if limit < 1:
+        raise HTTPException(status_code=422, detail="limit must be >= 1")
+    svc = _svc(db)
+    rows = svc.repo("cms_gate_results").list(
+        tenant_id=current.tenant_id,
+        limit=min(limit * 4, 800),
+    )
+    if case_id is not None:
+        rows = [
+            r
+            for r in rows
+            if (r.get("data") or {}).get("case_id") == str(case_id)
+        ]
+    rows_sorted = sorted(
+        rows,
+        key=lambda row: (row.get("data") or {}).get("evaluated_at", ""),
+        reverse=True,
+    )
+    return rows_sorted[:limit]
+
+
+@router.get("/audit/summary")
+async def cms_audit_summary(
+    days: int = 30,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    _check(current)
+    if days < 1 or days > 365:
+        raise HTTPException(status_code=422, detail="days must be between 1 and 365")
+    svc = _svc(db)
+    rows = svc.repo("cms_gate_results").list(tenant_id=current.tenant_id, limit=2000)
+
+    since = datetime.now(UTC) - timedelta(days=days)
+
+    def _parse_iso(value: Any) -> datetime | None:
+        if not isinstance(value, str) or not value:
+            return None
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    scoped: list[dict[str, Any]] = []
+    for row in rows:
+        data = row.get("data") or {}
+        ts = _parse_iso(data.get("evaluated_at"))
+        if ts is None:
+            continue
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=UTC)
+        if ts >= since:
+            scoped.append(row)
+
+    total = len(scoped)
+    if total == 0:
+        return {
+            "window_days": days,
+            "total": 0,
+            "pass_count": 0,
+            "fail_count": 0,
+            "hard_block_count": 0,
+            "bs_flag_count": 0,
+            "pass_rate": 0.0,
+            "avg_score": 0.0,
+        }
+
+    pass_count = sum(1 for r in scoped if bool((r.get("data") or {}).get("passed")))
+    hard_block_count = sum(
+        1 for r in scoped if bool((r.get("data") or {}).get("hard_block"))
+    )
+    bs_flag_count = sum(1 for r in scoped if bool((r.get("data") or {}).get("bs_flag")))
+    scores = [
+        int((r.get("data") or {}).get("score", 0))
+        for r in scoped
+        if isinstance((r.get("data") or {}).get("score"), int)
+    ]
+    avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
+
+    return {
+        "window_days": days,
+        "total": total,
+        "pass_count": pass_count,
+        "fail_count": total - pass_count,
+        "hard_block_count": hard_block_count,
+        "bs_flag_count": bs_flag_count,
+        "pass_rate": round(pass_count / total * 100, 2),
+        "avg_score": avg_score,
+    }

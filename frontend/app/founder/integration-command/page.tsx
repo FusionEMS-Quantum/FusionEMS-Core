@@ -188,7 +188,7 @@ export default function FounderIntegrationCommandPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-[#FF4D00]-400/80">Founder Command</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,77,0,0.80)]">Founder Command</div>
         <h1 className="text-2xl font-black text-white">Integration & Connectors Command Center</h1>
       </div>
 
@@ -231,7 +231,7 @@ export default function FounderIntegrationCommandPage() {
             type="button"
             onClick={handleCreateSyncJob}
             disabled={creatingSyncJob || !syncJobForm.tenantConnectorInstallId}
-            className=" border border-orange-400/60 bg-[#FF4D00]-500/20 px-3 py-2 text-sm font-semibold text-[#FF4D00]-200 disabled:opacity-50"
+              className=" border border-orange-400/60 bg-[rgba(255,77,0,0.20)] px-3 py-2 text-sm font-semibold text-[#FF4D00] disabled:opacity-50"
           >
             {creatingSyncJob ? 'Creating…' : 'Create Sync Job'}
           </button>
@@ -251,7 +251,7 @@ export default function FounderIntegrationCommandPage() {
             {summary.top_actions.length === 0 && <div className="text-sm text-white/60">No immediate integration actions.</div>}
             {summary.top_actions.map((action, idx) => (
               <div key={`${action.summary}-${idx}`} className=" border border-white/10 bg-black/20 p-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]-300">{action.severity}</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]">{action.severity}</div>
                 <div className="mt-1 text-sm font-semibold text-white">{action.summary}</div>
                 <div className="mt-1 text-sm text-white/70">{action.recommended_action}</div>
               </div>

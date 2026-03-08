@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BILLING_PHONE_DISPLAY, BILLING_PHONE_TEL } from '@/lib/phone';
 
 interface PageProps {
   params: { invoiceId: string };
@@ -210,7 +211,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
                 )}
                 <div style={{ padding: '18px', background: 'var(--color-bg-base)', border: '1px solid var(--color-border-default)', clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)' }}>
                   <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '6px' }}>Pay by Phone</div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#FF4D00' }}>(800) 555-0100</div>
+                  <a href={BILLING_PHONE_TEL} style={{ fontSize: '13px', fontWeight: 700, color: '#FF4D00', textDecoration: 'none' }}>{BILLING_PHONE_DISPLAY}</a>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>Mention your statement ID when you call.</div>
                 </div>
                 <div style={{ padding: '18px', background: 'var(--color-bg-base)', border: '1px solid var(--color-border-default)', clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)' }}>

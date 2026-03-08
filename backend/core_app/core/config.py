@@ -55,6 +55,14 @@ class Settings(BaseSettings):
         default="",
         description="Telnyx purchased phone number id for the centralized billing line",
     )
+    cnam_display_name: str = Field(
+        default="FusionEMS Quantum",
+        description="CNAM caller ID name shown to patients on outbound billing calls",
+    )
+    cnam_status: str = Field(
+        default="",
+        description="CNAM registration status from Telnyx (submitted/active/pending)",
+    )
     telnyx_messaging_profile_id: str = Field(default="")
     officeally_sftp_host: str = Field(default="")
     officeally_sftp_port: int = Field(default=22)

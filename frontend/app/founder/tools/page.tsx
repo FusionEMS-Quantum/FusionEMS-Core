@@ -16,7 +16,7 @@ export default function ToolsPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">DOMAIN 11 · FOUNDER TOOLS</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">DOMAIN 11 · FOUNDER TOOLS</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Founder Tools</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Calendar · documents · invoicing · expenses · tasks</p>
       </div>
@@ -30,7 +30,7 @@ export default function ToolsPage() {
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+      <Link href="/founder" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

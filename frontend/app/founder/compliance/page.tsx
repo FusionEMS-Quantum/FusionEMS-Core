@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const LINKS = [
+  { href: '/founder/compliance/dea-cms', label: 'DEA / CMS Command', desc: 'Controlled-substance chain-of-custody audits plus CMS gate transparency', color: '#FF4D00' },
   { href: '/founder/compliance/nemsis', label: 'NEMSIS Manager', desc: 'NEMSIS v3.5 validation, element mapping, XML export', color: 'var(--q-yellow)' },
   { href: '/founder/compliance/export-status', label: 'Export Status', desc: '100-module export intelligence and state submission control', color: 'var(--q-yellow)' },
   { href: '/founder/compliance/niers', label: 'NIERS Manager', desc: 'Fire data compliance, crosswalk builder, heatmap', color: 'var(--q-yellow)' },
@@ -13,9 +14,9 @@ export default function CompliancePage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">DOMAIN 5 · COMPLIANCE</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">DOMAIN 5 · COMPLIANCE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Compliance</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">NEMSIS · NIERS · export status · certification</p>
+        <p className="text-xs text-zinc-500 mt-0.5">DEA · CMS · NEMSIS · NIERS · export status · certification</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {LINKS.map((l) => (
@@ -27,7 +28,7 @@ export default function CompliancePage() {
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+        <Link href="/founder" className="text-xs text-orange-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

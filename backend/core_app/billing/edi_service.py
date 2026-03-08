@@ -2,11 +2,13 @@ from __future__ import annotations
 
 # ruff: noqa: I001
 
-# pylint: disable=import-error
+# pylint: disable=import-error,redefined-outer-name,unused-import
 
 import base64
 import contextlib
 import hashlib
+import importlib
+import importlib.util
 import logging
 import uuid
 from datetime import UTC, datetime
@@ -22,20 +24,24 @@ from core_app.services.domination_service import DominationService
 
 logger = logging.getLogger(__name__)
 
-try:
-    import pyx12  # noqa: F401
-    import pyx12.x12context  # noqa: F401
 
-    PYX12_AVAILABLE = True
-except ImportError:
-    PYX12_AVAILABLE = False
+def _module_available(module_name: str) -> bool:
+    try:
+        return importlib.util.find_spec(module_name) is not None
+    except ModuleNotFoundError:
+        return False
 
-try:
-    from linuxforhealth.x12.io import X12ModelReader  # noqa: F401
+PYX12_AVAILABLE = all(
+    _module_available(module_name)
+    for module_name in (
+        "pyx12",
+        "pyx12.params",
+        "pyx12.error_handler",
+        "pyx12.x12file",
+    )
+)
 
-    LFH_AVAILABLE = True
-except ImportError:
-    LFH_AVAILABLE = False
+LFH_AVAILABLE = _module_available("linuxforhealth.x12.io")
 
 _277_STATUS_MAP: dict[str, str] = {
     "A1": "Acknowledged",
@@ -173,14 +179,15 @@ class EDIService:
         try:
             import io
 
-            import pyx12.error_handler
-            import pyx12.params
-            import pyx12.x12file
+            x12_params_mod = importlib.import_module("pyx12.params")
+            x12_error_handler_mod = importlib.import_module("pyx12.error_handler")
+            x12_file_mod = importlib.import_module("pyx12.x12file")
+            x12_ctx_mod = importlib.import_module("pyx12.x12context")
 
-            param = pyx12.params.params()
-            errh = pyx12.error_handler.errh_null()
-            src = pyx12.x12file.X12Reader(io.StringIO(x12_text))
-            ctx = pyx12.x12context.X12ContextReader(param, errh, src)
+            param = x12_params_mod.params()
+            errh = x12_error_handler_mod.errh_null()
+            src = x12_file_mod.X12Reader(io.StringIO(x12_text))
+            ctx = x12_ctx_mod.X12ContextReader(param, errh, src)
             for seg, _seg_data, _trig_node, _loop_node in ctx.iter_segments():
                 if errh.err_count > 0:
                     errors.append(f"pyx12_error seg={seg}")
@@ -196,7 +203,9 @@ class EDIService:
 
         if LFH_AVAILABLE:
             try:
-                reader = X12ModelReader(x12_text)
+                x12_io = importlib.import_module("linuxforhealth.x12.io")
+                reader_cls = x12_io.X12ModelReader
+                reader = reader_cls(x12_text)
                 for m in reader.models():
                     model_dict = m.dict() if hasattr(m, "dict") else {}
                     isa_control = str(model_dict.get("interchange_control_number", ""))

@@ -24,7 +24,7 @@ export function HumanOverrideBanner({
   return (
     <div
       className={cn(
-        'border-l-4 border-orange bg-[#FF4D00]-ghost p-4 chamfer-4',
+        'border-l-4 border-orange bg-[rgba(255,77,0,0.12)] p-4 chamfer-4',
         className
       )}
       role="status"
@@ -75,7 +75,7 @@ export function HumanOverrideBanner({
             onClick={onViewAudit}
             className="flex-shrink-0 px-3 py-1.5 text-label font-label uppercase tracking-wider
                        text-[#FF4D00] border border-orange/30 chamfer-4
-                       hover:bg-[#FF4D00]-ghost transition-colors duration-fast"
+                       hover:bg-[rgba(255,77,0,0.12)] transition-colors duration-fast"
             type="button"
           >
             View Audit →

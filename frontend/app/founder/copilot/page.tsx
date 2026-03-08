@@ -133,7 +133,7 @@ function PlanPanel({ plan }: { plan: ActionPlan }) {
 
       {plan.notes && (
         <div className="bg-brand-orange/[0.06] border border-brand-orange/[0.15] chamfer-4 p-3">
-          <div className="text-micro uppercase tracking-widest text-[#FF4D00]-dim mb-1">Notes</div>
+          <div className="text-micro uppercase tracking-widest text-orange-dim mb-1">Notes</div>
           <p className="text-xs text-zinc-400">{plan.notes}</p>
         </div>
       )}
@@ -216,7 +216,7 @@ function MessageBubble({ msg }: { msg: Message }) {
       <div
         className={`max-w-[80%] px-3 py-2 chamfer-4 text-sm leading-relaxed ${
           isUser
-            ? 'bg-[#FF4D00]-ghost border border-brand-orange/[0.2] text-zinc-100'
+              ? 'bg-orange-ghost border border-brand-orange/[0.2] text-zinc-100'
             : 'bg-zinc-950/5 border border-border-DEFAULT text-zinc-100'
         }`}
       >
@@ -452,7 +452,7 @@ export default function FounderCopilotPage() {
               onClick={() => selectSession(s)}
               className={`w-full text-left px-3 py-2 border-b border-border-subtle transition-colors ${
                 activeSession?.id === s.id
-                  ? 'bg-[#FF4D00]-ghost text-zinc-100 border-l-2 border-l-[#FF4D00]'
+                    ? 'bg-orange-ghost text-zinc-100 border-l-2 border-l-[#FF4D00]'
                   : 'text-zinc-400 hover:bg-zinc-950/[0.04] hover:text-zinc-100'
               }`}
             >
@@ -542,7 +542,7 @@ export default function FounderCopilotPage() {
               <button
                 onClick={proposeRun}
                 disabled={!messages.some((m) => m.content_json)}
-                className="px-3 py-1.5 text-xs font-semibold bg-[#FF4D00]-ghost border border-brand-orange/[0.3] text-[#FF4D00] chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs font-semibold bg-orange-ghost border border-brand-orange/[0.3] text-[#FF4D00] chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Propose Changes
               </button>
@@ -563,7 +563,7 @@ export default function FounderCopilotPage() {
               <button
                 onClick={mergeRun}
                 disabled={!activeRun || activeRun.status !== 'approved'}
-                className="px-3 py-1.5 text-xs font-semibold bg-[#FF4D00]-ghost border border-brand-orange/[0.4] text-[#FF4D00] chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs font-semibold bg-orange-ghost border border-brand-orange/[0.4] text-[#FF4D00] chamfer-4 hover:bg-brand-orange/[0.2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Merge when Green
               </button>
@@ -593,7 +593,7 @@ export default function FounderCopilotPage() {
               <button
                 onClick={sendMessage}
                 disabled={sending || !inputText.trim()}
-                className="px-4 bg-[#FF4D00] text-black text-xs font-bold chamfer-4 hover:bg-[#FF4D00]-bright transition-colors disabled:opacity-40 disabled:cursor-not-allowed self-stretch"
+                  className="px-4 bg-[#FF4D00] text-black text-xs font-bold chamfer-4 hover:bg-[#FF4D00] transition-colors disabled:opacity-40 disabled:cursor-not-allowed self-stretch"
               >
                 {sending ? '…' : 'Send'}
               </button>

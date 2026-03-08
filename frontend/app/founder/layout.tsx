@@ -64,6 +64,7 @@ const NAV_DOMAINS = [
     color: 'var(--q-yellow)',
     links: [
       { href: '/founder/datasets', label: 'God Mode Datasets' },
+      { href: '/founder/compliance/dea-cms', label: 'DEA / CMS Command' },
       { href: '/founder/compliance/nemsis', label: 'NEMSIS Manager' },
       { href: '/founder/compliance/export-status', label: 'Export Status' },
       { href: '/founder/compliance/certification', label: 'Certification Monitor' },
@@ -159,6 +160,7 @@ const NAV_DOMAINS = [
       { href: '/founder/ops', label: '⚡ Ops Command Center' },
       { href: '/founder/specialty-ops', label: 'Specialty Ops Command' },
       { href: '/founder/records-command', label: 'Records Command Center' },
+      { href: '/founder/legal-requests', label: 'Legal Requests Command' },
       { href: '/founder/integration-command', label: 'Integration Command Center' },
       { href: '/founder/ops/cad', label: 'CAD / Dispatch' },
       { href: '/founder/ops/crewlink', label: 'CrewLink Paging' },
@@ -282,7 +284,7 @@ function TopBar({ sidebarOpen, setSidebarOpen, onCopilotToggle }: { sidebarOpen:
           value={aiInput}
           onChange={(e) => setAiInput(e.target.value)}
           placeholder="Ask Quantum..."
-          className="w-48 h-7 bg-[#FF4D00]-ghost border border-[rgba(255,107,26,0.25)] px-3 text-xs text-zinc-100 placeholder-[rgba(255,107,26,0.45)] focus:outline-none focus:border-orange "
+            className="w-48 h-7 bg-orange-ghost border border-[rgba(255,107,26,0.25)] px-3 text-xs text-zinc-100 placeholder-[rgba(255,107,26,0.45)] focus:outline-none focus:border-orange "
         />
       </div>
       <button onClick={onCopilotToggle} className="ml-4 text-blue-400 hover:text-blue-300 transition-colors p-1  hover:bg-blue-500/10">
@@ -302,7 +304,7 @@ function AIContextPanel() {
   if (collapsed) {
     return (
       <aside className="w-8 border-l border-border-subtle bg-[#050505] flex flex-col items-center pt-3">
-        <button onClick={() => setCollapsed(false)} className="text-[#FF4D00]-dim hover:text-[#FF4D00] text-xs">
+          <button onClick={() => setCollapsed(false)} className="text-orange-dim hover:text-[#FF4D00] text-xs">
           ◁
         </button>
       </aside>
@@ -356,7 +358,7 @@ function AIContextPanel() {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-[rgba(255,255,255,0.3)] mb-1.5">Quick Fix</div>
-          <button className="w-full text-left px-2 py-1.5 bg-[#FF4D00]-ghost border border-[rgba(255,107,26,0.2)] text-xs text-[#FF4D00]  hover:bg-[rgba(255,107,26,0.14)] transition-colors">
+            <button className="w-full text-left px-2 py-1.5 bg-orange-ghost border border-[rgba(255,107,26,0.2)] text-xs text-[#FF4D00]  hover:bg-[rgba(255,107,26,0.14)] transition-colors">
             View top denial fix recommendations →
           </button>
         </div>

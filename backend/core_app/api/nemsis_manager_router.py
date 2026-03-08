@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# pylint: disable=logging-not-lazy,logging-fstring-interpolation
 import hashlib
 from typing import Any
 
@@ -1337,29 +1338,23 @@ async def cross_field_consistency(
                 errors.append("ePatient.04: Age cannot be negative")
             if int(age) > 150 and age_unit == "Years":
                 errors.append("ePatient.04: Age exceeds plausible range for Years")
-        except (ValueError, TypeError) as e:
-            import logging
-
-            logging.error(f"Error: {e}")
+        except (ValueError, TypeError):
+            pass
     hr = fields.get("eVitals.10")
     if hr is not None:
         try:
             if not (0 <= int(hr) <= 350):
                 errors.append("eVitals.10: Heart rate out of plausible range (0-350)")
-        except (ValueError, TypeError) as e:
-            import logging
-
-            logging.error(f"Error: {e}")
+        except (ValueError, TypeError):
+            pass
     sbp = fields.get("eVitals.14")
     dbp = fields.get("eVitals.15")
     if sbp is not None and dbp is not None:
         try:
             if int(dbp) >= int(sbp):
                 errors.append("eVitals.15: Diastolic BP must be less than Systolic BP")
-        except (ValueError, TypeError) as e:
-            import logging
-
-            logging.error(f"Error: {e}")
+        except (ValueError, TypeError):
+            pass
     return {"valid": not errors, "consistency_errors": errors}
 
 

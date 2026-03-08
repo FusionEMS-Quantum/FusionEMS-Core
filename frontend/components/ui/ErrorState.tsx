@@ -46,7 +46,7 @@ export function ErrorState({
         <button
           onClick={onRetry}
           className="px-4 py-2 bg-[#FF4D00] text-black font-label text-label uppercase 
-                     tracking-wider chamfer-4 hover:bg-[#FF4D00]-bright transition-colors duration-fast
+                     tracking-wider chamfer-4 hover:bg-[#E64500] transition-colors duration-fast
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 
                      focus-visible:ring-offset-bg-base"
           type="button"

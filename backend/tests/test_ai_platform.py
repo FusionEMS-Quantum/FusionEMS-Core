@@ -1,8 +1,11 @@
+# pylint: disable=protected-access
+
 """AI Platform test suite — Registry, Orchestration, Governance, Override, Command Center.
 
 Tests use a lightweight FakeDB that operates as an in-memory store,
 matching the synchronous Session interface consumed by all AI services.
 """
+
 from __future__ import annotations
 
 import uuid

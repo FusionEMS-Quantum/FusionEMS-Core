@@ -30,7 +30,7 @@ const LIFECYCLE_STATES = [
 const STATE_COLORS: Record<string, string> = {
   TENANT_CREATED: 'text-blue-400 bg-blue-400/10',
   CONFIG_PENDING: 'text-yellow-400 bg-yellow-400/10',
-  IMPLEMENTATION_IN_PROGRESS: 'text-[#FF4D00]-400 bg-[#FF4D00]-400/10',
+  IMPLEMENTATION_IN_PROGRESS: 'text-[#FF4D00] bg-[rgba(255,77,0,0.10)]',
   GO_LIVE_REVIEW: 'text-purple-400 bg-purple-400/10',
   LIVE: 'text-green-400 bg-green-400/10',
   SUSPENDED: 'text-red-400 bg-red-400/10',

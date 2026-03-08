@@ -248,7 +248,7 @@ function PackDetailDrawer({
         </div>
         <div className="flex-1 px-5 py-4 space-y-5">
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">Pack Data</p>
+              <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">Pack Data</p>
             <div className="space-y-2.5">
               {[
                 { label: 'Name', value: pack.name },
@@ -290,7 +290,7 @@ function PackDetailDrawer({
             </div>
           )}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-3">Actions</p>
+              <p className="text-[9px] uppercase tracking-[0.18em] text-orange-dim mb-3">Actions</p>
             <div className="flex flex-wrap gap-2">
               {pack.status === 'staged' && (
                 <button
@@ -683,7 +683,7 @@ function ValidateTab({
         {/* Entity panel */}
         <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-4 space-y-3">
           <div>
-            <p className="text-micro uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-0.5">Entity (Department)</p>
+              <p className="text-micro uppercase tracking-[0.18em] text-orange-dim mb-0.5">Entity (Department)</p>
             <p className="text-body text-zinc-500">Paste entity JSON payload below</p>
           </div>
           <textarea
@@ -726,7 +726,7 @@ function ValidateTab({
         {/* Incident panel */}
         <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-4 space-y-3">
           <div>
-            <p className="text-micro uppercase tracking-[0.18em] text-[#FF4D00]-dim mb-0.5">Incident</p>
+              <p className="text-micro uppercase tracking-[0.18em] text-orange-dim mb-0.5">Incident</p>
             <p className="text-body text-zinc-500">Paste incident JSON payload below</p>
           </div>
           <div className="flex items-center gap-2">
@@ -1001,7 +1001,7 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div>
-          <p className="text-micro uppercase tracking-[0.18em] text-[#FF4D00]-dim">Active Pack</p>
+            <p className="text-micro uppercase tracking-[0.18em] text-orange-dim">Active Pack</p>
           <p className="text-sm font-semibold text-zinc-100">{activePack?.name ?? activePackId}</p>
         </div>
         <div className="flex gap-1 border-b border-border-DEFAULT ml-auto">
@@ -1150,7 +1150,7 @@ export default function NerisComplianceStudioPage() {
 
       {/* Page Header */}
       <div className="mb-5">
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">
+      <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
           5 · COMPLIANCE
         </div>
         <div className="flex items-center gap-3 flex-wrap">

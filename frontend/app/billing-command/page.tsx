@@ -79,7 +79,7 @@ export default function BillingCommandPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">CATEGORY 7</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">CATEGORY 7</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Billing Command Center</h1>
         <p className="text-xs text-zinc-500 mt-0.5">100-Feature Revenue Intelligence · AR Aging · Denial Analytics · Payer Performance</p>
       </div>

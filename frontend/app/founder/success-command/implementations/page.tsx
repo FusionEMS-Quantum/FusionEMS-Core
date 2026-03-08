@@ -29,8 +29,8 @@ const STATE_COLORS: Record<string, string> = {
   CONFIGURATION: 'text-cyan-400',
   DATA_MIGRATION: 'text-purple-400',
   TRAINING: 'text-yellow-400',
-  PARALLEL_OPS: 'text-[#FF4D00]-400',
-  GO_LIVE_REVIEW: 'text-[#FF4D00]-dim',
+  PARALLEL_OPS: 'text-[#FF4D00]',
+  GO_LIVE_REVIEW: 'text-[#FF4D00]/70',
   LIVE: 'text-green-400',
   STABILIZATION: 'text-green-300',
 };
@@ -78,7 +78,7 @@ export default function ImplementationsPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · IMPLEMENTATION</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">SUCCESS · IMPLEMENTATION</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Implementation Services</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Project plans · milestones · go-live approvals · stabilization</p>
       </div>
@@ -88,7 +88,7 @@ export default function ImplementationsPage() {
         <span className="text-xs text-zinc-500">Filter:</span>
         {['', 'DISCOVERY', 'PLANNING', 'CONFIGURATION', 'DATA_MIGRATION', 'TRAINING', 'GO_LIVE_REVIEW', 'LIVE', 'STABILIZATION'].map((s) => (
           <button key={s} onClick={() => setStateFilter(s)}
-            className={`text-micro px-2 py-1 border ${stateFilter === s ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
+            className={`text-micro px-2 py-1 border ${stateFilter === s ? 'border-orange-dim text-[#FF4D00]/70 bg-[rgba(255,77,0,0.1)]' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
             {s || 'ALL'}
           </button>
         ))}
@@ -127,7 +127,7 @@ export default function ImplementationsPage() {
               {selectedProject === p.id && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                   className="bg-[#0A0A0B]/50 border-x border-b border-border-DEFAULT p-4 space-y-2">
-                  <div className="text-micro font-bold text-[#FF4D00]-dim">MILESTONES</div>
+                  <div className="text-micro font-bold text-[#FF4D00]/70">MILESTONES</div>
                   {milestones.length === 0 ? (
                     <div className="text-xs text-zinc-500">No milestones defined yet.</div>
                   ) : milestones.map((m) => (
@@ -148,7 +148,7 @@ export default function ImplementationsPage() {
         </div>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

@@ -111,10 +111,10 @@ export default function ROIFunnelPage() {
   return (
     <MarketingShell>
       <div className="max-w-6xl mx-auto px-6 py-12 space-y-6 min-h-screen">
-        <div className="border border-border-default bg-[#0A0A0B]-raised/60 chamfer-12 p-6 relative overflow-hidden">
+        <div className="border border-border-default bg-[rgba(10,10,11,0.6)] chamfer-12 p-6 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-orange/15 via-orange/5 to-transparent" />
           <div className="relative">
-            <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">CATEGORY 8</div>
+            <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">CATEGORY 8</div>
             <h1 className="text-display font-black tracking-tight text-zinc-100">ROI + Self-Service Funnel</h1>
             <p className="text-body text-zinc-400 mt-1">100-Feature Revenue Intelligence · Lead Scoring · Proposals · Subscription Activation</p>
           </div>

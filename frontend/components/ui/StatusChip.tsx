@@ -36,7 +36,7 @@ const chipVariants = cva(
           'border border-[rgba(129,140,248,0.3)]',
         ],
         override: [
-          'bg-[#FF4D00]-ghost text-[#FF4D00]',
+          'bg-[rgba(255,77,0,0.12)] text-[#FF4D00]',
           'border border-orange/30',
         ],
         neutral: [

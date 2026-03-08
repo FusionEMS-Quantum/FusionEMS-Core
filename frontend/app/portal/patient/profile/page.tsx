@@ -89,13 +89,14 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<PatientProfile>({});
   const [saved, setSaved] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
     fetch(`${apiBase}/api/v1/portal/profile`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => { setProfile(d); setDraft(d); })
-      .catch(() => { setProfile(MOCK_PROFILE); setDraft(MOCK_PROFILE); })
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load profile'))
       .finally(() => setLoading(false));
   }, [apiBase]);
 
@@ -173,6 +174,12 @@ export default function ProfilePage() {
           </span>
         )}
       </div>
+
+      {fetchError && (
+        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+          Unable to load profile. Please refresh the page or contact billing support.
+        </div>
+      )}
 
       {/* Personal info */}
       <div className="bg-[#0A0A0B] border border-zinc-800 mb-6" style={{ clipPath: clip10 }}>
@@ -318,13 +325,4 @@ export default function ProfilePage() {
   );
 }
 
-const MOCK_PROFILE: PatientProfile = {
-  first_name: 'Jane',
-  last_name: 'Doe',
-  date_of_birth: '1985-03-15',
-  email: 'jane.doe@example.com',
-  phone: '(555) 867-5309',
-  address: { street: '123 Main Street', city: 'Springfield', state: 'IL', zip: '62701' },
-  communication_preferences: { email_statements: true, sms_reminders: true, paperless: true, call_reminders: false },
-  portal_created_at: '2025-01-01T00:00:00Z',
-};
+

@@ -36,8 +36,8 @@ const STATE_BADGE: Record<string, string> = {
   TRIAGED: 'text-cyan-400',
   ASSIGNED: 'text-purple-400',
   IN_PROGRESS: 'text-yellow-400',
-  WAITING_ON_CUSTOMER: 'text-[#FF4D00]-400',
-  WAITING_ON_VENDOR: 'text-[#FF4D00]-300',
+  WAITING_ON_CUSTOMER: 'text-[#FF4D00]',
+  WAITING_ON_VENDOR: 'text-[#FF4D00]',
   ESCALATED: 'text-red-400',
   RESOLVED: 'text-green-400',
   CLOSED: 'text-zinc-500',
@@ -76,7 +76,7 @@ export default function SupportOpsPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · SUPPORT</div>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">SUCCESS · SUPPORT</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Support Operations</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Ticket queue · SLA tracking · escalations · resolution</p>
       </div>
@@ -87,7 +87,7 @@ export default function SupportOpsPage() {
           <span className="text-xs text-zinc-500">Status:</span>
           {['', 'NEW', 'TRIAGED', 'ASSIGNED', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${statusFilter === s ? 'border-orange-dim text-[#FF4D00]/70 bg-[rgba(255,77,0,0.1)]' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {s || 'ALL'}
             </button>
           ))}
@@ -96,7 +96,7 @@ export default function SupportOpsPage() {
           <span className="text-xs text-zinc-500">Severity:</span>
           {SEVERITY_FILTER_OPTIONS.map((option) => (
             <button key={option.value || 'ALL'} onClick={() => setSeverityFilter(option.value)}
-              className={`text-micro px-2 py-1 border ${severityFilter === option.value ? 'border-orange-dim text-[#FF4D00]-dim bg-[#FF4D00]-dim/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
+              className={`text-micro px-2 py-1 border ${severityFilter === option.value ? 'border-orange-dim text-[#FF4D00]/70 bg-[rgba(255,77,0,0.1)]' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'} transition-colors`}>
               {option.label}
             </button>
           ))}
@@ -156,7 +156,7 @@ export default function SupportOpsPage() {
         </div>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

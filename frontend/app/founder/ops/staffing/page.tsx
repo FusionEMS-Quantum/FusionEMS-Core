@@ -116,7 +116,7 @@ export default function StaffingPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/founder/ops" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-1 block">← Ops Command</Link>
+            <Link href="/founder/ops" className="text-body text-[#FF4D00] hover:text-[#FF4D00] mb-1 block">← Ops Command</Link>
           <h1 className="text-2xl font-black text-white">Staffing & Response Readiness</h1>
           <p className="text-sm text-zinc-500 mt-1">
             Crew qualifications · Availability · Conflict detection · Fatigue flags · Audit
@@ -187,7 +187,7 @@ export default function StaffingPage() {
           <div className="text-micro uppercase tracking-widest text-zinc-500">Active Staffing Gaps</div>
           {summary!.staffing_gaps.map((gap, i) => (
             <div key={i} className="p-3 chamfer-4-xl border border-brand-orange/[0.3] bg-brand-orange/[0.08]">
-              <div className="text-micro font-bold uppercase text-[#FF4D00]-400 mb-0.5">{gap.type.replace(/_/g, ' ')}</div>
+                <div className="text-micro font-bold uppercase text-[#FF4D00] mb-0.5">{gap.type.replace(/_/g, ' ')}</div>
               <div className="text-sm text-white">{gap.message}</div>
             </div>
           ))}
@@ -308,7 +308,7 @@ export default function StaffingPage() {
               className="h-9 bg-zinc-950/[0.06] border border-white/[0.12] px-3 text-sm text-white chamfer-8 focus:outline-none focus:border-orange-400 placeholder-text-zinc-500" />
           </div>
           <button onClick={flagFatigue} disabled={submitting || !fatigueForm.crew_member_id || !fatigueForm.reason}
-            className="px-6 py-2 bg-[#FF4D00]-700 text-white text-sm font-bold chamfer-8 hover:bg-[#FF4D00]-600 disabled:opacity-40">
+              className="px-6 py-2 bg-[#E64500] text-white text-sm font-bold chamfer-8 hover:bg-[#FF4D00] disabled:opacity-40">
             {submitting ? 'Flagging…' : '⚠ Flag for Fatigue Review'}
           </button>
         </Panel>

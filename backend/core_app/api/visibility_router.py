@@ -1241,7 +1241,7 @@ async def deidentify(
     current: CurrentUser = Depends(get_current_user),
 ):
     record = payload.get("record", {})
-    phi_fields = {
+    phi_keys = {
         "patient_name",
         "dob",
         "ssn",
@@ -1251,11 +1251,11 @@ async def deidentify(
         "insurance_id",
     }
     deidentified = {
-        k: ("DEIDENTIFIED" if k in phi_fields else v) for k, v in record.items()
+        k: ("DEIDENTIFIED" if k in phi_keys else v) for k, v in record.items()
     }
     return {
         "deidentified": deidentified,
-        "fields_removed": len([k for k in record if k in phi_fields]),
+        "fields_removed": len([k for k in record if k in phi_keys]),
     }
 
 

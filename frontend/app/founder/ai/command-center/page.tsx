@@ -237,7 +237,7 @@ export default function AICommandCenterPage() {
       <div className="p-5">
         <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 p-8 text-center">
           <div className="text-sm text-zinc-500">{error || 'No data available'}</div>
-          <Link href="/founder/ai" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00] mt-4 inline-block">&larr; Back to AI Governance</Link>
+            <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[#FF4D00] mt-4 inline-block">&larr; Back to AI Governance</Link>
         </div>
       </div>
     );
@@ -260,7 +260,7 @@ export default function AICommandCenterPage() {
       {/* Header + Controls */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">FOUNDER &middot; AI PLATFORM</div>
+            <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FOUNDER &middot; AI PLATFORM</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">AI Command Center</h1>
           <p className="text-xs text-zinc-500 mt-0.5">Real-time health &middot; governance &middot; review queue &middot; risk posture</p>
         </div>
@@ -374,7 +374,7 @@ export default function AICommandCenterPage() {
             <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500">Review Queue</div>
-                <Link href="/founder/ai/review-queue" className="text-micro text-[#FF4D00]-dim hover:text-[#FF4D00] uppercase tracking-widest">
+                  <Link href="/founder/ai/review-queue" className="text-micro text-orange-dim hover:text-[#FF4D00] uppercase tracking-widest">
                   View All &rarr;
                 </Link>
               </div>
@@ -425,7 +425,7 @@ export default function AICommandCenterPage() {
         </>
       )}
 
-      <Link href="/founder/ai" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">&larr; Back to AI Governance</Link>
+        <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[#FF4D00]">&larr; Back to AI Governance</Link>
     </div>
   );
 }

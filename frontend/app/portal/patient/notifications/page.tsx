@@ -55,13 +55,14 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
     fetch(`${apiBase}/api/v1/portal/notifications`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => setNotifications(Array.isArray(d) ? d : d.items ?? []))
-      .catch(() => setNotifications(MOCK_NOTIFICATIONS))
+      .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load notifications'))
       .finally(() => setLoading(false));
   }, [apiBase]);
 
@@ -124,6 +125,12 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications */}
+      {fetchError && (
+        <div className="mb-4 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+          Unable to load notifications. Please refresh the page or contact billing support.
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -200,29 +207,4 @@ export default function NotificationsPage() {
   );
 }
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1', type: 'payment', read: false, created_at: '2026-03-07T14:00:00Z',
-    title: 'Payment Confirmation',
-    body: 'Your payment of $150.00 has been received and posted to your account.',
-    action_href: '/portal/patient/receipts', action_label: 'View Receipt',
-  },
-  {
-    id: '2', type: 'statement', read: false, created_at: '2026-03-01T09:00:00Z',
-    title: 'New Statement Available',
-    body: 'Your billing statement for January 2026 is now available.',
-    action_href: '/portal/patient/statements', action_label: 'View Statement',
-  },
-  {
-    id: '3', type: 'plan', read: true, created_at: '2026-02-15T11:00:00Z',
-    title: 'Payment Plan Reminder',
-    body: 'Your next payment plan installment of $85.00 is due in 5 days.',
-    action_href: '/portal/patient/payment-plans', action_label: 'View Plan',
-  },
-  {
-    id: '4', type: 'message', read: true, created_at: '2026-02-10T16:30:00Z',
-    title: 'Billing Team Response',
-    body: 'A billing specialist has responded to your support request.',
-    action_href: '/portal/patient/messages', action_label: 'View Message',
-  },
-];
+

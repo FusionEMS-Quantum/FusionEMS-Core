@@ -1,51 +1,40 @@
 from __future__ import annotations
 
+# pyright: reportMissingImports=false, reportPossiblyUnboundVariable=false
+
 # ruff: noqa: I001
 
 # pylint: disable=import-error
 
 import contextlib
 import hashlib
+import importlib.util
 import io
 
-try:
-    from pyhanko.sign import fields, signers  # noqa: F401
-    from pyhanko.sign.fields import SigFieldSpec  # noqa: F401
-    from pyhanko_certvalidator import CertificateValidator  # noqa: F401
-
-    PYHANKO_AVAILABLE = True
-except ImportError:
-    PYHANKO_AVAILABLE = False
-
-try:
-    from reportlab.lib import colors  # noqa: F401
-    from reportlab.lib.pagesizes import letter  # noqa: F401
-    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # noqa: F401
-    from reportlab.lib.units import inch  # noqa: F401
-    from reportlab.platypus import (  # noqa: F401
-        HRFlowable,
-        Paragraph,
-        SimpleDocTemplate,
-        Spacer,
-        Table,
-        TableStyle,
+PYHANKO_AVAILABLE = all(
+    importlib.util.find_spec(module_name) is not None
+    for module_name in (
+        "pyhanko.sign",
+        "pyhanko.sign.fields",
+        "pyhanko.pdf_utils.incremental_writer",
     )
+)
 
-    REPORTLAB_AVAILABLE = True
-except ImportError:
-    REPORTLAB_AVAILABLE = False
+REPORTLAB_AVAILABLE = all(
+    importlib.util.find_spec(module_name) is not None
+    for module_name in (
+        "reportlab.lib",
+        "reportlab.lib.pagesizes",
+        "reportlab.lib.styles",
+        "reportlab.lib.units",
+        "reportlab.platypus",
+    )
+)
 
-try:
-    from pypdf import PdfReader, PdfWriter  # noqa: F401
-
-    PYPDF_AVAILABLE = True
-except ImportError:
-    try:
-        from PyPDF2 import PdfReader, PdfWriter
-
-        PYPDF_AVAILABLE = True
-    except ImportError:
-        PYPDF_AVAILABLE = False
+PYPDF_PROVIDER = "pypdf" if importlib.util.find_spec("pypdf") else (
+    "PyPDF2" if importlib.util.find_spec("PyPDF2") else None
+)
+PYPDF_AVAILABLE = PYPDF_PROVIDER is not None
 
 
 class PDFSealer:
@@ -105,7 +94,10 @@ class PDFSealer:
             signer = ph_signers.SimpleSigner.load_pkcs12(p12_path, passphrase=b"fusionems")
             in_buf = io.BytesIO(pdf_bytes)
             w = IncrementalPdfFileWriter(in_buf)
-            append_signature_field(w, SigFieldSpec("Signature", on_page=-1, box=(36, 36, 300, 80)))
+            append_signature_field(
+                w,
+                SigFieldSpec("Signature", on_page=-1, box=(36, 36, 300, 80)),
+            )
             out_buf = io.BytesIO()
             ph_signers.sign_pdf(
                 w,
@@ -119,6 +111,12 @@ class PDFSealer:
                 os.unlink(p12_path)
 
     def _append_audit_page_reportlab(self, original_bytes: bytes, audit_data: dict) -> bytes:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import inch
+        from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
+
         audit_buf = io.BytesIO()
         doc = SimpleDocTemplate(
             audit_buf,
@@ -190,6 +188,13 @@ class PDFSealer:
 
         doc.build(story)
         audit_page_bytes = audit_buf.getvalue()
+
+        if PYPDF_PROVIDER == "pypdf":
+            from pypdf import PdfReader, PdfWriter
+        elif PYPDF_PROVIDER == "PyPDF2":
+            from PyPDF2 import PdfReader, PdfWriter
+        else:
+            raise RuntimeError("PDF reader/writer library is not available")
 
         writer = PdfWriter()
         reader_orig = PdfReader(io.BytesIO(original_bytes))

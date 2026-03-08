@@ -93,7 +93,7 @@ function CatalogTab() {
               <span className="text-sm font-semibold text-zinc-100">{product.product}</span>
               <span className="text-micro text-zinc-500 font-mono">{product.key}</span>
             </div>
-            <button className="h-6 px-2.5 bg-[#FF4D00]-ghost border border-brand-orange/[0.2] text-micro font-semibold uppercase tracking-wider text-[#FF4D00] hover:bg-brand-orange/[0.14] transition-colors chamfer-4">
+              <button className="h-6 px-2.5 bg-orange-ghost border border-brand-orange/[0.2] text-micro font-semibold uppercase tracking-wider text-[#FF4D00] hover:bg-brand-orange/[0.14] transition-colors chamfer-4">
               Edit
             </button>
           </div>
@@ -261,7 +261,7 @@ function EstimatorTab() {
       </div>
 
       <div className="bg-[#050505] border border-brand-orange/[0.2] chamfer-4 p-5 flex flex-col">
-        <div className="text-micro uppercase tracking-widest text-[#FF4D00]-dim mb-4">Monthly Estimate</div>
+          <div className="text-micro uppercase tracking-widest text-orange-dim mb-4">Monthly Estimate</div>
         <div className="space-y-3 flex-1">
           <div className="flex justify-between text-xs">
             <span className="text-zinc-400">

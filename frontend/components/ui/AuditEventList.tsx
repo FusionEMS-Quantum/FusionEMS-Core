@@ -51,7 +51,7 @@ export function AuditEventList({
         {(hasMore || onViewAll) && (
           <button
             onClick={onViewAll}
-            className="text-label font-label text-[#FF4D00] hover:text-[#FF4D00]-bright transition-colors duration-fast"
+            className="text-label font-label text-[#FF4D00] hover:text-[#FF4D00] transition-colors duration-fast"
             type="button"
           >
             View All →

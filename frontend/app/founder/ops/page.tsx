@@ -143,7 +143,7 @@ function DeploymentRunsPanel() {
                   <div className="text-micro text-zinc-500">{String(meta.application_id ?? '').slice(0, 20)}</div>
                 </div>
                 <div className="text-micro font-bold" style={{ color }}>{state.replace(/_/g, ' ')}</div>
-                {run.retry_count as number > 0 && <div className="text-[9px] text-[#FF4D00]-400">retry {String(run.retry_count)}</div>}
+                  {run.retry_count as number > 0 && <div className="text-[9px] text-[#FF4D00]">retry {String(run.retry_count)}</div>}
                 <span className="text-zinc-500 text-xs">{expanded === id ? '▲' : '▼'}</span>
               </button>
               {expanded === id && steps.length > 0 && (
@@ -304,7 +304,7 @@ export default function OpsCommandPage() {
             <Panel>
               <div className="flex items-center justify-between mb-4">
                 <div className="text-micro uppercase tracking-widest text-zinc-500">Fleet Status</div>
-                <Link href="/founder/ops/fleet" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300">View Fleet →</Link>
+                  <Link href="/founder/ops/fleet" className="text-body text-[#FF4D00] hover:text-[#FF4D00]">View Fleet →</Link>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -328,7 +328,7 @@ export default function OpsCommandPage() {
             <Panel>
               <div className="flex items-center justify-between mb-4">
                 <div className="text-micro uppercase tracking-widest text-zinc-500">Staffing Readiness</div>
-                <Link href="/founder/ops/staffing" className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300">View Staffing →</Link>
+                  <Link href="/founder/ops/staffing" className="text-body text-[#FF4D00] hover:text-[#FF4D00]">View Staffing →</Link>
               </div>
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
@@ -344,7 +344,7 @@ export default function OpsCommandPage() {
               </div>
               {data.staffing.fatigue_flags > 0 && (
                 <div className="px-3 py-2 chamfer-8 bg-brand-orange/[0.1] border border-brand-orange/[0.3] mb-2">
-                  <span className="text-body text-[#FF4D00]-400">⚠ {data.staffing.fatigue_flags} fatigue flag(s) active</span>
+                    <span className="text-body text-[#FF4D00]">⚠ {data.staffing.fatigue_flags} fatigue flag(s) active</span>
                 </div>
               )}
               {data.staffing.active_conflicts > 0 && (
@@ -439,7 +439,7 @@ export default function OpsCommandPage() {
                 <Link key={item.href} href={item.href}
                   className="p-4 chamfer-4-xl border border-white/[0.08] bg-zinc-950/[0.03] hover:bg-zinc-950/[0.07] transition-colors group">
                   <div className="text-2xl mb-2">{item.icon}</div>
-                  <div className="text-sm font-bold text-white group-hover:text-[#FF4D00]-400 transition-colors">{item.label}</div>
+                    <div className="text-sm font-bold text-white group-hover:text-[#FF4D00] transition-colors">{item.label}</div>
                   <div className="text-micro text-zinc-500 mt-0.5">{item.sub}</div>
                 </Link>
               ))}

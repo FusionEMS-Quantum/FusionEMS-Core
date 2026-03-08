@@ -178,7 +178,7 @@ variable "enable_flow_logs" {
 variable "flow_logs_retention_days" {
   description = "CloudWatch retention for VPC flow logs"
   type        = number
-  default     = 90
+  default     = 365
 }
 
 variable "tags" {

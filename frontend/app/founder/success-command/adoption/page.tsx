@@ -42,7 +42,7 @@ interface WorkflowMetric {
 const HEALTH_STATE_COLORS: Record<string, string> = {
   HEALTHY: 'text-green-400 border-green-400/30',
   MODERATE: 'text-yellow-400 border-yellow-400/30',
-  AT_RISK: 'text-[#FF4D00]-400 border-orange-400/30',
+  AT_RISK: 'text-[#FF4D00] border-orange-400/30',
   CRITICAL: 'text-red-400 border-red-400/30',
   CHURNING: 'text-red-500 border-red-500/30',
 };
@@ -50,7 +50,7 @@ const HEALTH_STATE_COLORS: Record<string, string> = {
 function healthScoreColor(score: number): string {
   if (score >= 80) return 'text-green-400';
   if (score >= 60) return 'text-yellow-400';
-  if (score >= 40) return 'text-[#FF4D00]-400';
+  if (score >= 40) return 'text-[#FF4D00]';
   return 'text-red-400';
 }
 
@@ -112,12 +112,12 @@ export default function AdoptionHealthPage() {
     <div className="p-5 space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">SUCCESS · HEALTH</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">SUCCESS · HEALTH</div>
           <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Adoption & Health</h1>
           <p className="text-xs text-zinc-500 mt-0.5">Account health · module adoption · workflow completion</p>
         </div>
         <button onClick={handleRecompute} disabled={computing}
-          className="text-micro px-3 py-1.5 border border-orange-dim text-[#FF4D00]-dim hover:bg-[#FF4D00]-dim/10 disabled:opacity-50 transition-colors">
+          className="text-micro px-3 py-1.5 border border-orange-dim text-[#FF4D00]/70 hover:bg-[rgba(255,77,0,0.1)] disabled:opacity-50 transition-colors">
           {computing ? 'Computing...' : 'Recompute Health'}
         </button>
       </div>
@@ -134,7 +134,7 @@ export default function AdoptionHealthPage() {
             <div className={`bg-[#0A0A0B] border p-5 ${HEALTH_STATE_COLORS[health.state] || 'border-border-DEFAULT'}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-micro font-bold text-[#FF4D00]-dim">ACCOUNT HEALTH</div>
+                  <div className="text-micro font-bold text-[#FF4D00]/70">ACCOUNT HEALTH</div>
                   <div className="text-xs text-zinc-500 mt-0.5">Last computed: {new Date(health.computed_at).toLocaleString()} ({health.trigger})</div>
                 </div>
                 <div className="text-right">
@@ -163,7 +163,7 @@ export default function AdoptionHealthPage() {
 
           {/* Module Adoption */}
           <div>
-            <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">MODULE ADOPTION</div>
+            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">MODULE ADOPTION</div>
             {adoption.length === 0 ? (
               <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No adoption metrics recorded yet.</div>
             ) : (
@@ -176,7 +176,7 @@ export default function AdoptionHealthPage() {
                       <div className="text-xs text-zinc-500">{m.active_user_count}/{m.total_user_count} users · {m.category}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-[#0A0A0B]-muted  overflow-hidden">
+                      <div className="flex-1 h-2 bg-zinc-900/60  overflow-hidden">
                         <div className={`h-full ${adoptionBarColor(m.metric_value)} transition-all`} style={{ width: `${m.metric_value}%` }} />
                       </div>
                       <span className={`text-sm font-bold ${healthScoreColor(m.metric_value)}`}>{m.metric_value.toFixed(0)}%</span>
@@ -189,7 +189,7 @@ export default function AdoptionHealthPage() {
 
           {/* Workflow Adoption */}
           <div>
-            <div className="text-micro font-bold text-[#FF4D00]-dim mb-2">WORKFLOW COMPLETION RATES</div>
+            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">WORKFLOW COMPLETION RATES</div>
             {workflows.length === 0 ? (
               <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No workflow metrics recorded yet.</div>
             ) : (
@@ -214,7 +214,7 @@ export default function AdoptionHealthPage() {
         </>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Success Command Center</Link>
     </div>
   );
 }

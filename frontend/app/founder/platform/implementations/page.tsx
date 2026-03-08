@@ -29,7 +29,7 @@ const STATE_COLORS: Record<string, string> = {
   NOT_STARTED: 'text-zinc-400 bg-zinc-400/10',
   DISCOVERY: 'text-blue-400 bg-blue-400/10',
   CONFIGURATION: 'text-yellow-400 bg-yellow-400/10',
-  INTEGRATION: 'text-[#FF4D00]-400 bg-[#FF4D00]-400/10',
+    INTEGRATION: 'text-[#FF4D00] bg-[rgba(255,77,0,0.10)]',
   TESTING: 'text-purple-400 bg-purple-400/10',
   USER_ACCEPTANCE: 'text-cyan-400 bg-cyan-400/10',
   GO_LIVE_READY: 'text-green-400 bg-green-400/10',

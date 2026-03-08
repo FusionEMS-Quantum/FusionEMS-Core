@@ -77,7 +77,7 @@ export default function MarketingPageTemplate({
 
   return (
     <section className="max-w-6xl mx-auto px-6 py-16 md:py-20 space-y-8 md:space-y-10">
-      <div className={`relative overflow-hidden border border-border-default chamfer-12 p-6 md:p-8 bg-[#0A0A0B]-raised/55`}>
+      <div className={`relative overflow-hidden border border-border-default chamfer-12 p-6 md:p-8 bg-[rgba(10,10,11,0.55)]`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${style.glow} pointer-events-none`} />
         <div className="relative">
           <div className={`inline-flex items-center gap-2 px-3 py-1 chamfer-8 border ${style.border} ${style.chip}`}>

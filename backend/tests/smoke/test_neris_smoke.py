@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+# pylint: disable=attribute-defined-outside-init,protected-access
+# ruff: noqa: PLW0201,SLF001
 import os
 import uuid
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -31,7 +34,13 @@ SKIP_IF_NO_DB = pytest.mark.skipif(
 
 @SKIP_IF_NO_DB
 class TestNERISSmoke:
+    db: Any = None
+    tenant_id: uuid.UUID = uuid.UUID(int=0)
+    actor_id: uuid.UUID = uuid.UUID(int=0)
+    publisher: Any = None
+
     @pytest.fixture(autouse=True)
+    # pylint: disable=attribute-defined-outside-init
     def setup(self):
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
@@ -300,6 +309,7 @@ class TestNERISSmoke:
         assert len(WI_DSPS_GOLIVE_CHECKLIST) >= 5
 
     @pytest.mark.asyncio
+    # pylint: disable=protected-access
     async def test_10_pack_compiler_yaml_parsing(self):
         """Pack compiler parses YAML value sets correctly."""
         from core_app.neris.pack_compiler import NERISPackCompiler
@@ -317,13 +327,15 @@ values:
     display: Gamma
 """
         raw_files = {"valuesets/test_set.yaml": test_yaml}
-        vs = compiler._parse_value_sets(raw_files)
+        parse_value_sets = compiler._parse_value_sets
+        vs = parse_value_sets(raw_files)
         assert "TEST_SET" in vs
         assert len(vs["TEST_SET"]["items"]) == 3
         codes = [i["code"] for i in vs["TEST_SET"]["items"]]
         assert "A" in codes and "B" in codes and "C" in codes
 
     @pytest.mark.asyncio
+    # pylint: disable=protected-access
     async def test_11_pack_compiler_csv_parsing(self):
         """Pack compiler parses CSV value sets correctly."""
         from core_app.neris.pack_compiler import NERISPackCompiler
@@ -331,7 +343,8 @@ values:
         compiler = NERISPackCompiler(self.db, self.publisher, self.tenant_id, self.actor_id)
         test_csv = b"code,description\n100,Fire\n200,EMS\n300,Rescue\n"
         raw_files = {"valuesets/incident_types.csv": test_csv}
-        vs = compiler._parse_value_sets(raw_files)
+        parse_value_sets = compiler._parse_value_sets
+        vs = parse_value_sets(raw_files)
         assert "INCIDENT_TYPES" in vs
         assert len(vs["INCIDENT_TYPES"]["items"]) == 3
 

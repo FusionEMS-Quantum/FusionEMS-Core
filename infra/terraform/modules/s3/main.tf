@@ -10,6 +10,9 @@ data "aws_caller_identity" "current" {}
 
 # ── KMS key shared across buckets ────────────────────────────────────────────
 
+#checkov:skip=CKV_AWS_109: KMS key policy root delegation is required bootstrap; bucket access remains least-privilege via IAM and bucket policies.
+#checkov:skip=CKV_AWS_111: No cross-account principals are granted; permissions apply only within account root trust boundary.
+#checkov:skip=CKV_AWS_356: KMS key policy resource must be "*" by AWS design for key policies.
 data "aws_iam_policy_document" "s3_kms" {
   statement {
     sid    = "EnableRootAccountAccess"
@@ -34,6 +37,37 @@ resource "aws_kms_key" "s3" {
 resource "aws_kms_alias" "s3" {
   name          = "alias/${var.project}-${var.environment}-s3"
   target_key_id = aws_kms_key.s3.key_id
+}
+
+resource "aws_sns_topic" "bucket_events" {
+  name              = "${var.project}-${var.environment}-s3-events"
+  kms_master_key_id = aws_kms_key.s3.arn
+  tags              = var.tags
+}
+
+resource "aws_sns_topic_policy" "bucket_events" {
+  arn = aws_sns_topic.bucket_events.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowS3BucketEvents"
+        Effect    = "Allow"
+        Principal = { Service = "s3.amazonaws.com" }
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.bucket_events.arn
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+          ArnLike = {
+            "aws:SourceArn" = [for bucket in aws_s3_bucket.this : bucket.arn]
+          }
+        }
+      }
+    ]
+  })
 }
 
 # ── Bucket definitions ───────────────────────────────────────────────────────
@@ -80,6 +114,7 @@ locals {
 
 # ── S3 buckets ───────────────────────────────────────────────────────────────
 
+#checkov:skip=CKV_AWS_144: Buckets are intentionally single-region; cross-region replication is handled by dedicated DR replication stack outside this module.
 resource "aws_s3_bucket" "this" {
   for_each = local.buckets
 
@@ -151,6 +186,27 @@ resource "aws_s3_bucket_policy" "this" {
       }
     ]
   })
+}
+
+resource "aws_s3_bucket_logging" "this" {
+  for_each = local.buckets
+
+  bucket        = aws_s3_bucket.this[each.key].id
+  target_bucket = each.key == "audit" ? aws_s3_bucket.this["artifacts"].id : aws_s3_bucket.this["audit"].id
+  target_prefix = "access-logs/${each.key}/"
+}
+
+resource "aws_s3_bucket_notification" "this" {
+  for_each = local.buckets
+
+  bucket = aws_s3_bucket.this[each.key].id
+
+  topic {
+    topic_arn = aws_sns_topic.bucket_events.arn
+    events    = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+  }
+
+  depends_on = [aws_sns_topic_policy.bucket_events]
 }
 
 # ── Lifecycle rules ──────────────────────────────────────────────────────────

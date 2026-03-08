@@ -38,6 +38,7 @@ def test_structured_formatter_includes_correlation_id() -> None:
 
 def test_structured_formatter_includes_exception() -> None:
     formatter = StructuredJsonFormatter()
+    exc_info = None
     try:
         raise ValueError("test error")
     except ValueError:

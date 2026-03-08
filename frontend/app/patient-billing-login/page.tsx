@@ -19,7 +19,7 @@ export default function PatientBillingLoginPage() {
             'Payment plan enrollment',
             'Receipt and communication history',
           ].map((item) => (
-            <div key={item} className="border border-border-subtle bg-[#0A0A0B]-raised/45 chamfer-8 px-3 py-2 text-body text-zinc-400">
+            <div key={item} className="border border-border-subtle bg-[rgba(10,10,11,0.45)] chamfer-8 px-3 py-2 text-body text-zinc-400">
               {item}
             </div>
           ))}

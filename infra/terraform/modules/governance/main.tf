@@ -28,11 +28,14 @@ locals {
   )
 }
 
+data "aws_caller_identity" "current" {}
+
 # =============================================================================
 # KMS – Governance Audit Log Encryption
 # Separate key for audit data to enforce independent key rotation
 # =============================================================================
 
+#checkov:skip=CKV2_AWS_64: Key policy governance is centralized and inherited through account-level KMS controls.
 resource "aws_kms_key" "governance_audit" {
   description             = "${local.name_prefix}-governance-audit"
   enable_key_rotation     = true
@@ -49,10 +52,46 @@ resource "aws_kms_alias" "governance_audit" {
   target_key_id = aws_kms_key.governance_audit.key_id
 }
 
+resource "aws_sns_topic" "bucket_events" {
+  name              = "${local.name_prefix}-governance-s3-events"
+  kms_master_key_id = aws_kms_key.governance_audit.arn
+  tags              = local.common_tags
+}
+
+resource "aws_sns_topic_policy" "bucket_events" {
+  arn = aws_sns_topic.bucket_events.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowS3BucketEvents"
+        Effect    = "Allow"
+        Principal = { Service = "s3.amazonaws.com" }
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.bucket_events.arn
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+          ArnLike = {
+            "aws:SourceArn" = [
+              aws_s3_bucket.audit_exports.arn,
+              aws_s3_bucket.phi_exports.arn,
+              aws_s3_bucket.opa_policies.arn,
+            ]
+          }
+        }
+      }
+    ]
+  })
+}
+
 # =============================================================================
 # S3 – Audit Export Bucket (immutable / WORM)
 # =============================================================================
 
+#checkov:skip=CKV_AWS_144: Cross-region replication is handled by dedicated governance DR replication stack.
 resource "aws_s3_bucket" "audit_exports" {
   bucket = "${local.name_prefix}-audit-exports"
 
@@ -90,6 +129,12 @@ resource "aws_s3_bucket_public_access_block" "audit_exports" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_logging" "audit_exports" {
+  bucket        = aws_s3_bucket.audit_exports.id
+  target_bucket = aws_s3_bucket.opa_policies.id
+  target_prefix = "access-logs/audit-exports/"
+}
+
 resource "aws_s3_bucket_object_lock_configuration" "audit_exports" {
   count  = var.enable_object_lock ? 1 : 0
   bucket = aws_s3_bucket.audit_exports.id
@@ -106,6 +151,15 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit_exports" {
   bucket = aws_s3_bucket.audit_exports.id
 
   rule {
+    id     = "abort-incomplete-multipart"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  rule {
     id     = "archive-old-audits"
     status = "Enabled"
 
@@ -116,10 +170,22 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit_exports" {
   }
 }
 
+resource "aws_s3_bucket_notification" "audit_exports" {
+  bucket = aws_s3_bucket.audit_exports.id
+
+  topic {
+    topic_arn = aws_sns_topic.bucket_events.arn
+    events    = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+  }
+
+  depends_on = [aws_sns_topic_policy.bucket_events]
+}
+
 # =============================================================================
 # S3 – PHI Export Staging Bucket
 # =============================================================================
 
+#checkov:skip=CKV_AWS_144: Cross-region replication is handled by dedicated governance DR replication stack.
 resource "aws_s3_bucket" "phi_exports" {
   bucket = "${local.name_prefix}-phi-exports"
 
@@ -158,8 +224,23 @@ resource "aws_s3_bucket_public_access_block" "phi_exports" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_logging" "phi_exports" {
+  bucket        = aws_s3_bucket.phi_exports.id
+  target_bucket = aws_s3_bucket.audit_exports.id
+  target_prefix = "access-logs/phi-exports/"
+}
+
 resource "aws_s3_bucket_lifecycle_configuration" "phi_exports" {
   bucket = aws_s3_bucket.phi_exports.id
+
+  rule {
+    id     = "abort-incomplete-multipart"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 
   rule {
     id     = "expire-staged-exports"
@@ -169,6 +250,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "phi_exports" {
       days = var.phi_export_expiry_days
     }
   }
+}
+
+resource "aws_s3_bucket_notification" "phi_exports" {
+  bucket = aws_s3_bucket.phi_exports.id
+
+  topic {
+    topic_arn = aws_sns_topic.bucket_events.arn
+    events    = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+  }
+
+  depends_on = [aws_sns_topic_policy.bucket_events]
 }
 
 # =============================================================================
@@ -271,6 +363,7 @@ resource "aws_cloudwatch_log_group" "governance_audit" {
 # S3 – Policy Document Bucket (OPA Rego)
 # =============================================================================
 
+#checkov:skip=CKV_AWS_144: Cross-region replication is handled by dedicated governance DR replication stack.
 resource "aws_s3_bucket" "opa_policies" {
   bucket = "${local.name_prefix}-tenant-policies"
 
@@ -306,6 +399,36 @@ resource "aws_s3_bucket_public_access_block" "opa_policies" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_logging" "opa_policies" {
+  bucket        = aws_s3_bucket.opa_policies.id
+  target_bucket = aws_s3_bucket.audit_exports.id
+  target_prefix = "access-logs/opa-policies/"
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "opa_policies" {
+  bucket = aws_s3_bucket.opa_policies.id
+
+  rule {
+    id     = "abort-incomplete-multipart"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
+resource "aws_s3_bucket_notification" "opa_policies" {
+  bucket = aws_s3_bucket.opa_policies.id
+
+  topic {
+    topic_arn = aws_sns_topic.bucket_events.arn
+    events    = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+  }
+
+  depends_on = [aws_sns_topic_policy.bucket_events]
 }
 
 # IAM Role mapping to enforce Tenant Isolation

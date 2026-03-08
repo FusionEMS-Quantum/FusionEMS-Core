@@ -8,7 +8,7 @@ function PageHeader() {
     <div className="hud-rail pb-3 mb-6">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">
+            <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
             CATEGORY 2 · MODULES C2.1–100
           </div>
           <h1 className="text-lg font-black uppercase tracking-wider text-zinc-100">AI Voice, Phone Tree, Ringing & Alerting System</h1>
@@ -57,7 +57,7 @@ function CallQueueRow({ position, caller, intent, wait, score, aiCanResolve }: {
   const scoreColor = score >= 80 ? 'var(--color-brand-red)' : score >= 50 ? 'var(--color-status-warning)' : 'var(--color-status-active)';
   return (
     <tr>
-      <td className="py-2 pr-3 text-micro font-bold font-mono text-[#FF4D00]-dim">{position}</td>
+        <td className="py-2 pr-3 text-micro font-bold font-mono text-orange-dim">{position}</td>
       <td className="py-2 pr-3 text-xs text-zinc-100">{caller}</td>
       <td className="py-2 pr-3">
         <span className="text-micro uppercase tracking-wider px-1.5 py-0.5 bg-zinc-950/5 text-zinc-400 chamfer-4">{intent}</span>
@@ -359,7 +359,7 @@ export default function PhoneSystemPage() {
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-micro font-bold uppercase tracking-widest text-zinc-500">MODULE 3 · Billing Call Script Flow (Preview)</span>
-              <button className="h-6 px-2.5 bg-[#FF4D00]-ghost border border-brand-orange/[0.25] text-[#FF4D00] text-micro font-semibold chamfer-4 hover:bg-brand-orange/[0.2] transition-colors">
+                <button className="h-6 px-2.5 bg-orange-ghost border border-brand-orange/[0.25] text-[#FF4D00] text-micro font-semibold chamfer-4 hover:bg-brand-orange/[0.2] transition-colors">
                 Open Flow Builder
               </button>
             </div>
@@ -495,7 +495,7 @@ export default function PhoneSystemPage() {
                 <div className="space-y-2">
                   <div className="text-body text-zinc-400 leading-relaxed">{m.desc}</div>
                   <div className="flex gap-2">
-                    <button className="h-6 px-2.5 bg-[#FF4D00]-ghost border border-brand-orange/[0.25] text-[#FF4D00] text-micro font-semibold chamfer-4 hover:bg-brand-orange/[0.2] transition-colors">
+                      <button className="h-6 px-2.5 bg-orange-ghost border border-brand-orange/[0.25] text-[#FF4D00] text-micro font-semibold chamfer-4 hover:bg-brand-orange/[0.2] transition-colors">
                       Configure
                     </button>
                     <button className="h-6 px-2.5 bg-zinc-950/5 border border-border-DEFAULT text-zinc-400 text-micro chamfer-4 hover:text-zinc-100 transition-colors">

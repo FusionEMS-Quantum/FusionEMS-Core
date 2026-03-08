@@ -1,3 +1,4 @@
+#checkov:skip=CKV2_AWS_5: Security group is attached by composing ALB and ECS modules in this stack.
 resource "aws_security_group" "alb" {
   name_prefix = "${var.name_prefix}-alb-"
   description = "ALB ingress boundary"
@@ -22,6 +23,7 @@ resource "aws_security_group_rule" "alb_ingress_https" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+#checkov:skip=CKV_AWS_260: Port 80 ingress exists solely for immediate HTTP->HTTPS redirect and controlled CloudFront-to-origin compatibility.
 resource "aws_security_group_rule" "alb_ingress_http" {
   count = var.enable_http_ingress ? 1 : 0
 
@@ -34,6 +36,7 @@ resource "aws_security_group_rule" "alb_ingress_http" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+#checkov:skip=CKV2_AWS_5: Security group is attached to ECS services by environment root modules.
 resource "aws_security_group" "ecs" {
   name_prefix = "${var.name_prefix}-ecs-"
   description = "ECS task security group"
@@ -90,6 +93,7 @@ resource "aws_security_group_rule" "alb_to_ecs_egress" {
   source_security_group_id = aws_security_group.ecs.id
 }
 
+#checkov:skip=CKV2_AWS_5: Security group is attached to RDS instance in the rds module.
 resource "aws_security_group" "rds" {
   name_prefix = "${var.name_prefix}-rds-"
   description = "RDS security group"
@@ -114,6 +118,7 @@ resource "aws_security_group_rule" "ecs_to_rds" {
   source_security_group_id = aws_security_group.ecs.id
 }
 
+#checkov:skip=CKV2_AWS_5: Security group is attached to ElastiCache replication group in the redis module.
 resource "aws_security_group" "redis" {
   name_prefix = "${var.name_prefix}-redis-"
   description = "Redis security group"

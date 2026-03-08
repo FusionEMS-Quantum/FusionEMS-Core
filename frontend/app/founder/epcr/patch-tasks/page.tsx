@@ -17,7 +17,7 @@ interface PatchTask {
 
 const FIX_TYPE_COLORS: Record<string, string> = {
   exporter_bug: 'bg-red-900 text-red-300',
-  mapping_bug: 'bg-[#FF4D00]-900 text-[#FF4D00]-300',
+  mapping_bug: 'bg-[rgba(255,77,0,0.2)] text-[#FF4D00]',
   ui_rule: 'bg-blue-900 text-blue-300',
   code_list: 'bg-purple-900 text-purple-300',
   schema_rule: 'bg-yellow-900 text-yellow-300',

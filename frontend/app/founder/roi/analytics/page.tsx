@@ -1,13 +1,17 @@
 'use client';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useMemo, useState, type ReactNode } from 'react';
+import { NextBestActionCard, type NextAction } from '@/components/ui/NextBestActionCard';
+import { SeverityBadge } from '@/components/ui/SeverityBadge';
+import { DomainNavCard, FounderStatusBar } from '@/components/shells/FounderCommand';
+import type { SeverityLevel } from '@/lib/design-system/tokens';
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+          <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
         {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
@@ -28,7 +32,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
   );
 }
 
-function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
       className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
@@ -108,6 +112,53 @@ export default function ROIAnalyticsPage() {
   const [calcVolume, setCalcVolume] = useState(200);
   const [calcRate, setCalcRate] = useState(650);
 
+  const totalMrr = useMemo(() => AGENCIES.reduce((sum, agency) => sum + agency.mrr, 0), []);
+  const mediumRiskAccounts = useMemo(() => CHURN_RISK.filter((risk) => risk.score < 80).length, []);
+  const noCoverageStates = useMemo(() => REGIONAL.filter((state) => state.agencies === 0).length, []);
+  const acceptanceRate = 66.7;
+  const analyticsSeverity: SeverityLevel = mediumRiskAccounts > 0 || noCoverageStates > 0 ? 'HIGH' : 'LOW';
+
+  const analyticsActions: NextAction[] = useMemo(() => {
+    const actions: NextAction[] = [
+      {
+        id: 'roi-analytics-funnel-review',
+        title: 'Review funnel velocity for stalled conversion stages.',
+        severity: 'MEDIUM',
+        domain: 'ROI Funnel',
+        href: '/founder/roi/funnel',
+      },
+      {
+        id: 'roi-analytics-pricing-validate',
+        title: 'Validate pricing assumptions against current payer mix and reimbursement rates.',
+        severity: 'MEDIUM',
+        domain: 'Pricing Simulator',
+        href: '/founder/roi/pricing-simulator',
+      },
+    ];
+
+    if (mediumRiskAccounts > 0) {
+      actions.unshift({
+        id: 'roi-analytics-churn-mitigation',
+        title: `Intervene on ${mediumRiskAccounts} medium-risk account(s) before renewal drift expands.`,
+        severity: 'HIGH',
+        domain: 'Customer Retention',
+        href: '/founder/roi/proposals',
+      });
+    }
+
+    if (noCoverageStates > 0) {
+      actions.push({
+        id: 'roi-analytics-expansion-targets',
+        title: `Prioritize ${noCoverageStates} uncovered state market(s) for pipeline generation.`,
+        severity: 'MEDIUM',
+        domain: 'Regional Expansion',
+        href: '/founder/roi/proposals',
+      });
+    }
+
+    return actions;
+  }, [mediumRiskAccounts, noCoverageStates]);
+
   const grossRev = calcVolume * calcRate * 0.72;
   const fusionFee = 1200 + calcVolume * 6;
   const competitorFee = grossRev * 0.08;
@@ -121,6 +172,8 @@ export default function ROIAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+      <FounderStatusBar isLive activeIncidents={mediumRiskAccounts + noCoverageStates} />
+
       {/* Page Header */}
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
@@ -130,20 +183,48 @@ export default function ROIAnalyticsPage() {
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>ROI Calculator Analytics</h1>
             <p className="text-xs text-zinc-500 mt-1">Conversion funnel · proposal acceptance rate · regional revenue heatmap</p>
+            <div className="mt-2">
+              <SeverityBadge severity={analyticsSeverity} size="sm" />
+            </div>
           </div>
-          <Link href="/founder" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
-            ← Back to Founder OS
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
+              ← Back to ROI Command
+            </Link>
+            <Link href="/founder" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
+              Founder OS
+            </Link>
+          </div>
         </div>
+      </div>
+
+      <NextBestActionCard actions={analyticsActions} title="ROI Analytics Next Best Actions" maxVisible={4} />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <DomainNavCard
+          domain="billing"
+          href="/founder/revenue/billing-intelligence"
+          description="Validate modeled ROI against live reimbursement and denial posture."
+        />
+        <DomainNavCard
+          domain="ops"
+          href="/founder/ops/command"
+          description="Ensure growth assumptions map to operational capacity and deployment stability."
+        />
+        <DomainNavCard
+          domain="ai"
+          href="/founder/ai/review-queue"
+          description="Use AI review queues to accelerate pricing and expansion decision cycles."
+        />
       </div>
 
       {/* MODULE 1 — Revenue KPIs */}
       <div className="grid grid-cols-5 gap-3">
-        <StatCard label="MRR" value="$4,320" color="var(--color-status-info)" />
-        <StatCard label="ARR" value="$51,840" color="var(--color-status-info)" />
+        <StatCard label="MRR" value={`$${totalMrr.toLocaleString()}`} color="var(--color-status-info)" />
+        <StatCard label="ARR" value={`$${(totalMrr * 12).toLocaleString()}`} color="var(--color-status-info)" />
         <StatCard label="Active Agencies" value={4} color="var(--color-text-primary)" />
         <StatCard label="Avg Rev/Agency" value="$1,080/mo" color="var(--color-text-primary)" />
-        <StatCard label="MRR Growth (30d)" value="+$1,440" color="var(--color-status-active)" sub="vs prior 30d" />
+        <StatCard label="Acceptance Rate" value={`${acceptanceRate.toFixed(1)}%`} color="var(--color-status-active)" sub="Proposal conversion signal" />
       </div>
 
       {/* MODULE 2 — Agency Revenue Breakdown */}

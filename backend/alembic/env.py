@@ -1,3 +1,6 @@
+# pylint: disable=no-member,unused-import
+# pyright: reportAttributeAccessIssue=false, reportUnusedImport=false
+
 from __future__ import annotations
 
 import sys

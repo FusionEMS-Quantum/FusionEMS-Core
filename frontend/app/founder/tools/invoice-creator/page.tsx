@@ -3,13 +3,37 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
+const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+
+type InvoiceItem = {
+  id: string;
+  invoice_number: string;
+  client: string;
+  total_cents: number;
+  invoice_date: string;
+  due_date: string;
+  status: string;
+  reminder_count: number;
+};
+
+type InvoiceSummary = {
+  invoices_this_month: number;
+  total_invoiced_cents: number;
+  total_paid_cents: number;
+  paid_count: number;
+  outstanding_count: number;
+};
+
+type InvoiceResponse = {
+  summary: InvoiceSummary;
+  invoices: InvoiceItem[];
+};
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]-dim font-mono">MODULE {number}</span>
+        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
         <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
         {sub && <span className="text-xs text-zinc-500">{sub}</span>}
       </div>
@@ -42,7 +66,16 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
 }
 
 export default function InvoiceCreatorPage() {
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
+  const [summary, setSummary] = useState<InvoiceSummary>({
+    invoices_this_month: 0,
+    total_invoiced_cents: 0,
+    total_paid_cents: 0,
+    paid_count: 0,
+    outstanding_count: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [invoiceForm, setInvoiceForm] = useState({
     client: '',
     invoiceDate: new Date().toISOString().split('T')[0],
@@ -62,42 +95,124 @@ export default function InvoiceCreatorPage() {
 
   const subtotal = lineItems.reduce((s, l) => s + l.amount, 0);
 
+  const authHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return headers;
+  };
+
+  const loadInvoices = async () => {
+    const res = await fetch(`${API}/api/v1/founder/business/invoices?limit=500`, {
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to load invoices (${res.status})`);
+    }
+    const payload = (await res.json()) as InvoiceResponse;
+    setInvoices(payload.invoices ?? []);
+    setSummary(payload.summary ?? summary);
+  };
+
+  const loadSettings = async () => {
+    const res = await fetch(`${API}/api/v1/founder/business/invoice-settings`, {
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      return;
+    }
+    const payload = await res.json();
+    setSettings({
+      company: payload.company ?? settings.company,
+      address: payload.address ?? settings.address,
+      terms: payload.terms ?? settings.terms,
+      lateFee: payload.lateFee ?? settings.lateFee,
+    });
+  };
+
   function addLineItem() {
     setLineItems([...lineItems, { desc: '', amount: 0 }]);
   }
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
-    fetch(`${API}/api/v1/ar/accounts`, { headers })
-      .then(res => {
-        if (!res.ok) throw new Error('API Error');
-        return res.json();
+    Promise.all([loadInvoices(), loadSettings()])
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : 'Unable to load invoice data');
       })
-      .then(data => {
-        if (Array.isArray(data)) {
-          const formatted = data.map((d: any) => ({
-            num: d.id.substring(0, 8).toUpperCase(),
-            client: d.data?.patient_ref?.name || 'Unknown',
-            amount: `$${((d.data?.balance_cents || 0) / 100).toFixed(2)}`,
-            date: d.created_at?.substring(0, 10) || 'N/A',
-            due: d.data?.next_statement_at?.substring(0, 10) || 'N/A',
-            status: d.data?.status === 'current' ? 'Paid' : 'Outstanding',
-          }));
-          setInvoices(formatted);
-        }
-      })
-      .catch((_e) => setInvoices([]));
+      .finally(() => setLoading(false));
   }, []);
 
-  const OUTSTANDING = invoices.filter((inv) => inv.status === 'Outstanding');
+  const OUTSTANDING = invoices.filter((inv) => inv.status === 'outstanding' || inv.status === 'overdue');
+
+  const createInvoice = async () => {
+    if (!invoiceForm.client.trim()) {
+      setError('Client is required before generating an invoice.');
+      return;
+    }
+
+    const res = await fetch(`${API}/api/v1/founder/business/invoices`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        client: invoiceForm.client,
+        invoice_date: invoiceForm.invoiceDate,
+        due_date: invoiceForm.dueDate,
+        description: invoiceForm.description,
+        line_items: lineItems.map((item) => ({
+          desc: item.desc || 'Line item',
+          amount_cents: Math.max(0, Math.round(item.amount * 100)),
+        })),
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`Unable to create invoice (${res.status})`);
+    }
+
+    setInvoiceForm((prev) => ({ ...prev, client: '', description: '' }));
+    await loadInvoices();
+  };
+
+  const sendReminder = async (invoiceId: string) => {
+    const res = await fetch(`${API}/api/v1/founder/business/invoices/${invoiceId}/send-reminder`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ channel: 'email' }),
+    });
+    if (!res.ok) {
+      throw new Error(`Reminder failed (${res.status})`);
+    }
+    await loadInvoices();
+  };
+
+  const markPaid = async (invoiceId: string) => {
+    const res = await fetch(`${API}/api/v1/founder/business/invoices/${invoiceId}/mark-paid`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      throw new Error(`Mark-paid failed (${res.status})`);
+    }
+    await loadInvoices();
+  };
+
+  const saveSettings = async () => {
+    const res = await fetch(`${API}/api/v1/founder/business/invoice-settings`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(settings),
+    });
+    if (!res.ok) {
+      throw new Error(`Settings save failed (${res.status})`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-[#FF4D00]-dim font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[#FF4D00]/70 font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
           <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
@@ -113,10 +228,10 @@ export default function InvoiceCreatorPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Invoices This Month', value: String(invoices.length), status: 'info' as const },
-            { label: 'Total Invoiced', value: '-', status: 'info' as const },
-            { label: 'Paid', value: String(invoices.filter(i => i.status === 'Paid').length), status: 'ok' as const },
-            { label: 'Outstanding', value: String(OUTSTANDING.length), status: 'warn' as const },
+            { label: 'Invoices This Month', value: String(summary.invoices_this_month), status: 'info' as const },
+            { label: 'Total Invoiced', value: `$${(summary.total_invoiced_cents / 100).toLocaleString()}`, status: 'info' as const },
+            { label: 'Paid', value: String(summary.paid_count), status: 'ok' as const },
+            { label: 'Outstanding', value: String(summary.outstanding_count), status: 'warn' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
               <span className="text-micro text-zinc-500 uppercase tracking-wider">{s.label}</span>
@@ -232,6 +347,11 @@ export default function InvoiceCreatorPage() {
           <button
             className="px-5 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
             style={{ background: '#FF4D00', color: '#000' }}
+            onClick={() => {
+              createInvoice().catch((e: unknown) => {
+                setError(e instanceof Error ? e.message : 'Failed to create invoice');
+              });
+            }}
           >
             Generate Invoice
           </button>
@@ -256,15 +376,18 @@ export default function InvoiceCreatorPage() {
                 {invoices.length === 0 ? (
                   <tr><td colSpan={6} className="text-center py-4 text-zinc-500">No invoices generated yet.</td></tr>
                 ) : (
-                  invoices.map((inv, i) => (
-                    <tr key={i} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
-                      <td className="py-2 px-2 font-mono text-brand-orange text-body">{inv.num}</td>
+                  invoices.map((inv) => (
+                    <tr key={inv.id} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
+                      <td className="py-2 px-2 font-mono text-brand-orange text-body">{inv.invoice_number || inv.id.slice(0, 8).toUpperCase()}</td>
                       <td className="py-2 px-2 text-zinc-100">{inv.client}</td>
-                      <td className="py-2 px-2 font-mono text-zinc-100 font-semibold">{inv.amount}</td>
-                      <td className="py-2 px-2 text-zinc-500">{inv.date}</td>
-                      <td className="py-2 px-2 text-zinc-500">{inv.due}</td>
+                      <td className="py-2 px-2 font-mono text-zinc-100 font-semibold">${(inv.total_cents / 100).toLocaleString()}</td>
+                      <td className="py-2 px-2 text-zinc-500">{inv.invoice_date?.slice(0, 10) || '—'}</td>
+                      <td className="py-2 px-2 text-zinc-500">{inv.due_date?.slice(0, 10) || '—'}</td>
                       <td className="py-2 px-2">
-                        <Badge label={inv.status} status={inv.status === 'Paid' ? 'ok' : 'warn'} />
+                        <Badge
+                          label={inv.status}
+                          status={inv.status === 'paid' ? 'ok' : inv.status === 'overdue' ? 'error' : 'warn'}
+                        />
                       </td>
                     </tr>
                   ))
@@ -280,25 +403,43 @@ export default function InvoiceCreatorPage() {
           <SectionHeader number="4" title="Payment Tracking" sub="outstanding invoices" />
           <div className="space-y-3">
             {OUTSTANDING.length === 0 && <p className="text-xs text-zinc-500">No outstanding invoices.</p>}
-            {OUTSTANDING.map((inv, i) => (
-              <div key={i} className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
+            {OUTSTANDING.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-zinc-100">{inv.num}</span>
+                    <span className="text-xs font-semibold text-zinc-100">{inv.invoice_number || inv.id.slice(0, 8).toUpperCase()}</span>
                     <span className="text-micro text-zinc-500">{inv.client}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
-                    <span className="font-mono text-sm font-bold text-status-warning">{inv.amount}</span>
-                    <span className="text-micro text-zinc-500">Due {inv.due}</span>
+                    <span className="font-mono text-sm font-bold text-status-warning">${(inv.total_cents / 100).toLocaleString()}</span>
+                    <span className="text-micro text-zinc-500">Due {inv.due_date?.slice(0, 10) || '—'}</span>
                     <Badge label="Needs Attention" status="warn" />
                   </div>
                 </div>
-                <button
-                  className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
-                  style={{ background: 'rgba(255,152,0,0.15)', color: 'var(--q-yellow)', border: '1px solid rgba(255,152,0,0.35)' }}
-                >
-                  Send Reminder
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
+                    style={{ background: 'rgba(255,152,0,0.15)', color: 'var(--q-yellow)', border: '1px solid rgba(255,152,0,0.35)' }}
+                    onClick={() => {
+                      sendReminder(inv.id).catch((e: unknown) => {
+                        setError(e instanceof Error ? e.message : 'Reminder failed');
+                      });
+                    }}
+                  >
+                    Send Reminder
+                  </button>
+                  <button
+                    className="text-micro font-bold px-3 py-1.5 chamfer-4 uppercase tracking-wider transition-all hover:brightness-110"
+                    style={{ background: 'rgba(76,175,80,0.15)', color: 'var(--q-green)', border: '1px solid rgba(76,175,80,0.35)' }}
+                    onClick={() => {
+                      markPaid(inv.id).catch((e: unknown) => {
+                        setError(e instanceof Error ? e.message : 'Unable to mark paid');
+                      });
+                    }}
+                  >
+                    Mark Paid
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -330,12 +471,25 @@ export default function InvoiceCreatorPage() {
             <button
               className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
               style={{ background: '#FF4D00', color: '#000' }}
+              onClick={() => {
+                saveSettings().catch((e: unknown) => {
+                  setError(e instanceof Error ? e.message : 'Failed to save settings');
+                });
+              }}
             >
               Save Settings
             </button>
           </div>
         </Panel>
       </motion.div>
+
+      {(loading || error) && (
+        <Panel>
+          <div className="text-xs text-zinc-500">
+            {loading ? 'Synchronizing invoices and settings...' : error}
+          </div>
+        </Panel>
+      )}
 
       <div className="pt-2">
         <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">

@@ -1,4 +1,4 @@
-FROM node:22-alpine AS deps
+FROM node:22-alpine3.22 AS deps
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 
-FROM node:22-alpine AS builder
+FROM node:22-alpine3.22 AS builder
 
 WORKDIR /app
 
@@ -18,12 +18,16 @@ RUN apk add --no-cache libc6-compat
 ARG NEXT_PUBLIC_API_BASE
 ARG NEXT_PUBLIC_WS_URL
 ARG NEXT_PUBLIC_ROOT_DOMAIN
+ARG NEXT_PUBLIC_BILLING_PHONE
+ARG NEXT_PUBLIC_CNAM_DISPLAY_NAME
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 ENV NEXT_PUBLIC_ROOT_DOMAIN=$NEXT_PUBLIC_ROOT_DOMAIN
+ENV NEXT_PUBLIC_BILLING_PHONE=$NEXT_PUBLIC_BILLING_PHONE
+ENV NEXT_PUBLIC_CNAM_DISPLAY_NAME=$NEXT_PUBLIC_CNAM_DISPLAY_NAME
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -31,7 +35,7 @@ COPY . .
 RUN npm run build
 
 
-FROM node:22-alpine AS runner
+FROM node:22-alpine3.22 AS runner
 
 WORKDIR /app
 

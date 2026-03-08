@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { href: '/portal/staff', label: 'Personnel' },
   { href: '/portal/hems', label: 'HEMS Pilot' },
   { href: '/portal/kitlink', label: 'KitLink AR' },
+  { href: '/portal/dea-cms', label: 'DEA / CMS Command' },
 ];
 
 const ADMIN_LINKS = [

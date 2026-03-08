@@ -34,10 +34,10 @@ export default function TransportWorkflowPage({
 }: TransportWorkflowPageProps) {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <div className="border border-border-default bg-[#0A0A0B]-raised/60 chamfer-12 p-6 relative overflow-hidden">
+      <div className="border border-border-default bg-[rgba(10,10,11,0.6)] chamfer-12 p-6 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-orange/15 via-orange/5 to-transparent" />
         <div className="relative">
-          <Link href={backHref} className="text-body text-[#FF4D00]-400 hover:text-[#FF4D00]-300 mb-2 inline-block">
+          <Link href={backHref} className="text-body text-[#FF4D00] hover:text-[#FF4D00] mb-2 inline-block">
             ← {backLabel}
           </Link>
           <div className="text-micro uppercase tracking-[0.16em] text-brand-orange-bright">{eyebrow}</div>

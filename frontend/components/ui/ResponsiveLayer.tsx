@@ -162,7 +162,7 @@ export function DensitySelector({ className }: DensitySelectorProps) {
           className={cn(
             'px-2 py-1 text-micro font-label uppercase tracking-wider chamfer-4 transition-colors duration-fast',
             density === mode.id
-              ? 'bg-[#FF4D00]-ghost text-[#FF4D00]'
+              ? 'bg-[rgba(255,77,0,0.12)] text-[#FF4D00]'
               : 'text-zinc-500 hover:text-zinc-400'
           )}
           title={mode.label}
@@ -217,7 +217,7 @@ export function WidescreenSplit({
           onClick={() => setShowSecondary(false)}
           className={cn(
             'px-3 py-1.5 text-label font-label uppercase tracking-wider chamfer-4 transition-colors duration-fast',
-            !showSecondary ? 'bg-[#FF4D00]-ghost text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-400'
+            !showSecondary ? 'bg-[rgba(255,77,0,0.12)] text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-400'
           )}
           type="button"
         >
@@ -227,7 +227,7 @@ export function WidescreenSplit({
           onClick={() => setShowSecondary(true)}
           className={cn(
             'px-3 py-1.5 text-label font-label uppercase tracking-wider chamfer-4 transition-colors duration-fast',
-            showSecondary ? 'bg-[#FF4D00]-ghost text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-400'
+            showSecondary ? 'bg-[rgba(255,77,0,0.12)] text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-400'
           )}
           type="button"
         >
@@ -263,7 +263,7 @@ export function TouchSafeButton({
   type = 'button',
 }: TouchSafeButtonProps) {
   const variantStyles = {
-    primary: 'bg-[#FF4D00] text-black hover:bg-[#FF4D00]-bright',
+    primary: 'bg-[#FF4D00] text-black hover:bg-[#E64500]',
     secondary: 'bg-[#0A0A0B] text-zinc-100 border border-[var(--color-border-default)] hover:bg-bg-overlay',
     danger: 'bg-red text-white hover:bg-red-bright',
     ghost: 'text-zinc-500 hover:text-zinc-100 hover:bg-bg-overlay',

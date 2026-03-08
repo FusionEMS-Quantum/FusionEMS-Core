@@ -58,7 +58,7 @@ variable "enable_waf" {
 variable "log_retention_days" {
   description = "CloudWatch log group retention in days"
   type        = number
-  default     = 30
+  default     = 365
 }
 
 variable "tags" {

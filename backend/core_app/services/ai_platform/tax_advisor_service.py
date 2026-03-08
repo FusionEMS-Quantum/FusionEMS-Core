@@ -1,6 +1,10 @@
 import datetime
+import os
 import uuid
 from typing import Any
+
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 
 from core_app.models.founder_tax import FounderExpense, TaxDocumentType, TaxEntityBucket
 
@@ -13,6 +17,15 @@ class S3DocumentVaultService:
     """
     def __init__(self, bucket_name: str = "fusionems-tax-vault-prod"):
         self.bucket_name = bucket_name
+        self._s3_client: Any | None = None
+
+    def _client(self) -> Any:
+        if self._s3_client is None:
+            self._s3_client = boto3.client(
+                "s3",
+                region_name=os.getenv("AWS_REGION", "us-east-1"),
+            )
+        return self._s3_client
 
     def generate_presigned_upload_url(
         self,
@@ -33,24 +46,40 @@ class S3DocumentVaultService:
         s3_prefix = f"{entity_bucket.value}/{tax_year}/{doc_type.value}/"
         s3_key = f"{s3_prefix}{uuid.uuid4()}_{file_name}"
 
+        try:
+            presigned_post = self._client().generate_presigned_post(
+                Bucket=self.bucket_name,
+                Key=s3_key,
+                Fields={
+                    "x-amz-server-side-encryption": "aws:kms",
+                },
+                Conditions=[
+                    {"x-amz-server-side-encryption": "aws:kms"},
+                ],
+                ExpiresIn=900,
+            )
+        except (BotoCoreError, ClientError, NoCredentialsError) as exc:
+            raise RuntimeError("Unable to generate secure S3 upload URL") from exc
+
         return {
-            "upload_url": f"https://{self.bucket_name}.s3.amazonaws.com",
+            "upload_url": presigned_post.get("url", f"https://{self.bucket_name}.s3.amazonaws.com"),
             "s3_key": s3_key,
             "organized_path": s3_prefix,
-            "fields": {
-                "key": s3_key,
-                "AWSAccessKeyId": "AKIA_MOCK_AWS",
-                "x-amz-server-side-encryption": "aws:kms",  # Force KMS encryption
-                "policy": "mock_base64_policy",
-                "signature": "mock_signature"
-            }
+            "fields": presigned_post.get("fields", {"key": s3_key}),
         }
 
     def generate_presigned_download_url(self, s3_key: str) -> str:
         """
         Retrieves securely isolated documents from AWS S3.
         """
-        return f"https://{self.bucket_name}.s3.amazonaws.com/{s3_key}?signature=valid_for_15m"
+        try:
+            return self._client().generate_presigned_url(
+                ClientMethod="get_object",
+                Params={"Bucket": self.bucket_name, "Key": s3_key},
+                ExpiresIn=900,
+            )
+        except (BotoCoreError, ClientError, NoCredentialsError) as exc:
+            raise RuntimeError("Unable to generate secure S3 download URL") from exc
 
 
 class AIReceiptTaxAdvisor:
@@ -140,14 +169,47 @@ class AIReceiptTaxAdvisor:
 
     async def generate_tax_forecast(self, expenses_ytd: list[FounderExpense]) -> dict[str, Any]:
         """
-        Calculates quarterly estimated tax liability for Federal and State (Wisconsin) based off the ledger.
+        Calculates quarterly estimated tax liability for Federal and State (Wisconsin)
+        based on actual YTD expenses in the ledger.
+
+        In the pre-revenue phase, net income = 0, so no estimated payments are due.
+        Federal and Wisconsin liability will become non-zero once annual revenue data
+        is available (net_income = gross_revenue - total_deductible_expenses).
         """
-        # Analyze YTD vs Q1/Q2/Q3/Q4 thresholds
+        total_ytd = sum(e.total_amount for e in expenses_ytd)
+        sec195_costs = sum(
+            e.total_amount for e in expenses_ytd if e.is_startup_expense_sec195
+        )
+        ongoing_costs = total_ytd - sec195_costs
+
+        # Sec 195: deduct up to $5,000 immediately in year of first revenue;
+        # excess amortised over 180 months.
+        sec195_immediate_deduction = min(sec195_costs, 5_000.0)
+        sec195_amortised_monthly = (
+            (sec195_costs - sec195_immediate_deduction) / 180.0
+            if sec195_costs > 5_000.0
+            else 0.0
+        )
+
+        # Pre-revenue: estimated payments are $0 (no taxable income yet).
+        # Replace with: (gross_revenue - total_deductible) * effective_rate
+        # once revenue is tracked in the ledger.
         return {
-            "estimated_federal_liability_q1": 4500.00,
-            "estimated_wisconsin_liability_q1": 850.00,
+            "total_ytd_expenses": round(total_ytd, 2),
+            "sec195_startup_costs": round(sec195_costs, 2),
+            "sec195_immediate_deduction_available": round(sec195_immediate_deduction, 2),
+            "sec195_monthly_amortisation": round(sec195_amortised_monthly, 2),
+            "ongoing_business_expenses": round(ongoing_costs, 2),
+            "estimated_federal_liability_q1": 0.0,
+            "estimated_wisconsin_liability_q1": 0.0,
+            "liability_note": (
+                "No estimated payments due in the pre-revenue phase. "
+                "Federal (~22% effective) and Wisconsin (~7.65%) liability will be "
+                "computed once gross revenue exceeds the safe-harbor threshold."
+            ),
             "suggested_actions": [
                 "Establish a SEP IRA to shield up to 25% of net self-employment earnings.",
-                "Log your vehicle mileage from the house to client meetings; standard IRS mileage rate is advantageous."
-            ]
+                "Log your vehicle mileage from the house to client meetings; "
+                "standard IRS mileage rate is advantageous.",
+            ],
         }

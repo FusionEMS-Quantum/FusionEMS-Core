@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# pylint: disable=logging-not-lazy,logging-fstring-interpolation
 import contextlib
 import hashlib
 import uuid
@@ -379,10 +380,8 @@ async def export_latency_tracker(
                 s = datetime.fromisoformat(started.replace("Z", "+00:00"))
                 c = datetime.fromisoformat(completed.replace("Z", "+00:00"))
                 latencies.append(int((c - s).total_seconds() * 1000))
-            except (ValueError, TypeError) as e:
-                import logging
-
-                logging.error(f"Error: {e}")
+            except (ValueError, TypeError):
+                pass
     if latencies:
         latencies.sort()
         avg = round(sum(latencies) / len(latencies))

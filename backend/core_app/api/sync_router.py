@@ -36,7 +36,7 @@ async def sync_push(
     """
     Offline-First Sync Endpoint.
     """
-    logger.info(f"Sync Push from user {current.id}")
+    logger.info("Sync Push from user %s", current.user_id)
 
     # 1. Process Trips (Incidents)
     trips_created = packet.changes.get("trips", {}).get("created", [])
@@ -45,7 +45,7 @@ async def sync_push(
             # Idempotency check
             existing = db.query(Incident).filter(Incident.id == trip_data.get("id")).first()
             if existing:
-                logger.info(f"Sync duplicate skipped: Incident {trip_data.get('id')}")
+                logger.info("Sync duplicate skipped: Incident %s", trip_data.get("id"))
                 continue
 
             new_incident = Incident(
@@ -65,10 +65,10 @@ async def sync_push(
             )
 
         except Exception as e:
-            logger.error(f"Failed to sync incident {trip_data.get('id')}: {e}")
+            logger.error("Failed to sync incident %s: %s", trip_data.get("id"), e)
             # Continue processing others? or Fail?
             # Offline sync should probably be partial success allowed or strict. Strict for now.
-            raise HTTPException(status_code=400, detail=f"Sync failed for incident: {e}")
+            raise HTTPException(status_code=400, detail=f"Sync failed for incident: {e}") from e
 
     # 2. Process Fatigue Logs
     fatigue_created = packet.changes.get("fatigue_logs", {}).get("created", [])
@@ -84,7 +84,7 @@ async def sync_push(
             )
             db.add(new_log)
         except Exception as e:
-            logger.error(f"Failed to sync fatigue log: {e}")
+            logger.error("Failed to sync fatigue log: %s", e)
 
     db.commit()
     return {"status": "ok", "synced_at": datetime.utcnow().isoformat()}

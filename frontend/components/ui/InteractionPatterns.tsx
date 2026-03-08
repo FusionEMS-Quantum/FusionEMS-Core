@@ -161,7 +161,7 @@ export function TabBar({
               <span
                 className={cn(
                   'text-micro px-1.5 py-0.5 ',
-                  isActive ? 'bg-[#FF4D00]-ghost text-[#FF4D00]' : 'bg-bg-overlay text-zinc-500'
+                  isActive ? 'bg-[rgba(255,77,0,0.12)] text-[#FF4D00]' : 'bg-bg-overlay text-zinc-500'
                 )}
               >
                 {tab.count}
@@ -292,7 +292,7 @@ export function SimpleModeToggle({ isSimple, onToggle, className }: SimpleModeTo
         'flex items-center gap-2 px-3 py-1.5 text-label font-label uppercase tracking-wider',
         'border chamfer-4 transition-all duration-fast',
         isSimple
-          ? 'bg-[#FF4D00]-ghost text-[#FF4D00] border-orange/30'
+          ? 'bg-[rgba(255,77,0,0.12)] text-[#FF4D00] border-orange/30'
           : 'bg-[#0A0A0B] text-zinc-500 border-[var(--color-border-default)] hover:text-zinc-400',
         className
       )}

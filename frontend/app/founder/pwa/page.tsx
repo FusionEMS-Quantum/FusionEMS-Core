@@ -13,7 +13,7 @@ export default function PWAPage() {
   return (
     <div className="p-5 space-y-6">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]-dim mb-1">DOMAIN 9 · PWA & MOBILE</div>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">DOMAIN 9 · PWA & MOBILE</div>
         <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">PWA & Mobile</h1>
         <p className="text-xs text-zinc-500 mt-0.5">Field app deployment · crew scheduling · device analytics</p>
       </div>
@@ -27,7 +27,7 @@ export default function PWAPage() {
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+        <Link href="/founder" className="text-xs text-orange-dim hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
     </div>
   );
 }

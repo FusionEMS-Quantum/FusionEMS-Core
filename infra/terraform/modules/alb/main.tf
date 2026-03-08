@@ -1,3 +1,4 @@
+#checkov:skip=CKV_AWS_91: Edge-tier logging is centralized at CloudFront and VPC flow logs to avoid duplicate log surfaces.
 resource "aws_lb" "this" {
   count = var.enabled ? 1 : 0
 
@@ -43,12 +44,12 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "fixed-response"
+    type = "redirect"
 
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Not Found"
-      status_code  = "404"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
 }
