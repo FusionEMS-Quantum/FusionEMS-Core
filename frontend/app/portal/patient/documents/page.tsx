@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getPortalDocuments, uploadPortalDocument } from '@/services/api';
 
 interface PatientDoc {
   id: string;
@@ -60,15 +61,13 @@ export default function DocumentsPage() {
   const [category, setCategory] = useState('All');
   const [uploading, setUploading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/portal/documents`, { credentials: 'include' })
-      .then(r => r.json())
+    getPortalDocuments()
       .then(d => setDocs(Array.isArray(d) ? d : d.items ?? []))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load documents'))
       .finally(() => setLoading(false));
-  }, [apiBase]);
+  }, []);
 
   const filtered = docs.filter(d => {
     if (category === 'All') return true;
@@ -97,8 +96,7 @@ export default function DocumentsPage() {
     const form = new FormData();
     form.append('file', file);
     form.append('type', 'upload');
-    fetch(`${apiBase}/api/v1/portal/documents`, { method: 'POST', credentials: 'include', body: form })
-      .then(r => r.json())
+    uploadPortalDocument(form)
       .then(d => setDocs(prev => [d, ...prev]))
       .catch(() => {/* silently ignore in portal, show toast in production */})
       .finally(() => setUploading(false));

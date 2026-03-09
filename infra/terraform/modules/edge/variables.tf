@@ -44,3 +44,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "create_cloudfront_log_policy" {
+  type        = bool
+  default     = true
+  description = "When true create a bucket policy to allow log delivery principals to PutObject/GetBucketAcl for CloudFront logs (helps when ACLs are disabled)."
+}

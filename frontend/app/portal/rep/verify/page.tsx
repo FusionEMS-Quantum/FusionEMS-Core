@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { registerAuthRep, verifyAuthRepOtp } from '@/services/api';
 
 const PANEL_STYLE = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -52,33 +53,29 @@ export default function RepVerifyPage() {
       setError('');
       setHasError(false);
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/auth-rep/verify-otp`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-            session_id: sessionStorage.getItem('rep_session_id') ?? '',
-            otp_code: code,
-          }),
-          }
-        );
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          const detail: string = body?.detail ?? `Verification failed (${res.status})`;
+        const result = await verifyAuthRepOtp({
+          session_id: sessionStorage.getItem('rep_session_id') ?? '',
+          otp_code: code,
+        });
+        const body = result.data;
+        if (!result.ok) {
+          const detail: string = result.detail ?? `Verification failed (${result.status})`;
           const match = detail.match(/(\d+)\s*attempt/i);
-          if (match) setAttemptsLeft(parseInt(match[1], 10));
+          const parsedAttemptsLeft = match ? parseInt(match[1], 10) : null;
+          if (parsedAttemptsLeft !== null) setAttemptsLeft(parsedAttemptsLeft);
           setHasError(true);
           setError(
-            attemptsLeft !== null
-              ? `Incorrect code. ${attemptsLeft} attempts remaining.`
+            parsedAttemptsLeft !== null
+              ? `Incorrect code. ${parsedAttemptsLeft} attempts remaining.`
               : detail
           );
           return;
         }
-        if (body.token) sessionStorage.setItem('rep_token', body.token);
-        if (body.authorized_rep_id) sessionStorage.setItem('rep_id', body.authorized_rep_id);
-        const dest = body.is_registered ? '/portal/rep/sign' : '/portal/rep/register';
+        const token = typeof body.token === 'string' ? body.token : '';
+        const repId = typeof body.authorized_rep_id === 'string' ? body.authorized_rep_id : '';
+        if (token) sessionStorage.setItem('rep_token', token);
+        if (repId) sessionStorage.setItem('rep_id', repId);
+        const dest = body.is_registered === true ? '/portal/rep/sign' : '/portal/rep/register';
         router.push(dest);
       } catch (err: unknown) {
         setHasError(true);
@@ -87,7 +84,7 @@ export default function RepVerifyPage() {
         setLoading(false);
       }
     },
-    [router, attemptsLeft]
+    [router]
   );
 
   function handleDigitChange(index: number, val: string) {
@@ -146,20 +143,16 @@ export default function RepVerifyPage() {
     const phone = sessionStorage.getItem('rep_phone') ?? '';
     setResending(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/auth-rep/register`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+      const result = await registerAuthRep({
           phone,
           patient_account_id: sessionStorage.getItem('rep_patient_id') ?? '00000000-0000-0000-0000-000000000000',
           relationship: sessionStorage.getItem('rep_relationship') ?? 'self',
           full_name: sessionStorage.getItem('rep_full_name') ?? phone,
           delivery_method: 'sms',
-        }),
-        }
-      );
+        });
+      if (!result.ok) {
+        throw new Error(result.detail ?? `Resend failed (${result.status})`);
+      }
       setDigits(Array(DIGIT_COUNT).fill(''));
       setError('');
       setHasError(false);

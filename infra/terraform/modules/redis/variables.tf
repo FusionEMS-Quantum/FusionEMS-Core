@@ -40,3 +40,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "create_kms_alias" {
+  type        = bool
+  default     = true
+  description = "Create module-managed KMS alias for Redis. Set to false if alias is managed externally to avoid collisions."
+}
+
+variable "kms_alias_name" {
+  type        = string
+  default     = ""
+  description = "Optional explicit KMS alias name to create for Redis. If empty module uses 'alias/project-env-redis'."
+}

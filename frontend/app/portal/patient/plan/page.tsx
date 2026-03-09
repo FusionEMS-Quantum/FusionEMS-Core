@@ -1,368 +1,243 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Heart, FileText, CreditCard, Bell, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import {
+  getPortalProfile,
+  getPortalPaymentPlans,
+  getPortalStatements,
+  getPortalDocuments,
+  requestPortalPaymentPlan,
+} from '@/services/api';
 
-const TOTAL_BALANCE = 520.0;
+interface PatientProfile {
+  name?: string;
+  date_of_birth?: string;
+  member_id?: string;
+  email?: string;
+}
 
-const PLANS = [
-  { id: '3mo', months: 3, monthly: 173.33 },
-  { id: '6mo', months: 6, monthly: 86.67 },
-  { id: '12mo', months: 12, monthly: 43.33 },
-];
+interface PaymentPlan {
+  id: string;
+  statement_id: string;
+  monthly_amount: number;
+  duration_months: number;
+  total_amount: number;
+  remaining_balance: number;
+  status: string;
+  next_payment_date?: string;
+}
 
-export default function PatientPlanPage() {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [enrolled, setEnrolled] = useState(false);
-  const [autopay, setAutopay] = useState(false);
+interface Statement {
+  id: string;
+  statement_number: string;
+  patient_account_id: string;
+  balance: number;
+  amount_due: number;
+  due_date: string;
+  created_at: string;
+}
 
-  function handleEnroll() {
-    if (!selected) return;
-    setEnrolled(true);
+interface DocRecord {
+  id: string;
+  name: string;
+  type: string;
+  uploaded_at: string;
+}
+
+export default function PatientCarePlanPage() {
+  const [profile, setProfile] = useState<PatientProfile | null>(null);
+  const [plans, setPlans] = useState<PaymentPlan[]>([]);
+  const [statements, setStatements] = useState<Statement[]>([]);
+  const [docs, setDocs] = useState<DocRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showRequest, setShowRequest] = useState(false);
+  const [reqStatementId, setReqStatementId] = useState('');
+  const [reqAmount, setReqAmount] = useState('');
+  const [reqMonths, setReqMonths] = useState('6');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const results = await Promise.allSettled([
+          getPortalProfile(),
+          getPortalPaymentPlans(),
+          getPortalStatements(),
+          getPortalDocuments(),
+        ]);
+        if (results[0].status === 'fulfilled') {
+          const p = results[0].value;
+          setProfile(p?.data ?? p);
+        }
+        if (results[1].status === 'fulfilled') {
+          const p = results[1].value;
+          setPlans(Array.isArray(p?.data) ? p.data : Array.isArray(p) ? p : []);
+        }
+        if (results[2].status === 'fulfilled') {
+          const s = results[2].value;
+          setStatements(Array.isArray(s) ? s : []);
+        }
+        if (results[3].status === 'fulfilled') {
+          const d = results[3].value;
+          setDocs(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load care plan data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  async function handleRequestPlan() {
+    if (!reqStatementId || !reqAmount) return;
+    try {
+      await requestPortalPaymentPlan({
+        statement_id: reqStatementId,
+        proposed_monthly_amount: parseFloat(reqAmount),
+        duration_months: parseInt(reqMonths, 10),
+      });
+      setShowRequest(false);
+      setReqStatementId('');
+      setReqAmount('');
+      const res = await getPortalPaymentPlans();
+      setPlans(Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []);
+    } catch { /* toast */ }
   }
 
-  const selectedPlan = PLANS.find((p) => p.id === selected);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+      </div>
+    );
+  }
+
+  const activePlans = plans.filter((p) => p.status === 'active');
+  const totalOwed = plans.reduce((sum, p) => sum + (p.remaining_balance ?? 0), 0);
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#050505',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        padding: '40px 16px',
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: 520 }}>
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 'var(--text-micro)',
-              fontWeight: 600,
-              letterSpacing: 'var(--tracking-micro)',
-              textTransform: 'uppercase',
-              color: '#FF4D00',
-              marginBottom: 6,
-            }}
-          >
-            Patient Portal
-          </div>
-          <h1
-            style={{
-              fontSize: 'var(--text-h2)',
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-              lineHeight: 'var(--leading-tight)',
-            }}
-          >
-            Payment Plan
-          </h1>
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/portal/patient" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
+          <Heart className="h-6 w-6 text-rose-400" />
+          <h1 className="text-2xl font-bold text-white">Care Plan Portal</h1>
         </div>
-
-        {/* Balance summary */}
-        <div
-          style={{
-            background: '#0A0A0B',
-            border: '1px solid var(--color-border-default)',
-            borderLeft: '3px solid #FF4D00',
-            clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-            padding: '16px 20px',
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: 'var(--font-label)',
-                fontSize: 'var(--text-label)',
-                fontWeight: 600,
-                letterSpacing: 'var(--tracking-label)',
-                textTransform: 'uppercase',
-                color: 'var(--color-text-muted)',
-                marginBottom: 4,
-              }}
-            >
-              Total Balance
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--text-h1)',
-                fontWeight: 700,
-                color: '#FF4D00',
-              }}
-            >
-              ${TOTAL_BALANCE.toFixed(2)}
-            </div>
-          </div>
-          <div
-            style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 'var(--text-micro)',
-              fontWeight: 600,
-              letterSpacing: 'var(--tracking-micro)',
-              textTransform: 'uppercase',
-              color: 'var(--color-text-muted)',
-              textAlign: 'right',
-            }}
-          >
-            EMS Services<br />
-            <span style={{ color: 'var(--color-text-secondary)' }}>2026 YTD</span>
-          </div>
-        </div>
-
-        {/* Plan options */}
-        <div
-          style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 'var(--text-label)',
-            fontWeight: 600,
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--color-text-muted)',
-            marginBottom: 12,
-          }}
-        >
-          Select a Plan
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-          {PLANS.map((plan) => {
-            const isSelected = selected === plan.id;
-            return (
-              <button
-                key={plan.id}
-                onClick={() => setSelected(plan.id)}
-                style={{
-                  background: isSelected
-                    ? 'rgba(255, 107, 26, 0.08)'
-                    : '#0A0A0B',
-                  border: isSelected
-                    ? '1px solid #FF4D00'
-                    : '1px solid var(--color-border-default)',
-                  borderLeft: isSelected
-                    ? '3px solid #FF4D00'
-                    : '3px solid transparent',
-                  clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-                  padding: '16px 20px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  textAlign: 'left',
-                  transition: 'border-color 0.15s, background 0.15s',
-                  width: '100%',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  {/* Radio dot */}
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: '50%',
-                      border: `2px solid ${isSelected ? '#FF4D00' : 'var(--color-border-strong)'}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {isSelected && (
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: '#FF4D00',
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-label)',
-                        fontSize: 'var(--text-label)',
-                        fontWeight: 700,
-                        letterSpacing: 'var(--tracking-label)',
-                        textTransform: 'uppercase',
-                        color: isSelected ? '#FF4D00' : 'var(--color-text-primary)',
-                      }}
-                    >
-                      {plan.months} Months
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: 'var(--color-text-muted)',
-                        marginTop: 2,
-                      }}
-                    >
-                      {plan.months} equal payments
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 'var(--text-h3)',
-                    fontWeight: 700,
-                    color: isSelected ? '#FF4D00' : 'var(--color-text-secondary)',
-                  }}
-                >
-                  ${plan.monthly.toFixed(2)}
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-label)',
-                      fontSize: 10,
-                      fontWeight: 500,
-                      color: 'var(--color-text-muted)',
-                      letterSpacing: '0.05em',
-                      marginLeft: 4,
-                    }}
-                  >
-                    /mo
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* AutoPay option */}
-        <div
-          style={{
-            background: '#0A0A0B',
-            border: '1px solid var(--color-border-default)',
-            clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-            padding: '14px 18px',
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: 'var(--font-label)',
-                fontSize: 'var(--text-label)',
-                fontWeight: 600,
-                letterSpacing: 'var(--tracking-label)',
-                textTransform: 'uppercase',
-                color: 'var(--color-text-secondary)',
-                marginBottom: 3,
-              }}
-            >
-              Enable AutoPay
-            </div>
-            <p style={{ fontSize: 11, color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
-              Automatically charge your card on the same day each month. Cancel anytime.
-            </p>
-          </div>
-          <button
-            onClick={() => setAutopay((v) => !v)}
-            style={{
-              width: 44,
-              height: 24,
-              borderRadius: 12,
-              background: autopay ? '#FF4D00' : 'var(--color-bg-overlay)',
-              border: `1px solid ${autopay ? '#FF4D00' : 'var(--color-border-strong)'}`,
-              cursor: 'pointer',
-              position: 'relative',
-              flexShrink: 0,
-              transition: 'background 0.15s, border-color 0.15s',
-              padding: 0,
-            }}
-            aria-checked={autopay}
-            role="switch"
-          >
-            <span
-              style={{
-                position: 'absolute',
-                top: 2,
-                left: autopay ? 22 : 2,
-                width: 18,
-                height: 18,
-                borderRadius: '50%',
-                background: 'var(--color-text-primary)',
-                transition: 'left 0.15s',
-              }}
-            />
-          </button>
-        </div>
-
-        {/* Enroll button */}
-        <button
-          onClick={handleEnroll}
-          disabled={!selected || enrolled}
-          style={{
-            background:
-              !selected || enrolled
-                ? 'var(--color-brand-orange-dim)'
-                : '#FF4D00',
-            color: '#000',
-            fontFamily: 'var(--font-label)',
-            fontSize: 'var(--text-label)',
-            fontWeight: 700,
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            border: 'none',
-            padding: '13px 28px',
-            cursor: !selected || enrolled ? 'not-allowed' : 'pointer',
-            clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-            width: '100%',
-          }}
-        >
-          {enrolled
-            ? `Enrolled — ${selectedPlan?.months} Month Plan`
-            : selected
-            ? `Enroll in ${selectedPlan?.months}-Month Plan — $${selectedPlan?.monthly.toFixed(2)}/mo`
-            : 'Select a Plan to Enroll'}
+        <button onClick={() => setShowRequest(!showRequest)} className="px-4 py-2 bg-rose-600 hover:bg-rose-700 rounded-lg text-white text-sm font-medium">
+          Request Payment Plan
         </button>
-
-        {enrolled && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: '10px 16px',
-              background: 'rgba(76, 175, 80, 0.08)',
-              border: '1px solid rgba(76, 175, 80, 0.3)',
-              clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ color: 'var(--color-status-active)', fontSize: 14 }}>✓</span>
-            <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-status-active)' }}>
-              You have been enrolled in the {selectedPlan?.months}-month payment plan.
-              {autopay && ' AutoPay is enabled.'}
-            </span>
-          </div>
-        )}
-
-        <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <Link
-            href="/portal/patient/statements"
-            style={{
-              fontSize: 'var(--text-body)',
-              color: 'var(--color-text-muted)',
-              textDecoration: 'none',
-            }}
-          >
-            ← Back to Statements
-          </Link>
-        </div>
       </div>
+
+      {profile && (
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-rose-600/30 flex items-center justify-center text-rose-300 font-bold text-lg">{profile.name?.charAt(0) ?? 'P'}</div>
+          <div>
+            <div className="text-white font-medium">{profile.name ?? 'Patient'}</div>
+            <div className="text-xs text-gray-400">DOB: {profile.date_of_birth ?? '—'} · ID: {profile.member_id ?? '—'}</div>
+          </div>
+        </div>
+      )}
+
+      {showRequest && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-gray-800 border border-gray-700 rounded-lg p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-white">Request a Payment Plan</h3>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Statement</label>
+              <select value={reqStatementId} onChange={(e) => setReqStatementId(e.target.value)} className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm">
+                <option value="">Select...</option>
+                {statements.map((s) => <option key={s.id} value={s.id}>{s.statement_number ?? s.id} — ${s.amount_due}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Monthly Amount ($)</label>
+              <input value={reqAmount} onChange={(e) => setReqAmount(e.target.value)} type="number" className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Duration (months)</label>
+              <input value={reqMonths} onChange={(e) => setReqMonths(e.target.value)} type="number" className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" />
+            </div>
+          </div>
+          <button onClick={handleRequestPlan} className="px-4 py-2 bg-rose-600 hover:bg-rose-700 rounded text-white text-sm font-medium">Submit Request</button>
+        </motion.div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { label: 'Active Plans', value: activePlans.length, icon: CreditCard, color: 'green' },
+          { label: 'Total Remaining', value: `$${totalOwed.toLocaleString()}`, icon: FileText, color: 'rose' },
+          { label: 'Documents', value: docs.length, icon: Bell, color: 'blue' },
+        ].map((kpi) => (
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
+            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+            <div className="text-2xl font-bold text-white">{kpi.value}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+        <div className="p-4 border-b border-gray-700">
+          <h2 className="text-sm font-semibold text-white">Payment Plans</h2>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+            <tr>
+              <th className="px-4 py-3 text-left">Plan ID</th>
+              <th className="px-4 py-3 text-left">Monthly</th>
+              <th className="px-4 py-3 text-left">Remaining</th>
+              <th className="px-4 py-3 text-left">Next Payment</th>
+              <th className="px-4 py-3 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {plans.length === 0 ? (
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No payment plans found.</td></tr>
+            ) : plans.map((p) => (
+              <tr key={p.id} className="hover:bg-gray-700/50">
+                <td className="px-4 py-3 text-white font-mono text-xs">{p.id}</td>
+                <td className="px-4 py-3 text-gray-300">${p.monthly_amount}</td>
+                <td className="px-4 py-3 text-gray-300">${p.remaining_balance}</td>
+                <td className="px-4 py-3 text-gray-400">{p.next_payment_date ? new Date(p.next_payment_date).toLocaleDateString() : '—'}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${p.status === 'active' ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-300'}`}>{p.status}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {docs.length > 0 && (
+        <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+          <div className="p-4 border-b border-gray-700">
+            <h2 className="text-sm font-semibold text-white">Care Documents</h2>
+          </div>
+          <div className="divide-y divide-gray-700">
+            {docs.map((d) => (
+              <div key={d.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-700/50">
+                <div>
+                  <div className="text-sm text-white">{d.name}</div>
+                  <div className="text-xs text-gray-400">{d.type} · {d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : '—'}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

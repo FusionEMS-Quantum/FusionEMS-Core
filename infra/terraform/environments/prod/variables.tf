@@ -225,3 +225,11 @@ variable "brand_domain" {
   type        = string
   default     = "fusionemsquantum.com"
 }
+
+# Optional override for interface endpoint services passed into the networking
+# module. When unset, the networking module uses its own defaults.
+variable "interface_endpoint_services" {
+  description = "Interface endpoint service suffixes to create via networking module"
+  type        = list(string)
+  default     = []
+}

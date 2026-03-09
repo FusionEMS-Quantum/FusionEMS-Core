@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalStatements, getPortalPayments } from '@/services/api';
 
 interface SummaryData {
   total_balance: number;
@@ -70,18 +71,12 @@ export default function PatientHomeDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-
     async function load() {
       try {
-        const [stmtRes, payRes] = await Promise.all([
-          fetch(`${apiBase}/api/v1/portal/statements?limit=5`, { credentials: 'include' }),
-          fetch(`${apiBase}/api/v1/portal/payments?limit=5`, { credentials: 'include' }),
-        ]);
-        const stmtData = stmtRes.ok ? await stmtRes.json() : {};
-        const payData = payRes.ok ? await payRes.json() : {};
-        const stmts: Statement[] = Array.isArray(stmtData?.statements) ? stmtData.statements : [];
-        const pays: Payment[] = Array.isArray(payData?.payments) ? payData.payments : [];
+        const [stmts, pays] = await Promise.all([
+          getPortalStatements(),
+          getPortalPayments(),
+        ]) as [Statement[], Payment[]];
         setStatements(stmts);
         setPayments(pays);
         const totalBalance = stmts.reduce((acc, s) => acc + (s.data?.amount_due_cents ?? 0), 0);

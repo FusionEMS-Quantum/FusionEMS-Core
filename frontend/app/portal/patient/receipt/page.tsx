@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { getPatientStatements } from '@/services/api';
 
 type PatientStatement = {
   id: string;
@@ -19,10 +20,6 @@ type PatientStatement = {
 function PatientReceiptPageContent() {
   const searchParams = useSearchParams();
   const statementIdFromUrl = searchParams.get('statement_id');
-  const apiBase = useMemo(
-    () => process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '',
-    []
-  );
 
   const [statement, setStatement] = useState<PatientStatement | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,18 +33,7 @@ function PatientReceiptPageContent() {
       setError(null);
 
       try {
-        const url = new URL('/api/v1/patient/statements?limit=50', apiBase || window.location.origin);
-        const res = await fetch(url.toString(), {
-          method: 'GET',
-          credentials: 'include',
-          headers: { Accept: 'application/json' },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to load statements (${res.status})`);
-        }
-
-        const payload = await res.json();
+        const payload = await getPatientStatements(50);
         const statements: PatientStatement[] = Array.isArray(payload?.statements)
           ? payload.statements
           : [];
@@ -79,7 +65,7 @@ function PatientReceiptPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [apiBase, statementIdFromUrl]);
+  }, [statementIdFromUrl]);
 
   const amountPaid = useMemo(() => {
     const paid = statement?.data?.amount_paid_cents ?? 0;

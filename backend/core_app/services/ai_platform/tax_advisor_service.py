@@ -149,23 +149,13 @@ class AIReceiptTaxAdvisor:
         Receives an image payload from the Android PWA/Mobile app.
         Calls the underlying Vision LLM.
         """
-        # In production, payload sent to OpenAI/Anthropic Vision model.
-        # Stubbing the deterministic AI pipeline response based on architecture.
+        from core_app.core.errors import AppError
 
-
-        # simulated_response = await self.ai.vision_analyze(self.system_prompt, vision_prompt, image_bytes)
-
-        # Mock structured response for the tax engine pipeline
-        return {
-            "merchant_name": "Wisconsin Electric / WE Energies",
-            "transaction_date": "2026-03-01",
-            "total_amount": 145.50,
-            "irs_category": "Utilities",
-            "business_purpose": "Home Office Electricity",
-            "is_home_office_prorated": True,
-            "ai_confidence_score": 0.98,
-            "tax_planning_advice": "Consider deducting home internet and electricity via the Home Office Actual Expense method if the square footage of your office exceeds the Safe Harbor allowance threshold."
-        }
+        raise AppError(
+            code="TAX_VISION_NOT_CONFIGURED",
+            message="Receipt vision pipeline requires OpenAI Vision API configuration",
+            status_code=503,
+        )
 
     async def generate_tax_forecast(self, expenses_ytd: list[FounderExpense]) -> dict[str, Any]:
         """

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalProfile, updatePortalProfile } from '@/services/api';
 
 interface PatientProfile {
   id?: string;
@@ -90,15 +91,13 @@ export default function ProfilePage() {
   const [draft, setDraft] = useState<PatientProfile>({});
   const [saved, setSaved] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/portal/profile`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(d => { setProfile(d); setDraft(d); })
+    getPortalProfile()
+      .then((d: PatientProfile) => { setProfile(d); setDraft(d); })
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load profile'))
       .finally(() => setLoading(false));
-  }, [apiBase]);
+  }, []);
 
   const handleFieldChange = (name: string, value: string) => {
     setDraft(prev => {
@@ -120,12 +119,7 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetch(`${apiBase}/api/v1/portal/profile`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(draft),
-      });
+      await updatePortalProfile(draft as Record<string, unknown>);
       setProfile(draft);
       setEditing(false);
       setSaved(true);

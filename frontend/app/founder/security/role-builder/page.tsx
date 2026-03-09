@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { listRoles, listRoleAssignments, createRoleAssignment, deleteRoleAssignment } from '@/services/api';
 
 interface Role {
   id: string;
@@ -20,11 +19,6 @@ interface RoleAssignment {
   role_name: string;
   is_active: boolean;
   created_at: string;
-}
-
-function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : '';
-  return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
 function Badge({ active }: { active: boolean }) {
@@ -74,8 +68,8 @@ export default function RoleBuilderPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/api/v1/roles`, { headers: authHeaders() }).then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch(`${API}/api/v1/roles/assignments`, { headers: authHeaders() }).then(r => r.ok ? r.json() : []).catch(() => []),
+      listRoles().catch(() => []),
+      listRoleAssignments().catch(() => []),
     ]).then(([rolesData, assignData]) => {
       setRoles(rolesData);
       setAssignments(assignData);
@@ -92,16 +86,7 @@ export default function RoleBuilderPage() {
     setAssigning(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/api/v1/roles/assignments`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ user_id: assignUserId.trim(), role_id: selectedRole.id }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail ?? `HTTP ${res.status}`);
-      }
-      const newAssign: RoleAssignment = await res.json();
+      const newAssign: RoleAssignment = await createRoleAssignment({ user_id: assignUserId.trim(), role_id: selectedRole.id });
       setAssignments(prev => [newAssign, ...prev]);
       setAssignUserId('');
       showToast(`Role "${selectedRole.name}" assigned.`, true);
@@ -117,11 +102,7 @@ export default function RoleBuilderPage() {
     setRevoking(id);
     setError(null);
     try {
-      const res = await fetch(`${API}/api/v1/roles/assignments/${id}`, {
-        method: 'DELETE',
-        headers: authHeaders(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await deleteRoleAssignment(id);
       setAssignments(prev => prev.filter(a => a.id !== id));
       showToast('Role assignment revoked.', true);
     } catch (e) {

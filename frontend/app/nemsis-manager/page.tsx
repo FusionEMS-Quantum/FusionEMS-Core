@@ -2,13 +2,28 @@
 
 import { useState, useEffect, useCallback } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
-
-const IS_PROD = process.env.NODE_ENV === "production";
-const BASE =
-  process.env.NEXT_PUBLIC_API_BASE ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "";
+import {
+  getStandaloneNemsisManagerCertificationReadiness,
+  getStandaloneNemsisManagerExportDashboard,
+  getStandaloneNemsisManagerIntegrityScore,
+  getStandaloneNemsisManagerSchema,
+  getStandaloneNemsisManagerSchemaDiff,
+  getStandaloneNemsisManagerSchemaHierarchy,
+  listStandaloneNemsisManagerAuditLog,
+  listStandaloneNemsisManagerExportBatches,
+  listStandaloneNemsisManagerStateRejections,
+  postStandaloneNemsisManagerAutoPopulate,
+  postStandaloneNemsisManagerCodingSuggest,
+  postStandaloneNemsisManagerExportSimulate,
+  postStandaloneNemsisManagerNormalize,
+  postStandaloneNemsisManagerReadinessScore,
+  postStandaloneNemsisManagerReportableFlag,
+  postStandaloneNemsisManagerUpgradeImpact,
+  postStandaloneNemsisManagerValidateField,
+  postStandaloneNemsisManagerValidateLive,
+  postStandaloneNemsisManagerValidateMedicalNecessity,
+  postStandaloneNemsisManagerValidateNarrative,
+} from "@/services/api";
 
 type SchemaElement = {
   label: string;
@@ -231,63 +246,33 @@ export default function NEMSISManagerPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSection, setSelectedSection] = useState("all");
 
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("access_token") || ""
-      : "";
-  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-
-  const api = useCallback(
-    async (path: string, method = "GET", body?: unknown) => {
-      try {
-        if (!BASE) {
-          if (IS_PROD) {
-            console.error("NEMSIS Manager API base URL is not configured.");
-          }
-          return null;
-        }
-        const res = await fetch(`${BASE}${path}`, {
-          method,
-          headers,
-          body: body ? JSON.stringify(body) : undefined,
-        });
-        if (!res.ok) return null;
-        return res.json();
-      } catch {
-        return null;
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
   const loadData = useCallback(async () => {
     const [s, h, ed, cr, is_, sd, ui, eb, rj, vh] = await Promise.all([
-      api("/api/v1/nemsis-manager/schema"),
-      api("/api/v1/nemsis-manager/schema/hierarchy"),
-      api("/api/v1/nemsis-manager/export/dashboard"),
-      api("/api/v1/nemsis-manager/certification-readiness"),
-      api("/api/v1/nemsis-manager/integrity-score"),
-      api("/api/v1/nemsis-manager/schema/diff"),
-      api("/api/v1/nemsis-manager/upgrade-impact", "POST", {
+      getStandaloneNemsisManagerSchema(),
+      getStandaloneNemsisManagerSchemaHierarchy(),
+      getStandaloneNemsisManagerExportDashboard(),
+      getStandaloneNemsisManagerCertificationReadiness(),
+      getStandaloneNemsisManagerIntegrityScore(),
+      getStandaloneNemsisManagerSchemaDiff(),
+      postStandaloneNemsisManagerUpgradeImpact({
         from_version: "3.4.0",
         to_version: "3.5.1",
       }),
-      api("/api/v1/nemsis-manager/export/batches"),
-      api("/api/v1/nemsis-manager/state-rejections"),
-      api("/api/v1/nemsis-manager/audit-log"),
+      listStandaloneNemsisManagerExportBatches(),
+      listStandaloneNemsisManagerStateRejections(),
+      listStandaloneNemsisManagerAuditLog(),
     ]);
-    if (s) setSchema(s);
-    if (h) setHierarchy(h);
-    if (ed) setExportDash(ed);
-    if (cr) setCertReadiness(cr);
-    if (is_) setIntegrityScore(is_);
-    if (sd) setSchemaDiff(sd);
-    if (ui) setUpgradeImpact(ui);
-    if (Array.isArray(eb)) setExportBatches(eb);
-    if (Array.isArray(rj)) setRejections(rj);
-    if (Array.isArray(vh)) setValidationHistory(vh);
-  }, [api]);
+    if (s) setSchema(s as unknown as SchemaOverview);
+    if (h) setHierarchy(h as unknown as HierarchyData);
+    if (ed) setExportDash(ed as unknown as ExportDashboard);
+    if (cr) setCertReadiness(cr as unknown as CertificationReadiness);
+    if (is_) setIntegrityScore(is_ as unknown as IntegrityScore);
+    if (sd) setSchemaDiff(sd as unknown as SchemaDiff);
+    if (ui) setUpgradeImpact(ui as unknown as UpgradeImpact);
+    if (Array.isArray(eb)) setExportBatches(eb as ExportBatch[]);
+    if (Array.isArray(rj)) setRejections(rj as StateRejection[]);
+    if (Array.isArray(vh)) setValidationHistory(vh as ValidationHistoryItem[]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -295,44 +280,44 @@ export default function NEMSISManagerPage() {
 
   const runReadiness = async () => {
     const provided = elementsInput.split(",").map((e) => e.trim()).filter(Boolean);
-    const res = await api("/api/v1/nemsis-manager/readiness-score", "POST", {
+    const res = await postStandaloneNemsisManagerReadinessScore({
       provided_elements: provided,
       state_code: stateCode,
     });
-    if (res) setReadinessResult(res);
+    if (res) setReadinessResult(res as unknown as ReadinessScore);
   };
 
   const runLiveValidation = async () => {
     const provided = elementsInput.split(",").map((e) => e.trim()).filter(Boolean);
-    const res = await api("/api/v1/nemsis-manager/validate/live", "POST", {
+    const res = await postStandaloneNemsisManagerValidateLive({
       provided_elements: provided,
     });
-    if (res) setLiveValidResult(res);
+    if (res) setLiveValidResult(res as unknown as ValidationResult);
   };
 
   const runNarrativeCheck = async () => {
-    const res = await api("/api/v1/nemsis-manager/validate/narrative", "POST", {
+    const res = await postStandaloneNemsisManagerValidateNarrative({
       narrative: narrativeInput,
     });
     if (res) setNarrativeResult(res);
   };
 
   const runMedNecessity = async () => {
-    const res = await api("/api/v1/nemsis-manager/validate/medical-necessity", "POST", {
+    const res = await postStandaloneNemsisManagerValidateMedicalNecessity({
       narrative: narrativeInput,
     });
     if (res) setMedNecessityResult(res);
   };
 
   const runCodingSuggest = async () => {
-    const res = await api("/api/v1/nemsis-manager/coding-suggest", "POST", {
+    const res = await postStandaloneNemsisManagerCodingSuggest({
       narrative: narrativeInput,
     });
     if (res) setCodingSuggestResult(res);
   };
 
   const runFieldValidation = async () => {
-    const res = await api("/api/v1/nemsis-manager/validate/field", "POST", {
+    const res = await postStandaloneNemsisManagerValidateField({
       element_id: fieldId,
       value: fieldValue,
     });
@@ -340,14 +325,14 @@ export default function NEMSISManagerPage() {
   };
 
   const runAutoPopulate = async () => {
-    const res = await api("/api/v1/nemsis-manager/auto-populate", "POST", {
+    const res = await postStandaloneNemsisManagerAutoPopulate({
       incident: { state: "California" },
     });
     if (res) setAutoPopResult(res);
   };
 
   const runNormalize = async () => {
-    const res = await api("/api/v1/nemsis-manager/normalize", "POST", {
+    const res = await postStandaloneNemsisManagerNormalize({
       record: { "ePatient.13": "M", "eDispatch.02": true, "eTimes.01": "2026-02-26" },
     });
     if (res) setNormResult(res);
@@ -359,7 +344,7 @@ export default function NEMSISManagerPage() {
     provided.forEach((e) => {
       incident[e] = e;
     });
-    const res = await api("/api/v1/nemsis-manager/export/simulate", "POST", {
+    const res = await postStandaloneNemsisManagerExportSimulate({
       incident,
       patient: {},
     });
@@ -367,7 +352,7 @@ export default function NEMSISManagerPage() {
   };
 
   const runReportableFlag = async () => {
-    const res = await api("/api/v1/nemsis-manager/reportable-flag", "POST", {
+    const res = await postStandaloneNemsisManagerReportableFlag({
       incident: {
         "eSituation.13": "Critical",
         "eDisposition.12": "Patient Treated",

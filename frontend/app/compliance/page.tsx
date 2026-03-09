@@ -13,8 +13,7 @@ import {
   AlertCircle, Layers, Database, CheckCircle2,
   RefreshCw, ChevronUp, Target,
 } from 'lucide-react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '';
+import { getComplianceCommandSummaryPortal } from '@/services/api';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -129,130 +128,15 @@ const ACTION_STATE_MAP: Record<ActionState, { label: string; status: StatusVaria
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// COMPLIANCE DATA — 7 DOMAINS
+// COMPLIANCE DATA — sourced from live API, no static fallback
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const COMPLIANCE_DATA: Record<DomainKey, ComplianceItem[]> = {
-  nemsis: [
-    { id:'n1', name:'Schema Validation', description:'NEMSIS v3.5.1 XSD schema conformance check against all submitted records', status:'active', statusLabel:'Passing', lastChecked:'2026-03-08 06:00', impactAreas:['nemsis-export','audit-risk'], actionState:'no-action', evidenceCount:12, trend:'stable', trendSummary:'Stable 30d', policyBasis:'NEMSIS v3.5.1 Technical Implementation Guide' },
-    { id:'n2', name:'Required Fields', description:'Mandatory NEMSIS data elements present in 100% of active PCRs', status:'active', statusLabel:'Passing', lastChecked:'2026-03-08 06:00', impactAreas:['nemsis-export','billing'], actionState:'no-action', evidenceCount:8, trend:'stable', trendSummary:'Stable' },
-    { id:'n3', name:'Demographic Completeness', description:'Patient demographic fields fully populated per state requirement', status:'warning', statusLabel:'94.1% Complete', lastChecked:'2026-03-08 04:30', impactAreas:['nemsis-export','billing','audit-risk'], actionState:'review-required', evidenceCount:5, trend:'up', trendSummary:'+1.2% this week', owner:'QA Team', policyBasis:'State NEMSIS Reporting Requirements' },
-    { id:'n4', name:'Timestamp Accuracy', description:'Dispatch, on-scene, and transport times cross-validated against CAD feed', status:'active', statusLabel:'Passing', lastChecked:'2026-03-08 05:45', impactAreas:['nemsis-export','audit-risk'], actionState:'no-action', evidenceCount:6, trend:'stable', trendSummary:'Stable' },
-    { id:'n5', name:'Unit Certification', description:'All responding units certified at appropriate ALS/BLS level per call type', status:'active', statusLabel:'Compliant', lastChecked:'2026-03-07 23:00', impactAreas:['licensing','audit-risk'], actionState:'no-action', evidenceCount:4, trend:'stable', trendSummary:'Stable' },
-    { id:'n6', name:'Crew Credentials', description:'Active state certifications verified for all personnel on submitted runs', status:'warning', statusLabel:'2 Expiring Soon', lastChecked:'2026-03-08 00:00', nextDue:'2026-03-15', impactAreas:['licensing','patient-safety'], actionState:'review-required', evidenceCount:3, trend:'down', trendSummary:'2 creds expiring', owner:'HR / Credentialing', policyBasis:'State EMS Certification Requirements' },
-    { id:'n7', name:'Dispatch Codes', description:'EMD nature codes mapped to valid NEMSIS situation codes in all records', status:'active', statusLabel:'Passing', lastChecked:'2026-03-08 06:00', impactAreas:['nemsis-export'], actionState:'no-action', evidenceCount:7, trend:'stable', trendSummary:'Stable' },
-    { id:'n8', name:'Protocol Adherence', description:'Medication and procedure documentation matches active protocol set', status:'active', statusLabel:'Passing', lastChecked:'2026-03-07 22:00', impactAreas:['patient-safety','audit-risk'], actionState:'no-action', evidenceCount:9, trend:'stable', trendSummary:'Stable' },
-    { id:'n9', name:'Export Readiness Score', description:'Overall readiness index for state NEMSIS data submission batch', status:'active', statusLabel:'98.2%', lastChecked:'2026-03-08 06:00', impactAreas:['nemsis-export','audit-risk'], actionState:'no-action', evidenceCount:2, trend:'up', trendSummary:'+0.3% this cycle' },
-    { id:'n10', name:'Failed Export Count', description:'Records that failed validation during last state submission batch', status:'warning', statusLabel:'3 Records', lastChecked:'2026-03-08 06:00', impactAreas:['nemsis-export','audit-risk'], actionState:'review-required', evidenceCount:3, trend:'down', trendSummary:'+1 since last batch', owner:'Data Quality' },
-    { id:'n11', name:'CAD-to-PCR Mismatch', description:'Discrepancies between CAD dispatch record and PCR document times or unit assignment', status:'info', statusLabel:'1 Pending', lastChecked:'2026-03-08 05:00', impactAreas:['nemsis-export','audit-risk'], actionState:'monitor', evidenceCount:1, trend:'stable', trendSummary:'Low volume' },
-  ],
-  hipaa: [
-    { id:'h1', name:'PHI Encryption at Rest', description:'All PHI stored in database encrypted via AES-256; keys managed in AWS KMS', status:'active', statusLabel:'Enforced', lastChecked:'2026-03-08 06:00', impactAreas:['hipaa','audit-risk'], actionState:'no-action', evidenceCount:4, trend:'stable', trendSummary:'Continuously enforced', policyBasis:'HIPAA §164.312(a)(2)(iv)' },
-    { id:'h2', name:'PHI Encryption in Transit', description:'TLS 1.3 enforced on all API endpoints and inter-service communication', status:'active', statusLabel:'Enforced', lastChecked:'2026-03-08 06:00', impactAreas:['hipaa','audit-risk'], actionState:'no-action', evidenceCount:3, trend:'stable', trendSummary:'Stable', policyBasis:'HIPAA §164.312(e)(1)' },
-    { id:'h3', name:'Access Log Audit', description:'All PHI access events logged to immutable CloudWatch Logs with 7-year retention', status:'active', statusLabel:'Active', lastChecked:'2026-03-08 06:00', impactAreas:['hipaa','audit-risk'], actionState:'no-action', evidenceCount:6, trend:'stable', trendSummary:'Stable' },
-    { id:'h4', name:'Minimum Necessary Rule', description:'Role-based access controls limit PHI exposure to job-function scope only', status:'active', statusLabel:'Enforced', lastChecked:'2026-03-08 04:00', impactAreas:['hipaa'], actionState:'no-action', evidenceCount:5, trend:'stable', trendSummary:'Stable', policyBasis:'HIPAA §164.502(b)' },
-    { id:'h5', name:'BAA Status', description:'Executed Business Associate Agreements on file for all covered sub-processors', status:'warning', statusLabel:'1 Pending Renewal', lastChecked:'2026-03-07 17:00', nextDue:'2026-03-31', impactAreas:['hipaa','audit-risk'], actionState:'review-required', evidenceCount:2, trend:'down', trendSummary:'Renewal due Mar 31', owner:'Legal' },
-    { id:'h6', name:'Breach Notification Procedure', description:'Incident response runbook reviewed and contact list current', status:'active', statusLabel:'Current', lastChecked:'2026-01-15 09:00', impactAreas:['hipaa'], actionState:'no-action', evidenceCount:3, trend:'stable', trendSummary:'Reviewed Jan 15' },
-    { id:'h7', name:'Workforce Training', description:'Annual HIPAA training completion rate for all credentialed staff', status:'warning', statusLabel:'87% Complete', lastChecked:'2026-03-07 00:00', nextDue:'2026-03-31', impactAreas:['hipaa','audit-risk'], actionState:'review-required', evidenceCount:4, trend:'up', trendSummary:'+5% this month', owner:'Training Coord', policyBasis:'HIPAA §164.530(b)(1)' },
-    { id:'h8', name:'Data Retention', description:'PCR records retained per CMS 7-year rule; automated lifecycle policies active', status:'active', statusLabel:'Compliant', lastChecked:'2026-02-01 00:00', impactAreas:['hipaa','cms','audit-risk'], actionState:'no-action', evidenceCount:2, trend:'stable', trendSummary:'Stable' },
-    { id:'h9', name:'Anomalous PHI Access', description:'Flagged access patterns deviating from baseline behavior models', status:'warning', statusLabel:'2 Flagged', lastChecked:'2026-03-08 05:30', impactAreas:['hipaa','audit-risk'], actionState:'review-required', evidenceCount:2, trend:'down', trendSummary:'+2 new flags', owner:'Security' },
-    { id:'h10', name:'Inactive User Access', description:'Accounts with no login in 60+ days still retaining PHI access privileges', status:'warning', statusLabel:'4 Accounts', lastChecked:'2026-03-08 00:00', impactAreas:['hipaa'], actionState:'review-required', evidenceCount:0, trend:'stable', trendSummary:'Quarterly review due', owner:'IT Admin' },
-    { id:'h11', name:'Privileged Role Audit', description:'Admin and superuser role assignments reviewed against active job functions', status:'active', statusLabel:'Reviewed', lastChecked:'2026-03-01 00:00', impactAreas:['hipaa','audit-risk'], actionState:'no-action', evidenceCount:3, trend:'stable', trendSummary:'Last reviewed Mar 1' },
-  ],
-  pcr: [
-    { id:'p1', name:'Avg Completion Time', description:'Mean time from call close to PCR finalization across all active units', status:'warning', statusLabel:'38 min avg', lastChecked:'2026-03-08 06:00', impactAreas:['billing','audit-risk'], actionState:'monitor', evidenceCount:2, trend:'up', trendSummary:'-4 min this week' },
-    { id:'p2', name:'Fields Missing', description:'PCRs with one or more required billing or clinical fields left blank', status:'critical', statusLabel:'14 Records', lastChecked:'2026-03-08 06:00', impactAreas:['billing','nemsis-export','audit-risk'], actionState:'blocking', evidenceCount:14, trend:'down', trendSummary:'+3 since yesterday', owner:'Field Supervisors' },
-    { id:'p3', name:'Late Signatures', description:'Crew chief signatures not applied within the required 24-hour window', status:'warning', statusLabel:'6 Pending', lastChecked:'2026-03-08 05:00', impactAreas:['billing','audit-risk'], actionState:'review-required', evidenceCount:6, trend:'stable', trendSummary:'Stable', owner:'Crew Chiefs' },
-    { id:'p4', name:'Protocol Deviations', description:'Documented deviations from standing orders requiring medical director review', status:'info', statusLabel:'2 Open', lastChecked:'2026-03-07 20:00', impactAreas:['patient-safety','audit-risk'], actionState:'review-required', evidenceCount:2, trend:'stable', trendSummary:'Low volume', owner:'Medical Director' },
-    { id:'p5', name:'Supervisor Reviews', description:'QA supervisor review queue — records flagged for clinical documentation issues', status:'warning', statusLabel:'9 Queued', lastChecked:'2026-03-08 06:00', impactAreas:['audit-risk','billing'], actionState:'review-required', evidenceCount:9, trend:'down', trendSummary:'+2 since yesterday', owner:'QA Supervisors' },
-    { id:'p6', name:'Unsigned Charts', description:'PCR charts awaiting any crew member signature before finalization', status:'critical', statusLabel:'8 Charts', lastChecked:'2026-03-08 06:00', impactAreas:['billing','audit-risk','licensing'], actionState:'blocking', evidenceCount:8, trend:'down', trendSummary:'+2 today', owner:'Field Supervisors', policyBasis:'State EMS Documentation Requirements' },
-    { id:'p7', name:'Charts Blocking Billing', description:'Incomplete or unfiled charts directly preventing claim submission', status:'critical', statusLabel:'6 Charts', lastChecked:'2026-03-08 06:00', impactAreas:['billing','revenue'], actionState:'blocking', evidenceCount:6, trend:'down', trendSummary:'Revenue impact active', owner:'Billing Team' },
-    { id:'p8', name:'Missing Patient Signature', description:'Transport records missing patient or authorized representative signature', status:'warning', statusLabel:'3 Records', lastChecked:'2026-03-08 05:30', impactAreas:['billing','cms'], actionState:'review-required', evidenceCount:3, trend:'stable', trendSummary:'Stable' },
-    { id:'p9', name:'QA Return Rate', description:'Percentage of charts returned for correction after initial supervisor review', status:'info', statusLabel:'4.2%', lastChecked:'2026-03-08 06:00', impactAreas:['audit-risk'], actionState:'monitor', evidenceCount:1, trend:'up', trendSummary:'-0.5% this month' },
-  ],
-  billing: [
-    { id:'b1', name:'ABN Compliance', description:'Advance Beneficiary Notice obtained and documented for all non-covered transports', status:'active', statusLabel:'Compliant', lastChecked:'2026-03-08 06:00', impactAreas:['billing','cms','revenue'], actionState:'no-action', evidenceCount:8, trend:'stable', trendSummary:'Stable', policyBasis:'CMS ABN Requirements (CMS-R-131)' },
-    { id:'b2', name:'Medical Necessity Docs', description:'Certificate of Medical Necessity on file for all recurring transport authorizations', status:'warning', statusLabel:'3 Missing', lastChecked:'2026-03-08 05:00', nextDue:'2026-03-11', impactAreas:['billing','cms','revenue'], actionState:'review-required', evidenceCount:5, trend:'down', trendSummary:'+1 missing this week', owner:'Billing Team', policyBasis:'CMS CMN/PCS Requirements' },
-    { id:'b3', name:'Modifier Accuracy', description:'ALS/BLS level modifiers validated against PCR clinical narrative and crew cert level', status:'active', statusLabel:'99.1% Accurate', lastChecked:'2026-03-08 06:00', impactAreas:['billing','cms','audit-risk'], actionState:'no-action', evidenceCount:6, trend:'stable', trendSummary:'Stable' },
-    { id:'b4', name:'Diagnosis Coding', description:'ICD-10 diagnosis codes present and valid on all submitted professional claims', status:'active', statusLabel:'Passing', lastChecked:'2026-03-08 06:00', impactAreas:['billing','audit-risk'], actionState:'no-action', evidenceCount:4, trend:'stable', trendSummary:'Stable' },
-    { id:'b5', name:'Prior Auth Rate', description:'Percentage of non-emergency transports with payer prior authorization on file', status:'warning', statusLabel:'91% Coverage', lastChecked:'2026-03-07 22:00', impactAreas:['billing','revenue'], actionState:'review-required', evidenceCount:3, trend:'up', trendSummary:'+2% this month', owner:'Auth Coordinator' },
-    { id:'b6', name:'PTAN Active', description:'Medicare Provider Transaction Access Number current and billing privileges active', status:'active', statusLabel:'Active', lastChecked:'2026-02-01 00:00', impactAreas:['billing','cms','licensing'], actionState:'no-action', evidenceCount:2, trend:'stable', trendSummary:'Stable' },
-    { id:'b7', name:'Recurring Transport Cert', description:'PCS/CMN certifications for recurring non-emergency transports approaching expiration', status:'warning', statusLabel:'2 Expiring', lastChecked:'2026-03-08 05:00', nextDue:'2026-03-15', impactAreas:['billing','cms','revenue'], actionState:'review-required', evidenceCount:2, trend:'down', trendSummary:'2 due within 7 days', owner:'Billing Team' },
-    { id:'b8', name:'Claims at Denial Risk', description:'Submitted claims flagged by pre-adjudication analysis as likely to be denied', status:'critical', statusLabel:'4 Claims', lastChecked:'2026-03-08 06:00', impactAreas:['billing','revenue','cms'], actionState:'blocking', evidenceCount:4, trend:'down', trendSummary:'+2 this week', owner:'Billing Team' },
-    { id:'b9', name:'Payer Documentation Gaps', description:'Payer-specific documentation requirements not met on pending claims', status:'warning', statusLabel:'5 Gaps', lastChecked:'2026-03-08 05:30', impactAreas:['billing','revenue'], actionState:'review-required', evidenceCount:5, trend:'stable', trendSummary:'Stable' },
-  ],
-  accreditation: [
-    { id:'a1', name:'CoAEMSP Status', description:'Committee on Accreditation of EMS Professions program accreditation standing', status:'active', statusLabel:'Accredited', lastChecked:'2026-01-01 00:00', impactAreas:['accreditation','licensing'], actionState:'no-action', evidenceCount:3, trend:'stable', trendSummary:'Stable' },
-    { id:'a2', name:'CAAS Status', description:'Commission on Accreditation of Ambulance Services certification current', status:'info', statusLabel:'Under Review', lastChecked:'2026-02-14 00:00', impactAreas:['accreditation','audit-risk'], actionState:'awaiting-evidence', evidenceCount:6, trend:'stable', trendSummary:'Review in progress', owner:'Accreditation Coord' },
-    { id:'a3', name:'State Licensure', description:'State EMS agency operating license current and all endorsements valid', status:'active', statusLabel:'Current', lastChecked:'2026-02-01 00:00', impactAreas:['licensing','accreditation'], actionState:'no-action', evidenceCount:4, trend:'stable', trendSummary:'Stable' },
-    { id:'a4', name:'Equipment Calibration', description:'Cardiac monitors, ventilators, and stretchers on current calibration schedule', status:'warning', statusLabel:'4 Units Due', lastChecked:'2026-03-06 08:00', nextDue:'2026-03-15', impactAreas:['accreditation','patient-safety'], actionState:'review-required', evidenceCount:4, trend:'down', trendSummary:'4 overdue units', owner:'Fleet / Maintenance' },
-    { id:'a5', name:'QA Meeting Cadence', description:'Monthly quality assurance committee meetings documented and minutes filed', status:'active', statusLabel:'On Schedule', lastChecked:'2026-03-03 00:00', impactAreas:['accreditation','audit-risk'], actionState:'no-action', evidenceCount:12, trend:'stable', trendSummary:'Stable' },
-    { id:'a6', name:'CE Compliance Rate', description:'Continuing education hours on track for all certified personnel this cycle', status:'warning', statusLabel:'83% On Track', lastChecked:'2026-03-08 00:00', impactAreas:['accreditation','licensing'], actionState:'review-required', evidenceCount:5, trend:'up', trendSummary:'+3% this month', owner:'Training Coord' },
-    { id:'a7', name:'Evidence Packets Due', description:'Accreditation evidence packets required for upcoming survey or renewal', status:'warning', statusLabel:'2 Packets', lastChecked:'2026-03-08 00:00', nextDue:'2026-03-22', impactAreas:['accreditation','audit-risk'], actionState:'awaiting-evidence', evidenceCount:2, trend:'stable', trendSummary:'Due Mar 22', owner:'Accreditation Coord' },
-    { id:'a8', name:'Upcoming Survey Milestones', description:'Scheduled accreditation surveys, site visits, and document submission deadlines', status:'info', statusLabel:'CAAS Apr 15', lastChecked:'2026-03-08 00:00', nextDue:'2026-04-15', impactAreas:['accreditation'], actionState:'monitor', evidenceCount:1, trend:'stable', trendSummary:'On track' },
-  ],
-  dea: [
-    { id:'d1', name:'Narcotics Chain-of-Custody', description:'End-to-end controlled substance custody documentation from receipt to administration or waste', status:'warning', statusLabel:'1 Discrepancy', lastChecked:'2026-03-08 05:30', impactAreas:['dea','patient-safety','licensing'], actionState:'review-required', evidenceCount:4, trend:'down', trendSummary:'1 new discrepancy', owner:'Narcotics Officer', policyBasis:'21 CFR §1304 — DEA Record Keeping' },
-    { id:'d2', name:'Controlled Substance Discrepancy', description:'Unreconciled discrepancies in controlled substance inventory counts', status:'critical', statusLabel:'1 Unreconciled', lastChecked:'2026-03-08 06:00', impactAreas:['dea','licensing','audit-risk'], actionState:'blocking', evidenceCount:1, trend:'down', trendSummary:'Requires immediate review', owner:'Narcotics Officer', policyBasis:'21 CFR §1304.21 — Inventory Requirements' },
-    { id:'d3', name:'Missing Witness Signatures', description:'Controlled substance waste events lacking required second-party witness signature', status:'warning', statusLabel:'3 Pending', lastChecked:'2026-03-08 05:00', impactAreas:['dea','audit-risk'], actionState:'review-required', evidenceCount:3, trend:'stable', trendSummary:'Stable', owner:'Field Supervisors' },
-    { id:'d4', name:'Medication Waste Documentation', description:'Completeness of documentation for all controlled substance waste events', status:'active', statusLabel:'Complete', lastChecked:'2026-03-08 06:00', impactAreas:['dea','audit-risk'], actionState:'no-action', evidenceCount:8, trend:'stable', trendSummary:'Stable' },
-    { id:'d5', name:'Lockbox Access Log Review', description:'Secure storage access logs reviewed for anomalous or unauthorized entries', status:'active', statusLabel:'Reviewed', lastChecked:'2026-03-08 04:00', impactAreas:['dea','audit-risk'], actionState:'no-action', evidenceCount:6, trend:'stable', trendSummary:'Stable' },
-    { id:'d6', name:'Shift Narcotic Reconciliation', description:'Beginning and end-of-shift narcotic counts reconciled across all active units', status:'active', statusLabel:'Reconciled', lastChecked:'2026-03-08 06:00', impactAreas:['dea'], actionState:'no-action', evidenceCount:12, trend:'stable', trendSummary:'All shifts reconciled' },
-    { id:'d7', name:'Overdue Discrepancy Review', description:'Narcotics discrepancies past the 24-hour reconciliation review window', status:'critical', statusLabel:'1 Overdue', lastChecked:'2026-03-08 06:00', impactAreas:['dea','licensing','audit-risk'], actionState:'escalated', evidenceCount:1, trend:'down', trendSummary:'Overdue 36 hours', owner:'Narcotics Officer' },
-    { id:'d8', name:'Suspicious Variance Flags', description:'Automated detection of anomalous patterns in controlled substance usage or waste ratios', status:'info', statusLabel:'0 Active', lastChecked:'2026-03-08 06:00', impactAreas:['dea','patient-safety'], actionState:'no-action', evidenceCount:0, trend:'stable', trendSummary:'No anomalies detected' },
-  ],
-  cms: [
-    { id:'c1', name:'ABN Workflow Compliance', description:'Advance Beneficiary Notice procedures followed correctly for all applicable CMS transports', status:'active', statusLabel:'Compliant', lastChecked:'2026-03-08 06:00', impactAreas:['cms','billing','revenue'], actionState:'no-action', evidenceCount:6, trend:'stable', trendSummary:'Stable', policyBasis:'CMS ABN Requirements (CMS-R-131)' },
-    { id:'c2', name:'CMN / PCS Completeness', description:'Certificate of Medical Necessity and Physician Certification Statement availability', status:'warning', statusLabel:'3 Missing', lastChecked:'2026-03-08 05:00', nextDue:'2026-03-11', impactAreas:['cms','billing','revenue'], actionState:'review-required', evidenceCount:5, trend:'down', trendSummary:'+1 gap this week', owner:'Billing Team', policyBasis:'CMS CMN/PCS Documentation Standards' },
-    { id:'c3', name:'Medical Necessity Readiness', description:'Documentation supports medical necessity for all ambulance transports billed to CMS', status:'active', statusLabel:'Ready', lastChecked:'2026-03-08 06:00', impactAreas:['cms','billing','revenue'], actionState:'no-action', evidenceCount:8, trend:'stable', trendSummary:'Stable' },
-    { id:'c4', name:'Prior Authorization Status', description:'Non-emergency repetitive ambulance transports with required prior authorization', status:'warning', statusLabel:'91% Covered', lastChecked:'2026-03-07 22:00', impactAreas:['cms','billing','revenue'], actionState:'review-required', evidenceCount:3, trend:'up', trendSummary:'+2% this month', owner:'Auth Coordinator' },
-    { id:'c5', name:'Destination / Origin Validity', description:'Transport origin and destination combinations pass CMS covered-service rules', status:'active', statusLabel:'Passing', lastChecked:'2026-03-08 06:00', impactAreas:['cms','billing'], actionState:'no-action', evidenceCount:4, trend:'stable', trendSummary:'Stable' },
-    { id:'c6', name:'Modifier Accuracy', description:'CMS-required modifiers (ALS/BLS/SCT) aligned with clinical documentation', status:'active', statusLabel:'99.1%', lastChecked:'2026-03-08 06:00', impactAreas:['cms','billing','audit-risk'], actionState:'no-action', evidenceCount:5, trend:'stable', trendSummary:'Stable' },
-    { id:'c7', name:'Level-of-Care Alignment', description:'Billed level of care matches documented assessment and interventions', status:'active', statusLabel:'Aligned', lastChecked:'2026-03-08 05:30', impactAreas:['cms','billing','audit-risk'], actionState:'no-action', evidenceCount:7, trend:'stable', trendSummary:'Stable' },
-    { id:'c8', name:'Billing Doc Mismatch', description:'Claims where billing codes do not align with PCR clinical narrative', status:'warning', statusLabel:'2 Flags', lastChecked:'2026-03-08 06:00', impactAreas:['cms','billing','revenue','audit-risk'], actionState:'review-required', evidenceCount:2, trend:'stable', trendSummary:'Stable', owner:'Billing QA' },
-    { id:'c9', name:'Recurrent Transport Docs', description:'Recurring non-emergency transport authorization certifications and supporting documentation', status:'warning', statusLabel:'2 Expiring', lastChecked:'2026-03-08 05:00', nextDue:'2026-03-15', impactAreas:['cms','billing','revenue'], actionState:'review-required', evidenceCount:2, trend:'down', trendSummary:'2 expiring within 7d', owner:'Billing Team' },
-    { id:'c10', name:'Denial Risk Indicators', description:'Claims identified by pre-adjudication analysis as high probability of CMS denial', status:'critical', statusLabel:'4 Claims', lastChecked:'2026-03-08 06:00', impactAreas:['cms','billing','revenue'], actionState:'blocking', evidenceCount:4, trend:'down', trendSummary:'+2 this week', owner:'Billing Team' },
-  ],
+const EMPTY_COMPLIANCE_DATA: Record<DomainKey, ComplianceItem[]> = {
+  nemsis: [], hipaa: [], pcr: [], billing: [],
+  accreditation: [], dea: [], cms: [],
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DOMAIN SUMMARIES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const DOMAIN_SUMMARIES: Record<DomainKey, DomainSummary> = {
-  nemsis: { score:96, passing:9, warning:2, critical:0, lastReviewed:'2026-03-08 06:00', trend:'up', billingRisk:'low', licensureRisk:'low', operationalRisk:'low', suggestedActions:['Review 3 failed export records','Address demographic completeness gap'] },
-  hipaa: { score:91, passing:7, warning:4, critical:0, lastReviewed:'2026-03-08 06:00', trend:'up', billingRisk:'low', licensureRisk:'medium', operationalRisk:'low', suggestedActions:['Complete workforce training to 100%','Renew pending BAA','Review anomalous PHI access','Disable inactive user accounts'] },
-  pcr: { score:72, passing:2, warning:4, critical:3, lastReviewed:'2026-03-08 06:00', trend:'down', billingRisk:'high', licensureRisk:'medium', operationalRisk:'high', suggestedActions:['Clear 8 unsigned charts immediately','Resolve 6 charts blocking billing','Collect missing patient signatures'] },
-  billing: { score:85, passing:5, warning:3, critical:1, lastReviewed:'2026-03-08 06:00', trend:'stable', billingRisk:'high', licensureRisk:'low', operationalRisk:'medium', suggestedActions:['Address 4 claims at denial risk','Obtain 3 missing CMN documents','Renew 2 expiring transport certs'] },
-  accreditation: { score:88, passing:4, warning:3, critical:0, lastReviewed:'2026-03-08 00:00', trend:'up', billingRisk:'low', licensureRisk:'medium', operationalRisk:'low', suggestedActions:['Complete equipment calibration backlog','Prepare evidence packets for CAAS review','Push CE completion to 90%+'] },
-  dea: { score:78, passing:4, warning:2, critical:2, lastReviewed:'2026-03-08 06:00', trend:'down', billingRisk:'low', licensureRisk:'high', operationalRisk:'high', suggestedActions:['Reconcile unresolved narcotics discrepancy immediately','Clear overdue discrepancy review','Obtain 3 missing witness signatures'] },
-  cms: { score:84, passing:6, warning:3, critical:1, lastReviewed:'2026-03-08 06:00', trend:'stable', billingRisk:'high', licensureRisk:'medium', operationalRisk:'medium', suggestedActions:['Address 4 denial-risk claims before submission','Obtain 3 missing CMN/PCS documents','Resolve billing doc mismatches'] },
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PRIORITY ALERTS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const PRIORITY_ALERTS: PriorityAlert[] = [
-  { id:'pa1', severity:'critical', domain:'dea', domainLabel:'DEA', title:'Unreconciled narcotics discrepancy — 36 hours overdue', reason:'DEA regulation requires reconciliation within 24 hours. Licensing and audit exposure.', nextAction:'Narcotics Officer must reconcile immediately' },
-  { id:'pa2', severity:'critical', domain:'pcr', domainLabel:'PCR', title:'8 unsigned charts blocking billing submission', reason:'Revenue delayed on 8 transports. Charts cannot be billed until signed.', nextAction:'Field supervisors must clear signature backlog today' },
-  { id:'pa3', severity:'critical', domain:'cms', domainLabel:'CMS', title:'4 claims at high denial risk — documentation mismatch', reason:'Pre-adjudication flags indicate missing medical necessity documentation.', nextAction:'Billing team review and remediate before batch submission' },
-  { id:'pa4', severity:'warning', domain:'billing', domainLabel:'Billing', title:'3 missing CMN/PCS on recurring transports', reason:'Recurring transports without current certification will be denied on submission.', nextAction:'Obtain updated certifications from ordering physicians' },
-  { id:'pa5', severity:'warning', domain:'hipaa', domainLabel:'HIPAA', title:'Workforce HIPAA training at 87% — below 90% target', reason:'Non-compliance with training requirements creates audit exposure.', nextAction:'Send training reminders to non-compliant staff by Mar 15' },
-];
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ACTION QUEUE
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const ACTION_QUEUE: ActionQueueItem[] = [
-  { id:'aq1', title:'Reconcile narcotics discrepancy — Unit 14', owner:'M. Torres (Narcotics Officer)', dueDate:'2026-03-07', severity:'critical', domain:'dea', domainLabel:'DEA', isOverdue:true, reviewState:'open' },
-  { id:'aq2', title:'Complete unsigned PCR charts (8)', owner:'Field Supervisors', dueDate:'2026-03-08', severity:'critical', domain:'pcr', domainLabel:'PCR', isOverdue:false, reviewState:'in-progress' },
-  { id:'aq3', title:'Upload CMN documentation — 3 recurring patients', owner:'J. Kim (Billing)', dueDate:'2026-03-11', severity:'warning', domain:'cms', domainLabel:'CMS', isOverdue:false, reviewState:'open' },
-  { id:'aq4', title:'Complete HIPAA workforce training push', owner:'L. Chen (Training Coord)', dueDate:'2026-03-15', severity:'warning', domain:'hipaa', domainLabel:'HIPAA', isOverdue:false, reviewState:'in-progress' },
-  { id:'aq5', title:'Submit CAAS evidence packets', owner:'R. Patel (Accreditation)', dueDate:'2026-03-22', severity:'info', domain:'accreditation', domainLabel:'Accreditation', isOverdue:false, reviewState:'open' },
-  { id:'aq6', title:'Review anomalous PHI access — 2 flags', owner:'K. Wright (Security)', dueDate:'2026-03-10', severity:'warning', domain:'hipaa', domainLabel:'HIPAA', isOverdue:false, reviewState:'open' },
-];
+// Static domain/alert/queue data removed — all data sourced from live API
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPER COMPONENTS
@@ -732,44 +616,43 @@ export default function ComplianceCommandPage() {
   const [apiError, setApiError] = useState(false);
 
   const fetchSummary = useCallback(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    fetch(`${API_BASE}/api/v1/compliance/command/summary?days=30`, {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then((data: ApiComplianceSummary) => { setApiSummary(data); setApiError(false); })
-      .catch(() => { setApiError(true); });
+    getComplianceCommandSummaryPortal(30)
+      .then((data: ApiComplianceSummary) => {
+        setApiSummary(data);
+        setApiError(false);
+      })
+      .catch(() => {
+        setApiError(true);
+      });
   }, []);
 
   useEffect(() => { fetchSummary(); }, [fetchSummary]);
 
-  // Merge API domain scores with static summaries — API takes priority when available
+  // Domain summaries — exclusively from live API
   const effectiveSummaries = useMemo<Record<DomainKey, DomainSummary>>(() => {
-    if (!apiSummary) return DOMAIN_SUMMARIES;
-    const merged = { ...DOMAIN_SUMMARIES };
+    const EMPTY_DOMAIN: DomainSummary = { score: 0, passing: 0, warning: 0, critical: 0, lastReviewed: '—', trend: 'stable', billingRisk: 'low', licensureRisk: 'low', operationalRisk: 'low', suggestedActions: [] };
+    const base: Record<DomainKey, DomainSummary> = { nemsis: EMPTY_DOMAIN, hipaa: EMPTY_DOMAIN, pcr: EMPTY_DOMAIN, billing: EMPTY_DOMAIN, accreditation: EMPTY_DOMAIN, dea: EMPTY_DOMAIN, cms: EMPTY_DOMAIN };
+    if (!apiSummary) return base;
     for (const ds of apiSummary.domains) {
-      merged[ds.domain] = {
+      base[ds.domain] = {
         score: ds.score,
         passing: ds.passing,
         warning: ds.warning,
         critical: ds.critical,
-        lastReviewed: ds.last_reviewed || DOMAIN_SUMMARIES[ds.domain].lastReviewed,
+        lastReviewed: ds.last_reviewed || '—',
         trend: ds.trend,
         billingRisk: ds.billing_risk,
         licensureRisk: ds.licensure_risk,
         operationalRisk: ds.operational_risk,
-        suggestedActions: ds.suggested_actions.length > 0 ? ds.suggested_actions : DOMAIN_SUMMARIES[ds.domain].suggestedActions,
+        suggestedActions: ds.suggested_actions,
       };
     }
-    return merged;
+    return base;
   }, [apiSummary]);
 
-  // Priority alerts: use API alerts if available, fall back to static
+  // Priority alerts — exclusively from live API
   const effectiveAlerts = useMemo<PriorityAlert[]>(() => {
-    if (!apiSummary || apiSummary.priority_alerts.length === 0) return PRIORITY_ALERTS;
+    if (!apiSummary) return [];
     return apiSummary.priority_alerts.map(a => ({
       id: a.id,
       severity: a.severity,
@@ -781,9 +664,9 @@ export default function ComplianceCommandPage() {
     }));
   }, [apiSummary]);
 
-  // Action queue: merge API items with static for richer presentation  
+  // Action queue — exclusively from live API
   const effectiveActionQueue = useMemo<ActionQueueItem[]>(() => {
-    if (!apiSummary || apiSummary.action_queue.length === 0) return ACTION_QUEUE;
+    if (!apiSummary) return [];
     return apiSummary.action_queue.map(a => ({
       id: a.id,
       title: a.title,
@@ -797,36 +680,33 @@ export default function ComplianceCommandPage() {
     }));
   }, [apiSummary]);
 
-  const domainItems = COMPLIANCE_DATA[activeDomain];
+  const domainItems = EMPTY_COMPLIANCE_DATA[activeDomain];
   const domainSummary = effectiveSummaries[activeDomain];
   const domainConfig = DOMAIN_CONFIG[activeDomain];
 
+  // Domain counts derived from API summary scores — no static data
   const domainCounts = useMemo(() => {
     const counts: Record<string, { critical: number; warning: number }> = {};
     for (const key of TABS) {
-      const items = COMPLIANCE_DATA[key];
-      counts[key] = {
-        critical: items.filter(i => i.status === 'critical').length,
-        warning: items.filter(i => i.status === 'warning').length,
-      };
+      const ds = effectiveSummaries[key];
+      counts[key] = { critical: ds.critical, warning: ds.warning };
     }
     return counts;
-  }, []);
+  }, [effectiveSummaries]);
 
   const overallScore = useMemo(() => {
     if (apiSummary) return apiSummary.overall_score;
-    const scores = TABS.map(k => effectiveSummaries[k].score);
-    return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-  }, [apiSummary, effectiveSummaries]);
+    return 0;
+  }, [apiSummary]);
 
   const totalCritical = useMemo(() => {
     if (apiSummary) return apiSummary.critical_items;
-    return TABS.reduce((s, k) => s + COMPLIANCE_DATA[k].filter(i => i.status === 'critical').length, 0);
+    return 0;
   }, [apiSummary]);
 
   const totalWarning = useMemo(() => {
     if (apiSummary) return apiSummary.warning_items;
-    return TABS.reduce((s, k) => s + COMPLIANCE_DATA[k].filter(i => i.status === 'warning').length, 0);
+    return 0;
   }, [apiSummary]);
 
   const filteredQueue = useMemo(() => {
@@ -838,7 +718,7 @@ export default function ComplianceCommandPage() {
 
   const lastAuditLabel = apiSummary?.generated_at
     ? new Date(apiSummary.generated_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : 'Mar 8, 2026 06:00';
+    : '—';
 
   return (
     <AppShell>
@@ -847,7 +727,7 @@ export default function ComplianceCommandPage() {
         <div className="flex items-center gap-2 px-4 py-2.5 mb-4 border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span className="text-[0.65rem] font-bold tracking-wider uppercase">
-            Live compliance data unavailable — showing cached compliance posture
+            Live compliance data unavailable — connect to backend for real-time posture
           </span>
         </div>
       )}
@@ -915,7 +795,11 @@ export default function ComplianceCommandPage() {
       ═══════════════════════════════════════════════════════════════════════ */}
       <SectionDivider label="Priority Actions — Requires Immediate Attention" />
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-8">
-        {effectiveAlerts.map(alert => (
+        {effectiveAlerts.length === 0 ? (
+          <div className="col-span-full flex items-center justify-center py-8 text-[0.6rem] font-bold tracking-[0.2em] uppercase text-zinc-600">
+            {apiSummary ? 'No priority alerts' : 'Awaiting live compliance data'}
+          </div>
+        ) : effectiveAlerts.map(alert => (
           <PriorityAlertCard
             key={alert.id}
             alert={alert}
@@ -990,7 +874,17 @@ export default function ComplianceCommandPage() {
         className="mb-8"
       >
         <div className="flex flex-col">
-          {domainItems.map(item => (
+          {domainItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <AlertCircle className="w-6 h-6 text-zinc-600 mb-3" />
+              <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-zinc-500">
+                Detailed compliance items sourced from live compliance engine
+              </span>
+              <span className="text-[0.55rem] text-zinc-600 mt-1">
+                {apiSummary ? `${domainSummary.passing} passing · ${domainSummary.warning} warning · ${domainSummary.critical} critical` : 'Connect to backend for real-time item status'}
+              </span>
+            </div>
+          ) : domainItems.map(item => (
             <ComplianceRow
               key={item.id}
               item={item}

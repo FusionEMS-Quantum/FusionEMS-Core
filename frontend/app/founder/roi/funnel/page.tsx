@@ -7,34 +7,19 @@ import { NextBestActionCard, type NextAction } from '@/components/ui/NextBestAct
 import { SeverityBadge } from '@/components/ui/SeverityBadge';
 import { DomainNavCard, FounderStatusBar } from '@/components/shells/FounderCommand';
 import type { SeverityLevel } from '@/lib/design-system/tokens';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import {
+  getROIFunnelConversionFunnel,
+  getROIFunnelConversionKpis,
+  getROIFunnelRevenuePipeline,
+  type ROIFunnelConversionKpisResponse,
+  type ROIFunnelRevenuePipelineResponse,
+} from '@/services/api';
 
 type FetchStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type FunnelStage = {
   stage: string;
   count: number;
-};
-
-type ConversionFunnelResponse = {
-  funnel: FunnelStage[];
-  total_events: number;
-};
-
-type ConversionKpisResponse = {
-  total_events: number;
-  total_proposals: number;
-  active_subscriptions: number;
-  proposal_to_paid_conversion_pct: number;
-  as_of: string;
-};
-
-type RevenuePipelineResponse = {
-  pending_pipeline_cents: number;
-  active_mrr_cents: number;
-  pipeline_to_mrr_ratio: number;
-  as_of: string;
 };
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
@@ -64,28 +49,17 @@ export default function FunnelPage() {
   const [status, setStatus] = useState<FetchStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [funnelData, setFunnelData] = useState<FunnelStage[]>([]);
-  const [kpis, setKpis] = useState<ConversionKpisResponse | null>(null);
-  const [pipeline, setPipeline] = useState<RevenuePipelineResponse | null>(null);
+  const [kpis, setKpis] = useState<ROIFunnelConversionKpisResponse | null>(null);
+  const [pipeline, setPipeline] = useState<ROIFunnelRevenuePipelineResponse | null>(null);
 
   const fetchFunnelTelemetry = useCallback((): void => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
-    const fetchJson = async <T,>(url: string): Promise<T> => {
-      const res = await fetch(url, { headers });
-      if (!res.ok) {
-        throw new Error(`Request failed (${res.status}) ${url}`);
-      }
-      return res.json() as Promise<T>;
-    };
-
     setStatus('loading');
     setError(null);
 
     void Promise.all([
-      fetchJson<ConversionFunnelResponse>(`${API}/api/v1/roi-funnel/conversion-funnel`),
-      fetchJson<ConversionKpisResponse>(`${API}/api/v1/roi-funnel/conversion-kpis`),
-      fetchJson<RevenuePipelineResponse>(`${API}/api/v1/roi-funnel/revenue-pipeline`),
+      getROIFunnelConversionFunnel(),
+      getROIFunnelConversionKpis(),
+      getROIFunnelRevenuePipeline(),
     ])
       .then(([funnelRes, kpisRes, pipelineRes]) => {
         setFunnelData(funnelRes.funnel ?? []);

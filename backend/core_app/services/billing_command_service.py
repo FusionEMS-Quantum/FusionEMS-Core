@@ -553,3 +553,91 @@ class BillingCommandService:
             "risk_flags": risk_flags,
             "audit_event_id": str(audit.id),
         }
+
+    def get_margin_risk_by_tenant(self) -> dict[str, Any]:
+        """
+        Per-tenant margin risk analysis.
+        Revenue vs cost exposure (Stripe fees, clearinghouse costs, rework).
+        Founder-only cross-tenant visibility.
+        """
+        rows = self.db.query(
+            Tenant.id,
+            Tenant.name,
+            Tenant.billing_tier,
+            func.count(Claim.id).label("total_claims"),
+            func.sum(
+                case((Claim.status == ClaimState.PAID, Claim.insurance_paid_cents), else_=0)
+            ).label("revenue_cents"),
+            func.sum(
+                case((Claim.status == ClaimState.DENIED, 1), else_=0)
+            ).label("denied_count"),
+            func.sum(
+                case((Claim.status == ClaimState.DRAFT, 1), else_=0)
+            ).label("draft_count"),
+            func.sum(
+                case((Claim.status.in_([ClaimState.APPEAL_DRAFTED, ClaimState.APPEAL_PENDING_REVIEW]), 1), else_=0)
+            ).label("appeal_count"),
+        ).outerjoin(Claim, Claim.tenant_id == Tenant.id).group_by(
+            Tenant.id, Tenant.name, Tenant.billing_tier
+        ).order_by(desc("revenue_cents")).all()
+
+        tenants: list[dict[str, Any]] = []
+        for r in rows:
+            revenue = int(r.revenue_cents or 0)
+            total = int(r.total_claims or 0)
+            denied = int(r.denied_count or 0)
+            appeals = int(r.appeal_count or 0)
+            drafts = int(r.draft_count or 0)
+
+            # Estimated cost model:
+            # Stripe: ~2.9% + 30c per paid claim
+            paid_count = total - denied - drafts - appeals
+            stripe_fee_cents = int(revenue * 0.029 + paid_count * 30) if paid_count > 0 else 0
+
+            # Clearinghouse: ~$0.50 per submitted claim
+            clearinghouse_cost_cents = total * 50
+
+            # Rework cost: ~$25 per denial (staff time reprocessing)
+            rework_cost_cents = denied * 2500
+
+            # Appeal cost: ~$30 per appeal
+            appeal_cost_cents = appeals * 3000
+
+            total_cost_cents = stripe_fee_cents + clearinghouse_cost_cents + rework_cost_cents + appeal_cost_cents
+            net_margin_cents = revenue - total_cost_cents
+            margin_pct = round((net_margin_cents / revenue * 100) if revenue > 0 else 0, 2)
+            denial_rate = round((denied / total * 100) if total > 0 else 0, 2)
+
+            risk_level = "low"
+            if margin_pct < 70:
+                risk_level = "medium"
+            if margin_pct < 50:
+                risk_level = "high"
+            if margin_pct < 30:
+                risk_level = "critical"
+
+            tenants.append({
+                "tenant_id": str(r.id),
+                "name": r.name,
+                "billing_tier": r.billing_tier,
+                "total_claims": total,
+                "revenue_cents": revenue,
+                "denied_count": denied,
+                "appeal_count": appeals,
+                "denial_rate_pct": denial_rate,
+                "stripe_fee_cents": stripe_fee_cents,
+                "clearinghouse_cost_cents": clearinghouse_cost_cents,
+                "rework_cost_cents": rework_cost_cents,
+                "appeal_cost_cents": appeal_cost_cents,
+                "total_cost_cents": total_cost_cents,
+                "net_margin_cents": net_margin_cents,
+                "margin_pct": margin_pct,
+                "risk_level": risk_level,
+            })
+
+        return {
+            "tenants": tenants,
+            "total_tenants": len(tenants),
+            "high_risk_count": sum(1 for t in tenants if t["risk_level"] in ("high", "critical")),
+            "as_of": datetime.now(UTC).isoformat(),
+        }

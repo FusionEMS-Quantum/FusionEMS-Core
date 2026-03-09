@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { listPolicies, createPolicy, updatePolicy, deletePolicy, getPolicyVersions, requestPolicyApproval, rollbackPolicy } from '@/services/api';
 
 interface TenantPolicy {
   id: string;
@@ -24,11 +23,6 @@ interface PolicyVersion {
   change_reason: string | null;
   value_snapshot: Record<string, unknown>;
   created_at: string;
-}
-
-function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : '';
-  return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
 function StatusBadge({ active }: { active: boolean }) {
@@ -70,9 +64,9 @@ export default function PolicySandboxPage() {
   const loadPolicies = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/v1/policies`, { headers: authHeaders() });
-      if (res.ok) setPolicies(await res.json());
-    } finally {
+      const data = await listPolicies();
+      setPolicies(data);
+    } catch { /* swallow */ } finally {
       setLoading(false);
     }
   };
@@ -80,9 +74,9 @@ export default function PolicySandboxPage() {
   const loadVersions = async (policyId: string) => {
     setVersionsLoading(true);
     try {
-      const res = await fetch(`${API}/api/v1/policies/${policyId}/versions`, { headers: authHeaders() });
-      if (res.ok) setVersions(await res.json());
-    } finally {
+      const data = await getPolicyVersions(policyId);
+      setVersions(data);
+    } catch { /* swallow */ } finally {
       setVersionsLoading(false);
     }
   };
@@ -127,25 +121,12 @@ export default function PolicySandboxPage() {
     setFormValueError(null);
     setSaving(true);
     try {
-      let res: Response;
+      let saved: TenantPolicy;
       if (mode === 'create') {
-        res = await fetch(`${API}/api/v1/policies`, {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({ key: formKey, value: parsed, change_reason: formReason || null }),
-        });
+        saved = await createPolicy({ key: formKey, value: parsed, change_reason: formReason || null });
       } else {
-        res = await fetch(`${API}/api/v1/policies/${selected!.id}`, {
-          method: 'PATCH',
-          headers: authHeaders(),
-          body: JSON.stringify({ value: parsed, change_reason: formReason || null }),
-        });
+        saved = await updatePolicy(selected!.id, { value: parsed, change_reason: formReason || null });
       }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail ?? `HTTP ${res.status}`);
-      }
-      const saved: TenantPolicy = await res.json();
       if (mode === 'create') {
         setPolicies(prev => [saved, ...prev]);
       } else {
@@ -165,11 +146,7 @@ export default function PolicySandboxPage() {
   const deactivatePolicy = async () => {
     if (!selected) return;
     try {
-      const res = await fetch(`${API}/api/v1/policies/${selected.id}`, {
-        method: 'DELETE',
-        headers: authHeaders(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await deletePolicy(selected.id);
       await loadPolicies();
       setSelected(null);
       setVersions([]);
@@ -183,12 +160,7 @@ export default function PolicySandboxPage() {
     if (!selected || rollbackVersion === null) return;
     setRollingBack(true);
     try {
-      const res = await fetch(`${API}/api/v1/policies/${selected.id}/rollback/${rollbackVersion}`, {
-        method: 'POST',
-        headers: authHeaders(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const updated: TenantPolicy = await res.json();
+      const updated: TenantPolicy = await rollbackPolicy(selected.id, rollbackVersion);
       setPolicies(prev => prev.map(p => p.id === updated.id ? updated : p));
       setSelected(updated);
       await loadVersions(updated.id);
@@ -207,12 +179,7 @@ export default function PolicySandboxPage() {
     if (!parsed) { showToast('Invalid JSON in proposed value', false); return; }
     setRequestingApproval(true);
     try {
-      const res = await fetch(`${API}/api/v1/policies/${selected.id}/approvals`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ proposed_value: parsed }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await requestPolicyApproval(selected.id, { proposed_value: parsed });
       setShowApprovalPanel(false);
       showToast('Approval request submitted.', true);
     } catch (e) {

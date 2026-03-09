@@ -1,6 +1,17 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  getFounderBillingVoiceConfig,
+  getFounderBillingVoiceSummary,
+  listFounderBillingVoiceCallbacks,
+  listFounderBillingVoiceEscalations,
+  listFounderBillingVoiceVoicemails,
+  renderFounderBillingVoicePrompts,
+  takeoverFounderBillingVoiceEscalation,
+  updateFounderBillingVoiceConfig,
+  type FounderBillingVoiceConfigApi,
+} from '@/services/api';
 
 type SummaryPayload = {
   active_billing_calls: number;
@@ -27,20 +38,7 @@ type EscalationItem = {
 
 type EscalationsPayload = { items: EscalationItem[] };
 
-type VoiceConfig = {
-  voice_mode: 'human_audio' | 'tts' | string;
-  tts_voice: string;
-  tts_language: string;
-  tts_primary_engine?: 'xtts' | 'piper' | string;
-  tts_fallback_engine?: 'xtts' | 'piper' | string;
-  stt_engine?: 'faster_whisper' | string;
-  stt_model_size?: string;
-  telephony_engine?: 'telnyx' | 'asterisk' | 'freeswitch' | string;
-  emergency_forwarding_enabled?: boolean;
-  emergency_forward_reasons?: string[];
-  prompts: Record<string, string>;
-  audio_urls: Record<string, string>;
-};
+type VoiceConfig = FounderBillingVoiceConfigApi;
 
 type VoicemailItem = {
   id: string;
@@ -69,8 +67,6 @@ type CallbackItem = {
   created_at: string | null;
   updated_at: string | null;
 };
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 function cardTone(reason: string): { border: string; bg: string; text: string } {
   const r = (reason || '').toLowerCase();
@@ -119,25 +115,14 @@ export default function FounderBillingVoicePage() {
     setLoading(true);
     setError('');
     try {
-      const [summaryRes, escalationsRes, configRes, voicemailRes, callbackRes] = await Promise.all([
-        fetch(`${API_BASE}/api/v1/founder/billing-voice/summary`, { credentials: 'include' }),
-        fetch(`${API_BASE}/api/v1/founder/billing-voice/escalations?status=awaiting_human&limit=50`, { credentials: 'include' }),
-        fetch(`${API_BASE}/api/v1/founder/billing-voice/config`, { credentials: 'include' }),
-        fetch(`${API_BASE}/api/v1/founder/billing-voice/voicemails?limit=50`, { credentials: 'include' }),
-        fetch(`${API_BASE}/api/v1/founder/billing-voice/callbacks?limit=50`, { credentials: 'include' }),
+      const [summaryJson, escalationsJson, configJson, voicemailJson, callbackJson] = await Promise.all([
+        getFounderBillingVoiceSummary() as Promise<SummaryPayload>,
+        listFounderBillingVoiceEscalations('awaiting_human', 50) as Promise<EscalationsPayload>,
+        getFounderBillingVoiceConfig(),
+        listFounderBillingVoiceVoicemails(50),
+        listFounderBillingVoiceCallbacks(50),
       ]);
 
-      if (!summaryRes.ok) throw new Error(`Summary failed (${summaryRes.status})`);
-      if (!escalationsRes.ok) throw new Error(`Escalations failed (${escalationsRes.status})`);
-      if (!configRes.ok) throw new Error(`Voice config failed (${configRes.status})`);
-      if (!voicemailRes.ok) throw new Error(`Voicemail board failed (${voicemailRes.status})`);
-      if (!callbackRes.ok) throw new Error(`Callback board failed (${callbackRes.status})`);
-
-      const summaryJson: SummaryPayload = await summaryRes.json();
-      const escalationsJson: EscalationsPayload = await escalationsRes.json();
-      const configJson = await configRes.json();
-      const voicemailJson = await voicemailRes.json();
-      const callbackJson = await callbackRes.json();
       setSummary(summaryJson);
       setEscalations(escalationsJson.items || []);
       setVoiceConfig((configJson?.config || null) as VoiceConfig | null);
@@ -165,16 +150,7 @@ export default function FounderBillingVoicePage() {
     setTakeoverId(escalationId);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/v1/founder/billing-voice/escalations/${encodeURIComponent(escalationId)}/takeover`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: 'softphone' }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail || `Takeover failed (${res.status})`);
-      }
+      await takeoverFounderBillingVoiceEscalation(escalationId, { channel: 'softphone' });
       await load();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Takeover failed');
@@ -188,17 +164,7 @@ export default function FounderBillingVoicePage() {
     setSavingConfig(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/v1/founder/billing-voice/config`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(voiceConfig),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail || `Save failed (${res.status})`);
-      }
-      const payload = await res.json();
+      const payload = await updateFounderBillingVoiceConfig(voiceConfig);
       setVoiceConfig(payload?.config || voiceConfig);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to save voice config');
@@ -212,17 +178,7 @@ export default function FounderBillingVoicePage() {
     setRenderingPrompts(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/v1/founder/billing-voice/config/render-prompts`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preferred_engine: voiceConfig.tts_primary_engine || 'xtts' }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail || `Render prompts failed (${res.status})`);
-      }
-      const payload = await res.json();
+      const payload = await renderFounderBillingVoicePrompts({ preferred_engine: voiceConfig.tts_primary_engine || 'xtts' });
       setVoiceConfig(payload?.config || voiceConfig);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to render prompt audio');

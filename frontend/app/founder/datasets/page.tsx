@@ -21,25 +21,33 @@ import {
   CheckCircle2,
   AlertTriangle
 } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || "";
+import {
+  createDatasetAIExpression,
+  getDatasetActiveDevices,
+  getDatasetExports,
+  getDatasetStatus,
+  type DatasetActiveDeviceApi,
+  type DatasetAIExpressionApi,
+  type DatasetExportsApi,
+  type DatasetSystemStatusApi,
+} from "@/services/api";
 
 export default function GodModeDatasets() {
   const [activeTab, setActiveTab] = useState<'status' | 'nemsis_ai' | 'exports' | 'templates'>('status');
-  const [systemStatus, setSystemStatus] = useState<any>(null);
+  const [systemStatus, setSystemStatus] = useState<DatasetSystemStatusApi | null>(null);
   const [naturalQuery, setNaturalQuery] = useState("");
-  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<DatasetAIExpressionApi | null>(null);
   const [thinking, setThinking] = useState(false);
   
   // New States
   const [showGhostMode, setShowGhostMode] = useState(false);
-  const [activeDevices, setActiveDevices] = useState<any[]>([]);
-  const [exportData, setExportData] = useState<any>(null);
+  const [activeDevices, setActiveDevices] = useState<DatasetActiveDeviceApi[]>([]);
+  const [exportData, setExportData] = useState<DatasetExportsApi | null>(null);
 
-  const [infiltratedDevice, setInfiltratedDevice] = useState<any>(null);
+  const [infiltratedDevice, setInfiltratedDevice] = useState<DatasetActiveDeviceApi | null>(null);
   const [infiltrationLogs, setInfiltrationLog] = useState<string[]>([]);
 
-  const startInfiltration = (dev: any) => {
+  const startInfiltration = (dev: DatasetActiveDeviceApi) => {
     setInfiltratedDevice(dev);
     setInfiltrationLog([]);
     const logs = [
@@ -59,8 +67,7 @@ export default function GodModeDatasets() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${API}/api/datasets/status`);
-        const data = await res.json();
+        const data = await getDatasetStatus();
         setSystemStatus(data);
       } catch (e) {
         console.error("Failed to fetch system datasets status", e);
@@ -71,15 +78,15 @@ export default function GodModeDatasets() {
 
   const loadExports = async () => {
     try {
-      const res = await fetch(`${API}/api/datasets/exports`);
-      setExportData(await res.json());
+      const data = await getDatasetExports();
+      setExportData(data);
     } catch (e) { console.error(e); }
   };
 
   const loadDevices = async () => {
     try {
-      const res = await fetch(`${API}/api/datasets/active-devices`);
-      setActiveDevices(await res.json());
+      const data = await getDatasetActiveDevices();
+      setActiveDevices(data);
     } catch (e) { console.error(e); }
   };
 
@@ -96,12 +103,7 @@ export default function GodModeDatasets() {
     setThinking(true);
     setAiResult(null);
     try {
-      const res = await fetch(`${API}/api/datasets/ai-expression-builder`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ natural_language: naturalQuery })
-      });
-      const data = await res.json();
+      const data = await createDatasetAIExpression({ natural_language: naturalQuery });
       setAiResult(data);
     } catch (e) {
       console.error(e);
@@ -362,7 +364,7 @@ export default function GodModeDatasets() {
                   </tr>
                 </thead>
                 <tbody>
-                  {exportData.agencies.map((agency: any, i: number) => (
+                  {exportData.agencies.map((agency, i: number) => (
                     <tr key={i} className="border-b border-white/5">
                       <td className="p-4 font-bold text-gray-200">{agency.name}</td>
                       <td className="p-4 text-zinc-500">State HUB: {agency.state}</td>

@@ -1,344 +1,203 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Shield, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import {
+  getPortalProfile,
+  getPortalBillingSummary,
+  submitEligibilityInquiry,
+} from '@/services/api';
 
-const FIELD_STYLE: React.CSSProperties = {
-  width: '100%',
-  background: 'var(--color-bg-input)',
-  border: '1px solid var(--color-border-default)',
-  color: 'var(--color-text-primary)',
-  fontSize: 'var(--text-body)',
-  padding: '10px 14px',
-  outline: 'none',
-  clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-  boxSizing: 'border-box',
-};
-
-const LABEL_STYLE: React.CSSProperties = {
-  display: 'block',
-  fontFamily: 'var(--font-label)',
-  fontSize: 'var(--text-label)',
-  fontWeight: 600,
-  letterSpacing: 'var(--tracking-label)',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-muted)',
-  marginBottom: 6,
-};
-
-interface InsuranceFields {
-  carrier: string;
-  policyNumber: string;
-  groupNumber: string;
-  subscriberName: string;
+interface PatientProfile {
+  name?: string;
+  date_of_birth?: string;
+  member_id?: string;
+  insurance_provider?: string;
+  insurance_plan?: string;
+  group_number?: string;
+  policy_number?: string;
 }
 
-const EMPTY_INSURANCE: InsuranceFields = {
-  carrier: '',
-  policyNumber: '',
-  groupNumber: '',
-  subscriberName: '',
-};
+interface BillingSummary {
+  total_billed?: number;
+  total_paid?: number;
+  outstanding_balance?: number;
+  insurance_covered?: number;
+  patient_responsibility?: number;
+}
 
-function InsuranceSection({
-  title,
-  accent,
-  data,
-  onChange,
-  onAdd,
-}: {
-  title: string;
-  accent: string;
-  data: InsuranceFields | null;
-  onChange?: (_field: keyof InsuranceFields, _value: string) => void;
-  onAdd?: () => void;
-}) {
-  const isEmptySecondary = data === null;
-
-  return (
-    <div
-      style={{
-        background: '#0A0A0B',
-        border: '1px solid var(--color-border-default)',
-        borderLeft: `3px solid ${accent}`,
-        clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-        marginBottom: 16,
-      }}
-    >
-      <div
-        className="hud-rail"
-        style={{
-          padding: '10px 16px',
-          borderBottom: '1px solid var(--color-border-default)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <span
-          style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: 'var(--text-label)',
-            fontWeight: 600,
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          {title}
-        </span>
-      </div>
-
-      <div style={{ padding: 20 }}>
-        {isEmptySecondary ? (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 12,
-              padding: '20px 0',
-            }}
-          >
-            <p
-              style={{
-                fontSize: 'var(--text-body)',
-                color: 'var(--color-text-muted)',
-                textAlign: 'center',
-              }}
-            >
-              No secondary insurance on file.
-            </p>
-            <button
-              onClick={onAdd}
-              style={{
-                background: 'var(--color-brand-orange-ghost)',
-                border: '1px solid #FF4D00',
-                color: '#FF4D00',
-                fontFamily: 'var(--font-label)',
-                fontSize: 'var(--text-label)',
-                fontWeight: 700,
-                letterSpacing: 'var(--tracking-label)',
-                textTransform: 'uppercase',
-                padding: '9px 20px',
-                cursor: 'pointer',
-                clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-              }}
-            >
-              + Add Secondary Insurance
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div>
-                <label style={LABEL_STYLE}>Carrier</label>
-                <input
-                  type="text"
-                  value={data.carrier}
-                  onChange={(e) => onChange?.('carrier', e.target.value)}
-                  style={FIELD_STYLE}
-                  placeholder="Blue Cross Blue Shield"
-                />
-              </div>
-              <div>
-                <label style={LABEL_STYLE}>Subscriber Name</label>
-                <input
-                  type="text"
-                  value={data.subscriberName}
-                  onChange={(e) => onChange?.('subscriberName', e.target.value)}
-                  style={FIELD_STYLE}
-                  placeholder="Jane M. Doe"
-                />
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div>
-                <label style={LABEL_STYLE}>Policy #</label>
-                <input
-                  type="text"
-                  value={data.policyNumber}
-                  onChange={(e) => onChange?.('policyNumber', e.target.value)}
-                  style={FIELD_STYLE}
-                  placeholder="XYZ-123456789"
-                />
-              </div>
-              <div>
-                <label style={LABEL_STYLE}>Group #</label>
-                <input
-                  type="text"
-                  value={data.groupNumber}
-                  onChange={(e) => onChange?.('groupNumber', e.target.value)}
-                  style={FIELD_STYLE}
-                  placeholder="GRP-78901"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+interface EligibilityResult {
+  eligible: boolean;
+  plan_name?: string;
+  coverage_start?: string;
+  coverage_end?: string;
+  copay?: number;
+  deductible_remaining?: number;
+  out_of_pocket_remaining?: number;
+  checked_at?: string;
 }
 
 export default function PatientInsurancePage() {
-  const [primary, setPrimary] = useState<InsuranceFields>({
-    carrier: 'Blue Cross Blue Shield',
-    policyNumber: 'BCBS-4829017',
-    groupNumber: 'GRP-1045',
-    subscriberName: 'Jane M. Doe',
-  });
-  const [secondary, setSecondary] = useState<InsuranceFields | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [profile, setProfile] = useState<PatientProfile | null>(null);
+  const [billing, setBilling] = useState<BillingSummary | null>(null);
+  const [eligibility, setEligibility] = useState<EligibilityResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
-  function handlePrimaryChange(field: keyof InsuranceFields, value: string) {
-    setPrimary((prev) => ({ ...prev, [field]: value }));
-    setSaved(false);
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const results = await Promise.allSettled([
+          getPortalProfile(),
+          getPortalBillingSummary(),
+        ]);
+        if (results[0].status === 'fulfilled') {
+          const p = results[0].value;
+          setProfile(p?.data ?? p);
+        }
+        if (results[1].status === 'fulfilled') {
+          const b = results[1].value;
+          setBilling(b?.data ?? b);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load insurance data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  async function handleCheckEligibility() {
+    if (!profile) return;
+    try {
+      setChecking(true);
+      const res = await submitEligibilityInquiry({
+        patient_id: profile.member_id ?? '',
+        member_id: profile.member_id ?? '',
+        payer_id: profile.insurance_provider ?? '',
+        service_date: new Date().toISOString().split('T')[0],
+      });
+      const data = res?.data ?? res;
+      setEligibility(data);
+    } catch { /* toast */ } finally {
+      setChecking(false);
+    }
   }
 
-  function handleSecondaryChange(field: keyof InsuranceFields, value: string) {
-    setSecondary((prev) => (prev ? { ...prev, [field]: value } : prev));
-    setSaved(false);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500" />
+      </div>
+    );
   }
 
-  function handleSave() {
-    setSaved(true);
+  if (error) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+      </div>
+    );
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#050505',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        padding: '40px 16px',
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: 560 }}>
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 'var(--text-micro)',
-              fontWeight: 600,
-              letterSpacing: 'var(--tracking-micro)',
-              textTransform: 'uppercase',
-              color: '#FF4D00',
-              marginBottom: 6,
-            }}
-          >
-            Patient Portal
-          </div>
-          <h1
-            style={{
-              fontSize: 'var(--text-h2)',
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-              lineHeight: 'var(--leading-tight)',
-            }}
-          >
-            Insurance Information
-          </h1>
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/portal/patient" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
+          <Shield className="h-6 w-6 text-teal-400" />
+          <h1 className="text-2xl font-bold text-white">Insurance Verification</h1>
         </div>
-
-        <InsuranceSection
-          title="Primary Insurance"
-          accent="#FF4D00"
-          data={primary}
-          onChange={handlePrimaryChange}
-        />
-
-        <InsuranceSection
-          title="Secondary Insurance"
-          accent="var(--color-system-billing)"
-          data={secondary}
-          onChange={handleSecondaryChange}
-          onAdd={() => setSecondary({ ...EMPTY_INSURANCE })}
-        />
-
-        {/* Update button */}
-        <button
-          onClick={handleSave}
-          style={{
-            background: '#FF4D00',
-            color: '#000',
-            fontFamily: 'var(--font-label)',
-            fontSize: 'var(--text-label)',
-            fontWeight: 700,
-            letterSpacing: 'var(--tracking-label)',
-            textTransform: 'uppercase',
-            border: 'none',
-            padding: '13px 28px',
-            cursor: 'pointer',
-            clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-            width: '100%',
-          }}
-        >
-          Update Insurance
+        <button onClick={handleCheckEligibility} disabled={checking} className="px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 rounded-lg text-white text-sm font-medium">
+          {checking ? 'Checking...' : 'Check Eligibility'}
         </button>
+      </div>
 
-        {/* Confirmation */}
-        {saved && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: '10px 16px',
-              background: 'rgba(76, 175, 80, 0.08)',
-              border: '1px solid rgba(76, 175, 80, 0.3)',
-              clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ color: 'var(--color-status-active)', fontSize: 14 }}>✓</span>
-            <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-status-active)' }}>
-              Insurance information saved successfully.
-            </span>
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+        <h2 className="text-sm font-semibold text-white mb-3">Insurance Information</h2>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="text-gray-400">Provider:</span>
+            <span className="ml-2 text-white">{profile?.insurance_provider ?? '—'}</span>
           </div>
-        )}
-
-        {/* Review notice */}
-        <div
-          style={{
-            marginTop: 14,
-            padding: '12px 16px',
-            background: 'rgba(255, 107, 26, 0.05)',
-            border: '1px solid rgba(255, 107, 26, 0.15)',
-            clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-          }}
-        >
-          <p
-            style={{
-              fontSize: 11,
-              color: 'var(--color-text-muted)',
-              lineHeight: 'var(--leading-base)',
-            }}
-          >
-            Changes are reviewed by billing staff within 1 business day. You will receive a confirmation once your insurance update has been processed.
-          </p>
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <Link
-            href="/portal/patient/statements"
-            style={{
-              fontSize: 'var(--text-body)',
-              color: 'var(--color-text-muted)',
-              textDecoration: 'none',
-            }}
-          >
-            ← Back to Statements
-          </Link>
+          <div>
+            <span className="text-gray-400">Plan:</span>
+            <span className="ml-2 text-white">{profile?.insurance_plan ?? '—'}</span>
+          </div>
+          <div>
+            <span className="text-gray-400">Group #:</span>
+            <span className="ml-2 text-white font-mono">{profile?.group_number ?? '—'}</span>
+          </div>
+          <div>
+            <span className="text-gray-400">Policy #:</span>
+            <span className="ml-2 text-white font-mono">{profile?.policy_number ?? '—'}</span>
+          </div>
+          <div>
+            <span className="text-gray-400">Member ID:</span>
+            <span className="ml-2 text-white font-mono">{profile?.member_id ?? '—'}</span>
+          </div>
         </div>
       </div>
 
-      <style>{`
-        input:focus { border-color: var(--color-border-focus) !important; }
-      `}</style>
+      {billing && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Total Billed', value: `$${(billing.total_billed ?? 0).toLocaleString()}`, icon: Shield, color: 'blue' },
+            { label: 'Insurance Covered', value: `$${(billing.insurance_covered ?? 0).toLocaleString()}`, icon: CheckCircle, color: 'green' },
+            { label: 'Patient Responsibility', value: `$${(billing.patient_responsibility ?? 0).toLocaleString()}`, icon: Clock, color: 'yellow' },
+            { label: 'Outstanding', value: `$${(billing.outstanding_balance ?? 0).toLocaleString()}`, icon: XCircle, color: 'red' },
+          ].map((kpi) => (
+            <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
+              <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+              <div className="text-2xl font-bold text-white">{kpi.value}</div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {eligibility && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border ${eligibility.eligible ? 'border-green-500/30' : 'border-red-500/30'} rounded-lg p-4`}>
+          <div className="flex items-center gap-2 mb-3">
+            {eligibility.eligible ? <CheckCircle className="h-5 w-5 text-green-400" /> : <XCircle className="h-5 w-5 text-red-400" />}
+            <h2 className="text-sm font-semibold text-white">
+              {eligibility.eligible ? 'Eligible — Coverage Active' : 'Not Eligible — Coverage Inactive'}
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <span className="text-gray-400">Plan:</span>
+              <span className="ml-2 text-white">{eligibility.plan_name ?? '—'}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Coverage:</span>
+              <span className="ml-2 text-white">{eligibility.coverage_start ?? '—'} to {eligibility.coverage_end ?? '—'}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Copay:</span>
+              <span className="ml-2 text-white">${eligibility.copay ?? 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Deductible Remaining:</span>
+              <span className="ml-2 text-white">${eligibility.deductible_remaining ?? 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">OOP Remaining:</span>
+              <span className="ml-2 text-white">${eligibility.out_of_pocket_remaining ?? 0}</span>
+            </div>
+            {eligibility.checked_at && (
+              <div>
+                <span className="text-gray-400">Checked:</span>
+                <span className="ml-2 text-white">{new Date(eligibility.checked_at).toLocaleString()}</span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

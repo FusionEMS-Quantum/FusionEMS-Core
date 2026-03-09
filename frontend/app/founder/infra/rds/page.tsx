@@ -1,334 +1,112 @@
 'use client';
-import { motion } from 'framer-motion';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { ArrowLeft, Database, RefreshCw, AlertTriangle, Shield, HardDrive, Clock } from 'lucide-react';
+import { getSystemHealthDashboard, getBackupsStatus, getUptimeSLA, getSystemHealthMetricsLatency } from '@/services/api';
 
-function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
-  return (
-    <div className="border-b border-border-subtle pb-2 mb-4">
-      <div className="flex items-baseline gap-3">
-          <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
-      </div>
-    </div>
-  );
-}
+interface HealthDash { overall_status?: string; db_status?: string; db_connections?: number; db_size_mb?: number; }
+interface BackupInfo { last_backup?: string; status?: string; size_mb?: number; automated?: boolean; retention_days?: number; }
+interface SLAReport { uptime_pct?: number; target_pct?: number; downtime_minutes?: number; period?: string; }
+interface LatencyPoint { timestamp?: string; value?: number; }
 
-function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
-  const colors = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
-      style={{ borderColor: `${colors[status]}40`, color: colors[status], background: `${colors[status]}12` }}>
-      <span className="w-1 h-1 " style={{ background: colors[status] }} />
-      {label}
-    </span>
-  );
-}
+export default function RDSMonitorPage() {
+  const [health, setHealth] = useState<HealthDash | null>(null);
+  const [backup, setBackup] = useState<BackupInfo | null>(null);
+  const [sla, setSLA] = useState<SLAReport | null>(null);
+  const [latency, setLatency] = useState<LatencyPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
-  return (
-    <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
-      <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
-    </div>
-  );
-}
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [hRes, bRes, sRes, lRes] = await Promise.allSettled([
+        getSystemHealthDashboard(), getBackupsStatus(), getUptimeSLA(), getSystemHealthMetricsLatency(),
+      ]);
+      if (hRes.status === 'fulfilled') setHealth(hRes.value);
+      if (bRes.status === 'fulfilled') setBackup(bRes.value);
+      if (sRes.status === 'fulfilled') setSLA(sRes.value);
+      if (lRes.status === 'fulfilled') {
+        const l = lRes.value;
+        setLatency(Array.isArray(l?.datapoints) ? l.datapoints : Array.isArray(l) ? l : []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load RDS data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
-      style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      {children}
-    </div>
-  );
-}
+  useEffect(() => { loadData(); }, []);
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  return (
-    <div className="h-1.5 bg-zinc-950/[0.06]  overflow-hidden">
-      <motion.div className="h-full " style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
-    </div>
-  );
-}
+  const statusColor = (s: string | undefined) => {
+    if (s === 'healthy' || s === 'available') return 'text-emerald-400';
+    if (s === 'degraded') return 'text-amber-400';
+    return 'text-red-400';
+  };
 
-const PERF_METRICS = [
-  { label: 'CPU Utilization',     value: 12,  max: 100, color: 'var(--q-green)' },
-  { label: 'Memory Utilization',  value: 38,  max: 100, color: 'var(--q-yellow)' },
-  { label: 'Storage Utilization', value: 8.4, max: 100, color: 'var(--q-green)' },
-  { label: 'Read IOPS',           value: 180, max: 1000, color: 'var(--color-status-info)' },
-  { label: 'Write IOPS',          value: 160, max: 1000, color: 'var(--color-status-info)' },
-];
-
-const POOLS = [
-  { name: 'api-pool',    size: 20, active: 14, idle: 6, waiting: 0 },
-  { name: 'worker-pool', size: 10, active:  3, idle: 7, waiting: 0 },
-  { name: 'admin-pool',  size:  5, active:  1, idle: 4, waiting: 0 },
-];
-
-const SLOW_QUERIES = [
-  { query: 'SELECT incidents WHERE tenant_id=? LIMIT 100', avg: '42ms',  calls: 240, table: 'incidents'  },
-  { query: 'UPDATE claims SET status=? WHERE id=?',        avg: '18ms',  calls: 120, table: 'claims'     },
-  { query: 'INSERT INTO audit_logs ...',                   avg: '8ms',   calls: 840, table: 'audit_logs' },
-  { query: 'SELECT patients WHERE ...',                    avg: '65ms',  calls:  60, table: 'patients'   },
-  { query: 'SELECT vitals WHERE incident_id=?',            avg: '12ms',  calls: 480, table: 'vitals'     },
-];
-
-const CW_ALARMS = [
-  { name: 'CPUUtilization',       threshold: '>80%',     current: '12%',   status: 'ok' as const },
-  { name: 'FreeStorageSpace',     threshold: '<10GB',    current: '458GB', status: 'ok' as const },
-  { name: 'DatabaseConnections',  threshold: '>180',     current: '47',    status: 'ok' as const },
-  { name: 'ReadLatency',          threshold: '>200ms',   current: '4ms',   status: 'ok' as const },
-  { name: 'WriteLatency',         threshold: '>200ms',   current: '6ms',   status: 'ok' as const },
-];
-
-export default function RDSPostgresHealth() {
-  const [drillScheduled, setDrillScheduled] = useState(false);
-
-  function handleScheduleDrill() {
-    setDrillScheduled(true);
-    setTimeout(() => setDrillScheduled(false), 1400);
-  }
+  if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center"><RefreshCw className="w-8 h-8 animate-spin text-emerald-400" /></div>;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 px-6 py-8 font-mono">
-      <div className="max-w-6xl mx-auto space-y-8">
-
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
           <div>
-            <div className="text-body font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
-              MODULE 10 · INFRASTRUCTURE
-            </div>
-            <h1 className="text-2xl font-bold uppercase tracking-widest text-zinc-100">RDS PostgreSQL Health</h1>
-            <p className="text-[12px] text-zinc-500 mt-1">
-              Multi-AZ · automated backups · connection pooling · performance insights
-            </p>
+            <Link href="/founder/infra" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Infrastructure Hub</Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3"><Database className="w-8 h-8 text-blue-400" /> RDS Database Monitor</h1>
+            <p className="text-gray-400 mt-1">PostgreSQL performance, backup status, and replica health</p>
           </div>
-          <div className="mt-1">
-            <Badge label="Available" status="ok" />
+          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm"><RefreshCw className="w-4 h-4" /> Refresh</button>
+        </div>
+
+        {error && <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-red-400" /><span className="text-red-300">{error}</span></div>}
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Database className="w-4 h-4" /> DB Status</div>
+            <div className={`text-2xl font-bold uppercase ${statusColor(health?.db_status ?? health?.overall_status)}`}>{health?.db_status ?? health?.overall_status ?? 'Unknown'}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><HardDrive className="w-4 h-4" /> DB Size</div>
+            <div className="text-2xl font-bold text-blue-400">{health?.db_size_mb ? `${health.db_size_mb} MB` : '—'}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Shield className="w-4 h-4" /> SLA Uptime</div>
+            <div className="text-2xl font-bold text-emerald-400">{sla?.uptime_pct != null ? `${sla.uptime_pct}%` : '—'}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Clock className="w-4 h-4" /> Avg Latency</div>
+            <div className="text-2xl font-bold text-cyan-400">{latency.length > 0 ? `${(latency.reduce((a, l) => a + (l.value ?? 0), 0) / latency.length).toFixed(1)}ms` : '—'}</div>
           </div>
         </div>
 
-        {/* MODULE 1 — Database Overview */}
-        <section>
-          <SectionHeader number="1" title="Database Overview" sub="db.r6g.large · PostgreSQL 15" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <StatCard label="Status"           value="Available"    color="var(--color-status-active)" />
-            <StatCard label="Connections"      value="47 / 200"     color="var(--color-status-info)" />
-            <StatCard label="CPU"              value="12%"          color="var(--color-status-active)" />
-            <StatCard label="Storage"          value="42 GB"        sub="/ 500 GB" />
-            <StatCard label="Replication Lag"  value="0ms"          color="var(--color-status-active)" />
-            <StatCard label="IOPS"             value={340}          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Backup Status */}
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-emerald-400" /> Backup Status</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-gray-400">Last Backup</span><span className="text-white">{backup?.last_backup ? new Date(backup.last_backup).toLocaleString() : '—'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Status</span><span className={statusColor(backup?.status)}>{backup?.status ?? 'unknown'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Size</span><span className="text-white">{backup?.size_mb ? `${backup.size_mb} MB` : '—'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Automated</span><span className="text-white">{backup?.automated ? 'Yes' : 'No'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Retention</span><span className="text-white">{backup?.retention_days ? `${backup.retention_days} days` : '—'}</span></div>
+            </div>
           </div>
-        </section>
 
-        {/* MODULE 2 — Performance Metrics */}
-        <section>
-          <SectionHeader number="2" title="Performance Metrics" sub="CloudWatch Insights" />
-          <Panel>
-            <div className="space-y-4">
-              {PERF_METRICS.map((m) => (
-                <div key={m.label}>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-body text-zinc-400 uppercase tracking-wider">{m.label}</span>
-                    <span className="text-body font-semibold" style={{ color: m.color }}>
-                      {m.value}{m.max === 100 ? '%' : ''}{m.max !== 100 ? ` / ${m.max}` : ''}
-                    </span>
-                  </div>
-                  <ProgressBar value={m.value} max={m.max} color={m.color} />
-                </div>
-              ))}
+          {/* SLA Details */}
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Clock className="w-5 h-5 text-blue-400" /> SLA Report</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-gray-400">Current Uptime</span><span className="text-emerald-400 font-bold">{sla?.uptime_pct ?? '—'}%</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Target</span><span className="text-white">{sla?.target_pct ?? 99.99}%</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Downtime</span><span className="text-amber-400">{sla?.downtime_minutes ?? 0} min</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Period</span><span className="text-white">{sla?.period ?? 'Current Month'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Connections</span><span className="text-white">{health?.db_connections ?? '—'}</span></div>
             </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 3 — Connection Pools */}
-        <section>
-          <SectionHeader number="3" title="Connection Pools" sub="PgBouncer · transaction mode" />
-          <Panel>
-            <div className="overflow-x-auto">
-              <table className="w-full text-body">
-                <thead>
-                  <tr className="text-zinc-500 uppercase tracking-widest border-b border-border-subtle">
-                    <th className="text-left py-2 pr-4 font-semibold">Pool</th>
-                    <th className="text-right py-2 px-4 font-semibold">Size</th>
-                    <th className="text-right py-2 px-4 font-semibold">Active</th>
-                    <th className="text-right py-2 px-4 font-semibold">Idle</th>
-                    <th className="text-right py-2 pl-4 font-semibold">Waiting</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {POOLS.map((p, i) => (
-                    <tr key={p.name} className={`border-b border-border-subtle ${i % 2 === 0 ? 'bg-[rgba(255,255,255,0.01)]' : ''}`}>
-                      <td className="py-2.5 pr-4 font-semibold text-zinc-100">{p.name}</td>
-                      <td className="py-2.5 px-4 text-right text-zinc-400">{p.size}</td>
-                      <td className="py-2.5 px-4 text-right" style={{ color: 'var(--q-green)' }}>{p.active}</td>
-                      <td className="py-2.5 px-4 text-right text-zinc-400">{p.idle}</td>
-                      <td className="py-2.5 pl-4 text-right" style={{ color: p.waiting > 0 ? 'var(--color-status-warning)' : 'var(--color-status-active)' }}>{p.waiting}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 4 — Slow Query Log */}
-        <section>
-          <SectionHeader number="4" title="Slow Query Log" sub="sanitized · top 5 by avg duration" />
-          <Panel>
-            <div className="overflow-x-auto">
-              <table className="w-full text-body">
-                <thead>
-                  <tr className="text-zinc-500 uppercase tracking-widest border-b border-border-subtle">
-                    <th className="text-left py-2 pr-4 font-semibold">Query (sanitized)</th>
-                    <th className="text-right py-2 px-4 font-semibold">Avg Duration</th>
-                    <th className="text-right py-2 px-4 font-semibold">Calls/hr</th>
-                    <th className="text-right py-2 pl-4 font-semibold">Table</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SLOW_QUERIES.map((q, i) => (
-                    <tr key={i} className={`border-b border-border-subtle ${i % 2 === 0 ? 'bg-[rgba(255,255,255,0.01)]' : ''}`}>
-                      <td className="py-2.5 pr-4 text-zinc-400 max-w-[280px] truncate">{q.query}</td>
-                      <td className="py-2.5 px-4 text-right font-semibold"
-                        style={{ color: parseInt(q.avg) > 50 ? 'var(--color-status-warning)' : 'var(--color-status-active)' }}>{q.avg}</td>
-                      <td className="py-2.5 px-4 text-right text-zinc-400">{q.calls}</td>
-                      <td className="py-2.5 pl-4 text-right text-system-cad font-semibold">{q.table}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 5 — Backup Status */}
-        <section>
-          <SectionHeader number="5" title="Backup Status" sub="automated · S3 encrypted" />
-          <Panel>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2.5">
-              {[
-                { k: 'Last Backup',        v: '2 hours ago',     badge: { label: 'ok', status: 'ok' as const } },
-                { k: 'Retention Period',   v: '14 days',         badge: null },
-                { k: 'Backup Window',      v: '03:00–04:00 UTC', badge: null },
-                { k: 'Next Backup',        v: 'in 22 hours',     badge: null },
-                { k: 'Last Restore Test',  v: '30 days ago',     badge: { label: 'warn', status: 'warn' as const } },
-                { k: 'Backup Size',        v: '8.4 GB',          badge: null },
-              ].map(({ k, v, badge }) => (
-                <div key={k} className="flex justify-between items-center border-b border-border-subtle py-1.5">
-                  <span className="text-body text-zinc-500 uppercase tracking-wider">{k}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-body font-semibold text-zinc-100">{v}</span>
-                    {badge && <Badge label={badge.label} status={badge.status} />}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 6 — CloudWatch Alarms */}
-        <section>
-          <SectionHeader number="6" title="CloudWatch Alarms" sub="RDS alarm group" />
-          <Panel>
-            <div className="space-y-1">
-              <div className="grid grid-cols-4 text-micro font-semibold uppercase tracking-widest text-zinc-500 border-b border-border-subtle pb-2 mb-1">
-                <span>Alarm</span>
-                <span className="text-center">Threshold</span>
-                <span className="text-center">Current</span>
-                <span className="text-right">Status</span>
-              </div>
-              {CW_ALARMS.map((a, i) => (
-                <div key={a.name} className={`grid grid-cols-4 items-center py-2 border-b border-border-subtle ${i % 2 === 0 ? 'bg-[rgba(255,255,255,0.01)]' : ''}`}>
-                  <span className="text-body font-semibold text-zinc-100">{a.name}</span>
-                  <span className="text-body text-zinc-500 text-center">{a.threshold}</span>
-                  <span className="text-body font-semibold text-center" style={{ color: 'var(--q-green)' }}>{a.current}</span>
-                  <span className="text-right"><Badge label={a.status} status={a.status} /></span>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 7 — Multi-AZ Status */}
-        <section>
-          <SectionHeader number="7" title="Multi-AZ Status" sub="synchronous replication" />
-          <Panel>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-              {/* Primary */}
-              <div className="bg-green-500/[0.04] border border-green-500/[0.15] p-4"
-                style={{ clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)' }}>
-                <div className="text-micro font-bold uppercase tracking-widest text-zinc-500 mb-3">Primary AZ</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-body text-zinc-500 uppercase tracking-wider">Availability Zone</span>
-                    <span className="text-body font-semibold text-zinc-100">us-east-1a</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-body text-zinc-500 uppercase tracking-wider">Status</span>
-                    <Badge label="Primary / Active" status="ok" />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-body text-zinc-500 uppercase tracking-wider">Last Failover</span>
-                    <span className="text-body font-semibold text-zinc-400">Never</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Standby */}
-              <div className="bg-blue-400/[0.04] border border-blue-400/[0.15] p-4"
-                style={{ clipPath: 'polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)' }}>
-                <div className="text-micro font-bold uppercase tracking-widest text-zinc-500 mb-3">Standby AZ</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-body text-zinc-500 uppercase tracking-wider">Availability Zone</span>
-                    <span className="text-body font-semibold text-zinc-100">us-east-1b</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-body text-zinc-500 uppercase tracking-wider">Status</span>
-                    <Badge label="Standby / Synced" status="info" />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-body text-zinc-500 uppercase tracking-wider">Replication Lag</span>
-                    <span className="text-body font-semibold" style={{ color: 'var(--q-green)' }}>0ms</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Failover drill row */}
-            <div className="flex items-center justify-between border-t border-border-subtle pt-4">
-              <div className="flex items-center gap-3">
-                <span className="text-body text-zinc-500 uppercase tracking-wider">Last failover drill:</span>
-                <span className="text-body font-semibold text-zinc-100">30 days ago</span>
-                <Badge label="Due Soon" status="warn" />
-              </div>
-              <button
-                onClick={handleScheduleDrill}
-                className="px-3 py-1.5 text-body font-bold uppercase tracking-widest border transition-all"
-                style={{
-                  borderColor: 'rgba(255,107,26,0.4)',
-                  color: drillScheduled ? 'var(--color-text-primary)' : '#FF4D00',
-                  background: drillScheduled ? 'rgba(255,107,26,0.2)' : 'rgba(255,107,26,0.06)',
-                }}
-              >
-                {drillScheduled ? 'Scheduled' : 'Schedule Drill'}
-              </button>
-            </div>
-          </Panel>
-        </section>
-
-        {/* Back link */}
-        <div className="pt-2 pb-8">
-          <Link href="/founder" className="text-[12px] font-semibold uppercase tracking-wider transition-opacity hover:opacity-70" style={{ color: '#FF4D00' }}>
-            ← Back to Founder Command OS
-          </Link>
+          </div>
         </div>
-
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 # ruff: noqa: TRY200
-
 import logging
 import uuid
 from datetime import UTC, datetime

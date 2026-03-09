@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
+import {
+  getStandaloneBillingCommandArConcentrationRisk,
+  getStandaloneBillingCommandBillingHealth,
+  getStandaloneBillingCommandDashboard,
+  getStandaloneBillingCommandDenialHeatmap,
+  getStandaloneBillingCommandExecutiveSummary,
+  getStandaloneBillingCommandPayerPerformance,
+  getStandaloneBillingCommandRevenueLeakage,
+} from "@/services/api";
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -32,13 +39,31 @@ export default function BillingCommandPage() {
   const [heatmapData, setHeatmapData] = useState<{ heatmap: HeatmapEntry[]; total_denials: number; top_reason: string | null }>({ heatmap: [], total_denials: 0, top_reason: null });
 
   useEffect(() => {
-    fetch(`${API}/api/v1/billing-command/dashboard`).then(r => r.json()).then(setDashboard).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/billing-command/billing-health`).then(r => r.json()).then(setHealth).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/billing-command/payer-performance`).then(r => r.json()).then(setPayers).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/billing-command/revenue-leakage`).then(r => r.json()).then(setLeakage).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/billing-command/ar-concentration-risk`).then(r => r.json()).then(setArConc).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/billing-command/executive-summary`).then(r => r.json()).then(setExec).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/billing-command/denial-heatmap`).then(r => r.json()).then(setHeatmapData).catch((e: unknown) => { console.warn("[fetch error]", e); });
+    void Promise.allSettled([
+      getStandaloneBillingCommandDashboard(),
+      getStandaloneBillingCommandBillingHealth(),
+      getStandaloneBillingCommandPayerPerformance(),
+      getStandaloneBillingCommandRevenueLeakage(),
+      getStandaloneBillingCommandArConcentrationRisk(),
+      getStandaloneBillingCommandExecutiveSummary(),
+      getStandaloneBillingCommandDenialHeatmap(),
+    ]).then((results) => {
+      if (results[0].status === "fulfilled") setDashboard(results[0].value);
+      if (results[1].status === "fulfilled") setHealth(results[1].value);
+      if (results[2].status === "fulfilled") setPayers(results[2].value as { payers?: Array<Record<string, unknown>> });
+      if (results[3].status === "fulfilled") setLeakage(results[3].value);
+      if (results[4].status === "fulfilled") setArConc(results[4].value as { concentration?: Array<{ payer: string; pct: number; risk: string }>; total_ar_cents?: number });
+      if (results[5].status === "fulfilled") setExec(results[5].value);
+      if (results[6].status === "fulfilled") {
+        setHeatmapData(results[6].value as { heatmap: HeatmapEntry[]; total_denials: number; top_reason: string | null });
+      }
+
+      results.forEach((result) => {
+        if (result.status === "rejected") {
+          console.warn("[fetch error]", result.reason);
+        }
+      });
+    });
   }, []);
 
   const fmt$ = (v: unknown) => typeof v === "number" ? `$${(v / 100).toLocaleString()}` : "—";

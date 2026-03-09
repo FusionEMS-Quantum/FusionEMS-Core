@@ -7,14 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function authHeader(): Record<string, string> {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: 'Bearer ' + (localStorage.getItem('qs_token') || ''),
-  };
-}
+import { getEventsFeed, getEventsUnreadCount, markEventRead } from '@/services/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -261,16 +254,12 @@ export default function EventsFeedPage() {
     setEvents([]);
     latestCursorRef.current = null;
     try {
-      const params = new URLSearchParams({ limit: '50' });
+      const params: Record<string, string> = { limit: '50' };
       const since = dateRangeCursor(range);
-      if (since) params.set('cursor', since);
-      if (currentFilter) params.set('event_types[]', currentFilter + '.*');
+      if (since) params.cursor = since;
+      if (currentFilter) params['event_types[]'] = currentFilter + '.*';
 
-      const res = await fetch(`${API}/api/v1/events/feed?${params}`, {
-        headers: authHeader(),
-      });
-      if (!res.ok) return;
-      const data: EventsFeedResponse = await res.json();
+      const data: EventsFeedResponse = await getEventsFeed(params);
       setEvents(data.events || []);
       if (data.events?.length > 0) {
         latestCursorRef.current = data.events[0].created_at;
@@ -286,15 +275,11 @@ export default function EventsFeedPage() {
   const fetchNew = useCallback(async () => {
     if (!autoRefreshRef.current) return;
     try {
-      const params = new URLSearchParams({ limit: '50' });
-      if (latestCursorRef.current) params.set('cursor', latestCursorRef.current);
-      if (filterRef.current) params.set('event_types[]', filterRef.current + '.*');
+      const params: Record<string, string> = { limit: '50' };
+      if (latestCursorRef.current) params.cursor = latestCursorRef.current;
+      if (filterRef.current) params['event_types[]'] = filterRef.current + '.*';
 
-      const res = await fetch(`${API}/api/v1/events/feed?${params}`, {
-        headers: authHeader(),
-      });
-      if (!res.ok) return;
-      const data: EventsFeedResponse = await res.json();
+      const data: EventsFeedResponse = await getEventsFeed(params);
       if (data.events?.length > 0) {
         setEvents((prev) => {
           const existingIds = new Set(prev.map((e) => e.id));
@@ -312,11 +297,7 @@ export default function EventsFeedPage() {
   // ── Unread count ──────────────────────────────────────────────────────────
   const fetchUnreadCount = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/v1/events/unread-count`, {
-        headers: authHeader(),
-      });
-      if (!res.ok) return;
-      const data: { count: number } = await res.json();
+      const data: { count: number } = await getEventsUnreadCount();
       setUnreadCount(data.count ?? 0);
     } catch (err: unknown) {
       console.warn("[events-feed]", err);
@@ -330,10 +311,7 @@ export default function EventsFeedPage() {
     );
     setUnreadCount((c) => Math.max(0, c - 1));
     try {
-      await fetch(`${API}/api/v1/events/${eventId}/read`, {
-        method: 'POST',
-        headers: authHeader(),
-      });
+      await markEventRead(eventId);
     } catch (err: unknown) {
       console.warn("[events-feed]", err);
     }

@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { searchAuditLogs } from '@/services/api';
 
 const DOMAINS = [
   'all', 'auth_event', 'access_event', 'clinical_event', 'billing_event',
@@ -133,14 +132,7 @@ export default function AccessLogsPage() {
     if (toDt) body.to_dt = new Date(toDt).toISOString();
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : '';
-      const res = await fetch(`${API}/api/v1/audit/logs/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: SearchResponse = await res.json();
+      const data: SearchResponse = await searchAuditLogs(body);
       setLogs(data.items);
       setTotal(data.total);
     } catch (e) {

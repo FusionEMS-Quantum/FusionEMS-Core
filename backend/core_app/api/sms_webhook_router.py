@@ -12,8 +12,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency
-from core_app.core.config import get_settings
 from core_app.core.brand import get_default_brand
+from core_app.core.config import get_settings
 from core_app.services.ai_assistant_service import AIAssistantService  # Use existing service
 from core_app.telnyx.client import TelnyxApiError, send_sms
 from core_app.telnyx.signature import verify_telnyx_webhook

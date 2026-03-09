@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalPayments } from '@/services/api';
 
 interface Receipt {
   id: string;
@@ -63,15 +64,13 @@ export default function ReceiptsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'posted' | 'pending'>('all');
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/portal/payments`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(d => setReceipts(Array.isArray(d) ? d : d.items ?? []))
+    getPortalPayments()
+      .then(d => setReceipts(Array.isArray(d) ? d : []))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load receipts'))
       .finally(() => setLoading(false));
-  }, [apiBase]);
+  }, []);
 
   const filtered = receipts.filter(r => {
     if (filter === 'all') return true;

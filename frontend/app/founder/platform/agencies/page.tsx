@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { listLifecycleEvents, platformTransitionLifecycle } from '@/services/api';
+import {
+  listLifecycleEvents,
+  listPlatformAgencies,
+  platformTransitionLifecycle,
+  type PlatformAgencyApi,
+} from '@/services/api';
 
-interface Tenant {
-  id: string;
-  name: string;
-  lifecycle_state: string;
-  agency_type: string;
-  created_at: string;
-}
+type Tenant = PlatformAgencyApi;
 
 interface LifecycleEvent {
   id: string;
@@ -38,13 +37,6 @@ const STATE_COLORS: Record<string, string> = {
   ARCHIVED: 'text-zinc-500 bg-zinc-500/10',
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem('token') || '';
-}
-
 export default function AgencyLifecyclePage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [events, setEvents] = useState<LifecycleEvent[]>([]);
@@ -58,11 +50,8 @@ export default function AgencyLifecyclePage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${API_BASE}/api/v1/platform/agencies`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-        if (!res.ok) throw new Error(`Failed: ${res.status}`);
-        setTenants(await res.json());
+        const agencies = await listPlatformAgencies();
+        setTenants(agencies);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to load agencies');
       } finally {
@@ -94,10 +83,8 @@ export default function AgencyLifecyclePage() {
       setTransitionReason('');
       await loadEvents(selectedTenantId);
       // Reload tenant list
-      const res = await fetch(`${API_BASE}/api/v1/platform/agencies`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (res.ok) setTenants(await res.json());
+      const agencies = await listPlatformAgencies();
+      setTenants(agencies);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Transition failed');
     } finally {

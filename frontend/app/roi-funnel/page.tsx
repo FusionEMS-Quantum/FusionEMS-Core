@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import MarketingShell from "@/components/shells/MarketingShell";
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
+import {
+  createStandaloneROIFunnelEstimate,
+  getStandaloneROIFunnelConversionFunnel,
+  getStandaloneROIFunnelConversionKpis,
+  getStandaloneROIFunnelRevenuePipeline,
+} from "@/services/api";
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -77,21 +81,33 @@ export default function ROIFunnelPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/api/v1/roi-funnel/conversion-funnel`).then(r => r.json()).then(setFunnelData).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/roi-funnel/conversion-kpis`).then(r => r.json()).then(setKpis).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/roi-funnel/revenue-pipeline`).then(r => r.json()).then(setPipeline).catch((e: unknown) => { console.warn("[fetch error]", e); });
+    void Promise.all([
+      getStandaloneROIFunnelConversionFunnel(),
+      getStandaloneROIFunnelConversionKpis(),
+      getStandaloneROIFunnelRevenuePipeline(),
+    ])
+      .then(([funnel, conversionKpis, revenuePipeline]) => {
+        setFunnelData(funnel);
+        setKpis(conversionKpis as unknown as Record<string, unknown>);
+        setPipeline(revenuePipeline as unknown as Record<string, unknown>);
+      })
+      .catch((e: unknown) => { console.warn("[fetch error]", e); });
   }, []);
 
   const handleCalculate = async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/api/v1/roi-funnel/roi-estimate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ zip_code: "53202", call_volume: callVolume, current_billing_pct: billingPct, years }),
+      const d = await createStandaloneROIFunnelEstimate({
+        zip_code: "53202",
+        call_volume: callVolume,
+        current_billing_pct: billingPct,
+        years,
       });
-      const d = await r.json();
-      setRoiResult(d.outputs ?? d);
+      const outputs =
+        typeof d.outputs === "object" && d.outputs !== null
+          ? (d.outputs as Record<string, unknown>)
+          : d;
+      setRoiResult(outputs);
     } catch (e: unknown) { console.warn("[roi-estimate error]", e); } finally {
       setLoading(false);
     }

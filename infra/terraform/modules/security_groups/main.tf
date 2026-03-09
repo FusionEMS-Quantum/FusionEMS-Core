@@ -9,7 +9,12 @@ resource "aws_security_group" "alb" {
   })
 
   lifecycle {
+    # Prevent unnecessary replacements when only descriptions drift between
+    # live resources and Terraform-managed configuration (common during
+    # environment updates or manual console edits). We still create before
+    # destroy to preserve stability on changes.
     create_before_destroy = true
+    ignore_changes = [description]
   }
 }
 
@@ -21,6 +26,11 @@ resource "aws_security_group_rule" "alb_ingress_https" {
   to_port           = 443
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
+
+  lifecycle {
+    # Description-only diffs should not cause rule recreation.
+    ignore_changes = [description]
+  }
 }
 
 #checkov:skip=CKV_AWS_260: Port 80 ingress exists solely for immediate HTTP->HTTPS redirect and controlled CloudFront-to-origin compatibility.
@@ -34,6 +44,10 @@ resource "aws_security_group_rule" "alb_ingress_http" {
   to_port           = 80
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 #checkov:skip=CKV2_AWS_5: Security group is attached to ECS services by environment root modules.
@@ -48,6 +62,7 @@ resource "aws_security_group" "ecs" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [description]
   }
 }
 
@@ -61,6 +76,10 @@ resource "aws_security_group_rule" "alb_to_ecs" {
   to_port                  = tonumber(each.value)
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.alb.id
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 resource "aws_security_group_rule" "ecs_egress_vpc" {
@@ -71,6 +90,10 @@ resource "aws_security_group_rule" "ecs_egress_vpc" {
   to_port           = 65535
   protocol          = "tcp"
   cidr_blocks       = [var.vpc_cidr]
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 resource "aws_security_group_rule" "ecs_egress_https" {
@@ -81,6 +104,10 @@ resource "aws_security_group_rule" "ecs_egress_https" {
   to_port           = 443
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 resource "aws_security_group_rule" "alb_to_ecs_egress" {
@@ -91,6 +118,10 @@ resource "aws_security_group_rule" "alb_to_ecs_egress" {
   to_port                  = 65535
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.ecs.id
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 #checkov:skip=CKV2_AWS_5: Security group is attached to RDS instance in the rds module.
@@ -105,6 +136,7 @@ resource "aws_security_group" "rds" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [description]
   }
 }
 
@@ -116,6 +148,10 @@ resource "aws_security_group_rule" "ecs_to_rds" {
   to_port                  = 5432
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.ecs.id
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 #checkov:skip=CKV2_AWS_5: Security group is attached to ElastiCache replication group in the redis module.
@@ -130,6 +166,7 @@ resource "aws_security_group" "redis" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [description]
   }
 }
 
@@ -141,4 +178,8 @@ resource "aws_security_group_rule" "ecs_to_redis" {
   to_port                  = 6379
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.ecs.id
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }

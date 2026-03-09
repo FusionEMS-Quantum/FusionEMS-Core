@@ -3,31 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BILLING_PHONE_DISPLAY, BILLING_PHONE_TEL } from '@/lib/phone';
+import {
+  listPatientPortalStatementsForInvoiceLookup,
+  type PatientPortalInvoiceStatementApi,
+} from '@/services/api';
 
 interface PageProps {
   params: { invoiceId: string };
 }
 
-interface Invoice {
-  id: string;
-  data?: {
-    patient_name?: string;
-    responsible_party?: string;
-    agency_name?: string;
-    incident_date?: string;
-    transport_date?: string;
-    service_type?: string;
-    origin?: string;
-    destination?: string;
-    amount_billed_cents?: number;
-    amount_due_cents?: number;
-    amount_paid_cents?: number;
-    adjustments_cents?: number;
-    due_date?: string;
-    status?: string;
-    account_ref?: string;
-  };
-}
+type Invoice = PatientPortalInvoiceStatementApi;
 
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)' },
@@ -63,11 +48,8 @@ export default function InvoiceDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-    fetch(`${apiBase}/api/v1/portal/statements?limit=200`, { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : Promise.resolve({ statements: [] })))
-      .then((d) => {
-        const stmts: Invoice[] = Array.isArray(d?.statements) ? d.statements : [];
+    listPatientPortalStatementsForInvoiceLookup(200)
+      .then((stmts) => {
         const found = stmts.find((s) => s.id === params.invoiceId);
         if (!found) throw new Error('Invoice not found.');
         setInvoice(found);

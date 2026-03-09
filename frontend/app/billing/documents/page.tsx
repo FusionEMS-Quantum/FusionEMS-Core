@@ -1,321 +1,199 @@
 'use client';
 
-import React, { useState } from 'react';
-import AppShell from '@/components/AppShell';
-import { StatusChip } from '@/components/ui/StatusChip';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, FileText, RefreshCw, Upload, AlertTriangle, Search, Eye } from 'lucide-react';
+import { getDocumentUploadUrl, getDocument, processDocument } from '@/services/api';
 
-type DocStatusVariant = 'active' | 'warning' | 'neutral' | 'info' | 'critical';
-
-interface DocRow {
-  type: string;
-  patientId: string;
-  date: string;
-  statusVariant: DocStatusVariant;
-  statusLabel: string;
-  size: string;
+interface DocRecord {
+  id: string;
+  filename: string;
+  content_type: string;
+  status: string;
+  created_at: string;
+  s3_key?: string;
+  ocr_status?: string;
+  extracted_text?: string;
 }
 
-const DOCUMENTS: DocRow[] = [
-  { type: 'PCR', patientId: 'P-3821', date: '02/14/2026', statusVariant: 'active', statusLabel: 'Verified', size: '842 KB' },
-  { type: 'ABN', patientId: 'P-0194', date: '02/14/2026', statusVariant: 'warning', statusLabel: 'Pending Review', size: '124 KB' },
-  { type: 'Prior Auth', patientId: 'P-7742', date: '02/13/2026', statusVariant: 'info', statusLabel: 'Submitted', size: '98 KB' },
-  { type: 'Explanation of Benefits', patientId: 'P-5503', date: '02/13/2026', statusVariant: 'active', statusLabel: 'Received', size: '217 KB' },
-  { type: 'Remittance Advice', patientId: 'P-9918', date: '02/12/2026', statusVariant: 'active', statusLabel: 'Processed', size: '305 KB' },
-  { type: 'Signature Form', patientId: 'P-2267', date: '02/12/2026', statusVariant: 'critical', statusLabel: 'Missing', size: '—' },
-  { type: 'PCR', patientId: 'P-6641', date: '02/11/2026', statusVariant: 'active', statusLabel: 'Verified', size: '1.1 MB' },
-  { type: 'ABN', patientId: 'P-1130', date: '02/11/2026', statusVariant: 'neutral', statusLabel: 'Archived', size: '133 KB' },
-];
+export default function BillingDocumentsPage() {
+  const [documents, setDocuments] = useState<DocRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-const SUPPORTED_TYPES = ['PDF', 'TIFF', 'PNG', 'JPG', 'DOCX', 'HL7', 'XML'];
+  const loadDocuments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getDocument('list');
+      const docs = Array.isArray(res?.documents) ? res.documents : Array.isArray(res) ? res : [];
+      setDocuments(docs);
+    } catch {
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const TH: React.CSSProperties = {
-  padding: '10px 12px',
-  textAlign: 'left',
-  fontFamily: 'var(--font-label)',
-  fontSize: 'var(--text-label)',
-  fontWeight: 600,
-  letterSpacing: 'var(--tracking-label)',
-  textTransform: 'uppercase' as const,
-  color: 'var(--color-text-muted)',
-  background: 'var(--color-bg-panel-raised)',
-  whiteSpace: 'nowrap' as const,
-};
+  useEffect(() => { loadDocuments(); }, []);
 
-const TD: React.CSSProperties = {
-  padding: '10px 12px',
-  fontSize: 'var(--text-body)',
-  color: 'var(--color-text-secondary)',
-  borderTop: '1px solid var(--color-border-subtle)',
-  verticalAlign: 'middle',
-};
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const urlRes = await getDocumentUploadUrl({ filename: file.name, content_type: file.type });
+      if (urlRes?.upload_url) {
+        await fetch(urlRes.upload_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+        if (urlRes.document_id) {
+          await processDocument({ document_id: urlRes.document_id, s3_key: urlRes.s3_key ?? '' });
+        }
+      }
+      await loadDocuments();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
-export default function DocumentsPage() {
-  const [dragOver, setDragOver] = useState(false);
+  const filteredDocs = documents.filter(d =>
+    d.filename?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const statusColor = (s: string) => {
+    if (s === 'processed' || s === 'complete') return 'text-emerald-400';
+    if (s === 'processing' || s === 'pending') return 'text-amber-400';
+    return 'text-red-400';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+      </div>
+    );
+  }
 
   return (
-    <AppShell>
-      <div style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}>
-        {/* Header */}
-        <div
-          className="hud-rail mb-8 pb-4"
-          style={{ borderBottom: '1px solid var(--color-border-default)' }}
-        >
-          <div className="micro-caps mb-1" style={{ color: 'var(--color-system-billing)' }}>
-            Revenue Cycle
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Link href="/billing" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2">
+              <ArrowLeft className="w-4 h-4" /> Billing Hub
+            </Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <FileText className="w-8 h-8 text-blue-400" />
+              Billing Document Management
+            </h1>
+            <p className="text-gray-400 mt-1">Upload, process, and manage billing documents with OCR verification</p>
           </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 'var(--text-h1)',
-              fontWeight: 700,
-              letterSpacing: 'var(--tracking-label)',
-              textTransform: 'uppercase',
-              color: 'var(--color-text-primary)',
-              margin: 0,
-            }}
-          >
-            Documents &amp; Attachments
-          </h1>
+          <button onClick={loadDocuments} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
         </div>
 
-        {/* Two-column layout */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left: Document List (2/3) */}
-          <div style={{ flex: '2 1 0' }}>
-            <div className="label-caps mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: 'var(--tracking-label)' }}>
-              Document List
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400" />
+            <span className="text-red-300">{error}</span>
+          </div>
+        )}
+
+        {/* Upload & Search */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="bg-gray-900 border border-dashed border-gray-600 hover:border-blue-500 rounded-lg p-8 text-center cursor-pointer transition-colors">
+            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+            <span className="text-gray-400">{uploading ? 'Uploading...' : 'Drop or click to upload document'}</span>
+            <input
+              type="file"
+              className="hidden"
+              accept=".pdf,.png,.jpg,.jpeg,.tiff"
+              disabled={uploading}
+              onChange={(e) => { if (e.target.files?.[0]) handleUpload(e.target.files[0]); }}
+            />
+          </label>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Search className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-400">Search Documents</span>
             </div>
-            <div
-              style={{
-                background: '#0A0A0B',
-                clipPath: 'var(--chamfer-8)',
-                overflow: 'hidden',
-                boxShadow: 'var(--elevation-1)',
-              }}
-            >
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={TH}>Type</th>
-                    <th style={TH}>Patient ID</th>
-                    <th style={TH}>Date</th>
-                    <th style={{ ...TH, textAlign: 'center' }}>Status</th>
-                    <th style={{ ...TH, textAlign: 'right' }}>Size</th>
-                    <th style={{ ...TH, textAlign: 'center' }}>Action</th>
+            <input
+              type="text"
+              placeholder="Search by filename..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500"
+            />
+            <div className="mt-2 text-xs text-gray-500">{filteredDocs.length} document{filteredDocs.length !== 1 ? 's' : ''} found</div>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1">Total Documents</div>
+            <div className="text-2xl font-bold text-blue-400">{documents.length}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1">Processed</div>
+            <div className="text-2xl font-bold text-emerald-400">{documents.filter(d => d.status === 'processed' || d.status === 'complete').length}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1">Pending OCR</div>
+            <div className="text-2xl font-bold text-amber-400">{documents.filter(d => d.ocr_status === 'pending' || d.ocr_status === 'processing').length}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1">Failed</div>
+            <div className="text-2xl font-bold text-red-400">{documents.filter(d => d.status === 'error' || d.status === 'failed').length}</div>
+          </div>
+        </div>
+
+        {/* Documents Table */}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-800">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" /> Document Registry
+            </h2>
+          </div>
+          {filteredDocs.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No documents found. Upload a billing document to get started.</p>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Filename</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Type</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Status</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">OCR</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Created</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {filteredDocs.map((doc) => (
+                  <tr key={doc.id} className="hover:bg-gray-800/30">
+                    <td className="px-6 py-3 text-white font-medium">{doc.filename}</td>
+                    <td className="px-6 py-3 text-gray-400">{doc.content_type}</td>
+                    <td className={`px-6 py-3 font-medium ${statusColor(doc.status)}`}>{doc.status}</td>
+                    <td className={`px-6 py-3 font-medium ${statusColor(doc.ocr_status ?? 'unknown')}`}>{doc.ocr_status ?? '—'}</td>
+                    <td className="px-6 py-3 text-gray-400">{doc.created_at ? new Date(doc.created_at).toLocaleDateString() : '—'}</td>
+                    <td className="px-6 py-3">
+                      <button className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1">
+                        <Eye className="w-3 h-3" /> View
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {DOCUMENTS.map((doc, i) => (
-                    <tr
-                      key={`${doc.patientId}-${i}`}
-                      style={{
-                        background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
-                      }}
-                    >
-                      <td
-                        style={{
-                          ...TD,
-                          fontWeight: 600,
-                          color: 'var(--color-text-primary)',
-                        }}
-                      >
-                        {doc.type}
-                      </td>
-                      <td
-                        style={{
-                          ...TD,
-                          fontFamily: 'var(--font-mono)',
-                          color: 'var(--color-text-muted)',
-                        }}
-                      >
-                        {doc.patientId}
-                      </td>
-                      <td style={TD}>{doc.date}</td>
-                      <td style={{ ...TD, textAlign: 'center' }}>
-                        <StatusChip status={doc.statusVariant} size="sm">
-                          {doc.statusLabel}
-                        </StatusChip>
-                      </td>
-                      <td
-                        style={{
-                          ...TD,
-                          textAlign: 'right',
-                          fontFamily: 'var(--font-mono)',
-                          color: doc.size === '—' ? 'var(--color-text-muted)' : 'var(--color-text-secondary)',
-                        }}
-                      >
-                        {doc.size}
-                      </td>
-                      <td style={{ ...TD, textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                          {doc.size !== '—' && (
-                            <button
-                              style={{
-                                padding: '3px 10px',
-                                background: 'transparent',
-                                border: '1px solid var(--color-border-default)',
-                                clipPath: 'var(--chamfer-4)',
-                                color: 'var(--color-text-secondary)',
-                                fontFamily: 'var(--font-label)',
-                                fontSize: 'var(--text-label)',
-                                fontWeight: 600,
-                                letterSpacing: 'var(--tracking-label)',
-                                textTransform: 'uppercase',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Download
-                            </button>
-                          )}
-                          <button
-                            style={{
-                              padding: '3px 10px',
-                              background: 'transparent',
-                              border: '1px solid var(--color-border-default)',
-                              clipPath: 'var(--chamfer-4)',
-                              color: 'var(--color-text-secondary)',
-                              fontFamily: 'var(--font-label)',
-                              fontSize: 'var(--text-label)',
-                              fontWeight: 600,
-                              letterSpacing: 'var(--tracking-label)',
-                              textTransform: 'uppercase',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            View
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Right: Upload Panel (1/3) */}
-          <div style={{ flex: '1 1 0', minWidth: '260px' }}>
-            <div className="label-caps mb-3" style={{ color: 'var(--color-text-muted)', letterSpacing: 'var(--tracking-label)' }}>
-              Upload Documents
-            </div>
-
-            {/* Drop Zone */}
-            <div
-              style={{
-                background: '#0A0A0B',
-                clipPath: 'var(--chamfer-8)',
-                padding: '32px 24px',
-                marginBottom: '12px',
-                border: `2px dashed ${dragOver ? '#FF4D00' : 'var(--color-border-strong)'}`,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                transition: 'border-color var(--duration-fast)',
-                cursor: 'pointer',
-              }}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOver(false); }}
-            >
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  background: dragOver
-                    ? 'var(--color-brand-orange-ghost)'
-                    : 'var(--color-bg-panel-raised)',
-                  clipPath: 'var(--chamfer-8)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '20px',
-                  color: dragOver ? '#FF4D00' : 'var(--color-text-muted)',
-                  transition: 'all var(--duration-fast)',
-                }}
-                aria-hidden="true"
-              >
-                &#x2191;
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    fontSize: 'var(--text-body)',
-                    color: dragOver ? '#FF4D00' : 'var(--color-text-secondary)',
-                    fontWeight: 600,
-                    marginBottom: '4px',
-                  }}
-                >
-                  Drop files here
-                </div>
-                <div style={{ fontSize: 'var(--text-body)', color: 'var(--color-text-muted)' }}>
-                  or click to browse
-                </div>
-              </div>
-            </div>
-
-            {/* Supported Types */}
-            <div
-              style={{
-                background: '#0A0A0B',
-                clipPath: 'var(--chamfer-8)',
-                padding: '16px',
-                marginBottom: '12px',
-              }}
-            >
-              <div className="micro-caps mb-2" style={{ color: 'var(--color-text-muted)' }}>
-                Supported Formats
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {SUPPORTED_TYPES.map((t) => (
-                  <span
-                    key={t}
-                    style={{
-                      padding: '3px 8px',
-                      background: 'var(--color-bg-panel-raised)',
-                      clipPath: 'var(--chamfer-4)',
-                      border: '1px solid var(--color-border-default)',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 'var(--text-micro)',
-                      color: 'var(--color-text-secondary)',
-                      letterSpacing: 'var(--tracking-micro)',
-                    }}
-                  >
-                    {t}
-                  </span>
                 ))}
-              </div>
-            </div>
-
-            {/* Recent Uploads Count */}
-            <div
-              style={{
-                background: '#0A0A0B',
-                clipPath: 'var(--chamfer-8)',
-                padding: '16px',
-              }}
-            >
-              <div className="micro-caps mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                Recent Uploads
-              </div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 'var(--text-h3)',
-                  fontWeight: 700,
-                  color: 'var(--color-system-billing)',
-                }}
-              >
-                38
-              </div>
-              <div style={{ fontSize: 'var(--text-body)', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                Files uploaded in last 7 days
-              </div>
-            </div>
-          </div>
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }

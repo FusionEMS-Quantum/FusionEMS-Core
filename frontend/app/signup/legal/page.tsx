@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+import {
+  createPublicOnboardingLegalPacket,
+  signPublicOnboardingLegalPacket,
+} from '@/services/api';
 
 const inputClass =
   'bg-[rgba(255,255,255,0.05)] border border-border-DEFAULT px-3 py-2 text-sm text-zinc-100 placeholder-[rgba(255,255,255,0.3)] focus:outline-none focus:border-orange  w-full';
@@ -133,27 +135,12 @@ export default function LegalPage() {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/public/onboarding/legal/packet/create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            application_id: applicationId,
-            signer_email:   signerEmail,
-            signer_name:    name,
-            agency_name:    agencyName,
-          }),
+        const data = await createPublicOnboardingLegalPacket<{ packet_id?: string; id?: string }>({
+          application_id: applicationId,
+          signer_email: signerEmail,
+          signer_name: name,
+          agency_name: agencyName,
         });
-
-        if (!res.ok) {
-          let msg = `Error ${res.status}: ${res.statusText}`;
-          try {
-            const body = await res.json();
-            if (body?.detail) msg = body.detail;
-          } catch {}
-          throw new Error(msg);
-        }
-
-        const data = await res.json();
         const pid = data?.packet_id || data?.id || '';
         if (!pid) throw new Error('No packet ID returned from server.');
         setPacketId(pid);
@@ -191,30 +178,17 @@ export default function LegalPage() {
           ipAddress = ipData.ip || 'unknown';
         } catch {}
 
-        const res = await fetch(`${API_BASE}/public/onboarding/legal/packet/${packetId}/sign`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            signer_name:    signerName || sigText.trim(),
-            consents: {
-              msa:       checkedMSA,
-              baa:       checkedBAA,
-              authority: checkedAuth,
-            },
-            ip_address:     ipAddress,
-            user_agent:     navigator.userAgent,
-            signature_text: sigText.trim(),
-          }),
+        await signPublicOnboardingLegalPacket(packetId, {
+          signer_name: signerName || sigText.trim(),
+          consents: {
+            msa: checkedMSA,
+            baa: checkedBAA,
+            authority: checkedAuth,
+          },
+          ip_address: ipAddress,
+          user_agent: navigator.userAgent,
+          signature_text: sigText.trim(),
         });
-
-        if (!res.ok) {
-          let msg = `Error ${res.status}: ${res.statusText}`;
-          try {
-            const body = await res.json();
-            if (body?.detail) msg = body.detail;
-          } catch {}
-          throw new Error(msg);
-        }
 
         router.push('/signup/checkout');
       } catch (err: unknown) {

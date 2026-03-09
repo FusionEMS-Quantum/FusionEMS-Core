@@ -1,36 +1,36 @@
 'use client';
 import { QuantumTableSkeleton } from '@/components/ui';
+import axios from 'axios';
+import {
+  attachFaxToClaim,
+  detachFaxMatch,
+  getFaxDownloadUrl,
+  listFaxInbox,
+  triggerFaxMatch,
+  type FaxItemApi,
+  type FaxMatchSuggestionApi,
+} from '@/services/api';
 
 import { useEffect, useState, useCallback } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function authHeader() {
-  return { Authorization: 'Bearer ' + (localStorage.getItem('qs_token') || '') };
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data as Record<string, unknown> | undefined;
+    const detail = payload?.detail;
+    if (typeof detail === 'string' && detail.length > 0) return detail;
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail
+        .map((item) => (typeof item === 'string' ? item : JSON.stringify(item)))
+        .join('; ');
+    }
+    if (typeof error.message === 'string' && error.message.length > 0) return error.message;
+  }
+  return error instanceof Error ? error.message : fallback;
 }
 
-type MatchSuggestion = {
-  claim_id: string;
-  patient_name?: string;
-  score?: number;
-};
+type MatchSuggestion = FaxMatchSuggestionApi;
 
-type FaxItem = {
-  id: string;
-  from_number?: string;
-  to_number?: string;
-  received_at?: string;
-  page_count?: number;
-  document_match_status?: string;
-  status?: string;
-  data?: {
-    match_suggestions?: MatchSuggestion[];
-    claim_id?: string;
-    patient_name?: string;
-    match_type?: string;
-    confidence?: number;
-  };
-};
+type FaxItem = FaxItemApi;
 
 type FilterTab = 'all' | 'unmatched' | 'matched' | 'review';
 
@@ -87,25 +87,22 @@ export default function FaxInboxPage() {
   const [actionLoading, setActionLoading] = useState('');
   const [actionMsg, setActionMsg] = useState('');
 
-  const fetchFaxes = useCallback(async () => {
+  const fetchFaxes = useCallback(async (): Promise<FaxItem[]> => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/api/v1/fax/inbox?status=all&limit=50`, {
-        headers: authHeader(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const items: FaxItem[] = Array.isArray(json) ? json : (json.items ?? json.faxes ?? []);
+      const items = await listFaxInbox({ status: 'all', limit: 50 });
       setFaxes(items);
+      return items;
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load faxes');
+      setError(getErrorMessage(e, 'Failed to load faxes'));
+      return [];
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchFaxes(); }, [fetchFaxes]);
+  useEffect(() => { void fetchFaxes(); }, [fetchFaxes]);
 
   const filteredFaxes = faxes.filter((f) => {
     const s = f.document_match_status ?? f.status ?? '';
@@ -120,19 +117,15 @@ export default function FaxInboxPage() {
     setActionLoading('trigger-' + faxId);
     setActionMsg('');
     try {
-      const res = await fetch(`${API}/api/v1/fax/${faxId}/match/trigger`, {
-        method: 'POST',
-        headers: { ...authHeader(), 'Content-Type': 'application/json' },
-      });
-      const json = await res.json();
-      setActionMsg(res.ok ? 'Match triggered successfully.' : (json.detail ?? 'Error triggering match'));
-      if (res.ok) {
-        await fetchFaxes();
-        const updated = faxes.find((f) => f.id === faxId);
-        if (updated) setSelected(updated);
+      await triggerFaxMatch(faxId);
+      setActionMsg('Match triggered successfully.');
+      const updatedRows = await fetchFaxes();
+      const updated = updatedRows.find((f) => f.id === faxId);
+      if (updated) {
+        setSelected(updated);
       }
-    } catch {
-      setActionMsg('Network error.');
+    } catch (e: unknown) {
+      setActionMsg(getErrorMessage(e, 'Error triggering match'));
     } finally {
       setActionLoading('');
     }
@@ -142,16 +135,15 @@ export default function FaxInboxPage() {
     setActionLoading('attach-' + faxId);
     setActionMsg('');
     try {
-      const res = await fetch(`${API}/api/v1/claims/${claimId}/documents/attach-fax`, {
-        method: 'POST',
-        headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fax_id: faxId, attachment_type: 'manual' }),
-      });
-      const json = await res.json();
-      setActionMsg(res.ok ? 'Fax attached to claim.' : (json.detail ?? 'Error attaching fax'));
-      if (res.ok) await fetchFaxes();
-    } catch {
-      setActionMsg('Network error.');
+      await attachFaxToClaim(claimId, { fax_id: faxId, attachment_type: 'manual' });
+      setActionMsg('Fax attached to claim.');
+      const updatedRows = await fetchFaxes();
+      const updated = updatedRows.find((f) => f.id === faxId);
+      if (updated) {
+        setSelected(updated);
+      }
+    } catch (e: unknown) {
+      setActionMsg(getErrorMessage(e, 'Error attaching fax'));
     } finally {
       setActionLoading('');
     }
@@ -161,15 +153,13 @@ export default function FaxInboxPage() {
     setActionLoading('detach-' + faxId);
     setActionMsg('');
     try {
-      const res = await fetch(`${API}/api/v1/fax/${faxId}/match/detach`, {
-        method: 'POST',
-        headers: { ...authHeader(), 'Content-Type': 'application/json' },
-      });
-      const json = await res.json();
-      setActionMsg(res.ok ? 'Match detached.' : (json.detail ?? 'Error detaching'));
-      if (res.ok) await fetchFaxes();
-    } catch {
-      setActionMsg('Network error.');
+      await detachFaxMatch(faxId);
+      setActionMsg('Match detached.');
+      const updatedRows = await fetchFaxes();
+      const updated = updatedRows.find((f) => f.id === faxId);
+      setSelected(updated ?? null);
+    } catch (e: unknown) {
+      setActionMsg(getErrorMessage(e, 'Error detaching'));
     } finally {
       setActionLoading('');
     }
@@ -273,7 +263,7 @@ export default function FaxInboxPage() {
                   <p className="text-xs text-zinc-100/40 font-mono mt-0.5">{selected.id}</p>
                 </div>
                 <a
-                  href={`${API}/api/v1/fax/${selected.id}/download`}
+                  href={getFaxDownloadUrl(selected.id)}
                   target="_blank"
                   rel="noreferrer"
                   className="px-4 py-1.5 chamfer-4 bg-[#FF4D00]/20 border border-orange/40 text-[#FF4D00] text-xs font-semibold hover:bg-[#FF4D00]/30 transition-colors"

@@ -20,6 +20,9 @@ export type { QuantumModalProps } from './QuantumModal';
 export { QuantumEmptyState } from './QuantumEmptyState';
 export type { QuantumEmptyStateProps } from './QuantumEmptyState';
 
+export { ModuleUnavailable } from './ModuleUnavailable';
+export type { ModuleUnavailableProps, DependencyStatus, DependencyInfo } from './ModuleUnavailable';
+
 export { QuantumSkeleton, QuantumCardSkeleton, QuantumTableSkeleton } from './QuantumSkeleton';
 export type { QuantumSkeletonProps } from './QuantumSkeleton';
 

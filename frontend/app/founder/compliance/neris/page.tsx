@@ -1,12 +1,31 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  activateNERISPack,
+  compileNERISPack,
+  getNERISPackDetail,
+  importNERISPack,
+  listNERISPacksAll,
+  nerisCopilotExplain,
+  validateNERISBundle,
+} from '@/services/api';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === 'object' && error !== null) {
+    const response = (error as { response?: { data?: { detail?: string; message?: string }; status?: number } }).response;
+    const detail = response?.data?.detail || response?.data?.message;
+    if (typeof detail === 'string' && detail.trim().length > 0) {
+      return detail;
+    }
+    if (typeof response?.status === 'number') {
+      return `HTTP ${response.status}`;
+    }
+  }
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+  return fallback;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -141,17 +160,16 @@ function ImportModal({ onClose, onImported }: { onClose: () => void; onImported:
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/api/v1/founder/neris/packs/import`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source_type: 'github', repo, ref, name }),
+      await importNERISPack({
+        source_type: 'github',
+        repo,
+        ref,
+        name,
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
       onImported();
       onClose();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Import failed');
+      setError(extractErrorMessage(e, 'Import failed'));
     } finally {
       setLoading(false);
     }
@@ -345,11 +363,7 @@ function PacksTab({
 
   async function doCompile(id: string) {
     try {
-      const res = await fetch(`${API}/api/v1/founder/neris/packs/${id}/compile`, {
-        method: 'POST',
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error();
+      await compileNERISPack(id);
       pushToast('Compile initiated', 'success');
       onRefresh();
     } catch {
@@ -359,11 +373,7 @@ function PacksTab({
 
   async function doActivate(id: string) {
     try {
-      const res = await fetch(`${API}/api/v1/founder/neris/packs/${id}/activate`, {
-        method: 'POST',
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error();
+      await activateNERISPack(id);
       pushToast('Pack activated', 'success');
       onRefresh();
     } catch {
@@ -606,17 +616,16 @@ function ValidateTab({
     setEntityError('');
     setEntityResult(null);
     try {
-      const res = await fetch(`${API}/api/v1/founder/neris/validate/bundle`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pack_id: activePackId, entity_type: 'ENTITY', payload }),
+      const json = await validateNERISBundle({
+        pack_id: activePackId,
+        entity_type: 'ENTITY',
+        payload,
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
-      setEntityResult(json);
-      if (json.issues?.length > 0) onIssuesPersist(json.issues);
+      const result = json as ValidationResult;
+      setEntityResult(result);
+      if (result.issues?.length > 0) onIssuesPersist(result.issues);
     } catch (e: unknown) {
-      setEntityError(e instanceof Error ? e.message : 'Validation failed');
+      setEntityError(extractErrorMessage(e, 'Validation failed'));
     } finally {
       setLoadingEntity(false);
     }
@@ -630,17 +639,16 @@ function ValidateTab({
     setIncidentError('');
     setIncidentResult(null);
     try {
-      const res = await fetch(`${API}/api/v1/founder/neris/validate/bundle`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pack_id: activePackId, entity_type: entityType, payload }),
+      const json = await validateNERISBundle({
+        pack_id: activePackId,
+        entity_type: entityType,
+        payload,
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
-      setIncidentResult(json);
-      if (json.issues?.length > 0) onIssuesPersist(json.issues);
+      const result = json as ValidationResult;
+      setIncidentResult(result);
+      if (result.issues?.length > 0) onIssuesPersist(result.issues);
     } catch (e: unknown) {
-      setIncidentError(e instanceof Error ? e.message : 'Validation failed');
+      setIncidentError(extractErrorMessage(e, 'Validation failed'));
     } finally {
       setLoadingIncident(false);
     }
@@ -649,17 +657,12 @@ function ValidateTab({
   async function explainWithCopilot(issues: ValidationIssue[]) {
     setLoadingCopilot(true);
     setCopilotResult(null);
+    setCopilotError('');
     try {
-      const res = await fetch(`${API}/api/v1/neris/copilot/explain`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ issues }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
-      setCopilotResult(json);
+      const json = await nerisCopilotExplain({ issues });
+      setCopilotResult(json as CopilotResult);
     } catch (e: unknown) {
-      setCopilotError(e instanceof Error ? e.message : 'Copilot explain failed');
+      setCopilotError(extractErrorMessage(e, 'Copilot explain failed'));
     } finally {
       setLoadingCopilot(false);
     }
@@ -835,14 +838,8 @@ function FixListTab({ issues }: { issues: ValidationIssue[] }) {
     setLoadingCopilot(true);
     setCopilotResult(null);
     try {
-      const res = await fetch(`${API}/api/v1/neris/copilot/explain`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ issues }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error();
-      setCopilotResult(json);
+      const json = await nerisCopilotExplain({ issues });
+      setCopilotResult(json as CopilotResult);
     } catch (e: unknown) {
       console.warn('[copilot explain error]', e);
     } finally {
@@ -954,12 +951,9 @@ function RulesBrowserTab({ activePackId, packs }: { activePackId: string | null;
   useEffect(() => {
     if (!activePackId) return;
     setLoading(true);
-    fetch(`${API}/api/v1/founder/neris/packs/${activePackId}`, {
-      headers: { Authorization: getToken() },
-    })
-      .then((r) => r.json())
-      .then((d) => setPackDetail(d))
-      .catch((e: unknown) => { console.warn("[fetch error]", e); })
+    getNERISPackDetail(activePackId)
+      .then((d) => setPackDetail(d as { pack: NerisPack; files?: unknown[] }))
+      .catch((e: unknown) => { console.warn('[fetch error]', e); })
       .finally(() => setLoading(false));
   }, [activePackId]);
 
@@ -1115,12 +1109,18 @@ export default function NerisComplianceStudioPage() {
   const fetchPacks = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/v1/founder/neris/packs`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setPacks(Array.isArray(data) ? data : data.packs ?? []);
+      const data = await listNERISPacksAll();
+      if (Array.isArray(data)) {
+        setPacks(data as NerisPack[]);
+      } else if (
+        typeof data === 'object' &&
+        data !== null &&
+        Array.isArray((data as { packs?: unknown[] }).packs)
+      ) {
+        setPacks((data as { packs: NerisPack[] }).packs);
+      } else {
+        setPacks([]);
+      }
       setLastRefreshed(new Date());
     } catch {
       pushToast('Failed to load packs', 'error');

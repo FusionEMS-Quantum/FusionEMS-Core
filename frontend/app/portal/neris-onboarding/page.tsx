@@ -1,13 +1,38 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import { useToast } from '@/components/ui/ProductPolish';
+import {
+  completeTenantNERISOnboardingStep,
+  createFireValidationIncident,
+  getTenantNERISOnboardingStatus,
+  startTenantNERISOnboarding,
+  validateFireValidationIncident,
+} from '@/services/api';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data as Record<string, unknown> | undefined;
+    const detail = payload?.detail;
+    if (typeof detail === 'string' && detail.length > 0) {
+      return detail;
+    }
+    if (Array.isArray(detail)) {
+      const parts = detail.map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          return JSON.stringify(item);
+        }
+        return String(item);
+      });
+      if (parts.length > 0) return parts.join('; ');
+    }
+    if (typeof error.message === 'string' && error.message.length > 0) {
+      return error.message;
+    }
+  }
+  return error instanceof Error ? error.message : fallback;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -625,30 +650,21 @@ function Step7({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
     setValidationDone(false);
     setCreatedId(null);
     try {
-      const createRes = await fetch(`${API}/api/v1/incidents/fire`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          incident_number: form.incident_number,
-          start_datetime: form.start_datetime,
-          incident_type_code: form.incident_type_code,
-          address: { street: form.street, city: form.city, state: form.state, zip: form.zip },
-        }),
+      const createJson = await createFireValidationIncident({
+        incident_number: form.incident_number,
+        start_datetime: form.start_datetime,
+        incident_type_code: form.incident_type_code,
+        address: { street: form.street, city: form.city, state: form.state, zip: form.zip },
       });
-      const createJson = await createRes.json();
-      if (!createRes.ok) throw new Error(createJson.detail ?? `HTTP ${createRes.status}`);
       const incidentId = createJson.id ?? createJson.incident_id;
+      if (!incidentId) throw new Error('Incident creation response did not include an incident ID');
       setCreatedId(incidentId);
 
-      const valRes = await fetch(`${API}/api/v1/incidents/fire/${incidentId}/validate`, {
-        method: 'POST',
-        headers: { Authorization: getToken() },
-      });
-      const valJson = await valRes.json();
+      const valJson = await validateFireValidationIncident(incidentId);
       setIssues(valJson.issues ?? []);
       setValidationDone(true);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to create/validate incident');
+      setError(getErrorMessage(e, 'Failed to create/validate incident'));
     } finally {
       setLoading(false);
     }
@@ -879,19 +895,13 @@ export default function NerisOnboardingPage() {
   const fetchStatus = useCallback(async () => {
     setLoadingStatus(true);
     try {
-      const res = await fetch(`${API}/api/v1/tenant/neris/onboarding/status`, {
-        headers: { Authorization: getToken() },
-      });
-      if (res.status === 404) {
-        setNotStarted(true);
-        return;
-      }
-      const data = await res.json();
+      const data = await getTenantNERISOnboardingStatus();
       if (!data || !data.onboarding_id) {
         setNotStarted(true);
         return;
       }
       setOnboardingStatus(data);
+      setNotStarted(false);
     } catch {
       setNotStarted(true);
     } finally {
@@ -900,40 +910,32 @@ export default function NerisOnboardingPage() {
   }, []);
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, [fetchStatus]);
 
   async function handleStart() {
     if (!departmentNameInput.trim()) return;
     setStartLoading(true);
     try {
-      const res = await fetch(`${API}/api/v1/tenant/neris/onboarding/start`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ department_name: departmentNameInput, state: 'WI' }),
-      });
-      if (!res.ok) throw new Error();
+      await startTenantNERISOnboarding({ department_name: departmentNameInput, state: 'WI' });
       setNotStarted(false);
       await fetchStatus();
-    } catch {
-      toast.error('Failed to start onboarding');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Failed to start onboarding'));
     } finally {
       setStartLoading(false);
     }
   }
 
   async function completeStep(stepId: string, data: unknown) {
-    const res = await fetch(`${API}/api/v1/tenant/neris/onboarding/step/${stepId}/complete`, {
-      method: 'POST',
-      headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data }),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      const detail = json.detail ?? `HTTP ${res.status}`;
+    try {
+      await completeTenantNERISOnboardingStep(stepId, { data });
+    } catch (e: unknown) {
+      const detail = getErrorMessage(e, 'Step failed');
       toast.error(`Step failed: ${detail}`);
       throw new Error(detail);
     }
+
     toast.success('Step completed');
     // Optimistically advance
     setOnboardingStatus((prev) => {

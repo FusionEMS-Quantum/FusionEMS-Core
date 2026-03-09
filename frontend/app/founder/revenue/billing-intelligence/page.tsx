@@ -2,57 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { PlateCard } from '@/components/ui/PlateCard';
+import {
+  getBillingARAgingReport,
+  getBillingExecutiveSummary,
+  getBillingKPIs,
+  getClaimThroughput,
+  getDenialHeatmap,
+  getPayerPerformance,
+} from '@/services/api';
 
-const API = process.env.NEXT_PUBLIC_API_BASE ?? '';
+/* ─── Types ────────────────────────────────────────────────────────── */
 
-/* ─── Data ─────────────────────────────────────────────────────────── */
-
-const REVENUE_METRICS = [
-  { label: 'MoM Growth', value: '+8.4%', color: 'var(--color-status-active)', dir: '▲' },
-  { label: 'QoQ Growth', value: '+22.1%', color: 'var(--color-status-active)', dir: '▲' },
-  { label: 'YoY Growth', value: '+41.7%', color: 'var(--color-status-active)', dir: '▲' },
-  { label: 'Run Rate (ARR)', value: '$2.84M', color: '#FF4D00', dir: '' },
-];
-
-const DENIAL_REASONS = [
-  { reason: 'Missing Prior Auth', count: 87, pct: 24 },
-  { reason: 'Duplicate Claim', count: 63, pct: 18 },
-  { reason: 'Patient Not Eligible', count: 58, pct: 16 },
-  { reason: 'Coding Error (CPT)', count: 44, pct: 12 },
-  { reason: 'Service Not Covered', count: 36, pct: 10 },
-];
-
-const PAYERS = [
-  { name: 'Medicare', volume: 412, avgDays: 18, denialRate: '6.2%', netCollection: '94.1%' },
-  { name: 'Medicaid', volume: 298, avgDays: 24, denialRate: '11.8%', netCollection: '88.4%' },
-  { name: 'BCBS', volume: 187, avgDays: 14, denialRate: '4.9%', netCollection: '97.2%' },
-  { name: 'United Health', volume: 143, avgDays: 16, denialRate: '7.3%', netCollection: '92.8%' },
-  { name: 'Aetna', volume: 96, avgDays: 13, denialRate: '3.6%', netCollection: '98.1%' },
-  { name: 'Self Pay', volume: 74, avgDays: 42, denialRate: '—', netCollection: '61.3%' },
-];
-
-const AR_AGING = [
-  { bucket: '0–30 days', amount: 284500, pct: 52, color: 'var(--color-status-active)' },
-  { bucket: '31–60 days', amount: 118200, pct: 22, color: 'var(--color-status-active)' },
-  { bucket: '61–90 days', amount: 76400, pct: 14, color: 'var(--color-status-warning)' },
-  { bucket: '91–120 days', amount: 43800, pct: 8, color: 'var(--color-brand-orange-bright)' },
-  { bucket: '120+ days', amount: 21600, pct: 4, color: 'var(--color-brand-red)' },
-];
-
-const PROC_CODES = [
-  { code: 'A0427', desc: 'ALS Level 1 — Emergency', volume: 318, accuracy: 96.2, error: 3.8 },
-  { code: 'A0429', desc: 'BLS — Emergency', volume: 241, accuracy: 98.1, error: 1.9 },
-  { code: 'A0433', desc: 'ALS Level 2', volume: 89, accuracy: 93.4, error: 6.6 },
-  { code: 'A0436', desc: 'Rotary Wing Transport', volume: 34, accuracy: 97.1, error: 2.9 },
-  { code: 'A0428', desc: 'BLS — Non-Emergency', volume: 178, accuracy: 99.4, error: 0.6 },
-];
-
-const PRODUCTIVITY = [
-  { label: 'Claims / Day', value: '47.3', sub: 'avg last 30d', color: 'var(--color-system-billing)' },
-  { label: 'Clean Claim %', value: '91.8%', sub: '+2.1% vs last mo', color: 'var(--color-status-active)' },
-  { label: 'Resubmission Rate', value: '8.2%', sub: '-1.4% vs last mo', color: 'var(--color-status-warning)' },
-  { label: 'Coder Productivity', value: '94.1%', sub: 'above baseline', color: 'var(--color-status-active)' },
-];
+interface RevenueMetric { label: string; value: string; color: string; dir: string }
+interface DenialReason { reason: string; count: number; pct: number }
+interface PayerRow { name: string; volume: number; avgDays: number; denialRate: string; netCollection: string }
+interface ArBucket { bucket: string; amount: number; pct: number; color: string }
+interface ProcCode { code: string; desc: string; volume: number; accuracy: number; error: number }
+interface ProdMetric { label: string; value: string; sub: string; color: string }
 
 function MetricRow({
   label,
@@ -110,22 +76,134 @@ function MetricRow({
 
 export default function BillingIntelligencePage() {
   const [revBars, setRevBars] = useState<number[]>([]);
+  const [revenueMetrics, setRevenueMetrics] = useState<RevenueMetric[]>([]);
+  const [denialReasons, setDenialReasons] = useState<DenialReason[]>([]);
+  const [payers, setPayers] = useState<PayerRow[]>([]);
+  const [arAging, setArAging] = useState<ArBucket[]>([]);
+  const [totalAr, setTotalAr] = useState<number>(0);
+  const [procCodes, setProcCodes] = useState<ProcCode[]>([]);
+  const [productivity, setProductivity] = useState<ProdMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API}/api/v1/billing-command/executive-summary`)
-      .then(r => r.json())
-      .then(data => {
-        const monthly = data.monthly_revenue_cents;
-        if (Array.isArray(monthly) && monthly.length > 0) {
-          const maxVal = Math.max(...monthly, 1);
-          setRevBars(monthly.map((v: number) => Math.round((v / maxVal) * 100)));
+    setLoading(true);
+
+    const safe = async <T,>(fn: () => Promise<T>): Promise<T | null> => {
+      try {
+        return await fn();
+      } catch { return null; }
+    };
+
+    Promise.all([
+      safe(() => getBillingExecutiveSummary()),
+      safe(() => getDenialHeatmap()),
+      safe(() => getPayerPerformance()),
+      safe(() => getBillingARAgingReport()),
+      safe(() => getClaimThroughput()),
+      safe(() => getBillingKPIs()),
+    ]).then(([exec, denial, payerData, arData, throughput, kpis]) => {
+      // Revenue metrics from executive-summary
+      if (exec) {
+        const fmtPct = (v: number | undefined) => v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(1)}%` : '—';
+        const fmtDollars = (cents: number | undefined) => {
+          if (cents == null) return '—';
+          const d = cents / 100;
+          return d >= 1_000_000 ? `$${(d / 1_000_000).toFixed(2)}M` : d >= 1_000 ? `$${(d / 1_000).toFixed(0)}K` : `$${d.toFixed(0)}`;
+        };
+        setRevenueMetrics([
+          { label: 'MoM Growth', value: fmtPct(exec.mom_growth_pct), color: 'var(--color-status-active)', dir: exec.mom_growth_pct != null && exec.mom_growth_pct >= 0 ? '▲' : '▼' },
+          { label: 'QoQ Growth', value: fmtPct(exec.qoq_growth_pct), color: 'var(--color-status-active)', dir: exec.qoq_growth_pct != null && exec.qoq_growth_pct >= 0 ? '▲' : '▼' },
+          { label: 'YoY Growth', value: fmtPct(exec.yoy_growth_pct), color: 'var(--color-status-active)', dir: exec.yoy_growth_pct != null && exec.yoy_growth_pct >= 0 ? '▲' : '▼' },
+          { label: 'Run Rate (ARR)', value: fmtDollars(exec.arr_cents), color: '#FF4D00', dir: '' },
+        ]);
+        if (Array.isArray(exec.monthly_revenue_cents) && exec.monthly_revenue_cents.length > 0) {
+          const maxVal = Math.max(...exec.monthly_revenue_cents, 1);
+          setRevBars(exec.monthly_revenue_cents.map((v: number) => Math.round((v / maxVal) * 100)));
         }
-      })
-      .catch((e) => console.error(e));
+      }
+
+      // Denial heatmap
+      if (Array.isArray((denial as { heatmap?: Array<{ reason?: string; reason_code?: string; count?: number; percentage?: number }> } | null)?.heatmap)) {
+        setDenialReasons((denial as { heatmap: Array<{ reason?: string; reason_code?: string; count?: number; percentage?: number }> }).heatmap.map((d) => ({
+          reason: d.reason || d.reason_code || 'Unknown',
+          count: d.count ?? 0,
+          pct: Math.round(d.percentage ?? 0),
+        })));
+      }
+
+      // Payer performance
+      const payerRows = (payerData as { payers?: Array<{ payer_name: string; submitted_count?: number; avg_days_to_payment?: number; denial_rate?: number; net_collection_rate?: number }> } | null)?.payers;
+      if (Array.isArray(payerRows)) {
+        setPayers(payerRows.map((p) => ({
+          name: p.payer_name,
+          volume: p.submitted_count ?? 0,
+          avgDays: p.avg_days_to_payment ?? 0,
+          denialRate: p.denial_rate != null ? `${p.denial_rate.toFixed(1)}%` : '—',
+          netCollection: p.net_collection_rate != null ? `${p.net_collection_rate.toFixed(1)}%` : '—',
+        })));
+      }
+
+      // AR aging
+      if (arData?.buckets && Array.isArray(arData.buckets)) {
+        const totalCents = arData.total_ar_cents ?? arData.buckets.reduce((s, b) => s + b.total_cents, 0);
+        setTotalAr(totalCents);
+        const colors = ['var(--color-status-active)', 'var(--color-status-active)', 'var(--color-status-warning)', 'var(--color-brand-orange-bright)', 'var(--color-brand-red)'];
+        setArAging(arData.buckets.map((b, i) => ({
+          bucket: b.label,
+          amount: b.total_cents,
+          pct: totalCents > 0 ? Math.round((b.total_cents / totalCents) * 100) : 0,
+          color: colors[Math.min(i, colors.length - 1)],
+        })));
+      }
+
+      // Coding accuracy / throughput
+      if (throughput?.throughput && Array.isArray(throughput.throughput)) {
+        setProcCodes(throughput.throughput.map((t: any) => ({
+          code: t.code,
+          desc: t.description,
+          volume: t.volume,
+          accuracy: t.accuracy_pct ?? 0,
+          error: t.error_pct ?? 0,
+        })));
+      }
+
+      // Productivity / KPIs
+      if (kpis) {
+        setProductivity([
+          { label: 'Claims / Day', value: kpis.claims_per_day != null ? kpis.claims_per_day.toFixed(1) : '—', sub: 'avg last 30d', color: 'var(--color-system-billing)' },
+          { label: 'Clean Claim %', value: kpis.clean_claim_rate != null ? `${kpis.clean_claim_rate.toFixed(1)}%` : '—', sub: '', color: 'var(--color-status-active)' },
+          { label: 'Denial Rate', value: kpis.denial_rate != null ? `${kpis.denial_rate.toFixed(1)}%` : '—', sub: '', color: 'var(--color-status-warning)' },
+          { label: 'Collection Rate', value: kpis.collection_rate != null ? `${kpis.collection_rate.toFixed(1)}%` : '—', sub: '', color: 'var(--color-status-active)' },
+        ]);
+      }
+
+      setLoading(false);
+    }).catch(() => {
+      setError('Failed to load billing intelligence data');
+      setLoading(false);
+    });
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ padding: '20px 24px', minHeight: '100%' }}>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-32 bg-white/5 animate-pulse rounded" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px 24px', minHeight: '100%' }}>
+      {error && (
+        <div style={{ padding: '10px 14px', marginBottom: 16, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+          {error}
+        </div>
+      )}
       {/* Page header */}
       <div
         className="hud-rail"
@@ -216,7 +294,7 @@ export default function BillingIntelligencePage() {
                 opacity: 0.35,
               }}
             >
-              {(revBars.length ? revBars : [55, 62, 58, 70, 68, 75, 80, 78, 85, 88, 92, 100]).map((h, i) => (
+              {(revBars.length ? revBars : []).map((h, i) => (
                 <div
                   key={i}
                   style={{
@@ -250,7 +328,7 @@ export default function BillingIntelligencePage() {
               gap: 8,
             }}
           >
-            {REVENUE_METRICS.map((m) => (
+            {revenueMetrics.map((m) => (
               <MetricRow key={m.label} {...m} />
             ))}
           </div>
@@ -261,20 +339,13 @@ export default function BillingIntelligencePage() {
           accent="red"
           header="Denial Intelligence"
           headerRight={
-            <div style={{ display: 'flex', gap: 16 }}>
-              <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-                Denial Rate:{' '}
-                <span style={{ color: 'var(--color-brand-red)', fontWeight: 700 }}>9.6%</span>
-              </span>
-              <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-                Appeal Win:{' '}
-                <span style={{ color: 'var(--color-status-active)', fontWeight: 700 }}>71.3%</span>
-              </span>
-            </div>
+            <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+              {denialReasons.length} reason categories
+            </span>
           }
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {DENIAL_REASONS.map((d) => (
+            {denialReasons.map((d) => (
               <div key={d.reason}>
                 <div
                   style={{
@@ -343,7 +414,7 @@ export default function BillingIntelligencePage() {
           header="Payer Intelligence"
           headerRight={
             <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-              {PAYERS.reduce((s, p) => s + p.volume, 0).toLocaleString()} total claims
+              {payers.reduce((s, p) => s + p.volume, 0).toLocaleString()} total claims
             </span>
           }
         >
@@ -378,7 +449,7 @@ export default function BillingIntelligencePage() {
                 </tr>
               </thead>
               <tbody>
-                {PAYERS.map((p, i) => (
+                {payers.map((p, i) => (
                   <tr
                     key={p.name}
                     style={{
@@ -474,13 +545,13 @@ export default function BillingIntelligencePage() {
             >
               Total AR:{' '}
               <span style={{ color: 'var(--color-text-primary)', fontWeight: 700 }}>
-                ${(544500).toLocaleString()}
+                ${(totalAr / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </span>
             </span>
           }
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {AR_AGING.map((bucket) => (
+            {arAging.map((bucket) => (
               <div key={bucket.bucket}>
                 <div
                   style={{
@@ -559,7 +630,7 @@ export default function BillingIntelligencePage() {
                 color: 'var(--color-status-active)',
               }}
             >
-              Overall: 96.8% accurate
+              {procCodes.length > 0 ? `${procCodes.length} procedure codes` : '—'}
             </span>
           }
         >
@@ -594,7 +665,7 @@ export default function BillingIntelligencePage() {
                 </tr>
               </thead>
               <tbody>
-                {PROC_CODES.map((row, i) => (
+                {procCodes.map((row, i) => (
                   <tr
                     key={row.code}
                     style={{
@@ -698,7 +769,7 @@ export default function BillingIntelligencePage() {
               gap: 10,
             }}
           >
-            {PRODUCTIVITY.map((m) => (
+            {productivity.map((m) => (
               <div
                 key={m.label}
                 style={{

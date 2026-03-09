@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalPayments } from '@/services/api';
 
 interface Payment {
   id: string;
@@ -37,10 +38,8 @@ export default function PaymentsPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-    fetch(`${apiBase}/api/v1/portal/payments?limit=100`, { credentials: 'include' })
-      .then((r) => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
-      .then((d) => setPayments(Array.isArray(d?.payments) ? d.payments : []))
+    getPortalPayments()
+      .then((data) => setPayments(data as Payment[]))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load payment history'))
       .finally(() => setLoading(false));
   }, []);

@@ -1,13 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
+import { getOnboardingApplications, getOnboardingSignEvents, resendOnboardingLegal, resendOnboardingCheckout, manualProvisionApplication, revokeOnboardingApplication } from '@/services/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -398,15 +392,10 @@ export default function OnboardingControlPage() {
   const fetchApps = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (search.trim()) params.set('q', search.trim());
-      const res = await fetch(
-        `${API}/api/v1/founder/documents/onboarding-applications?${params.toString()}`,
-        { headers: { Authorization: getToken() } }
-      );
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const params: Record<string, string> = {};
+      if (statusFilter !== 'all') params.status = statusFilter;
+      if (search.trim()) params.q = search.trim();
+      const data = await getOnboardingApplications(params);
       setApps(Array.isArray(data) ? data : data.applications ?? []);
     } catch {
       pushToast('Failed to load applications', 'error');
@@ -424,10 +413,7 @@ export default function OnboardingControlPage() {
     if (!detailApp) return;
     setSignEvents([]);
     setLoadingEvents(true);
-    fetch(`${API}/api/v1/founder/documents/sign-events?application_id=${detailApp.id}`, {
-      headers: { Authorization: getToken() },
-    })
-      .then((r) => r.json())
+    getOnboardingSignEvents(detailApp.id)
       .then((d) => setSignEvents(Array.isArray(d) ? d : d.events ?? []))
       .catch((e: unknown) => { console.warn("[fetch error]", e); })
       .finally(() => setLoadingEvents(false));
@@ -436,11 +422,7 @@ export default function OnboardingControlPage() {
   // ── Actions ────────────────────────────────────────────────────────────────
   async function doResendLegal(app: OnboardingApp) {
     try {
-      const r = await fetch(
-        `${API}/api/v1/founder/documents/onboarding-applications/${app.id}/resend-legal`,
-        { method: 'POST', headers: { Authorization: getToken() } }
-      );
-      if (!r.ok) throw new Error();
+      await resendOnboardingLegal(app.id);
       pushToast('Legal packet sent', 'success');
       fetchApps();
     } catch {
@@ -450,11 +432,7 @@ export default function OnboardingControlPage() {
 
   async function doResendCheckout(app: OnboardingApp) {
     try {
-      const r = await fetch(
-        `${API}/api/v1/founder/documents/onboarding-applications/${app.id}/resend-checkout`,
-        { method: 'POST', headers: { Authorization: getToken() } }
-      );
-      if (!r.ok) throw new Error();
+      await resendOnboardingCheckout(app.id);
       pushToast('Checkout link resent', 'success');
       fetchApps();
     } catch {
@@ -475,15 +453,7 @@ export default function OnboardingControlPage() {
     setActionLoading(true);
     try {
       if (confirm.type === 'provision') {
-        const r = await fetch(
-          `${API}/api/v1/founder/documents/onboarding-applications/${confirm.app.id}/manual-provision`,
-          {
-            method: 'POST',
-            headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ confirm: true }),
-          }
-        );
-        if (!r.ok) throw new Error();
+        await manualProvisionApplication(confirm.app.id);
         pushToast('Provision initiated', 'success');
       } else {
         if (!reason?.trim()) {
@@ -491,15 +461,7 @@ export default function OnboardingControlPage() {
           setActionLoading(false);
           return;
         }
-        const r = await fetch(
-          `${API}/api/v1/founder/documents/onboarding-applications/${confirm.app.id}/revoke`,
-          {
-            method: 'POST',
-            headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason }),
-          }
-        );
-        if (!r.ok) throw new Error();
+        await revokeOnboardingApplication(confirm.app.id, { reason });
         pushToast('Application revoked', 'success');
       }
       fetchApps();

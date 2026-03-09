@@ -14,7 +14,7 @@ from typing import Any, cast
 
 from core_app.core.errors import AppError
 from core_app.models.integration_connectors import ConnectorInstallState
-from core_app.schemas.founder_command_domains import FounderCommandAction
+from core_app.schemas.founder_command_domains import FounderCommandAction, IntegrationCommandSummary
 from core_app.services.founder_command_domain_service import FounderCommandDomainService
 
 
@@ -93,6 +93,31 @@ class _SyncRow:
 @dataclass(frozen=True)
 class _InstallRow:
     install_state: ConnectorInstallState
+
+
+class _RepoStub:
+    def __init__(
+        self,
+        *,
+        count_value: int = 0,
+        rows: list[dict[str, Any]] | None = None,
+        aggregate_rows: list[dict[str, Any]] | None = None,
+    ) -> None:
+        self._count_value = count_value
+        self._rows = rows or []
+        self._aggregate_rows = aggregate_rows or []
+
+    def count(self, **_kwargs: Any) -> int:
+        return self._count_value
+
+    def list(self, **_kwargs: Any) -> list[dict[str, Any]]:
+        return list(self._rows)
+
+    def aggregate_json_field(self, **_kwargs: Any) -> list[dict[str, Any]]:
+        return list(self._aggregate_rows)
+
+    def create(self, **_kwargs: Any) -> dict[str, Any]:
+        return {"ok": True}
 
 
 class TestFounderCommandDomainService:
@@ -296,3 +321,90 @@ class TestFounderCommandDomainService:
         assert letter.reason == "payload mismatch"
         assert fake_db.flush_calls == 2
         assert len(fake_db.added) == 2
+
+    def test_growth_summary_computes_real_metrics(self) -> None:
+        tenant_id = uuid.uuid4()
+        fake_db = _FakeDB([])
+        service = FounderCommandDomainService(cast(Any, fake_db))
+
+        repos = {
+            "conversion_events": _RepoStub(
+                count_value=12,
+                aggregate_rows=[{"group_key": "awareness", "count": 7}],
+            ),
+            "proposals": _RepoStub(
+                rows=[
+                    {"data": {"status": "pending", "estimated_value_cents": 100000}},
+                    {"data": {"status": "pending"}},
+                    {"data": {"status": "accepted"}},
+                ]
+            ),
+            "tenant_subscriptions": _RepoStub(
+                rows=[
+                    {"data": {"status": "active", "monthly_amount_cents": 50000}},
+                    {"data": {"status": "active", "monthly_amount_cents": 25000}},
+                ]
+            ),
+            "lead_scores": _RepoStub(
+                rows=[
+                    {"data": {"score": 10}},
+                    {"data": {"score": 72}},
+                    {"data": {"score": 96}},
+                ],
+                aggregate_rows=[{"group_key": "hot", "count": 2}],
+            ),
+        }
+
+        service._repo = lambda table: repos[table]  # type: ignore[method-assign]
+        service._graph_mailbox_is_configured = staticmethod(lambda: True)  # type: ignore[method-assign]
+        service.get_integration_command_summary_for_tenant = lambda _tenant_id: IntegrationCommandSummary(  # type: ignore[method-assign]
+            degraded_or_disabled_installs=0,
+            failed_sync_jobs_24h=0,
+            dead_letter_records_24h=0,
+            pending_webhook_retries=0,
+            revoked_or_rotating_api_credentials=0,
+            quota_denial_windows_24h=0,
+            top_actions=[],
+        )
+
+        summary = service.get_growth_summary(tenant_id=tenant_id)
+        assert summary.conversion_events_total == 12
+        assert summary.proposals_total == 3
+        assert summary.proposals_pending == 2
+        assert summary.active_subscriptions == 2
+        assert summary.pending_pipeline_cents >= 189900
+        assert summary.active_mrr_cents == 75000
+
+    def test_growth_setup_wizard_blocks_when_required_connections_missing(self) -> None:
+        service = FounderCommandDomainService(cast(Any, _FakeDB([])))
+        service._connector_install_snapshots = lambda _tenant_id: []  # type: ignore[method-assign]
+        service._map_install_activity = lambda _tenant_id: ({}, {}, {}, {})  # type: ignore[method-assign]
+        service._graph_mailbox_is_configured = staticmethod(lambda: False)  # type: ignore[method-assign]
+
+        repos = {
+            "lead_scores": _RepoStub(count_value=0),
+            "conversion_events": _RepoStub(count_value=0),
+        }
+        service._repo = lambda table: repos.get(table, _RepoStub())  # type: ignore[method-assign]
+
+        wizard = service.get_growth_setup_wizard(tenant_id=uuid.uuid4())
+        assert wizard.autopilot_ready is False
+        assert len(wizard.blocked_items) > 0
+
+    def test_launch_orchestrator_blocks_autopilot_with_missing_prerequisites(self) -> None:
+        service = FounderCommandDomainService(cast(Any, _FakeDB([])))
+        service.get_growth_setup_wizard = lambda tenant_id: cast(Any, type("W", (), {  # type: ignore[method-assign]
+            "blocked_items": ["LinkedIn Publishing is not fully connected"],
+        })())
+
+        platform_events_repo = _RepoStub()
+        service._repo = lambda _table: platform_events_repo  # type: ignore[method-assign]
+
+        run = service.start_launch_orchestrator(
+            tenant_id=uuid.uuid4(),
+            actor_user_id=uuid.uuid4(),
+            mode="autopilot",
+            auto_queue_sync_jobs=True,
+        )
+        assert run.status == "blocked"
+        assert run.queued_sync_jobs == 0

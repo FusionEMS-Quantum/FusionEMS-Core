@@ -6,19 +6,12 @@ import { NextBestActionCard, type NextAction } from '@/components/ui/NextBestAct
 import { SeverityBadge } from '@/components/ui/SeverityBadge';
 import { DomainNavCard, FounderStatusBar } from '@/components/shells/FounderCommand';
 import type { SeverityLevel } from '@/lib/design-system/tokens';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import {
+  createROIFunnelPricingSimulation,
+  type ROIFunnelPricingSimulationResponse,
+} from '@/services/api';
 
 type FetchStatus = 'idle' | 'loading' | 'ready' | 'error';
-
-type PricingSimulationResponse = {
-  plan: string;
-  modules: string[];
-  monthly_cents: number;
-  annual_cents: number;
-  annual_savings_pct: number;
-  cost_per_transport: number | null;
-};
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
@@ -130,34 +123,18 @@ export default function PricingSimulatorPage() {
   const [proposalEmail, setProposalEmail] = useState('');
   const [pricingStatus, setPricingStatus] = useState<FetchStatus>('idle');
   const [pricingError, setPricingError] = useState<string | null>(null);
-  const [pricingSimulation, setPricingSimulation] = useState<PricingSimulationResponse | null>(null);
+  const [pricingSimulation, setPricingSimulation] = useState<ROIFunnelPricingSimulationResponse | null>(null);
 
   const fetchPricingSimulation = useCallback((): void => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
-
     setPricingStatus('loading');
     setPricingError(null);
 
-    void fetch(`${API}/api/v1/roi-funnel/pricing-simulation`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
+    void createROIFunnelPricingSimulation({
         base_plan: 'professional',
         modules: ['billing', 'analytics', 'compliance'],
         call_volume: calls,
         contract_length_months: 12,
-      }),
     })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Pricing simulation failed (${response.status})`);
-        }
-        return response.json() as Promise<PricingSimulationResponse>;
-      })
       .then((payload) => {
         setPricingSimulation(payload);
         setPricingStatus('ready');

@@ -3,6 +3,15 @@ import { QuantumTableSkeleton } from '@/components/ui';
 import { SeverityBadge } from '@/components/ui';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { SeverityLevel } from '@/lib/design-system/tokens';
+import {
+  createNEMSISPack,
+  generatePatchTasksFromResult,
+  getActiveNEMSISPacks,
+  getNEMSISCertificationChecklist,
+  nemsisStudioAiExplain,
+  uploadNEMSISPackFile,
+  validateNEMSISStudioFile,
+} from '@/services/api';
 
 interface PackStatus {
   national_xsd: { active: boolean; name: string } | null;
@@ -67,19 +76,16 @@ export default function ComplianceStudioPage() {
   const fetchPackStatus = useCallback(async () => {
     setPackLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/packs?active=true`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        const packs: { data: { pack_type?: string; pack_name?: string; active?: boolean } }[] = Array.isArray(data) ? data : [];
-        const national = packs.find((p) => p.data?.pack_type === 'national_xsd');
-        const wi_sch = packs.find((p) => p.data?.pack_type === 'wi_schematron');
-        const wi_ds = packs.find((p) => p.data?.pack_type === 'wi_state_dataset');
-        setPackStatus({
-          national_xsd: national ? { active: !!national.data?.active, name: national.data?.pack_name || 'National XSD' } : null,
-          wi_schematron: wi_sch ? { active: !!wi_sch.data?.active, name: wi_sch.data?.pack_name || 'WI Schematron' } : null,
-          wi_state_dataset: wi_ds ? { active: !!wi_ds.data?.active, name: wi_ds.data?.pack_name || 'WI State Dataset' } : null,
-        });
-      }
+      const data = await getActiveNEMSISPacks();
+      const packs: { data: { pack_type?: string; pack_name?: string; active?: boolean } }[] = Array.isArray(data) ? data : [];
+      const national = packs.find((p) => p.data?.pack_type === 'national_xsd');
+      const wi_sch = packs.find((p) => p.data?.pack_type === 'wi_schematron');
+      const wi_ds = packs.find((p) => p.data?.pack_type === 'wi_state_dataset');
+      setPackStatus({
+        national_xsd: national ? { active: !!national.data?.active, name: national.data?.pack_name || 'National XSD' } : null,
+        wi_schematron: wi_sch ? { active: !!wi_sch.data?.active, name: wi_sch.data?.pack_name || 'WI Schematron' } : null,
+        wi_state_dataset: wi_ds ? { active: !!wi_ds.data?.active, name: wi_ds.data?.pack_name || 'WI State Dataset' } : null,
+      });
     } catch {
       setPackStatus({ national_xsd: null, wi_schematron: null, wi_state_dataset: null });
     } finally {
@@ -90,11 +96,8 @@ export default function ComplianceStudioPage() {
   const fetchCertChecks = useCallback(async () => {
     setCertLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/certification-checklist`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setCertChecks(Array.isArray(data.checks) ? data.checks : []);
-      }
+      const data = await getNEMSISCertificationChecklist();
+      setCertChecks(Array.isArray((data as { checks?: unknown[] }).checks) ? ((data as { checks: CertCheck[] }).checks) : []);
     } catch {
       setCertChecks([]);
     } finally {
@@ -115,30 +118,18 @@ export default function ComplianceStudioPage() {
     form.append('file', file);
     form.append('pack_name', file.name);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/packs`, {
-        method: 'POST',
-        credentials: 'include',
-        body: JSON.stringify({ pack_name: file.name, pack_type: 'upload' }),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (res.ok) {
-        const rec = await res.json();
-        const packId = rec?.id || rec?.data?.pack_id || 'new';
-        const uploadForm = new FormData();
-        uploadForm.append('file', file);
-        const uploadRes = await fetch(`/api/v1/nemsis/packs/${packId}/files/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: uploadForm,
-        });
-        if (uploadRes.ok) {
-          setUploadStatus(`Uploaded: ${file.name}`);
-          fetchPackStatus();
-        } else {
-          setUploadStatus(`Pack created (id=${packId}), file upload returned ${uploadRes.status}`);
-        }
+      const rec = await createNEMSISPack({ pack_name: file.name, pack_type: 'upload' });
+      const record = rec as { id?: string; data?: { pack_id?: string } };
+      const packId = record.id || record.data?.pack_id || 'new';
+      const uploadForm = new FormData();
+      uploadForm.append('file', file);
+
+      if (packId === 'new') {
+        setUploadStatus('Pack created response missing pack_id');
       } else {
-        setUploadStatus(`Error: ${res.status} ${res.statusText}`);
+        await uploadNEMSISPackFile(packId, uploadForm);
+        setUploadStatus(`Uploaded: ${file.name}`);
+        fetchPackStatus();
       }
     } catch (e: unknown) {
       setUploadStatus(`Error: ${e instanceof Error ? e.message : String(e)}`);
@@ -159,17 +150,8 @@ export default function ComplianceStudioPage() {
     const form = new FormData();
     form.append('file', validationFile);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/validate-file`, {
-        method: 'POST',
-        credentials: 'include',
-        body: form,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setValidationResult(data);
-      } else {
-        setValidationResult({ valid: false, issues: [{ severity: 'error', element_id: 'request', ui_section: '', rule_source: '', plain_message: `Server error: ${res.status}`, fix_hint: '' }] });
-      }
+      const data = await validateNEMSISStudioFile(form);
+      setValidationResult(data as ValidationResult);
     } catch (e: unknown) {
       setValidationResult({ valid: false, issues: [{ severity: 'error', element_id: 'network', ui_section: '', rule_source: '', plain_message: e instanceof Error ? e.message : String(e), fix_hint: '' }] });
     } finally {
@@ -181,16 +163,8 @@ export default function ComplianceStudioPage() {
     if (!validationResult?.record_id) return;
     setAiLoadingIdx(idx);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/ai-explain`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ validation_result_id: validationResult.record_id, issue_index: idx }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAiExplanations((prev) => ({ ...prev, [idx]: data }));
-      }
+      const data = await nemsisStudioAiExplain({ validation_result_id: validationResult.record_id, issue_index: idx });
+      setAiExplanations((prev) => ({ ...prev, [idx]: data as AiExplanation }));
     } finally {
       setAiLoadingIdx(null);
     }
@@ -199,12 +173,7 @@ export default function ComplianceStudioPage() {
   const sendAllToAgent = async () => {
     if (!validationResult?.record_id) return;
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/patch-tasks/generate-from-result`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ validation_result_id: validationResult.record_id }),
-      });
+      await generatePatchTasksFromResult({ validation_result_id: validationResult.record_id });
     } catch (err: unknown) {
       console.warn("[compliance-studio]", err);
     }

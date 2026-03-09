@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { registerPatientPortalAccount } from '@/services/api';
 
 interface RegisterForm {
   first_name: string;
@@ -27,7 +28,6 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   const handleChange = (field: keyof RegisterForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -52,23 +52,18 @@ export default function RegisterPage() {
     setSubmitting(true);
     setError('');
     try {
-      const r = await fetch(`${apiBase}/api/v1/portal/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: form.first_name.trim(),
-          last_name: form.last_name.trim(),
-          date_of_birth: form.date_of_birth,
-          email: form.email.trim().toLowerCase(),
-          phone: form.phone.trim(),
-          statement_id: form.statement_id.trim(),
-          zip: form.zip.trim(),
-          password: form.password,
-        }),
+      const result = await registerPatientPortalAccount({
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        date_of_birth: form.date_of_birth,
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        statement_id: form.statement_id.trim(),
+        zip: form.zip.trim(),
+        password: form.password,
       });
-      if (!r.ok) {
-        const d = await r.json().catch(() => ({}));
-        setError((d as { detail?: string }).detail ?? 'Registration failed. Please verify your information.');
+      if (!result.ok) {
+        setError(result.detail ?? 'Registration failed. Please verify your information.');
         return;
       }
       setSuccess(true);

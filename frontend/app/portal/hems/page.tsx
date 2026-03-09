@@ -3,14 +3,15 @@ import { useToast } from '@/components/ui/ProductPolish';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
 
 import { getWSClient, RealtimeEvent } from '@/services/websocket';
+import {
+  getPortalHemsChecklistTemplate,
+  getPortalHemsSafetyTimeline,
+  postPortalHemsMissionAction,
+  setPortalHemsAircraftReadiness,
+  submitPortalHemsMissionAcceptance,
+  submitPortalHemsWeatherBrief,
+} from '@/services/api';
 import { useState, useEffect, useCallback } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -171,12 +172,7 @@ export default function HemsPage() {
     if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
     setTimelineBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/safety-timeline`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setTimeline(Array.isArray(data) ? data : (data.events ?? []));
+      setTimeline(await getPortalHemsSafetyTimeline(missionId.trim()));
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to fetch timeline');
     } finally {
@@ -186,10 +182,7 @@ export default function HemsPage() {
 
   // ── Fetch checklist template on mount ───
   useEffect(() => {
-    fetch(`${API}/api/v1/hems/checklist-template`, {
-      headers: { Authorization: getToken() },
-    })
-      .then((r) => r.ok ? r.json() : null)
+    getPortalHemsChecklistTemplate()
       .then((data: ChecklistTemplate | null) => {
         if (!data) return;
       })
@@ -243,15 +236,10 @@ export default function HemsPage() {
 
   // ── Action Handlers ───
 
-  async function performAction(endpoint: string, body: any, successMsg: string) {
+  async function performAction(endpoint: string, body: Record<string, unknown>, successMsg: string) {
       if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
       try {
-        const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/${endpoint}`, {
-          method: 'POST',
-          headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!r.ok) throw new Error(await r.text());
+        await postPortalHemsMissionAction(missionId.trim(), endpoint, body);
         toast.success(successMsg);
         fetchTimeline();
       } catch (e: unknown) {
@@ -264,12 +252,10 @@ export default function HemsPage() {
     if (!aircraftId.trim()) { toast.error('Enter aircraft ID'); return; }
     setReadinessBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/hems/aircraft/${aircraftId.trim()}/readiness`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: newReadiness, reason: readinessReason }),
+      await setPortalHemsAircraftReadiness(aircraftId.trim(), {
+        state: newReadiness,
+        reason: readinessReason,
       });
-      if (!r.ok) throw new Error(await r.text());
       setReadinessState(newReadiness);
       setReadinessReason('');
       toast.success('Readiness updated');
@@ -289,17 +275,12 @@ export default function HemsPage() {
     if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
     setAcceptanceBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/acceptance`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          aircraft_id: aircraftId.trim() || undefined,
-          checklist: checklistItems,
-          risk_factors: riskFactors,
-          risk_score: riskScore(),
-        }),
+      await submitPortalHemsMissionAcceptance(missionId.trim(), {
+        aircraft_id: aircraftId.trim() || undefined,
+        checklist: checklistItems,
+        risk_factors: riskFactors,
+        risk_score: riskScore(),
       });
-      if (!r.ok) throw new Error(await r.text());
       toast.success('Acceptance submitted');
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to submit acceptance');
@@ -313,23 +294,18 @@ export default function HemsPage() {
     if (!missionId.trim()) { toast.error('Enter mission ID'); return; }
     setWxBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/hems/missions/${missionId.trim()}/weather-brief`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ceiling_ft: wx.ceiling_ft ? Number(wx.ceiling_ft) : undefined,
-          visibility_sm: wx.visibility_sm ? Number(wx.visibility_sm) : undefined,
-          wind_direction: wx.wind_direction ? Number(wx.wind_direction) : undefined,
-          wind_speed_kt: wx.wind_speed_kt ? Number(wx.wind_speed_kt) : undefined,
-          gusts_kt: wx.gusts_kt ? Number(wx.gusts_kt) : undefined,
-          precip: wx.precip,
-          icing: wx.icing,
-          turbulence: wx.turbulence,
-          go_no_go: wx.go_no_go,
-          source: wx.source || undefined,
-        }),
+      await submitPortalHemsWeatherBrief(missionId.trim(), {
+        ceiling_ft: wx.ceiling_ft ? Number(wx.ceiling_ft) : undefined,
+        visibility_sm: wx.visibility_sm ? Number(wx.visibility_sm) : undefined,
+        wind_direction: wx.wind_direction ? Number(wx.wind_direction) : undefined,
+        wind_speed_kt: wx.wind_speed_kt ? Number(wx.wind_speed_kt) : undefined,
+        gusts_kt: wx.gusts_kt ? Number(wx.gusts_kt) : undefined,
+        precip: wx.precip,
+        icing: wx.icing,
+        turbulence: wx.turbulence,
+        go_no_go: wx.go_no_go,
+        source: wx.source || undefined,
       });
-      if (!r.ok) throw new Error(await r.text());
       toast.success('Weather brief submitted');
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to submit weather brief');

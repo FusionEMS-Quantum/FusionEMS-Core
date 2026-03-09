@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { confirmPatientPortalPasswordReset } from '@/services/api';
 
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: 'var(--color-bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-body)', position: 'relative' },
@@ -35,13 +36,8 @@ function ResetPasswordContent() {
     setLoading(true);
     setError(null);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${apiBase}/api/v1/auth/password-reset/confirm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, new_password: password }),
-      });
-      if (!res.ok) throw new Error('Reset failed. The link may have expired.');
+      const result = await confirmPatientPortalPasswordReset({ token, new_password: password });
+      if (!result.ok) throw new Error('Reset failed. The link may have expired.');
       setDone(true);
       setTimeout(() => router.push('/portal/patient/login'), 2000);
     } catch (err) {

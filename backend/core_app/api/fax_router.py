@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency, get_current_user
-from core_app.core.config import get_settings
 from core_app.core.brand import resolve_tenant_brand
+from core_app.core.config import get_settings
 from core_app.documents.s3_storage import default_docs_bucket, put_bytes
 from core_app.fax.telnyx_service import (
     TelnyxConfig,

@@ -2,28 +2,39 @@
 import { QuantumTableSkeleton } from '@/components/ui';
 import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
+import axios from 'axios';
+import {
+  explainPortalEDIClaim,
+  generatePortalEDIBatch,
+  getEDIBatchDownloadUrl,
+  ingestPortalEDI277,
+  ingestPortalEDI835,
+  ingestPortalEDI999,
+  listPortalEDIBatches,
+  type EdiBatchApi,
+  type EdiClaimExplanationApi,
+} from '@/services/api';
 
 import { useEffect, useState, useCallback } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function authHeader() {
-  return { Authorization: 'Bearer ' + (localStorage.getItem('qs_token') || '') };
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data as Record<string, unknown> | undefined;
+    const detail = payload?.detail;
+    if (typeof detail === 'string' && detail.length > 0) return detail;
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail.map((item) => (typeof item === 'string' ? item : JSON.stringify(item))).join('; ');
+    }
+    if (typeof error.message === 'string' && error.message.length > 0) return error.message;
+  }
+  return error instanceof Error ? error.message : fallback;
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type BatchStatus = 'pending' | 'submitted' | 'accepted' | 'rejected' | 'partial';
 
-type EdiBatch = {
-  id: string;
-  created_at?: string;
-  claim_count?: number;
-  status?: BatchStatus | string;
-  claim_ids?: string[];
-  validation_errors?: string[];
-  metadata?: Record<string, unknown>;
-};
+type EdiBatch = EdiBatchApi & { status?: BatchStatus | string };
 
 type GenerateForm = {
   claim_ids_raw: string;
@@ -38,16 +49,7 @@ type IngestResult = {
   errors?: string[];
 };
 
-type ExplainData = {
-  explanation?: {
-    overall_status?: string;
-    adjustment_reasons?: { code: string; description: string }[];
-    denial_analysis?: string;
-    recommended_actions?: string[];
-    next_steps?: string;
-  };
-  [key: string]: unknown;
-};
+type ExplainData = EdiClaimExplanationApi;
 
 type TabKey = 'batches' | 'ingest' | 'explain';
 
@@ -106,19 +108,16 @@ function BatchesTab() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/api/v1/edi/batches`, { headers: authHeader() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const items: EdiBatch[] = Array.isArray(json) ? json : (json.items ?? json.batches ?? []);
+      const items = await listPortalEDIBatches(50);
       setBatches(items);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load batches');
+      setError(getErrorMessage(e, 'Failed to load batches'));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchBatches(); }, [fetchBatches]);
+  useEffect(() => { void fetchBatches(); }, [fetchBatches]);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
@@ -127,20 +126,14 @@ function BatchesTab() {
     setGenResult(null);
     try {
       const claim_ids = genForm.claim_ids_raw.split(',').map((s) => s.trim()).filter(Boolean);
-      const res = await fetch(`${API}/api/v1/edi/batches/generate`, {
-        method: 'POST',
-        headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          claim_ids,
-          submitter_config: { npi: genForm.npi, name: genForm.name, ein: genForm.ein },
-        }),
+      const created = await generatePortalEDIBatch({
+        claim_ids,
+        submitter_config: { npi: genForm.npi, name: genForm.name, ein: genForm.ein },
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
-      setGenResult(json);
+      setGenResult(created);
       await fetchBatches();
     } catch (e: unknown) {
-      setGenError(e instanceof Error ? e.message : 'Generation failed');
+      setGenError(getErrorMessage(e, 'Generation failed'));
     } finally {
       setGenLoading(false);
     }
@@ -187,7 +180,7 @@ function BatchesTab() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <a
-                        href={`${API}/api/v1/edi/batches/${b.id}/download`}
+                        href={getEDIBatchDownloadUrl(b.id)}
                         target="_blank"
                         rel="noreferrer"
                         className="px-2.5 py-1 chamfer-4 bg-system-billing/10 border border-system-billing/30 text-system-billing text-body font-semibold hover:bg-system-billing/20 transition-colors"
@@ -357,24 +350,17 @@ function IngestCard({ config }: { config: typeof INGEST_CONFIG[number] }) {
     setLoading(true);
     setResult(null);
     try {
-      const body: Record<string, string> = { x12_content: content };
-      if (config.hasBatchId && batchId) body.batch_id = batchId;
-      const res = await fetch(`${API}/api/v1/edi/ingest/${config.type}`, {
-        method: 'POST',
-        headers: { ...authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        const errs = json.detail
-          ? (Array.isArray(json.detail) ? json.detail.map((d: unknown) => JSON.stringify(d)) : [String(json.detail)])
-          : [`HTTP ${res.status}`];
-        setResult({ ok: false, errors: errs });
+      let data: Record<string, unknown>;
+      if (config.type === '999') {
+        data = await ingestPortalEDI999({ x12_content: content, batch_id: batchId || undefined });
+      } else if (config.type === '277') {
+        data = await ingestPortalEDI277({ x12_content: content });
       } else {
-        setResult({ ok: true, data: json });
+        data = await ingestPortalEDI835({ x12_content: content });
       }
+      setResult({ ok: true, data });
     } catch (e: unknown) {
-      setResult({ ok: false, errors: [e instanceof Error ? e.message : 'Network error'] });
+      setResult({ ok: false, errors: [getErrorMessage(e, 'Network error')] });
     } finally {
       setLoading(false);
     }
@@ -474,14 +460,10 @@ function ExplainTab() {
     setError('');
     setData(null);
     try {
-      const res = await fetch(`${API}/api/v1/edi/claims/${claimId.trim()}/explain`, {
-        headers: authHeader(),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
+      const json = await explainPortalEDIClaim(claimId.trim());
       setData(json);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to get explanation');
+      setError(getErrorMessage(e, 'Failed to get explanation'));
     } finally {
       setLoading(false);
     }

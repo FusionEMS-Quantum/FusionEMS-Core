@@ -1,9 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
+import { getFleetIntelligenceReadiness, getFleetDashboard, ackFleetAlert, ingestTelemetry } from '@/services/api';
 
 const READINESS_COLOR = (score: number) =>
   score >= 80 ? '#4caf50' : score >= 50 ? '#ffc107' : '#ef5350';
@@ -96,26 +94,23 @@ export default function FleetTelemetryPage() {
 
   const load = useCallback(async () => {
     try {
-      const [sr, ar] = await Promise.all([
-        fetch(`${API}/api/v1/fleet-intelligence/readiness/fleet`, { headers: { Authorization: getToken() } }),
-        fetch(`${API}/api/v1/fleet/dashboard`, { headers: { Authorization: getToken() } }),
+      const [summaryData, dashboardData] = await Promise.all([
+        getFleetIntelligenceReadiness(),
+        getFleetDashboard(),
       ]);
-      if (sr.ok) setSummary(await sr.json());
-      if (ar.ok) { const j = await ar.json(); setAlerts(j.alerts ?? []); }
+      if (summaryData) setSummary(summaryData);
+      if (dashboardData) setAlerts(dashboardData.alerts ?? []);
     } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); const iv = setInterval(load, 15000); return () => clearInterval(iv); }, [load]);
 
   const ackAlert = async (alertId: string, version: number) => {
-    await fetch(`${API}/api/v1/fleet/alerts/${alertId}/ack`, {
-      method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ expected_version: version }),
-    });
+    await ackFleetAlert(alertId, { expected_version: version });
     showToast('Alert acknowledged'); load();
   };
 
-  const ingestTelemetry = async () => {
+  const submitTelemetry = async () => {
     if (!ingestForm.unit_id) return;
     setIngesting(true);
     try {
@@ -127,11 +122,7 @@ export default function FleetTelemetryPage() {
       if (ingestForm.speed_kmh) payload.speed_kmh = parseFloat(ingestForm.speed_kmh);
       if (ingestForm.oil_pressure_kpa) payload.oil_pressure_kpa = parseFloat(ingestForm.oil_pressure_kpa);
 
-      const r = await fetch(`${API}/api/v1/ops/telemetry/ingest`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unit_id: ingestForm.unit_id, payload, source: 'OBD2' }),
-      });
-      const j = await r.json();
+      const j = await ingestTelemetry({ unit_id: ingestForm.unit_id, payload, source: 'OBD2' });
       setIngestResult(j);
       if (j.telemetry_event_id) {
         showToast(`Telemetry ingested — ${j.faults_detected ?? 0} fault(s) detected`);
@@ -325,7 +316,7 @@ export default function FleetTelemetryPage() {
               </div>
             ))}
           </div>
-          <button onClick={ingestTelemetry} disabled={ingesting || !ingestForm.unit_id}
+          <button onClick={submitTelemetry} disabled={ingesting || !ingestForm.unit_id}
             className="px-6 py-2 bg-green-700 text-white text-sm font-bold chamfer-8 hover:bg-green-600 disabled:opacity-40 transition-colors">
             {ingesting ? 'Processing…' : '📡 Ingest Telemetry'}
           </button>

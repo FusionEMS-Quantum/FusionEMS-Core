@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import asyncio
-import json
-
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -137,23 +134,13 @@ async def get_domination_strategies(
 @tax_advisor_router.get("/efile/realtime-status")
 async def realtime_efile_tracking():
     """
-    Streams Server-Sent Events (SSE) representing live polling from IRS MeF
-    and Wisconsin Dept of Revenue gateway. (Intuit-style tracking)
+    Returns status of IRS MeF and Wisconsin Dept of Revenue e-file integration.
     """
-    async def event_generator():
-        statuses = [
-            {"step": "Validating Schema", "status": "In Progress"},
-            {"step": "Validating Schema", "status": "Complete"},
-            {"step": "Transmitting to IRS MeF", "status": "In Progress"},
-            {"step": "IRS Acknowledgment", "status": "Pending..."},
-            {"step": "Federal Accepted", "status": "Success", "refund_est": 0.0},
-            {"step": "Wisconsin Dept Revenue Accepted", "status": "Success", "refund_est": "-$850 owed"}
-        ]
-        for msg in statuses:
-            await asyncio.sleep(0.5) # simulate gateway wait
-            yield f"data: {json.dumps(msg)}\n\n"
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return {
+        "status": "not_configured",
+        "message": "IRS MeF and Wisconsin DOR e-file gateway integration is not yet connected. Configure IRS_MEF_API_KEY and WI_DOR_API_KEY to enable live filing status.",
+        "steps": [],
+    }
 
 
 @tax_advisor_router.post("/receipts/scan")

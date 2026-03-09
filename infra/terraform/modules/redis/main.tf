@@ -48,7 +48,8 @@ resource "aws_kms_key" "redis" {
 }
 
 resource "aws_kms_alias" "redis" {
-  name          = "alias/${var.project}-${var.environment}-redis"
+  count         = var.create_kms_alias ? 1 : 0
+  name          = var.kms_alias_name != "" ? var.kms_alias_name : "alias/${var.project}-${var.environment}-redis"
   target_key_id = aws_kms_key.redis.key_id
 }
 

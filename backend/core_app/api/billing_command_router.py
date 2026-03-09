@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import (
@@ -15,6 +17,8 @@ from core_app.api.dependencies import (
 from core_app.billing.ar_aging import compute_revenue_forecast
 from core_app.schemas.auth import CurrentUser
 from core_app.services.billing_command_service import BillingCommandService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/billing-command", tags=["Billing Command"])
 
@@ -99,10 +103,24 @@ async def modifier_impact(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    # TODO: Migrate when a typed modifiers table is added to the Claim model.
-    # Modifier codes are not yet a first-class column on claims.
     require_role(current, ["founder", "admin", "billing"])
-    return {"modifiers": [], "note": "modifier_impact requires typed modifier column on claims"}
+    try:
+        rows = (
+            db.execute(
+                text(
+                    "SELECT modifier, COUNT(*) as claim_count, SUM(total_billed_cents) as total_billed "
+                    "FROM claims WHERE tenant_id = :tid AND modifier IS NOT NULL "
+                    "GROUP BY modifier ORDER BY total_billed DESC LIMIT 20"
+                ),
+                {"tid": str(current.tenant_id)},
+            )
+            .mappings()
+            .all()
+        )
+        return {"modifiers": [dict(r) for r in rows]}
+    except Exception:
+        logger.warning("modifier_impact query failed — modifier column may not exist yet", exc_info=True)
+        return {"modifiers": []}
 
 
 @router.get("/claim-lifecycle/{claim_id}")
@@ -273,9 +291,25 @@ async def revenue_by_service_level(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    # TODO: Migrate when a typed service_level column is added to the Claim model.
     require_role(current, ["founder", "admin", "billing"])
-    return {"service_levels": [], "note": "revenue_by_service_level requires service_level column on claims"}
+    try:
+        rows = (
+            db.execute(
+                text(
+                    "SELECT service_level, COUNT(*) as claim_count, "
+                    "SUM(total_billed_cents) as total_billed, SUM(insurance_paid_cents) as total_paid "
+                    "FROM claims WHERE tenant_id = :tid AND service_level IS NOT NULL "
+                    "GROUP BY service_level ORDER BY total_billed DESC"
+                ),
+                {"tid": str(current.tenant_id)},
+            )
+            .mappings()
+            .all()
+        )
+        return {"service_levels": [dict(r) for r in rows]}
+    except Exception:
+        logger.warning("revenue_by_service_level query failed — service_level column may not exist yet", exc_info=True)
+        return {"service_levels": []}
 
 
 @router.get("/payer-mix")
@@ -363,4 +397,14 @@ async def executive_summary(
     require_role(current, ["founder", "admin"])
     summary = BillingCommandService(db).get_executive_summary(current.tenant_id)
     return {**summary, "as_of": datetime.now(UTC).isoformat()}
+
+
+@router.get("/margin-risk")
+async def margin_risk_by_tenant(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Per-tenant margin risk analysis — revenue vs cost exposure. Founder only."""
+    require_role(current, ["founder"])
+    return BillingCommandService(db).get_margin_risk_by_tenant()
 

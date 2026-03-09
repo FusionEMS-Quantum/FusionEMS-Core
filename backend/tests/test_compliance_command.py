@@ -18,7 +18,6 @@ from core_app.api.compliance_command_router import (
     _risk_tier,
 )
 
-
 DOMAINS: tuple[DomainKey, ...] = (
     "nemsis",
     "hipaa",

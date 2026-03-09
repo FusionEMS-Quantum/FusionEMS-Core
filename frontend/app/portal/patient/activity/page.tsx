@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalActivity } from '@/services/api';
 
 interface ActivityEvent {
   id: string;
@@ -77,15 +78,13 @@ export default function ActivityPage() {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/portal/activity`, { credentials: 'include' })
-      .then(r => r.json())
+    getPortalActivity()
       .then(d => setEvents(Array.isArray(d) ? d : d.items ?? []))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load activity'))
       .finally(() => setLoading(false));
-  }, [apiBase]);
+  }, []);
 
   const grouped = groupByDate(events);
 

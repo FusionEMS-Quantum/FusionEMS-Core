@@ -1,9 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
+import { getCrewlinkAlerts, createCrewlinkAlert, escalateCrewlinkAlert } from '@/services/api';
 
 const PAGE_STATE_COLORS: Record<string, { bg: string; text: string }> = {
   ALERT_CREATED:     { bg: 'rgba(120,130,140,0.2)', text: '#78909c' },
@@ -76,12 +74,10 @@ export default function CrewLinkPagingPage() {
 
   const load = useCallback(async () => {
     try {
-      const endpoint = filterState === 'active'
-        ? `${API}/api/v1/crewlink/alerts/active`
-        : `${API}/api/v1/crewlink/alerts?limit=100`;
-      const r = await fetch(endpoint, { headers: { Authorization: getToken() } });
-      if (r.ok) { const j = await r.json(); setAlerts(j.alerts ?? j ?? []); }
-    } finally { setLoading(false); }
+      const params = filterState === 'active' ? { active: true } : { limit: 100 };
+      const j = await getCrewlinkAlerts(params);
+      setAlerts(j.alerts ?? j ?? []);
+    } catch { /* swallow – keep last data */ } finally { setLoading(false); }
   }, [filterState]);
 
   useEffect(() => { load(); const iv = setInterval(load, 10000); return () => clearInterval(iv); }, [load]);
@@ -91,11 +87,7 @@ export default function CrewLinkPagingPage() {
     setCreating(true);
     try {
       const crewIds = newAlert.target_crew_ids.split(',').map(s => s.trim()).filter(Boolean);
-      const r = await fetch(`${API}/api/v1/crewlink/alerts`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newAlert, target_crew_ids: crewIds }),
-      });
-      const j = await r.json();
+      const j = await createCrewlinkAlert({ ...newAlert, target_crew_ids: crewIds });
       if (j.alert_id) {
         showToast(`Alert created — ${crewIds.length} crew paged`);
         setNewAlert({ mission_id: '', mission_title: '', mission_address: '', service_level: 'BLS', priority: 'P2', chief_complaint: '', target_crew_ids: '' });
@@ -105,12 +97,10 @@ export default function CrewLinkPagingPage() {
   };
 
   const escalate = async (alertId: string) => {
-    const r = await fetch(`${API}/api/v1/crewlink/alerts/${alertId}/escalate`, {
-      method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason: 'MANUAL_ESCALATION_BY_DISPATCHER', triggered_by: 'DISPATCHER' }),
-    });
-    const j = await r.json();
-    if (!j.error) { showToast('Alert escalated'); load(); }
+    try {
+      const j = await escalateCrewlinkAlert(alertId, { reason: 'MANUAL_ESCALATION_BY_DISPATCHER', triggered_by: 'DISPATCHER' });
+      if (!j.error) { showToast('Alert escalated'); load(); }
+    } catch { /* swallow */ }
   };
 
   const escalated = alerts.filter(a => a.data?.state === 'ESCALATED');

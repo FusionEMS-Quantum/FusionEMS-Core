@@ -2,38 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import {
+  listPatientPortalIdentityDuplicates,
+  listPatientPortalIdentityMerges,
+  type PatientPortalIdentityDuplicateCandidateApi,
+  type PatientPortalIdentityMergeRequestApi,
+} from '@/services/api';
 
 /* ── Types ───────────────────────────────────────────────────────────── */
 
-interface DuplicateCandidate {
-  id: string;
-  patient_a_id: string;
-  patient_b_id: string;
-  confidence_score: number;
-  detection_method: string | null;
-  resolution: string;
-  notes: string | null;
-}
-
-interface MergeRequest {
-  id: string;
-  source_patient_id: string;
-  target_patient_id: string;
-  status: string;
-  merge_reason: string | null;
-  requested_by_user_id: string;
-  reviewed_by_user_id: string | null;
-  created_at: string;
-}
-
-/* ── Helpers ──────────────────────────────────────────────────────────── */
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
+type DuplicateCandidate = PatientPortalIdentityDuplicateCandidateApi;
+type MergeRequest = PatientPortalIdentityMergeRequestApi;
 
 /* ── Page ─────────────────────────────────────────────────────────────── */
 
@@ -45,19 +24,12 @@ export default function PatientIdentityPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const headers = { Authorization: getToken() };
-      const [dupRes, mergeRes] = await Promise.all([
-        fetch(`${API}/api/v1/identity/duplicates`, { headers }),
-        fetch(`${API}/api/v1/identity/merges`, { headers }),
+      const [duplicateItems, mergeItems] = await Promise.all([
+        listPatientPortalIdentityDuplicates(),
+        listPatientPortalIdentityMerges(),
       ]);
-      if (dupRes.ok) {
-        const d = await dupRes.json();
-        setDuplicates(d.items || []);
-      }
-      if (mergeRes.ok) {
-        const m = await mergeRes.json();
-        setMerges(m.items || []);
-      }
+      setDuplicates(duplicateItems);
+      setMerges(mergeItems);
     } catch (_e) {
       /* silent */
     } finally {

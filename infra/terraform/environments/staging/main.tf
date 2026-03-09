@@ -223,6 +223,33 @@ module "observability" {
   tags                            = local.common_tags
 }
 
+# ─── 10b. Security & Compliance Control Plane ──────────────────────────────
+
+module "cloudtrail" {
+  source = "../../modules/cloudtrail"
+
+  environment      = var.environment
+  project          = var.project
+  alert_topic_arn  = module.observability.alert_topic_arn
+  audit_bucket_arn = module.s3.audit_bucket_arn
+  tags             = local.common_tags
+}
+
+
+
+
+module "backup" {
+  source = "../../modules/backup"
+
+  environment          = var.environment
+  project              = var.project
+  alert_topic_arn      = module.observability.alert_topic_arn
+  dr_vault_arn         = ""
+  backup_resource_arns = []
+  tags                 = local.common_tags
+}
+
+
 # ─── 11. Edge (CloudFront + Route53) ────────────────────────────────────────
 
 module "edge" {

@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
@@ -39,44 +39,76 @@ function Panel({ children, className }: { children: React.ReactNode; className?:
   );
 }
 
-const SERVICES_STATUS = [
-  { name: 'API Gateway', uptime: '99.97%' },
-  { name: 'PostgreSQL RDS', uptime: '99.99%' },
-  { name: 'Redis Cache', uptime: '99.98%' },
-  { name: 'AI Engine', uptime: '99.95%' },
-  { name: 'Export Service', uptime: '99.97%' },
-  { name: 'SMS / Voice', uptime: '99.90%' },
-  { name: 'Billing Engine', uptime: '99.97%' },
-  { name: 'WebSocket', uptime: '99.95%' },
-];
-
-const INCIDENT_HISTORY = [
-  { date: 'Jan 15', title: 'API elevated latency', severity: 'medium', duration: '8 min', affected: 'api-service', resolution: 'Resolved: ECS task restart' },
-  { date: 'Dec 28', title: 'Redis connection pool exhausted', severity: 'high', duration: '3 min', affected: 'redis', resolution: 'Resolved: Pool limit increased' },
-  { date: 'Dec 15', title: 'Export SFTP timeout', severity: 'low', duration: '12 min', affected: 'export-service', resolution: 'Resolved: State API recovered' },
-  { date: 'Nov 28', title: 'AI GPU memory spike', severity: 'medium', duration: '5 min', affected: 'ai-engine', resolution: 'Resolved: Model cache cleared' },
-  { date: 'Nov 10', title: 'Database slow query', severity: 'low', duration: '18 min', affected: 'rds', resolution: 'Resolved: Query optimized' },
-];
-
 function severityBadge(s: string): 'ok' | 'warn' | 'error' | 'info' {
   if (s === 'high') return 'error';
   if (s === 'medium') return 'warn';
   return 'info';
 }
 
-const PLAYBOOKS = [
-  { name: 'Database Down', desc: 'Follow PG-001: failover to standby, notify on-call', id: 'PG-001' },
-  { name: 'API Degraded', desc: 'Follow API-002: check ECS health, rollback if needed', id: 'API-002' },
-  { name: 'Export Failure Spike', desc: 'Follow EXP-003: check state APIs, enable retry engine', id: 'EXP-003' },
-  { name: 'Auth Service Down', desc: 'Follow AUTH-004: check Cognito, enable maintenance mode', id: 'AUTH-004' },
-  { name: 'AI Engine Overloaded', desc: 'Follow AI-005: reduce batch size, scale GPU instances', id: 'AI-005' },
-];
-
 const CONTACT_METHODS_FOUNDER = ['PagerDuty', 'SMS', 'Phone'];
 const CONTACT_METHODS_TL = ['PagerDuty', 'SMS'];
 
+interface ServiceStatus {
+  name: string;
+  uptime: string;
+}
+interface Incident {
+  date: string;
+  title: string;
+  severity: string;
+  duration: string;
+  affected: string;
+  resolution: string;
+}
+interface Playbook {
+  id: string;
+  name: string;
+  desc: string;
+}
+
 export default function IncidentControlCenterPage() {
   const [incidentMode, setIncidentMode] = useState(false);
+  const [data, setData] = useState<{ services: ServiceStatus[]; incidents: Incident[]; playbooks: Playbook[] }>({
+    services: [], incidents: [], playbooks: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/founder/infra/incidents', { credentials: 'include' });
+        if (!res.ok) throw new Error(`${res.status}`);
+        const json = await res.json();
+        if (!cancelled) setData(json);
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
+        <div className="text-xs text-zinc-500 uppercase tracking-widest animate-pulse">Loading incident data…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="text-xs text-red uppercase tracking-widest font-bold">Failed to load incident data</div>
+          <div className="text-body text-zinc-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-8">
@@ -96,21 +128,27 @@ export default function IncidentControlCenterPage() {
       {/* MODULE 1 — System Status Overview */}
       <section>
         <SectionHeader number="1" title="System Status Overview" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {SERVICES_STATUS.map((svc) => (
-            <div
-              key={svc.name}
-              className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
-              style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
-            >
-              <div className="text-xs font-semibold text-zinc-100 mb-2">{svc.name}</div>
-              <div className="mb-2">
-                <Badge label="operational" status="ok" />
+        {data.services.length === 0 ? (
+          <Panel>
+            <div className="text-body text-zinc-500 py-4 text-center">No service status data — connect infrastructure monitoring to populate.</div>
+          </Panel>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {data.services.map((svc) => (
+              <div
+                key={svc.name}
+                className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+                style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
+              >
+                <div className="text-xs font-semibold text-zinc-100 mb-2">{svc.name}</div>
+                <div className="mb-2">
+                  <Badge label="operational" status="ok" />
+                </div>
+                <div className="text-micro font-mono text-zinc-500">{svc.uptime} uptime</div>
               </div>
-              <div className="text-micro font-mono text-zinc-500">{svc.uptime} uptime</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* MODULE 2 — Active Incidents */}
@@ -154,7 +192,13 @@ export default function IncidentControlCenterPage() {
                 </tr>
               </thead>
               <tbody>
-                {INCIDENT_HISTORY.map((inc, i) => (
+                {data.incidents.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-body text-zinc-500">
+                      No incident history — incidents will appear here once reported.
+                    </td>
+                  </tr>
+                ) : data.incidents.map((inc, i) => (
                   <tr key={i} className="border-t border-border-subtle">
                     <td className="py-2 pr-4 font-mono text-zinc-500">{inc.date}</td>
                     <td className="py-2 pr-4 text-zinc-100">{inc.title}</td>
@@ -174,27 +218,31 @@ export default function IncidentControlCenterPage() {
       <section>
         <SectionHeader number="4" title="Response Playbooks" />
         <Panel>
-          <div className="space-y-0">
-            {PLAYBOOKS.map((pb) => (
-              <div
-                key={pb.id}
-                className="flex items-center justify-between gap-4 py-3 border-b border-border-subtle last:border-0"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-micro font-mono text-brand-orange flex-shrink-0">{pb.id}</span>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-zinc-100">{pb.name}</div>
-                    <div className="text-body text-zinc-500 truncate">{pb.desc}</div>
-                  </div>
-                </div>
-                <button
-                  className="flex-shrink-0 px-3 py-1 text-micro font-semibold uppercase tracking-wider chamfer-4 border border-border-DEFAULT text-system-cad hover:bg-bg-overlay transition-colors"
+          {data.playbooks.length === 0 ? (
+            <div className="text-body text-zinc-500 py-4 text-center">No playbooks configured — add response playbooks to enable rapid incident response.</div>
+          ) : (
+            <div className="space-y-0">
+              {data.playbooks.map((pb) => (
+                <div
+                  key={pb.id}
+                  className="flex items-center justify-between gap-4 py-3 border-b border-border-subtle last:border-0"
                 >
-                  View Playbook
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-micro font-mono text-brand-orange flex-shrink-0">{pb.id}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-zinc-100">{pb.name}</div>
+                      <div className="text-body text-zinc-500 truncate">{pb.desc}</div>
+                    </div>
+                  </div>
+                  <button
+                    className="flex-shrink-0 px-3 py-1 text-micro font-semibold uppercase tracking-wider chamfer-4 border border-border-DEFAULT text-system-cad hover:bg-bg-overlay transition-colors"
+                  >
+                    View Playbook
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </Panel>
       </section>
 

@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
 import { ClaimStatusChip } from '@/components/ui/StatusChip';
 import { QuantumEmptyState, QuantumCardSkeleton } from '@/components/ui';
+import {
+  getStandaloneBillingClaims,
+  type StandaloneBillingClaimsStatApi,
+} from '@/services/api';
 
 type ClaimStatus = 'clean' | 'pending' | 'denied' | 'appealed';
 type PayerFilter = 'All' | 'Medicare' | 'Medicaid' | 'Commercial';
@@ -42,23 +46,27 @@ const TD: React.CSSProperties = {
   verticalAlign: 'middle',
 };
 
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-
 export default function ClaimsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
   const [payerFilter, setPayerFilter] = useState<PayerFilter>('All');
   
   const [claims, setClaims] = useState<Claim[]>([]);
-  const [stats, setStats] = useState<any[]>([]);
+  const [stats, setStats] = useState<StandaloneBillingClaimsStatApi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`${API}/api/v1/billing/claims?status=${statusFilter}&payer=${payerFilter}`)
-      .then(res => res.json())
-      .then(data => {
-        if(data.claims) setClaims(data.claims);
-        if(data.stats) setStats(data.stats);
+    void getStandaloneBillingClaims({
+      status: statusFilter,
+      payer: payerFilter,
+    })
+      .then((data) => {
+        if (data.claims) {
+          setClaims(data.claims as Claim[]);
+        }
+        if (data.stats) {
+          setStats(data.stats);
+        }
       })
       .catch(e => console.warn('[fetch error]', e))
       .finally(() => setIsLoading(false));

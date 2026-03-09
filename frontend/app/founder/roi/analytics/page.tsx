@@ -1,434 +1,188 @@
 'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { useMemo, useState, type ReactNode } from 'react';
-import { NextBestActionCard, type NextAction } from '@/components/ui/NextBestActionCard';
-import { SeverityBadge } from '@/components/ui/SeverityBadge';
-import { DomainNavCard, FounderStatusBar } from '@/components/shells/FounderCommand';
-import type { SeverityLevel } from '@/lib/design-system/tokens';
+import { ArrowLeft, BarChart3, Calculator, DollarSign, RefreshCw, TrendingUp, AlertTriangle } from 'lucide-react';
+import { calculateROI, getMarginRiskByTenant } from '@/services/api';
 
-function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
-  return (
-    <div className="border-b border-border-subtle pb-2 mb-4">
-      <div className="flex items-baseline gap-3">
-          <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
-      </div>
-    </div>
-  );
+interface ROIResult {
+  annual_savings_cents?: number;
+  roi_pct?: number;
+  payback_months?: number;
+  revenue_uplift_cents?: number;
+  cost_reduction_cents?: number;
+  efficiency_gain_pct?: number;
 }
 
-function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
-  const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
-      style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
-    >
-      <span className="w-1 h-1 " style={{ background: c[status] }} />
-      {label}
-    </span>
-  );
+interface TenantMargin {
+  tenant_id: string;
+  tenant_name?: string;
+  revenue_cents?: number;
+  cost_cents?: number;
+  margin_pct?: number;
+  risk_level?: string;
 }
-
-function Panel({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
-      style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
-  return (
-    <div
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
-      style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
-    >
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
-      <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
-    </div>
-  );
-}
-
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  return (
-    <div className="h-1.5 bg-zinc-950/[0.06]  overflow-hidden">
-      <motion.div
-        className="h-full "
-        style={{ background: color }}
-        initial={{ width: 0 }}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.8 }}
-      />
-    </div>
-  );
-}
-
-const AGENCIES = [
-  { name: 'Agency A', plan: 'Professional', mrr: 1440, transports: 200, rpc: 7.20, since: 'Oct 2023' },
-  { name: 'Agency B', plan: 'Professional', mrr: 1440, transports: 200, rpc: 7.20, since: 'Nov 2023' },
-  { name: 'Agency C', plan: 'Starter', mrr: 720, transports: 100, rpc: 7.20, since: 'Dec 2023' },
-  { name: 'Agency D', plan: 'Starter', mrr: 720, transports: 80, rpc: 9.00, since: 'Jan 2024' },
-];
-
-const PAYER_MIX = [
-  { label: 'Medicare', pct: 40, color: 'var(--color-status-info)' },
-  { label: 'Medicaid', pct: 30, color: 'var(--color-system-compliance)' },
-  { label: 'Commercial', pct: 20, color: 'var(--q-green)' },
-  { label: 'Self-Pay', pct: 10, color: 'var(--q-yellow)' },
-];
-
-const GROWTH = [
-  { month: 'Aug', mrr: 0 },
-  { month: 'Sep', mrr: 1440 },
-  { month: 'Oct', mrr: 2880 },
-  { month: 'Nov', mrr: 3600 },
-  { month: 'Dec', mrr: 4320 },
-  { month: 'Jan', mrr: 4320 },
-];
-
-const REGIONAL = [
-  { state: 'Texas', agencies: 2, potential: 40 },
-  { state: 'California', agencies: 1, potential: 85 },
-  { state: 'Florida', agencies: 1, potential: 60 },
-  { state: 'Wisconsin', agencies: 0, potential: 20 },
-];
-
-const CHURN_RISK = [
-  { agency: 'Agency A', score: 94, risk: 'Low Risk', riskKey: 'ok' as const },
-  { agency: 'Agency B', score: 88, risk: 'Low Risk', riskKey: 'ok' as const },
-  { agency: 'Agency C', score: 72, risk: 'Medium Risk', riskKey: 'warn' as const },
-  { agency: 'Agency D', score: 61, risk: 'Medium Risk', riskKey: 'warn' as const },
-];
 
 export default function ROIAnalyticsPage() {
-  const [calcVolume, setCalcVolume] = useState(200);
-  const [calcRate, setCalcRate] = useState(650);
+  const [roi, setROI] = useState<ROIResult | null>(null);
+  const [margins, setMargins] = useState<TenantMargin[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const totalMrr = useMemo(() => AGENCIES.reduce((sum, agency) => sum + agency.mrr, 0), []);
-  const mediumRiskAccounts = useMemo(() => CHURN_RISK.filter((risk) => risk.score < 80).length, []);
-  const noCoverageStates = useMemo(() => REGIONAL.filter((state) => state.agencies === 0).length, []);
-  const acceptanceRate = 66.7;
-  const analyticsSeverity: SeverityLevel = mediumRiskAccounts > 0 || noCoverageStates > 0 ? 'HIGH' : 'LOW';
-
-  const analyticsActions: NextAction[] = useMemo(() => {
-    const actions: NextAction[] = [
-      {
-        id: 'roi-analytics-funnel-review',
-        title: 'Review funnel velocity for stalled conversion stages.',
-        severity: 'MEDIUM',
-        domain: 'ROI Funnel',
-        href: '/founder/roi/funnel',
-      },
-      {
-        id: 'roi-analytics-pricing-validate',
-        title: 'Validate pricing assumptions against current payer mix and reimbursement rates.',
-        severity: 'MEDIUM',
-        domain: 'Pricing Simulator',
-        href: '/founder/roi/pricing-simulator',
-      },
-    ];
-
-    if (mediumRiskAccounts > 0) {
-      actions.unshift({
-        id: 'roi-analytics-churn-mitigation',
-        title: `Intervene on ${mediumRiskAccounts} medium-risk account(s) before renewal drift expands.`,
-        severity: 'HIGH',
-        domain: 'Customer Retention',
-        href: '/founder/roi/proposals',
-      });
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [roiRes, marginRes] = await Promise.allSettled([
+        calculateROI({ agency_type: 'ems', call_volume_monthly: 500, crew_count: 20 }),
+        getMarginRiskByTenant(),
+      ]);
+      if (roiRes.status === 'fulfilled') setROI(roiRes.value);
+      if (marginRes.status === 'fulfilled') {
+        const m = marginRes.value;
+        setMargins(Array.isArray(m?.tenants) ? m.tenants : Array.isArray(m) ? m : []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load ROI data');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (noCoverageStates > 0) {
-      actions.push({
-        id: 'roi-analytics-expansion-targets',
-        title: `Prioritize ${noCoverageStates} uncovered state market(s) for pipeline generation.`,
-        severity: 'MEDIUM',
-        domain: 'Regional Expansion',
-        href: '/founder/roi/proposals',
-      });
-    }
+  useEffect(() => { loadData(); }, []);
 
-    return actions;
-  }, [mediumRiskAccounts, noCoverageStates]);
+  const formatCents = (cents: number | undefined) =>
+    cents != null ? `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$0.00';
 
-  const grossRev = calcVolume * calcRate * 0.72;
-  const fusionFee = 1200 + calcVolume * 6;
-  const competitorFee = grossRev * 0.08;
-  const fusionSaving = competitorFee - fusionFee;
-  const fiveYrSaving = fusionSaving * 60;
+  const riskColor = (level: string | undefined) => {
+    if (level === 'high' || level === 'critical') return 'text-red-400';
+    if (level === 'medium') return 'text-amber-400';
+    return 'text-emerald-400';
+  };
 
-  const fmt = (n: number) =>
-    n < 0
-      ? `-$${Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-      : `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
-      <FounderStatusBar isLive activeIncidents={mediumRiskAccounts + noCoverageStates} />
-
-      {/* Page Header */}
-      <div className="border-b border-border-subtle pb-4">
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-micro font-bold tracking-widest font-mono mb-1" style={{ color: 'rgba(255,152,0,0.6)' }}>
-              MODULE 8 · ROI &amp; SALES
-            </p>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>ROI Calculator Analytics</h1>
-            <p className="text-xs text-zinc-500 mt-1">Conversion funnel · proposal acceptance rate · regional revenue heatmap</p>
-            <div className="mt-2">
-              <SeverityBadge severity={analyticsSeverity} size="sm" />
-            </div>
+            <Link href="/founder/roi" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2">
+              <ArrowLeft className="w-4 h-4" /> ROI Hub
+            </Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <BarChart3 className="w-8 h-8 text-emerald-400" />
+              ROI Analytics Engine
+            </h1>
+            <p className="text-gray-400 mt-1">Cost-per-transport modeling, revenue efficiency, and margin analysis</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
-              ← Back to ROI Command
-            </Link>
-            <Link href="/founder" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
-              Founder OS
-            </Link>
+          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400" />
+            <span className="text-red-300">{error}</span>
+          </div>
+        )}
+
+        {/* ROI KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><DollarSign className="w-4 h-4" /> Annual Savings</div>
+            <div className="text-2xl font-bold text-emerald-400">{formatCents(roi?.annual_savings_cents)}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><TrendingUp className="w-4 h-4" /> ROI</div>
+            <div className="text-2xl font-bold text-blue-400">{roi?.roi_pct ?? 0}%</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><Calculator className="w-4 h-4" /> Payback Period</div>
+            <div className="text-2xl font-bold text-cyan-400">{roi?.payback_months ?? '—'} mo</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><TrendingUp className="w-4 h-4" /> Revenue Uplift</div>
+            <div className="text-2xl font-bold text-violet-400">{formatCents(roi?.revenue_uplift_cents)}</div>
           </div>
         </div>
-      </div>
 
-      <NextBestActionCard actions={analyticsActions} title="ROI Analytics Next Best Actions" maxVisible={4} />
+        {/* Efficiency Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-emerald-400" /> Efficiency Breakdown
+            </h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Cost Reduction</span>
+                <span className="text-emerald-400 font-bold">{formatCents(roi?.cost_reduction_cents)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Efficiency Gain</span>
+                <span className="text-blue-400 font-bold">{roi?.efficiency_gain_pct ?? 0}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Annual Savings</span>
+                <span className="text-cyan-400 font-bold">{formatCents(roi?.annual_savings_cents)}</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-violet-400" /> Model Parameters
+            </h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-gray-400">Agency Type</span><span className="text-white">EMS</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Monthly Call Volume</span><span className="text-white">500</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Crew Count</span><span className="text-white">20</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">ROI Timeframe</span><span className="text-white">{roi?.payback_months ?? '—'} months</span></div>
+            </div>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <DomainNavCard
-          domain="billing"
-          href="/founder/revenue/billing-intelligence"
-          description="Validate modeled ROI against live reimbursement and denial posture."
-        />
-        <DomainNavCard
-          domain="ops"
-          href="/founder/ops/command"
-          description="Ensure growth assumptions map to operational capacity and deployment stability."
-        />
-        <DomainNavCard
-          domain="ai"
-          href="/founder/ai/review-queue"
-          description="Use AI review queues to accelerate pricing and expansion decision cycles."
-        />
-      </div>
-
-      {/* MODULE 1 — Revenue KPIs */}
-      <div className="grid grid-cols-5 gap-3">
-        <StatCard label="MRR" value={`$${totalMrr.toLocaleString()}`} color="var(--color-status-info)" />
-        <StatCard label="ARR" value={`$${(totalMrr * 12).toLocaleString()}`} color="var(--color-status-info)" />
-        <StatCard label="Active Agencies" value={4} color="var(--color-text-primary)" />
-        <StatCard label="Avg Rev/Agency" value="$1,080/mo" color="var(--color-text-primary)" />
-        <StatCard label="Acceptance Rate" value={`${acceptanceRate.toFixed(1)}%`} color="var(--color-status-active)" sub="Proposal conversion signal" />
-      </div>
-
-      {/* MODULE 2 — Agency Revenue Breakdown */}
-      <Panel>
-        <SectionHeader number="2" title="Agency Revenue Breakdown" sub="4 active accounts" />
-        <div className="overflow-x-auto">
-          <table className="w-full text-body">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                {['Agency', 'Plan', 'MRR', 'Transports/mo', 'Revenue Per Call', 'Since'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {AGENCIES.map((a, i) => (
-                <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
-                  <td className="py-2 pr-4 font-semibold text-zinc-100">{a.name}</td>
-                  <td className="py-2 pr-4"><Badge label={a.plan} status={a.plan === 'Professional' ? 'info' : 'ok'} /></td>
-                  <td className="py-2 pr-4 font-mono font-bold" style={{ color: 'var(--color-system-billing)' }}>${a.mrr.toLocaleString()}/mo</td>
-                  <td className="py-2 pr-4 text-zinc-400">{a.transports}</td>
-                  <td className="py-2 pr-4 font-mono text-zinc-400">${a.rpc.toFixed(2)}</td>
-                  <td className="py-2 pr-4 text-zinc-500">{a.since}</td>
+        {/* Per-Tenant Margin Table */}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-800">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-amber-400" /> Per-Tenant Margin Risk
+            </h2>
+          </div>
+          {margins.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">No tenant margin data available yet.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Tenant</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Revenue</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Cost</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Margin</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Risk</th>
                 </tr>
-              ))}
-              <tr className="border-t border-border-DEFAULT">
-                <td className="py-2 pr-4 font-bold text-zinc-400" colSpan={2}>Total</td>
-                <td className="py-2 pr-4 font-mono font-bold" style={{ color: 'var(--color-system-billing)' }}>$4,320/mo</td>
-                <td className="py-2 pr-4 font-bold text-zinc-400">580</td>
-                <td colSpan={2} />
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </Panel>
-
-      {/* MODULE 3 — Payer Mix */}
-      <Panel>
-        <SectionHeader number="3" title="Payer Mix" sub="Revenue distribution by payer class" />
-        <div className="space-y-4">
-          {PAYER_MIX.map((p) => (
-            <div key={p.label}>
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 " style={{ background: p.color }} />
-                  <span className="text-body text-zinc-100">{p.label}</span>
-                </div>
-                <span className="text-body font-bold" style={{ color: p.color }}>{p.pct}%</span>
-              </div>
-              <ProgressBar value={p.pct} max={100} color={p.color} />
-            </div>
-          ))}
-        </div>
-      </Panel>
-
-      {/* MODULE 4 — ROI Calculator */}
-      <Panel>
-        <SectionHeader number="4" title="ROI Calculator" sub="Interactive live comparison" />
-        <div className="grid grid-cols-2 gap-6 mb-4">
-          <div className="space-y-3">
-            <div>
-              <label className="text-micro text-zinc-500 block mb-1">
-                Monthly Transport Volume: <span className="text-status-warning font-bold">{calcVolume}</span>
-              </label>
-              <input
-                type="range" min={50} max={1000} step={10} value={calcVolume}
-                onChange={(e) => setCalcVolume(Number(e.target.value))}
-                className="w-full accent-[var(--color-status-warning)]"
-              />
-            </div>
-            <div>
-              <label className="text-micro text-zinc-500 block mb-1">
-                Avg Blended Rate ($): <span className="text-status-warning font-bold">${calcRate}</span>
-              </label>
-              <input
-                type="range" min={200} max={1200} step={10} value={calcRate}
-                onChange={(e) => setCalcRate(Number(e.target.value))}
-                className="w-full accent-[var(--color-status-warning)]"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard label="Gross Revenue" value={`${fmt(grossRev)}/mo`} color="rgba(255,255,255,0.7)" />
-            <StatCard label="FusionEMS Fee" value={`${fmt(fusionFee)}/mo`} color="var(--color-status-warning)" />
-            <StatCard label="Competitor Fee (8%)" value={`${fmt(competitorFee)}/mo`} color="var(--color-brand-red)" />
-            <StatCard label="FusionEMS Saving" value={`${fusionSaving >= 0 ? '+' : ''}${fmt(fusionSaving)}/mo`} color={fusionSaving >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)'} />
-          </div>
-        </div>
-        <div className="p-3 bg-bg-input border border-green-500/[0.15] chamfer-4 flex items-center justify-between">
-          <span className="text-body text-zinc-400">5-Year Cumulative Saving</span>
-          <span className="text-[15px] font-bold" style={{ color: fiveYrSaving >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>
-            {fiveYrSaving >= 0 ? '+' : ''}{fmt(fiveYrSaving)}
-          </span>
-        </div>
-      </Panel>
-
-      {/* MODULE 5 — Growth Trend */}
-      <Panel>
-        <SectionHeader number="5" title="Growth Trend" sub="6-month MRR progression" />
-        <div className="space-y-3">
-          {GROWTH.map((g) => (
-            <div key={g.month}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-body text-zinc-400 w-8 font-mono">{g.month}</span>
-                <span className="text-body font-bold flex-1 text-right" style={{ color: 'var(--color-system-billing)' }}>
-                  {g.mrr === 0 ? '$0' : `$${g.mrr.toLocaleString()}`}
-                </span>
-              </div>
-              <ProgressBar value={g.mrr} max={5000} color="var(--color-status-info)" />
-            </div>
-          ))}
-          <div className="flex justify-between text-[9px] text-zinc-500 mt-1">
-            <span>$0</span><span>$5,000</span>
-          </div>
-        </div>
-      </Panel>
-
-      {/* MODULE 6 — Regional Coverage */}
-      <Panel>
-        <SectionHeader number="6" title="Regional Coverage" sub="State-level market penetration" />
-        <div className="overflow-x-auto">
-          <table className="w-full text-body">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                {['State', 'Active Agencies', 'Market Potential', 'Penetration', ''].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {REGIONAL.map((r, i) => {
-                const pct = r.potential > 0 ? (r.agencies / r.potential) * 100 : 0;
-                return (
-                  <tr key={i} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
-                    <td className="py-2 pr-4 font-semibold text-zinc-100">{r.state}</td>
-                    <td className="py-2 pr-4">
-                      <span className="font-bold text-system-billing">{r.agencies}</span>
-                      {r.agencies === 0 && <Badge label="Target" status="warn" />}
-                    </td>
-                    <td className="py-2 pr-4 text-zinc-400">{r.potential} agencies</td>
-                    <td className="py-2 pr-4 w-40">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <ProgressBar
-                            value={r.agencies}
-                            max={r.potential}
-                            color={r.agencies === 0 ? 'var(--color-status-warning)' : 'var(--color-status-info)'}
-                          />
-                        </div>
-                        <span className="text-micro font-mono w-10 text-right" style={{ color: r.agencies === 0 ? 'var(--color-status-warning)' : 'var(--color-status-info)' }}>
-                          {pct.toFixed(1)}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-2 pr-4">
-                      {r.agencies === 0 && (
-                        <button
-                          className="text-micro font-semibold px-2 py-0.5 chamfer-4"
-                          style={{ background: 'color-mix(in srgb, var(--color-status-warning) 6%, transparent)', color: 'var(--q-yellow)', border: '1px solid color-mix(in srgb, var(--color-status-warning) 14%, transparent)' }}
-                        >
-                          Target
-                        </button>
-                      )}
-                    </td>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {margins.map((t) => (
+                  <tr key={t.tenant_id} className="hover:bg-gray-800/30">
+                    <td className="px-6 py-3 text-white font-medium">{t.tenant_name ?? t.tenant_id}</td>
+                    <td className="px-6 py-3 text-emerald-400">{formatCents(t.revenue_cents)}</td>
+                    <td className="px-6 py-3 text-red-400">{formatCents(t.cost_cents)}</td>
+                    <td className="px-6 py-3 text-cyan-400 font-bold">{t.margin_pct ?? 0}%</td>
+                    <td className={`px-6 py-3 font-bold uppercase ${riskColor(t.risk_level)}`}>{t.risk_level ?? 'low'}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      </Panel>
-
-      {/* MODULE 7 — Churn Risk */}
-      <Panel>
-        <SectionHeader number="7" title="Churn Risk" sub="Agency health scores" />
-        <div className="space-y-3">
-          {CHURN_RISK.map((a, i) => (
-            <div key={i} className="flex items-center justify-between p-3 bg-bg-input border border-border-subtle chamfer-4">
-              <div className="flex items-center gap-4">
-                <div className="text-center w-12">
-                  <div
-                    className="text-[18px] font-bold"
-                    style={{ color: a.score >= 80 ? 'var(--color-status-active)' : a.score >= 60 ? 'var(--color-status-warning)' : 'var(--color-brand-red)' }}
-                  >
-                    {a.score}
-                  </div>
-                  <div className="text-[9px] text-zinc-500">/ 100</div>
-                </div>
-                <div>
-                  <div className="text-[12px] font-semibold text-zinc-100">{a.agency}</div>
-                  <div className="w-28 mt-1">
-                    <ProgressBar
-                      value={a.score}
-                      max={100}
-                      color={a.score >= 80 ? 'var(--color-status-active)' : 'var(--color-status-warning)'}
-                    />
-                  </div>
-                </div>
-              </div>
-              <Badge label={a.risk} status={a.riskKey} />
-            </div>
-          ))}
-        </div>
-      </Panel>
+      </div>
     </div>
   );
 }

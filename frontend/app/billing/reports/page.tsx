@@ -1,319 +1,165 @@
 'use client';
 
-import React from 'react';
-import AppShell from '@/components/AppShell';
+import { useEffect, useState } from 'react';
+import { AlertTriangle, BarChart3, DollarSign, RefreshCw, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import {
+  getBillingCommandDashboard,
+  getBillingKPIs,
+  getPayerPerformance,
+  getRevenueLeakage,
+  getRevenueTrend,
+} from '@/services/api';
 
-interface ReportCard {
-  title: string;
-  description: string;
-  lastGenerated: string;
-}
+export default function BillingReportsPage() {
+  const [dashboard, setDashboard] = useState<Record<string, unknown> | null>(null);
+  const [kpis, setKpis] = useState<Record<string, unknown> | null>(null);
+  const [payers, setPayers] = useState<Record<string, unknown>[]>([]);
+  const [leakage, setLeakage] = useState<Record<string, unknown> | null>(null);
+  const [_trend, setTrend] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-interface RecentReport {
-  name: string;
-  generated: string;
-  period: string;
-  format: 'PDF' | 'CSV';
-}
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [dRes, kRes, pRes, lRes, tRes] = await Promise.allSettled([
+        getBillingCommandDashboard(),
+        getBillingKPIs(),
+        getPayerPerformance(),
+        getRevenueLeakage(),
+        getRevenueTrend(),
+      ]);
+      if (dRes.status === 'fulfilled') setDashboard(dRes.value);
+      if (kRes.status === 'fulfilled') setKpis(kRes.value);
+      if (pRes.status === 'fulfilled') {
+        const pd = pRes.value;
+        setPayers(Array.isArray(pd?.payers) ? pd.payers : Array.isArray(pd) ? pd : []);
+      }
+      if (lRes.status === 'fulfilled') setLeakage(lRes.value);
+      if (tRes.status === 'fulfilled') {
+        const td = tRes.value;
+        setTrend(Array.isArray(td?.months) ? td.months : Array.isArray(td) ? td : []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load reports');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const REPORT_CARDS: ReportCard[] = [
-  {
-    title: 'Denial Analysis',
-    description: 'Root cause breakdown of denied claims by payer, code, and reason',
-    lastGenerated: '02/25/2026',
-  },
-  {
-    title: 'Payer Mix',
-    description: 'Revenue distribution across Medicare, Medicaid, commercial, and self-pay',
-    lastGenerated: '02/24/2026',
-  },
-  {
-    title: 'Productivity',
-    description: 'Coder and biller throughput, time-to-submit, and clean claim metrics',
-    lastGenerated: '02/23/2026',
-  },
-  {
-    title: 'AR Aging Trend',
-    description: 'Month-over-month aging bucket trends and collectability analysis',
-    lastGenerated: '02/22/2026',
-  },
-  {
-    title: 'Collection Analysis',
-    description: 'Net collection rate, write-offs, adjustments, and cash flow trends',
-    lastGenerated: '02/20/2026',
-  },
-  {
-    title: 'Compliance Report',
-    description: 'HIPAA compliance status, audit flags, and billing integrity summary',
-    lastGenerated: '02/18/2026',
-  },
-];
+  useEffect(() => { loadData(); }, []);
 
-const RECENT_REPORTS: RecentReport[] = [
-  { name: 'Denial Analysis — February 2026', generated: '02/25/2026 09:14', period: 'Feb 2026', format: 'PDF' },
-  { name: 'Payer Mix — Q1 2026', generated: '02/24/2026 15:32', period: 'Q1 2026', format: 'CSV' },
-  { name: 'AR Aging Trend — YTD', generated: '02/23/2026 08:07', period: 'Jan–Feb 2026', format: 'PDF' },
-  { name: 'Productivity — Week 8', generated: '02/22/2026 11:45', period: 'Wk 8 2026', format: 'CSV' },
-  { name: 'Collection Analysis — January', generated: '02/20/2026 14:20', period: 'Jan 2026', format: 'PDF' },
-  { name: 'Compliance Report — Q1', generated: '02/18/2026 10:05', period: 'Q1 2026', format: 'PDF' },
-];
+  const formatCents = (c: unknown) =>
+    typeof c === 'number' ? `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$0.00';
 
-const TH: React.CSSProperties = {
-  padding: '10px 12px',
-  textAlign: 'left',
-  fontFamily: 'var(--font-label)',
-  fontSize: 'var(--text-label)',
-  fontWeight: 600,
-  letterSpacing: 'var(--tracking-label)',
-  textTransform: 'uppercase' as const,
-  color: 'var(--color-text-muted)',
-  background: 'var(--color-bg-panel-raised)',
-  whiteSpace: 'nowrap' as const,
-};
-
-const TD: React.CSSProperties = {
-  padding: '10px 12px',
-  fontSize: 'var(--text-body)',
-  color: 'var(--color-text-secondary)',
-  borderTop: '1px solid var(--color-border-subtle)',
-  verticalAlign: 'middle',
-};
-
-export default function ReportsPage() {
-  return (
-    <AppShell>
-      <div style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}>
-        {/* Header */}
-        <div
-          className="hud-rail mb-8 pb-4"
-          style={{ borderBottom: '1px solid var(--color-border-default)' }}
-        >
-          <div className="micro-caps mb-1" style={{ color: 'var(--color-system-billing)' }}>
-            Revenue Cycle
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-label)',
-              fontSize: 'var(--text-h1)',
-              fontWeight: 700,
-              letterSpacing: 'var(--tracking-label)',
-              textTransform: 'uppercase',
-              color: 'var(--color-text-primary)',
-              margin: 0,
-            }}
-          >
-            Reports &amp; Analytics
-          </h1>
-        </div>
-
-        {/* Report Category Cards */}
-        <div className="label-caps mb-4" style={{ color: 'var(--color-text-muted)', letterSpacing: 'var(--tracking-label)' }}>
-          Report Categories
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-          {REPORT_CARDS.map((card) => (
-            <div
-              key={card.title}
-              style={{
-                background: '#0A0A0B',
-                clipPath: 'var(--chamfer-8)',
-                padding: '20px',
-                boxShadow: 'var(--elevation-1)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                borderTop: '2px solid var(--color-system-billing)',
-              }}
-            >
-              {/* Title */}
-              <div
-                style={{
-                  fontFamily: 'var(--font-label)',
-                  fontSize: 'var(--text-body-lg)',
-                  fontWeight: 700,
-                  letterSpacing: 'var(--tracking-label)',
-                  textTransform: 'uppercase',
-                  color: 'var(--color-text-primary)',
-                }}
-              >
-                {card.title}
-              </div>
-
-              {/* Description */}
-              <p
-                style={{
-                  fontSize: 'var(--text-body)',
-                  color: 'var(--color-text-secondary)',
-                  margin: 0,
-                  lineHeight: 'var(--leading-base)',
-                  flex: 1,
-                }}
-              >
-                {card.description}
-              </p>
-
-              {/* Footer: last generated + button */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginTop: '4px',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 'var(--text-micro)',
-                    color: 'var(--color-text-muted)',
-                    fontFamily: 'var(--font-mono)',
-                    textTransform: 'uppercase',
-                    letterSpacing: 'var(--tracking-micro)',
-                  }}
-                >
-                  Last: {card.lastGenerated}
-                </div>
-                <button
-                  style={{
-                    padding: '5px 14px',
-                    background: '#FF4D00',
-                    clipPath: 'var(--chamfer-4)',
-                    border: 'none',
-                    color: 'rgba(0,0,0,0.92)',
-                    fontFamily: 'var(--font-label)',
-                    fontSize: 'var(--text-label)',
-                    fontWeight: 700,
-                    letterSpacing: 'var(--tracking-label)',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    transition: 'opacity var(--duration-fast)',
-                  }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLButtonElement).style.opacity = '0.88')
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLButtonElement).style.opacity = '1')
-                  }
-                >
-                  Run Report
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent Reports */}
-        <div className="label-caps mb-4" style={{ color: 'var(--color-text-muted)', letterSpacing: 'var(--tracking-label)' }}>
-          Recent Reports
-        </div>
-        <div
-          style={{
-            background: '#0A0A0B',
-            clipPath: 'var(--chamfer-8)',
-            overflow: 'hidden',
-            boxShadow: 'var(--elevation-1)',
-          }}
-        >
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={TH}>Report Name</th>
-                <th style={TH}>Generated</th>
-                <th style={TH}>Period</th>
-                <th style={{ ...TH, textAlign: 'center' }}>Format</th>
-                <th style={{ ...TH, textAlign: 'center' }}>Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {RECENT_REPORTS.map((report, i) => (
-                <tr
-                  key={report.name}
-                  style={{
-                    background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
-                  }}
-                >
-                  <td
-                    style={{
-                      ...TD,
-                      color: 'var(--color-text-primary)',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {report.name}
-                  </td>
-                  <td
-                    style={{
-                      ...TD,
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--color-text-muted)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {report.generated}
-                  </td>
-                  <td style={TD}>{report.period}</td>
-                  <td style={{ ...TD, textAlign: 'center' }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '3px 10px',
-                        background:
-                          report.format === 'PDF'
-                            ? 'rgba(229,57,53,0.10)'
-                            : 'rgba(34,211,238,0.10)',
-                        clipPath: 'var(--chamfer-4)',
-                        border: `1px solid ${
-                          report.format === 'PDF'
-                            ? 'rgba(229,57,53,0.25)'
-                            : 'rgba(34,211,238,0.25)'
-                        }`,
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: 'var(--text-label)',
-                        fontWeight: 600,
-                        letterSpacing: 'var(--tracking-label)',
-                        color:
-                          report.format === 'PDF'
-                            ? 'var(--color-brand-red-bright)'
-                            : 'var(--color-system-billing)',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {report.format}
-                    </span>
-                  </td>
-                  <td style={{ ...TD, textAlign: 'center' }}>
-                    <button
-                      style={{
-                        padding: '4px 14px',
-                        background: 'transparent',
-                        border: '1px solid var(--color-border-default)',
-                        clipPath: 'var(--chamfer-4)',
-                        color: 'var(--color-text-secondary)',
-                        fontFamily: 'var(--font-label)',
-                        fontSize: 'var(--text-label)',
-                        fontWeight: 600,
-                        letterSpacing: 'var(--tracking-label)',
-                        textTransform: 'uppercase',
-                        cursor: 'pointer',
-                        transition: 'color var(--duration-fast)',
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLButtonElement).style.color =
-                          '#FF4D00')
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLButtonElement).style.color =
-                          'var(--color-text-secondary)')
-                      }
-                    >
-                      Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
-    </AppShell>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Link href="/billing" className="text-gray-400 hover:text-white text-sm mb-2 block">← Billing Hub</Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <BarChart3 className="w-8 h-8 text-blue-400" /> Billing Reports & Analytics
+            </h1>
+          </div>
+          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400" /><span className="text-red-300">{error}</span>
+          </div>
+        )}
+
+        {/* KPI Cards */}
+        {dashboard && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[
+              { label: 'Total Claims', val: dashboard.total_claims, icon: BarChart3, color: 'text-blue-400' },
+              { label: 'Revenue', val: formatCents(dashboard.revenue_cents), icon: DollarSign, color: 'text-emerald-400', raw: true },
+              { label: 'Paid Claims', val: dashboard.paid_claims, icon: TrendingUp, color: 'text-cyan-400' },
+              { label: 'Denial Rate', val: `${dashboard.denial_rate_pct ?? 0}%`, icon: AlertTriangle, color: 'text-amber-400', raw: true },
+              { label: 'Clean Rate', val: `${dashboard.clean_claim_rate_pct ?? 0}%`, icon: TrendingUp, color: 'text-emerald-400', raw: true },
+            ].map((c, i) => (
+              <div key={i} className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+                <div className="text-gray-400 text-xs flex items-center gap-1"><c.icon className="w-3.5 h-3.5" />{c.label}</div>
+                <div className={`text-xl font-bold ${c.color}`}>{c.raw ? c.val : String(c.val ?? 0)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Revenue Leakage */}
+        {leakage && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">Revenue Leakage Analysis</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(leakage).filter(([k]) => k !== 'as_of').slice(0, 8).map(([k, v]) => (
+                <div key={k}>
+                  <div className="text-gray-400 text-xs">{k.replace(/_/g, ' ')}</div>
+                  <div className="text-sm font-semibold text-gray-200">{typeof v === 'number' ? (k.includes('cents') ? formatCents(v) : v.toLocaleString()) : String(v ?? '—')}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Payer Performance Table */}
+        {payers.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">Payer Performance</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-gray-400 border-b border-gray-800">
+                  <th className="text-left py-2">Payer</th>
+                  <th className="text-right py-2">Claims</th>
+                  <th className="text-right py-2">Revenue</th>
+                  <th className="text-right py-2">Paid</th>
+                  <th className="text-right py-2">Denied</th>
+                </tr></thead>
+                <tbody>
+                  {payers.slice(0, 10).map((p, i) => (
+                    <tr key={i} className="border-b border-gray-800/50">
+                      <td className="py-2">{String(p.payer_name ?? p.name ?? `Payer ${i + 1}`)}</td>
+                      <td className="py-2 text-right">{String(p.total_claims ?? 0)}</td>
+                      <td className="py-2 text-right text-emerald-400">{formatCents(p.revenue_cents)}</td>
+                      <td className="py-2 text-right text-blue-400">{String(p.paid ?? 0)}</td>
+                      <td className="py-2 text-right text-red-400">{String(p.denied ?? 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Billing KPIs */}
+        {kpis && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">Billing KPIs</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(kpis).filter(([k]) => k !== 'as_of').slice(0, 12).map(([k, v]) => (
+                <div key={k}>
+                  <div className="text-gray-400 text-xs">{k.replace(/_/g, ' ')}</div>
+                  <div className="text-sm font-semibold text-gray-200">{typeof v === 'number' ? v.toLocaleString() : String(v ?? '—')}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -4,44 +4,45 @@ import { useToast } from '@/components/ui/ProductPolish';
 import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
 import type { SeverityLevel, StatusVariant } from '@/lib/design-system/tokens';
+import axios from 'axios';
+import {
+  createPortalCase,
+  evaluatePortalCaseCMSGate,
+  listPortalCases,
+  updatePortalCaseStatus,
+  type CaseCMSGatePayload,
+  type CaseCMSGateResultApi,
+  type CasePriorityApi,
+  type CaseRecordApi,
+  type CaseTransportModeApi,
+} from '@/services/api';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data as Record<string, unknown> | undefined;
+    const detail = payload?.detail;
+    if (typeof detail === 'string' && detail.length > 0) return detail;
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail.map((item) => (typeof item === 'string' ? item : JSON.stringify(item))).join('; ');
+    }
+    if (typeof error.message === 'string' && error.message.length > 0) return error.message;
+  }
+  return error instanceof Error ? error.message : fallback;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TabId = 'active' | 'new' | 'cms';
 
-type TransportMode = 'ground' | 'rotor' | 'fixed_wing';
-type CasePriority = 'routine' | 'urgent' | 'emergent';
+type TransportMode = CaseTransportModeApi;
+type CasePriority = CasePriorityApi;
 type TransportLevel = 'BLS' | 'ALS' | 'SCT' | 'SPECIALTY';
 
-interface CaseRecord {
-  case_id: string;
-  transport_mode: TransportMode;
-  status: string;
-  priority: CasePriority;
-  patient_name?: string;
-  opened_at: string;
-  transport_request_id?: string;
-  cad_call_id?: string;
-  timeline?: TimelineEvent[];
-  [key: string]: unknown;
-}
+type CaseRecord = CaseRecordApi;
 
-interface TimelineEvent {
-  event: string;
-  timestamp: string;
-  [key: string]: unknown;
-}
-
-interface CMSGate {
+interface CMSGate extends CaseCMSGatePayload {
   patient_condition: string;
   transport_reason: string;
   transport_level: TransportLevel;
@@ -57,15 +58,7 @@ interface CMSGate {
   medicaid_id: string;
 }
 
-interface CMSGateResult {
-  score: number;
-  passed: boolean;
-  hard_block?: boolean;
-  bs_flag?: boolean;
-  gates?: { name: string; passed: boolean; weight: number }[];
-  issues?: string[];
-  [key: string]: unknown;
-}
+type CMSGateResult = CaseCMSGateResultApi;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -193,14 +186,10 @@ export default function CasesPage() {
   const fetchCases = useCallback(async () => {
     setCasesBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/cases/`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setCases(Array.isArray(data) ? data : (data.cases ?? []));
+      const data = await listPortalCases();
+      setCases(data);
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Failed to load cases');
+      toast.error(getErrorMessage(e, 'Failed to load cases'));
     } finally {
       setCasesBusy(false);
     }
@@ -208,7 +197,7 @@ export default function CasesPage() {
 
   useEffect(() => {
     if (activeTab === 'active') {
-      fetchCases();
+      void fetchCases();
       intervalRef.current = setInterval(fetchCases, 15000);
     }
     return () => {
@@ -219,18 +208,13 @@ export default function CasesPage() {
   // ── Status transition ──
   async function transitionStatus(caseId: string, toStatus: string) {
     try {
-      const r = await fetch(`${API}/api/v1/cases/${caseId}/status`, {
-        method: 'PATCH',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: toStatus }),
-      });
-      if (!r.ok) throw new Error(await r.text());
+      await updatePortalCaseStatus(caseId, { status: toStatus });
       setCases((prev) =>
         prev.map((c) => c.case_id === caseId ? { ...c, status: toStatus } : c)
       );
       toast.success('Status updated');
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Failed to update status');
+      toast.error(getErrorMessage(e, 'Failed to update status'));
     }
   }
 
@@ -241,21 +225,15 @@ export default function CasesPage() {
     }
     setNewCaseBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/cases/`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transport_mode: newCase.transport_mode,
-          priority: newCase.priority,
-          patient_name: newCase.patient_name.trim(),
-          origin_address: newCase.origin_address.trim(),
-          destination_address: newCase.destination_address.trim() || undefined,
-          transport_request_id: newCase.transport_request_id.trim() || undefined,
-          cad_call_id: newCase.cad_call_id.trim() || undefined,
-        }),
+      const created = await createPortalCase({
+        transport_mode: newCase.transport_mode,
+        priority: newCase.priority,
+        patient_name: newCase.patient_name.trim(),
+        origin_address: newCase.origin_address.trim(),
+        destination_address: newCase.destination_address.trim() || undefined,
+        transport_request_id: newCase.transport_request_id.trim() || undefined,
+        cad_call_id: newCase.cad_call_id.trim() || undefined,
       });
-      if (!r.ok) throw new Error(await r.text());
-      const created: CaseRecord = await r.json();
       setCreatedCaseId(created.case_id);
       setCmsCaseId(created.case_id);
       setCmsGate((prev) => ({
@@ -265,7 +243,7 @@ export default function CasesPage() {
       setShowCmsAfterNew(true);
       toast.success('Case created — fill CMS gate below');
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Failed to create case');
+      toast.error(getErrorMessage(e, 'Failed to create case'));
     } finally {
       setNewCaseBusy(false);
     }
@@ -277,15 +255,10 @@ export default function CasesPage() {
     setCmsBusy(true);
     setCmsResult(null);
     try {
-      const r = await fetch(`${API}/api/v1/cms-gate/cases/${cmsCaseId.trim()}/evaluate`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(cmsGate),
-      });
-      if (!r.ok) throw new Error(await r.text());
-      setCmsResult(await r.json());
+      const result = await evaluatePortalCaseCMSGate(cmsCaseId.trim(), cmsGate);
+      setCmsResult(result);
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Failed to evaluate CMS gate');
+      toast.error(getErrorMessage(e, 'Failed to evaluate CMS gate'));
     } finally {
       setCmsBusy(false);
     }
