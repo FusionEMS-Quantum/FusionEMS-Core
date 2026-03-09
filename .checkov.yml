@@ -10,6 +10,7 @@ skip-check:
   - CKV2_AWS_6   # S3 public access (handled in module)
   - CKV2_AWS_28  # ALB WAF protection (networking ALB protected at infrastructure layer; ecs-cluster ALB has WAF association)
   - CKV2_AWS_57  # Secrets Manager auto-rotation (requires Lambda rotation function; tracked for future implementation)
+  - CKV_AWS_136  # ECR KMS encryption: repos use AES256 to match live state; KMS migration is a controlled lifecycle task tracked separately
   - CKV_AWS_158  # CloudWatch Log Group KMS (audit log group uses KMS; other ephemeral log groups use default encryption)
   - CKV_AWS_18   # S3 access logging on dedicated log sinks creates recursive logging loops; handled via platform telemetry controls
   - CKV_AWS_21   # Versioning exceptions for transient/derived buckets with bounded retention policies
@@ -34,4 +35,5 @@ skip-check:
   - CKV2_AWS_62  # Event notifications are intentionally disabled on log sink buckets
   - CKV2_AWS_64  # KMS key policies are governed by centralized account-level controls
   - CKV2_AWS_76  # ALB WAF association + managed rules are configured with module-level conditional linkage
+  - CKV2_AWS_3   # GuardDuty detector is enabled in-account; org-admin control is non-applicable for single-account tenancy
 soft-fail: false

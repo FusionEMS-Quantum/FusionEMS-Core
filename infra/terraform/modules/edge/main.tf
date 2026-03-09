@@ -287,23 +287,6 @@ resource "aws_s3_bucket_policy" "cloudfront_logs" {
         }
         Action   = "s3:PutObject"
         Resource = "${aws_s3_bucket.cloudfront_logs.arn}/*"
-        Condition = {
-          StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
-          }
-        }
-      },
-      {
-        Sid    = "AllowLogsDeliveryGetBucketAcl"
-        Effect = "Allow"
-        Principal = {
-          Service = [
-            "delivery.logs.amazonaws.com",
-            "logging.s3.amazonaws.com"
-          ]
-        }
-        Action   = "s3:GetBucketAcl"
-        Resource = aws_s3_bucket.cloudfront_logs.arn
       }
     ]
   })
@@ -323,18 +306,9 @@ resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
   bucket = aws_s3_bucket.cloudfront_logs.id
 
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    # BucketOwnerEnforced disables ACLs entirely; log delivery uses bucket-policy grants.
+    object_ownership = "BucketOwnerEnforced"
   }
-}
-
-resource "aws_s3_bucket_acl" "cloudfront_logs" {
-  bucket = aws_s3_bucket.cloudfront_logs.id
-  acl    = "log-delivery-write"
-
-  depends_on = [
-    aws_s3_bucket_ownership_controls.cloudfront_logs,
-    aws_s3_bucket_public_access_block.cloudfront_logs,
-  ]
 }
 
 # ========================= CloudFront Distribution ============================
@@ -419,7 +393,7 @@ resource "aws_cloudfront_distribution" "this" {
     }
   }
 
-  depends_on = [aws_s3_bucket_acl.cloudfront_logs]
+  depends_on = [aws_s3_bucket_ownership_controls.cloudfront_logs]
 
   tags = local.common_tags
 }
