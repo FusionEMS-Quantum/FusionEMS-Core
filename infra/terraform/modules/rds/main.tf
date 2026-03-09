@@ -139,6 +139,7 @@ resource "aws_db_parameter_group" "this" {
   parameter {
     name  = "rds.force_ssl"
     value = "1"
+    apply_method = "pending-reboot"
   }
 
   tags = local.common_tags

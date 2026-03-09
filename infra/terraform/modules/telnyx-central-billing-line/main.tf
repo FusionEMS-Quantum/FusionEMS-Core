@@ -63,6 +63,12 @@ resource "aws_ssm_parameter" "central_billing_purchased_at" {
   value  = data.external.purchase.result.purchased_at
   key_id = aws_kms_key.ssm_parameters.arn
   tags   = var.tags
+
+  lifecycle {
+    # Keep the original purchase timestamp stable; external data source can
+    # emit a refreshed timestamp that causes unnecessary perpetual drift.
+    ignore_changes = [value]
+  }
 }
 
 resource "aws_ssm_parameter" "cnam_display_name" {

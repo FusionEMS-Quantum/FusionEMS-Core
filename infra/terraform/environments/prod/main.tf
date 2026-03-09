@@ -199,7 +199,9 @@ module "redis" {
   environment             = var.environment
   project                 = var.project
   vpc_id                  = module.networking.vpc_id
-  private_subnet_ids      = module.networking.data_subnet_ids
+  # Keep Redis subnet group aligned with live app-subnet placement to avoid
+  # in-use subnet group modification errors during convergence.
+  private_subnet_ids      = module.networking.private_subnet_ids
   redis_security_group_id = module.networking.redis_security_group_id
   node_type               = var.redis_node_type
   tags                    = local.common_tags
@@ -261,6 +263,8 @@ module "aws_config" {
   environment             = var.environment
   project                 = var.project
   record_global_resources = var.aws_region == "us-east-1"
+  configuration_recorder_name = "default"
+  delivery_channel_name       = "default"
   tags                    = local.common_tags
 }
 

@@ -166,7 +166,7 @@ resource "aws_iam_role_policy" "config_s3_delivery" {
 # --------------------------------------------------------------------------- #
 
 resource "aws_config_configuration_recorder" "main" {
-  name     = "${local.name_prefix}-recorder"
+  name     = var.configuration_recorder_name
   role_arn = aws_iam_role.config.arn
 
   recording_group {
@@ -176,7 +176,7 @@ resource "aws_config_configuration_recorder" "main" {
 }
 
 resource "aws_config_delivery_channel" "main" {
-  name           = "${local.name_prefix}-delivery"
+  name           = var.delivery_channel_name
   s3_bucket_name = aws_s3_bucket.config_recordings.id
 
   snapshot_delivery_properties {

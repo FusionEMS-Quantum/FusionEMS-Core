@@ -19,3 +19,15 @@ variable "tags" {
   default     = {}
   description = "Common tags applied to all resources"
 }
+
+variable "configuration_recorder_name" {
+  type        = string
+  default     = "default"
+  description = "AWS Config configuration recorder name (account-level singleton)"
+}
+
+variable "delivery_channel_name" {
+  type        = string
+  default     = "default"
+  description = "AWS Config delivery channel name (account-level singleton)"
+}
