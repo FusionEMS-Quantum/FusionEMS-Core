@@ -84,11 +84,11 @@ export default function AIGPUMonitorPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><Zap className="w-4 h-4" /> Avg CPU</div>
-            <div className="text-2xl font-bold text-cyan-400">{cpu.length > 0 ? `${(cpu.reduce((a, c) => a + (c.value ?? 0), 0) / cpu.length).toFixed(1)}%` : '—'}</div>
+            <div className="text-2xl font-bold text-cyan-400">{cpu.length > 0 ? `${(cpu.reduce((a, c) => a + (c.value ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0) / cpu.length).toFixed(1)}%` : '—'}</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><Zap className="w-4 h-4" /> Avg Memory</div>
-            <div className="text-2xl font-bold text-violet-400">{memory.length > 0 ? `${(memory.reduce((a, m) => a + (m.value ?? 0), 0) / memory.length).toFixed(1)}%` : '—'}</div>
+            <div className="text-2xl font-bold text-violet-400">{memory.length > 0 ? `${(memory.reduce((a, m) => a + (m.value ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0) / memory.length).toFixed(1)}%` : '—'}</div>
           </div>
         </div>
 

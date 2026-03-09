@@ -178,10 +178,10 @@ export default function FounderDEACMSPage() {
       });
     }
 
-    if ((cmsSummary?.hard_block_count ?? 0) > 0) {
+    if ((cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0) {
       actions.push({
         id: 'cms-hard-block',
-        title: `Resolve ${cmsSummary?.hard_block_count ?? 0} CMS hard-block case(s)`,
+        title: `Resolve ${cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} CMS hard-block case(s)`,
         severity: 'BLOCKING',
         domain: 'CMS Gate',
       });
@@ -190,7 +190,7 @@ export default function FounderDEACMSPage() {
     if ((cmsSummary?.pass_rate ?? 100) < 85) {
       actions.push({
         id: 'cms-pass-rate',
-        title: `Improve CMS pass rate from ${cmsSummary?.pass_rate ?? 0}%`,
+        title: `Improve CMS pass rate from ${cmsSummary?.pass_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`,
         severity: 'HIGH',
         domain: 'CMS Gate',
       });
@@ -218,8 +218,8 @@ export default function FounderDEACMSPage() {
   }, [bundleHistory.length, cmsSummary?.hard_block_count, cmsSummary?.pass_rate, deaLatest]);
 
   const complianceDomainHealth = useMemo<DomainHealth[]>(() => {
-    const deaScore = Math.max(0, Math.min(100, Math.round(deaLatest?.score ?? 0)));
-    const cmsScore = Math.max(0, Math.min(100, Math.round(cmsSummary?.pass_rate ?? 0)));
+    const deaScore = Math.max(0, Math.min(100, Math.round(deaLatest?.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())));
+    const cmsScore = Math.max(0, Math.min(100, Math.round(cmsSummary?.pass_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())));
     const evidenceScore = bundleHistory.length > 0 ? 92 : 58;
 
     return [
@@ -227,7 +227,7 @@ export default function FounderDEACMSPage() {
         domain: 'compliance',
         score: deaLatest ? deaScore : 55,
         trend: deaLatest?.passed ? 'up' : 'down',
-        alertCount: (deaLatest?.metrics?.open_discrepancies ?? 0) + (deaLatest?.hard_block ? 1 : 0),
+        alertCount: (deaLatest?.metrics?.open_discrepancies ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) + (deaLatest?.hard_block ? 1 : 0),
         topIssue: deaLatest?.hard_block
           ? 'DEA hard-block findings require intervention'
           : 'DEA custody posture stable',
@@ -235,10 +235,10 @@ export default function FounderDEACMSPage() {
       {
         domain: 'billing',
         score: cmsSummary ? cmsScore : 60,
-        trend: (cmsSummary?.pass_rate ?? 0) >= 85 ? 'up' : 'down',
-        alertCount: cmsSummary?.hard_block_count ?? 0,
-        topIssue: (cmsSummary?.hard_block_count ?? 0) > 0
-          ? `${cmsSummary?.hard_block_count ?? 0} CMS hard block(s)`
+        trend: (cmsSummary?.pass_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 85 ? 'up' : 'down',
+        alertCount: cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
+        topIssue: (cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0
+          ? `${cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} CMS hard block(s)`
           : 'CMS gate checks healthy',
       },
       {
@@ -359,7 +359,7 @@ export default function FounderDEACMSPage() {
     <div className="p-5 space-y-6">
       <FounderStatusBar
         isLive={!Boolean(error)}
-        activeIncidents={(deaLatest?.hard_block ? 1 : 0) + (cmsSummary?.hard_block_count ?? 0)}
+        activeIncidents={(deaLatest?.hard_block ? 1 : 0) + (cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
       />
 
       <div className="flex items-start justify-between gap-4">
@@ -374,7 +374,7 @@ export default function FounderDEACMSPage() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <SeverityBadge
               severity={
-                deaLatest?.hard_block || (cmsSummary?.hard_block_count ?? 0) > 0
+                deaLatest?.hard_block || (cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0
                   ? 'BLOCKING'
                   : (cmsSummary?.pass_rate ?? 100) < 85
                     ? 'HIGH'
@@ -631,7 +631,7 @@ export default function FounderDEACMSPage() {
                 PDF Template: <span className="text-zinc-300">{bundleDetail.pdf_payload?.template_id || "—"}</span>
               </p>
               <p className="text-zinc-500">
-                PDF Sections: <span className="text-zinc-300">{bundleDetail.pdf_payload?.sections?.length ?? 0}</span>
+                PDF Sections: <span className="text-zinc-300">{bundleDetail.pdf_payload?.sections?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
               </p>
               <div className="pt-2 border-t border-border-subtle">
                 <p className="text-zinc-500 mb-1">Critical Findings</p>

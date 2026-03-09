@@ -182,8 +182,8 @@ export default function RiskMonitorPage() {
                     <span className="font-medium">{c.name ?? c.tenant_id ?? `Signal ${i + 1}`}</span>
                     {c.signals && <span className="text-gray-400 text-sm ml-3">{c.signals.join(', ')}</span>}
                   </div>
-                  <span className={`font-mono text-sm ${(c.risk_score ?? 0) > 70 ? 'text-red-400' : 'text-amber-400'}`}>
-                    {c.risk_score ?? 0}%
+                  <span className={`font-mono text-sm ${(c.risk_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 70 ? 'text-red-400' : 'text-amber-400'}`}>
+                    {c.risk_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%
                   </span>
                 </div>
               ))}
@@ -211,8 +211,8 @@ export default function RiskMonitorPage() {
                     <tr key={i} className="border-b border-gray-800/50">
                       <td className="py-2">{t.name ?? 'Unknown'}</td>
                       <td className="py-2 text-right text-emerald-400">{formatCents(t.revenue_cents)}</td>
-                      <td className="py-2 text-right">{t.margin_pct ?? 0}%</td>
-                      <td className="py-2 text-right text-amber-400">{t.denial_rate_pct ?? 0}%</td>
+                      <td className="py-2 text-right">{t.margin_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
+                      <td className="py-2 text-right text-amber-400">{t.denial_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
                       <td className={`py-2 text-right font-semibold uppercase ${riskColor(t.risk_level)}`}>{t.risk_level}</td>
                     </tr>
                   ))}
@@ -239,7 +239,7 @@ export default function RiskMonitorPage() {
                     <tr key={i} className="border-b border-gray-800/50">
                       <td className="py-2">{a.payer_name ?? 'Unknown'}</td>
                       <td className="py-2 text-right text-emerald-400">{formatCents(a.exposure_cents)}</td>
-                      <td className="py-2 text-right">{a.concentration_pct ?? 0}%</td>
+                      <td className="py-2 text-right">{a.concentration_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
                       <td className="py-2 text-right text-gray-400">{a.aging_bucket ?? '—'}</td>
                     </tr>
                   ))}

@@ -102,7 +102,7 @@ export default function ROIAnalyticsPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><TrendingUp className="w-4 h-4" /> ROI</div>
-            <div className="text-2xl font-bold text-blue-400">{roi?.roi_pct ?? 0}%</div>
+            <div className="text-2xl font-bold text-blue-400">{roi?.roi_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><Calculator className="w-4 h-4" /> Payback Period</div>
@@ -127,7 +127,7 @@ export default function ROIAnalyticsPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Efficiency Gain</span>
-                <span className="text-blue-400 font-bold">{roi?.efficiency_gain_pct ?? 0}%</span>
+                <span className="text-blue-400 font-bold">{roi?.efficiency_gain_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Annual Savings</span>
@@ -174,7 +174,7 @@ export default function ROIAnalyticsPage() {
                     <td className="px-6 py-3 text-white font-medium">{t.tenant_name ?? t.tenant_id}</td>
                     <td className="px-6 py-3 text-emerald-400">{formatCents(t.revenue_cents)}</td>
                     <td className="px-6 py-3 text-red-400">{formatCents(t.cost_cents)}</td>
-                    <td className="px-6 py-3 text-cyan-400 font-bold">{t.margin_pct ?? 0}%</td>
+                    <td className="px-6 py-3 text-cyan-400 font-bold">{t.margin_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
                     <td className={`px-6 py-3 font-bold uppercase ${riskColor(t.risk_level)}`}>{t.risk_level ?? 'low'}</td>
                   </tr>
                 ))}

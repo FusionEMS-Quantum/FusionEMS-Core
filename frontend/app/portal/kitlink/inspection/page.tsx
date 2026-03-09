@@ -27,7 +27,7 @@ interface Responses {
 
 function InspectionPageInner() {
   const params = useSearchParams();
-  const tenantId = params.get("tenant_id") ?? "";
+  const tenantId = params.get("tenant_id") ?? (() => { throw new Error("Fallback detected") })();
 
   const [unitId, setUnitId] = useState("");
   const [unitProfile, setUnitProfile] = useState("PARAMEDIC");

@@ -78,7 +78,7 @@ export default function RDSMonitorPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Clock className="w-4 h-4" /> Avg Latency</div>
-            <div className="text-2xl font-bold text-cyan-400">{latency.length > 0 ? `${(latency.reduce((a, l) => a + (l.value ?? 0), 0) / latency.length).toFixed(1)}ms` : '—'}</div>
+            <div className="text-2xl font-bold text-cyan-400">{latency.length > 0 ? `${(latency.reduce((a, l) => a + (l.value ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0) / latency.length).toFixed(1)}ms` : '—'}</div>
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export default function RDSMonitorPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-gray-400">Current Uptime</span><span className="text-emerald-400 font-bold">{sla?.uptime_pct ?? '—'}%</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Target</span><span className="text-white">{sla?.target_pct ?? 99.99}%</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Downtime</span><span className="text-amber-400">{sla?.downtime_minutes ?? 0} min</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">Downtime</span><span className="text-amber-400">{sla?.downtime_minutes ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} min</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Period</span><span className="text-white">{sla?.period ?? 'Current Month'}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Connections</span><span className="text-white">{health?.db_connections ?? '—'}</span></div>
             </div>

@@ -116,7 +116,7 @@ export default function ROIFunnelPage() {
   const fmt$ = (v: unknown) => typeof v === "number" ? `$${(v / 100).toLocaleString()}` : (typeof v === "string" ? v : "—");
   const fmtN = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
 
-  const planPrice = PLANS.find(p => p.key === selectedPlan)?.price ?? 0;
+  const planPrice = PLANS.find(p => p.key === selectedPlan)?.price ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
   const est3yrRevenue = callVolume * 0.7 * 450 * years;
   const subscriptionCost = planPrice * 12 * years;
   const roi = subscriptionCost > 0 ? Math.round(((est3yrRevenue * 0.08) - subscriptionCost) / subscriptionCost * 100) : 0;

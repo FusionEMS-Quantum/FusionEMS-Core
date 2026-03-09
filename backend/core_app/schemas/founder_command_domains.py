@@ -186,3 +186,73 @@ class LaunchOrchestratorRunResponse(BaseModel):
     blocked_items: list[str]
     status: Literal["started", "blocked"]
     generated_at: datetime
+
+
+class GrowthCampaignCreateRequest(BaseModel):
+    name: str = Field(min_length=3, max_length=160)
+    objective: str = Field(min_length=3, max_length=1000)
+    audience: dict[str, object] = Field(default_factory=dict)
+    initial_platforms: list[str] = Field(default_factory=list)
+    auto_generate_posts: bool = True
+
+
+class GrowthCampaignResponse(BaseModel):
+    id: str
+    tenant_id: str
+    name: str
+    status: str
+    objective: str
+    audience: dict[str, object]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GrowthSocialPostResponse(BaseModel):
+    id: str
+    tenant_id: str
+    campaign_id: str
+    platform: str
+    content: str
+    media_urls: list[str] = Field(default_factory=list)
+    scheduled_for: datetime | None = None
+    status: str
+    post_metrics: dict[str, object] = Field(default_factory=dict)
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GrowthSocialPostStatusUpdateRequest(BaseModel):
+    status: Literal["draft", "queued", "published", "failed", "approved"]
+
+
+class GrowthAutomationResponse(BaseModel):
+    id: str
+    tenant_id: str
+    name: str
+    trigger_type: str
+    flow_schema: dict[str, object]
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GrowthDemoAssetGenerateRequest(BaseModel):
+    focus_area: str = Field(min_length=3, max_length=200)
+    campaign_id: str | None = None
+
+
+class GrowthDemoAssetResponse(BaseModel):
+    id: str
+    tenant_id: str
+    campaign_id: str | None = None
+    asset_type: str
+    content_url: str
+    asset_metadata: dict[str, object] = Field(default_factory=dict)
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

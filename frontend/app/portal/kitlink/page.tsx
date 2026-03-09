@@ -43,7 +43,7 @@ const TAB_ITEMS = TABS.map((t) => ({ id: t, label: t }));
 
 function KitLinkPageInner() {
   const params = useSearchParams();
-  const tenantId = params.get("tenant_id") ?? "";
+  const tenantId = params.get("tenant_id") ?? (() => { throw new Error("Fallback detected") })();
   const [activeTab, setActiveTab] = useState<Tab>("Dashboard");
 
   return (
@@ -518,7 +518,7 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
         />
         <ReportPanel
           title="Narcotics Log"
-          count={(narcLog?.counts?.length ?? 0) + (narcLog?.waste_events?.length ?? 0)}
+          count={(narcLog?.counts?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) + (narcLog?.waste_events?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
           items={narcLog?.waste_events?.slice(0, 8)}
           renderItem={(i: any) => (
             <div className="flex justify-between text-xs">

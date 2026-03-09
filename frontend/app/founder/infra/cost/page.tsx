@@ -67,7 +67,7 @@ export default function CostExplorerPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><PieChart className="w-4 h-4" /> Utilization</div>
-            <div className={`text-2xl font-bold ${(budget?.utilization_pct ?? 0) > 90 ? 'text-red-400' : (budget?.utilization_pct ?? 0) > 75 ? 'text-amber-400' : 'text-emerald-400'}`}>{budget?.utilization_pct ?? 0}%</div>
+            <div className={`text-2xl font-bold ${(budget?.utilization_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 90 ? 'text-red-400' : (budget?.utilization_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 75 ? 'text-amber-400' : 'text-emerald-400'}`}>{budget?.utilization_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ export default function CostExplorerPage() {
                   <tr key={t.tenant_id} className="hover:bg-gray-800/30">
                     <td className="px-6 py-3 text-white font-medium">{t.tenant_name ?? t.tenant_id}</td>
                     <td className="px-6 py-3 text-emerald-400 font-bold">{formatCents(t.cost_cents)}</td>
-                    <td className="px-6 py-3 text-cyan-400">{t.pct_of_total ?? 0}%</td>
+                    <td className="px-6 py-3 text-cyan-400">{t.pct_of_total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
                   </tr>
                 ))}
               </tbody>

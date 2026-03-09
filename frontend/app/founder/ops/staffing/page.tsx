@@ -160,7 +160,7 @@ export default function StaffingPage() {
           </div>
           <div className="grid grid-cols-4 gap-3">
             {SERVICE_LEVELS.map(level => {
-              const count = summary.qualified_by_service_level[level] ?? 0;
+              const count = summary.qualified_by_service_level[level] ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
               const cert = CERT_FOR_LEVEL[level];
               return (
                 <div key={level} className="text-center p-3 chamfer-8 bg-zinc-950/[0.04]">

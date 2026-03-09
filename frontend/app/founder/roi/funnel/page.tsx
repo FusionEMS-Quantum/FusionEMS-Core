@@ -78,7 +78,7 @@ export default function FunnelPage() {
     fetchFunnelTelemetry();
   }, [fetchFunnelTelemetry]);
 
-  const conversionPct = kpis?.proposal_to_paid_conversion_pct ?? 0;
+  const conversionPct = kpis?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
   const hasTelemetryError = status === 'error';
   const maxCount = Math.max(...funnelData.map((stage) => stage.count), 1);
   const funnelSeverity: SeverityLevel = hasTelemetryError
@@ -112,7 +112,7 @@ export default function FunnelPage() {
       });
     }
 
-    if ((pipeline?.pipeline_to_mrr_ratio ?? 0) > 2) {
+    if ((pipeline?.pipeline_to_mrr_ratio ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 2) {
       actions.push({
         id: 'roi-funnel-pipeline-balance',
         title: 'Pipeline-to-MRR ratio is elevated; convert pending pipeline into active subscriptions.',
@@ -190,9 +190,9 @@ export default function FunnelPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Events', value: kpis?.total_events ?? '-' },
-            { label: 'Total Proposals', value: kpis?.total_proposals ?? '-' },
-            { label: 'Active Subs', value: kpis?.active_subscriptions ?? '-' },
+            { label: 'Total Events', value: kpis?.total_events ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })() },
+            { label: 'Total Proposals', value: kpis?.total_proposals ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })() },
+            { label: 'Active Subs', value: kpis?.active_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })() },
             { label: 'Conversion Rate', value: kpis ? `${kpis.proposal_to_paid_conversion_pct.toFixed(2)}%` : '-' },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
@@ -246,19 +246,19 @@ export default function FunnelPage() {
             <div className="bg-zinc-950/20 border border-border-subtle p-3">
               <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Pending Pipeline</div>
               <div className="text-lg font-bold text-status-warning">
-                ${((pipeline?.pending_pipeline_cents ?? 0) / 100).toLocaleString()}
+                ${((pipeline?.pending_pipeline_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}
               </div>
             </div>
             <div className="bg-zinc-950/20 border border-border-subtle p-3">
               <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Active MRR</div>
               <div className="text-lg font-bold text-status-active">
-                ${((pipeline?.active_mrr_cents ?? 0) / 100).toLocaleString()}
+                ${((pipeline?.active_mrr_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}
               </div>
             </div>
             <div className="bg-zinc-950/20 border border-border-subtle p-3">
               <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Pipeline / MRR</div>
               <div className="text-lg font-bold text-system-billing">
-                {(pipeline?.pipeline_to_mrr_ratio ?? 0).toFixed(2)}x
+                {(pipeline?.pipeline_to_mrr_ratio ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toFixed(2)}x
               </div>
             </div>
           </div>

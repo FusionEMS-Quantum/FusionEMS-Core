@@ -31,7 +31,7 @@ export default function RepVerifyPage() {
   const [digits, setDigits] = useState<string[]>(Array(DIGIT_COUNT).fill(''));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  const [attemptsLeft, _setAttemptsLeft] = useState<number | null>(null);
   const [hasError, setHasError] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(RESEND_SECONDS);
   const [resending, setResending] = useState(false);

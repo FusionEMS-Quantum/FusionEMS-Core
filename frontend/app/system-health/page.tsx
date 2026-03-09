@@ -121,7 +121,7 @@ export default function SystemHealthPage() {
   }, []);
 
   const fmtN = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
-  const overallStatus = String(dash.overall_status ?? "");
+  const overallStatus = String(dash.overall_status ?? (() => { throw new Error("Fallback detected") })());
   const overallColor = overallStatus === "healthy" ? "var(--color-status-active)" : overallStatus === "warning" ? "var(--color-status-warning)" : overallStatus === "degraded" ? "var(--color-brand-red)" : "var(--color-text-muted)";
   const resScore = typeof resilience.resilience_score === "number" ? resilience.resilience_score : 0;
   const resGrade = String(resilience.grade ?? "—");
@@ -204,17 +204,17 @@ export default function SystemHealthPage() {
 
         {/* Active Alerts */}
         <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Active Alerts · {alerts.total ?? 0}</div>
+          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Active Alerts · {alerts.total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
           {alerts.alerts?.slice(0, 8).map((alert, i) => {
             const d = alert.data as Record<string, unknown>;
-            const alertSeverity = normalizeSeverity(String(d.severity ?? ""));
+            const alertSeverity = normalizeSeverity(String(d.severity ?? (() => { throw new Error("Fallback detected") })()));
             const sevColor = alertSeverityColor(alertSeverity);
             return (
               <div key={i} className="flex items-start gap-2 py-2 border-b border-[var(--color-border-default)] last:border-0">
                 <span className="w-1.5 h-1.5  mt-1 flex-shrink-0" style={{ background: sevColor }} />
                 <div className="flex-1 min-w-0">
                   <div className="text-body text-zinc-400 truncate">{String(d.message ?? d.service ?? "Alert")}</div>
-                  <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "")}</div>
+                  <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? (() => { throw new Error("Fallback detected") })())}</div>
                 </div>
                 {String(d.status) === "active" && (
                   <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-green-500/30 text-status-active chamfer-4 hover:bg-green-500/10 transition-colors flex-shrink-0">
@@ -258,7 +258,7 @@ export default function SystemHealthPage() {
                 { label: "Backup Coverage", pct: 100 },
                 { label: "SSL Valid", pct: 100 },
                 { label: "Alert Response", pct: Math.max(100 - (Number(dash.critical_alerts) * 15), 0) },
-                { label: "Monitoring Coverage", pct: Number(coverage.coverage_pct ?? 0) },
+                { label: "Monitoring Coverage", pct: Number(coverage.coverage_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) },
               ].map(item => (
                 <div key={item.label}>
                   <div className="flex justify-between text-micro mb-0.5">

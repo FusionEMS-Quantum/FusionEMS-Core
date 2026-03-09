@@ -66,15 +66,15 @@ export default function ToolsCalendarPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Calendar className="w-4 h-4" /> Total Shifts</div>
-            <div className="text-2xl font-bold text-blue-400">{coverage?.total_shifts ?? 0}</div>
+            <div className="text-2xl font-bold text-blue-400">{coverage?.total_shifts ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Users className="w-4 h-4" /> Coverage</div>
-            <div className="text-2xl font-bold text-emerald-400">{coverage?.coverage_pct ?? 0}%</div>
+            <div className="text-2xl font-bold text-emerald-400">{coverage?.coverage_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Clock className="w-4 h-4" /> Coverage Gaps</div>
-            <div className="text-2xl font-bold text-amber-400">{coverage?.gap_count ?? 0}</div>
+            <div className="text-2xl font-bold text-amber-400">{coverage?.gap_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Shield className="w-4 h-4" /> Expiring Certs</div>
@@ -93,7 +93,7 @@ export default function ToolsCalendarPage() {
                 {templates.map((t) => (
                   <div key={t.id} className="px-6 py-3">
                     <div className="text-white font-medium">{t.name}</div>
-                    <div className="text-gray-400 text-xs mt-1">{t.start_time} — {t.end_time} · {t.crew_required ?? 0} crew · {t.recurrence ?? 'one-time'}</div>
+                    <div className="text-gray-400 text-xs mt-1">{t.start_time} — {t.end_time} · {t.crew_required ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} crew · {t.recurrence ?? 'one-time'}</div>
                   </div>
                 ))}
               </div>

@@ -88,11 +88,11 @@ export default function ForecastPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm flex items-center gap-2"><DollarSign className="w-4 h-4" /> Current Revenue</div>
-            <div className="text-2xl font-bold text-emerald-400">{formatCents((dashboard?.revenue_cents as number) ?? 0)}</div>
+            <div className="text-2xl font-bold text-emerald-400">{formatCents((dashboard?.revenue_cents as number) ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Growth Rate</div>
-            <div className="text-2xl font-bold text-blue-400">{forecast?.growth_rate_pct ?? 0}%</div>
+            <div className="text-2xl font-bold text-blue-400">{forecast?.growth_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Projected Total</div>

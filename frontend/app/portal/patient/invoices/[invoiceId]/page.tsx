@@ -60,10 +60,10 @@ export default function InvoiceDetailPage({ params }: PageProps) {
 
   const status = invoice?.data?.status ?? 'pending';
   const cfg = STATUS_MAP[status] ?? STATUS_MAP.pending;
-  const balance = invoice?.data?.amount_due_cents ?? 0;
-  const billed = invoice?.data?.amount_billed_cents ?? 0;
-  const paid = invoice?.data?.amount_paid_cents ?? 0;
-  const adj = invoice?.data?.adjustments_cents ?? 0;
+  const balance = invoice?.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const billed = invoice?.data?.amount_billed_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const paid = invoice?.data?.amount_paid_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const adj = invoice?.data?.adjustments_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
 
   return (
     <div style={S.page}>

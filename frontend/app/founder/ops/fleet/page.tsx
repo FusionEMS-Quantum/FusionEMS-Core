@@ -125,7 +125,7 @@ export default function FleetTelemetryPage() {
       const j = await ingestTelemetry({ unit_id: ingestForm.unit_id, payload, source: 'OBD2' });
       setIngestResult(j);
       if (j.telemetry_event_id) {
-        showToast(`Telemetry ingested — ${j.faults_detected ?? 0} fault(s) detected`);
+        showToast(`Telemetry ingested — ${j.faults_detected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} fault(s) detected`);
         load();
       }
     } finally { setIngesting(false); }
@@ -332,12 +332,12 @@ export default function FleetTelemetryPage() {
                 <div>
                   <div className="text-micro text-zinc-500">Faults Detected</div>
                   <div className="text-sm font-bold" style={{ color: (ingestResult.faults_detected as number) > 0 ? '#ef5350' : '#4caf50' }}>
-                    {String(ingestResult.faults_detected ?? 0)}
+                    {String(ingestResult.faults_detected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                   </div>
                 </div>
                 <div>
                   <div className="text-micro text-zinc-500">Alerts Created</div>
-                    <div className="text-sm font-bold text-[#FF4D00]">{(ingestResult.alerts_created as string[])?.length ?? 0}</div>
+                    <div className="text-sm font-bold text-[#FF4D00]">{(ingestResult.alerts_created as string[])?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
                 </div>
               </div>
             </div>

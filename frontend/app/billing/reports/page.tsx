@@ -90,12 +90,12 @@ export default function BillingReportsPage() {
               { label: 'Total Claims', val: dashboard.total_claims, icon: BarChart3, color: 'text-blue-400' },
               { label: 'Revenue', val: formatCents(dashboard.revenue_cents), icon: DollarSign, color: 'text-emerald-400', raw: true },
               { label: 'Paid Claims', val: dashboard.paid_claims, icon: TrendingUp, color: 'text-cyan-400' },
-              { label: 'Denial Rate', val: `${dashboard.denial_rate_pct ?? 0}%`, icon: AlertTriangle, color: 'text-amber-400', raw: true },
-              { label: 'Clean Rate', val: `${dashboard.clean_claim_rate_pct ?? 0}%`, icon: TrendingUp, color: 'text-emerald-400', raw: true },
+              { label: 'Denial Rate', val: `${dashboard.denial_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`, icon: AlertTriangle, color: 'text-amber-400', raw: true },
+              { label: 'Clean Rate', val: `${dashboard.clean_claim_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`, icon: TrendingUp, color: 'text-emerald-400', raw: true },
             ].map((c, i) => (
               <div key={i} className="bg-gray-900 border border-gray-800 rounded-lg p-4">
                 <div className="text-gray-400 text-xs flex items-center gap-1"><c.icon className="w-3.5 h-3.5" />{c.label}</div>
-                <div className={`text-xl font-bold ${c.color}`}>{c.raw ? c.val : String(c.val ?? 0)}</div>
+                <div className={`text-xl font-bold ${c.color}`}>{c.raw ? c.val : String(c.val ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
               </div>
             ))}
           </div>
@@ -133,10 +133,10 @@ export default function BillingReportsPage() {
                   {payers.slice(0, 10).map((p, i) => (
                     <tr key={i} className="border-b border-gray-800/50">
                       <td className="py-2">{String(p.payer_name ?? p.name ?? `Payer ${i + 1}`)}</td>
-                      <td className="py-2 text-right">{String(p.total_claims ?? 0)}</td>
+                      <td className="py-2 text-right">{String(p.total_claims ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</td>
                       <td className="py-2 text-right text-emerald-400">{formatCents(p.revenue_cents)}</td>
-                      <td className="py-2 text-right text-blue-400">{String(p.paid ?? 0)}</td>
-                      <td className="py-2 text-right text-red-400">{String(p.denied ?? 0)}</td>
+                      <td className="py-2 text-right text-blue-400">{String(p.paid ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</td>
+                      <td className="py-2 text-right text-red-400">{String(p.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -65,13 +65,13 @@ export default function FounderLegalRequestsCommandPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const laneCount = useMemo(() => summary?.lane_counts?.[lane] ?? 0, [summary, lane]);
+  const laneCount = useMemo(() => summary?.lane_counts?.[lane] ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), [summary, lane]);
 
   const nextActions = useMemo<NextAction[]>(() => {
     const actions: NextAction[] = [];
     if (!summary) return actions;
 
-    if ((summary.lane_counts?.missing_docs ?? 0) > 0) {
+    if ((summary.lane_counts?.missing_docs ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0) {
       actions.push({
         id: 'resolve-missing-docs',
         title: `Resolve ${summary.lane_counts.missing_docs} missing-document request(s)`,
@@ -81,7 +81,7 @@ export default function FounderLegalRequestsCommandPage() {
       });
     }
 
-    if ((summary.lane_counts?.deadline_risk ?? 0) > 0) {
+    if ((summary.lane_counts?.deadline_risk ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0) {
       actions.push({
         id: 'deadline-risk',
         title: `Triage ${summary.lane_counts.deadline_risk} deadline-risk request(s)`,
@@ -91,7 +91,7 @@ export default function FounderLegalRequestsCommandPage() {
       });
     }
 
-    if ((summary.lane_counts?.delivery_queue ?? 0) > 0) {
+    if ((summary.lane_counts?.delivery_queue ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0) {
       actions.push({
         id: 'delivery-queue',
         title: `Advance ${summary.lane_counts.delivery_queue} request(s) to secure delivery`,
@@ -101,7 +101,7 @@ export default function FounderLegalRequestsCommandPage() {
       });
     }
 
-    if ((summary.lane_counts?.high_risk ?? 0) === 0 && (summary.total_open ?? 0) === 0) {
+    if ((summary.lane_counts?.high_risk ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) === 0 && (summary.total_open ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) === 0) {
       actions.push({
         id: 'stable-posture',
         title: 'Legal command posture stable — no active blockers',
@@ -166,7 +166,7 @@ export default function FounderLegalRequestsCommandPage() {
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <FounderStatusBar
         isLive
-        activeIncidents={(summary.lane_counts.missing_docs ?? 0) + summary.urgent_deadlines + summary.high_risk_requests}
+        activeIncidents={(summary.lane_counts.missing_docs ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) + summary.urgent_deadlines + summary.high_risk_requests}
       />
 
       <div>
@@ -190,9 +190,9 @@ export default function FounderLegalRequestsCommandPage() {
         <Stat label="Open Requests" value={summary.total_open} />
         <Stat label="Urgent Deadlines" value={summary.urgent_deadlines} />
         <Stat label="High Risk" value={summary.high_risk_requests} />
-        <Stat label="Missing Docs" value={summary.lane_counts.missing_docs ?? 0} />
-        <Stat label="Ready to Send" value={summary.lane_counts.delivery_queue ?? 0} />
-        <Stat label="Delivered/Closed" value={summary.lane_counts.completed ?? 0} />
+        <Stat label="Missing Docs" value={summary.lane_counts.missing_docs ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+        <Stat label="Ready to Send" value={summary.lane_counts.delivery_queue ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+        <Stat label="Delivered/Closed" value={summary.lane_counts.completed ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
       </div>
 
       <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
@@ -209,7 +209,7 @@ export default function FounderLegalRequestsCommandPage() {
                   : 'border-white/15 bg-black/20 text-white/70 hover:text-white'
               }`}
             >
-              {entry.label} ({summary.lane_counts[entry.key] ?? 0})
+              {entry.label} ({summary.lane_counts[entry.key] ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()})
             </button>
           ))}
         </div>

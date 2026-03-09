@@ -325,10 +325,10 @@ export default function AICommandCenterPage() {
           <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
             <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-4">Risk Tier Distribution</div>
             <div className="space-y-2.5">
-              <RiskBar label="Restricted" count={metrics.risk_tier_breakdown.RESTRICTED ?? 0} total={totalUseCases} color="var(--color-brand-red)" />
-              <RiskBar label="High Risk" count={metrics.risk_tier_breakdown.HIGH_RISK ?? 0} total={totalUseCases} color="#FF4D00" />
-              <RiskBar label="Moderate" count={metrics.risk_tier_breakdown.MODERATE_RISK ?? 0} total={totalUseCases} color="var(--color-status-warning)" />
-              <RiskBar label="Low Risk" count={metrics.risk_tier_breakdown.LOW_RISK ?? 0} total={totalUseCases} color="var(--color-status-active)" />
+              <RiskBar label="Restricted" count={metrics.risk_tier_breakdown.RESTRICTED ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} total={totalUseCases} color="var(--color-brand-red)" />
+              <RiskBar label="High Risk" count={metrics.risk_tier_breakdown.HIGH_RISK ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} total={totalUseCases} color="#FF4D00" />
+              <RiskBar label="Moderate" count={metrics.risk_tier_breakdown.MODERATE_RISK ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} total={totalUseCases} color="var(--color-status-warning)" />
+              <RiskBar label="Low Risk" count={metrics.risk_tier_breakdown.LOW_RISK ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} total={totalUseCases} color="var(--color-status-active)" />
             </div>
           </div>
 

@@ -28,7 +28,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
-type MatchSuggestion = FaxMatchSuggestionApi;
+// type MatchSuggestion = FaxMatchSuggestionApi;
 
 type FaxItem = FaxItemApi;
 
@@ -233,7 +233,7 @@ export default function FaxInboxPage() {
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-mono text-zinc-100/80 truncate">{fax.from_number ?? 'N/A'}</div>
                     <div className="text-micro text-zinc-100/40 mt-0.5">{relativeTime(fax.received_at)}</div>
-                    <div className="text-micro text-zinc-100/30 mt-0.5">{fax.page_count ?? 0} page{(fax.page_count ?? 0) !== 1 ? 's' : ''}</div>
+                    <div className="text-micro text-zinc-100/30 mt-0.5">{fax.page_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} page{(fax.page_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) !== 1 ? 's' : ''}</div>
                     <div className="flex flex-wrap gap-1 mt-1.5 items-center">
                       <MatchChip fax={fax} />
                       {confidence != null && (
@@ -338,7 +338,7 @@ export default function FaxInboxPage() {
                 )}
 
                 {/* Match Suggestions */}
-                {(selected.data?.match_suggestions?.length ?? 0) > 0 && (
+                {(selected.data?.match_suggestions?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
                   <div className="space-y-2 pt-2 border-t border-white/[0.06]">
                     <p className="text-micro text-zinc-100/40 uppercase tracking-wider">Suggestions</p>
                     {selected.data!.match_suggestions!.map((s, i) => {

@@ -101,7 +101,7 @@ export default function MobileOpsPage() {
 
   const syncStatus = String(syncHealth.health ?? "unknown");
   const syncColor = syncStatus === "healthy" ? "var(--color-status-active)" : "var(--color-brand-red)";
-  const shortageRisk = String(shortage.shortage_risk ?? "");
+  const shortageRisk = String(shortage.shortage_risk ?? (() => { throw new Error("Fallback detected") })());
   const shortageColor = shortageRisk === "high" ? "var(--color-brand-red)" : shortageRisk === "medium" ? "var(--color-status-warning)" : "var(--color-status-active)";
 
   return (
@@ -133,7 +133,7 @@ export default function MobileOpsPage() {
                 <StatusDot status={String(d.data ? (d.data as Record<string,unknown>).status : "")} />
                 <span className="text-body text-zinc-400 truncate">{String(d.data ? (d.data as Record<string,unknown>).pwa_name ?? "PWA" : "PWA")}</span>
               </div>
-              <span className="text-micro text-zinc-500">v{String(d.data ? (d.data as Record<string,unknown>).version ?? "" : "")}</span>
+              <span className="text-micro text-zinc-500">v{String(d.data ? (d.data as Record<string,unknown>).version ?? (() => { throw new Error("Fallback detected") })() : "")}</span>
             </div>
           ))}
           {!deployments.deployments?.length && <div className="text-body text-zinc-500">No deployments yet</div>}

@@ -90,7 +90,7 @@ function DebtTable({
   const statuses = ['ALL', 'CANDIDATE', 'ENROLLED', 'INTERCEPTED', 'REJECTED', 'POSTED'];
   const filtered = debts.filter(d => statusFilter === 'ALL' || d.status === statusFilter);
 
-  const totalBalance = filtered.reduce((sum, d) => sum + (d.balance ?? 0), 0);
+  const totalBalance = filtered.reduce((sum, d) => sum + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
 
   async function handleBuild() {
     setBuilding(true);
@@ -155,7 +155,7 @@ function DebtTable({
           </div>
           <div className="w-px h-8 bg-border-subtle" />
           <div>
-            <div className="text-2xl font-black text-green-400">{fmt$(filtered.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? 0), 0))}</div>
+            <div className="text-2xl font-black text-green-400">{fmt$(filtered.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0))}</div>
             <div className="text-micro text-zinc-500">intercepted</div>
           </div>
         </div>
@@ -265,16 +265,16 @@ function ReconciliationView({ data }: { data: TRIPReconciliation | null }) {
     );
   }
 
-  const interceptPct = ((data.intercept_rate ?? 0) * 100).toFixed(1);
+  const interceptPct = ((data.intercept_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 100).toFixed(1);
 
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Submitted', value: (data.total_submitted ?? 0).toString(), color: 'text-zinc-100' },
-          { label: 'Intercepted', value: (data.total_intercepted ?? 0).toString(), color: 'text-green-400' },
-          { label: 'Rejected', value: (data.total_rejected ?? 0).toString(), color: 'text-red-400' },
-          { label: 'Posted to AR', value: (data.total_posted ?? 0).toString(), color: 'text-blue-400' },
+          { label: 'Total Submitted', value: (data.total_submitted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-zinc-100' },
+          { label: 'Intercepted', value: (data.total_intercepted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-green-400' },
+          { label: 'Rejected', value: (data.total_rejected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-red-400' },
+          { label: 'Posted to AR', value: (data.total_posted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-blue-400' },
           { label: 'Intercept Rate', value: `${interceptPct}%`, color: parseFloat(interceptPct) >= 50 ? 'text-green-400' : 'text-yellow-400' },
           { label: 'Net Recovered', value: data.net_recovered != null ? fmt$(data.net_recovered) : '—', color: 'text-green-400' },
         ].map(m => (
@@ -289,10 +289,10 @@ function ReconciliationView({ data }: { data: TRIPReconciliation | null }) {
         <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Intercept Pipeline</div>
         <div className="space-y-3">
           {[
-            { label: 'Submitted to DOR', value: data.total_submitted ?? 0, color: 'bg-blue-500/40' },
-            { label: 'Intercepted', value: data.total_intercepted ?? 0, color: 'bg-green-500/40' },
-            { label: 'Rejected', value: data.total_rejected ?? 0, color: 'bg-red-500/40' },
-            { label: 'Posted to AR', value: data.total_posted ?? 0, color: 'bg-purple-500/40' },
+            { label: 'Submitted to DOR', value: data.total_submitted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-blue-500/40' },
+            { label: 'Intercepted', value: data.total_intercepted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-green-500/40' },
+            { label: 'Rejected', value: data.total_rejected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-red-500/40' },
+            { label: 'Posted to AR', value: data.total_posted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-purple-500/40' },
           ].map(stage => {
             const max = data.total_submitted ?? 1;
             return (
@@ -441,9 +441,9 @@ export default function TRIPPage() {
   }
 
   const enrolledCount = debts.filter(d => d.status === 'ENROLLED').length;
-  const interceptedBalance = debts.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? 0), 0);
+  const interceptedBalance = debts.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
   const candidateCount = debts.filter(d => d.status === 'CANDIDATE').length;
-  const totalBalance = debts.reduce((s, d) => s + (d.balance ?? 0), 0);
+  const totalBalance = debts.reduce((s, d) => s + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
 
   return (
     <div className="flex flex-col bg-black min-h-screen">

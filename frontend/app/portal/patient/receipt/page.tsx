@@ -68,7 +68,7 @@ function PatientReceiptPageContent() {
   }, [statementIdFromUrl]);
 
   const amountPaid = useMemo(() => {
-    const paid = statement?.data?.amount_paid_cents ?? 0;
+    const paid = statement?.data?.amount_paid_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
     return `$${(paid / 100).toFixed(2)}`;
   }, [statement]);
 

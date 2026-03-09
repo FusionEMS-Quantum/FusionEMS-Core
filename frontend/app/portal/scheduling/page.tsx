@@ -151,7 +151,7 @@ function WeekCalendar({ shifts, weekOffset }: { shifts: ShiftInstance[]; weekOff
 // ── Coverage View ─────────────────────────────────────────────────────────────
 
 function CoverageView({ coverage, fatigue }: { coverage: CoverageDashboard; fatigue: FatigueReport | null }) {
-  const pct = coverage.coverage_pct ?? 0;
+  const pct = coverage.coverage_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
   const byDay = coverage.by_day ?? {};
 
   return (
@@ -159,9 +159,9 @@ function CoverageView({ coverage, fatigue }: { coverage: CoverageDashboard; fati
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'Coverage %', value: `${Math.round(pct)}%`, color: pct >= 80 ? 'text-green-400' : pct >= 60 ? 'text-yellow-400' : 'text-red-400' },
-          { label: 'Uncovered Shifts', value: (coverage.uncovered_shifts ?? 0).toString(), color: 'text-zinc-100' },
-          { label: 'On-Call Available', value: (coverage.on_call_available ?? 0).toString(), color: 'text-blue-400' },
-          { label: 'Fatigue Flags', value: (coverage.fatigue_flags ?? 0).toString(), color: (coverage.fatigue_flags ?? 0) > 0 ? 'text-[#FF7A33]' : 'text-zinc-500' },
+          { label: 'Uncovered Shifts', value: (coverage.uncovered_shifts ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-zinc-100' },
+          { label: 'On-Call Available', value: (coverage.on_call_available ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-blue-400' },
+          { label: 'Fatigue Flags', value: (coverage.fatigue_flags ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: (coverage.fatigue_flags ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'text-[#FF7A33]' : 'text-zinc-500' },
         ].map(m => (
           <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
             <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
@@ -175,7 +175,7 @@ function CoverageView({ coverage, fatigue }: { coverage: CoverageDashboard; fati
           <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Coverage by Day</div>
           <div className="space-y-2">
             {DAYS.map(day => {
-              const v = byDay[day] ?? 0;
+              const v = byDay[day] ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
               return (
                 <div key={day} className="flex items-center gap-3">
                   <span className="text-micro text-zinc-500 w-8">{day}</span>
@@ -540,7 +540,7 @@ export default function SchedulingPage() {
           {[
             { label: "This Week's Shifts", value: weekShifts.length.toString(), color: 'text-zinc-100' },
             { label: 'Active Swaps Pending', value: swaps.filter(s => s.state === 'PENDING').length.toString(), color: swaps.filter(s => s.state === 'PENDING').length > 0 ? 'text-yellow-400' : 'text-zinc-500' },
-            { label: 'Coverage %', value: `${Math.round(coverage.coverage_pct ?? 0)}%`, color: (coverage.coverage_pct ?? 0) >= 80 ? 'text-green-400' : 'text-red-400' },
+            { label: 'Coverage %', value: `${Math.round(coverage.coverage_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}%`, color: (coverage.coverage_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 80 ? 'text-green-400' : 'text-red-400' },
             { label: 'AI Drafts Pending', value: drafts.filter(d => d.state === 'PENDING').length.toString(), color: 'text-blue-400' },
           ].map(m => (
             <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">

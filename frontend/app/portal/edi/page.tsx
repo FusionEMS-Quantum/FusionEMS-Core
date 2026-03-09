@@ -226,7 +226,7 @@ function BatchesTab() {
                 </div>
               ))}
             </div>
-            {(drawerBatch.claim_ids?.length ?? 0) > 0 && (
+            {(drawerBatch.claim_ids?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
               <div>
                 <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Claim IDs ({drawerBatch.claim_ids!.length})</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -236,7 +236,7 @@ function BatchesTab() {
                 </div>
               </div>
             )}
-            {(drawerBatch.validation_errors?.length ?? 0) > 0 && (
+            {(drawerBatch.validation_errors?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
               <div>
                 <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Validation Errors</p>
                 <ul className="space-y-1">
@@ -503,7 +503,7 @@ function ExplainTab() {
           </div>
 
           {/* Adjustment Reasons */}
-          {(explanation.adjustment_reasons?.length ?? 0) > 0 && (
+          {(explanation.adjustment_reasons?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
             <div>
               <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Adjustment Reasons</p>
               <div className="space-y-2">
@@ -528,7 +528,7 @@ function ExplainTab() {
           )}
 
           {/* Recommended Actions */}
-          {(explanation.recommended_actions?.length ?? 0) > 0 && (
+          {(explanation.recommended_actions?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
             <div>
               <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Recommended Actions</p>
               <ol className="space-y-2">

@@ -124,8 +124,8 @@ export default function OpsCommandPage() {
       {/* Grid: Deployment + Payments */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Panel title="Deployment Issues">
-          <StatRow label="Failed Deployments" value={dep.failed_deployments ?? 0} warn={(dep.failed_deployments ?? 0) > 0} />
-          <StatRow label="Retrying Deployments" value={dep.retrying_deployments ?? 0} />
+          <StatRow label="Failed Deployments" value={dep.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(dep.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Retrying Deployments" value={dep.retrying_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
           {(dep.recent_failures || []).length > 0 && (
             <div className="mt-3">
               <div className="text-[10px] text-zinc-500 uppercase mb-1">Recent Failures</div>
@@ -140,29 +140,29 @@ export default function OpsCommandPage() {
         </Panel>
 
         <Panel title="Payment Failures">
-          <StatRow label="Past-Due Subscriptions" value={pay.past_due_subscriptions ?? 0} warn={(pay.past_due_subscriptions ?? 0) > 0} />
-          <StatRow label="Canceled Subscriptions" value={pay.canceled_subscriptions ?? 0} warn={(pay.canceled_subscriptions ?? 0) > 0} />
-          <StatRow label="Expired Payment Links" value={pay.expired_payment_links ?? 0} />
-          <StatRow label="Pending Approvals" value={pay.pending_approval_actions ?? 0} />
+          <StatRow label="Past-Due Subscriptions" value={pay.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(pay.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Canceled Subscriptions" value={pay.canceled_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(pay.canceled_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Expired Payment Links" value={pay.expired_payment_links ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Pending Approvals" value={pay.pending_approval_actions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
         </Panel>
       </div>
 
       {/* Grid: Claims Pipeline + High-Risk Denials */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Panel title="Claims Pipeline">
-          <StatRow label="Ready to Submit" value={claims.ready_to_submit ?? 0} warn={(claims.ready_to_submit ?? 0) > 10} />
-          <StatRow label="Blocked for Review" value={claims.blocked_for_review ?? 0} warn={(claims.blocked_for_review ?? 0) > 0} />
-          <StatRow label="Submitted" value={claims.submitted ?? 0} />
-          <StatRow label="Denied" value={claims.denied ?? 0} warn={(claims.denied ?? 0) > 0} />
-          <StatRow label="Rejected" value={claims.rejected ?? 0} warn={(claims.rejected ?? 0) > 0} />
-          <StatRow label="Appeals Drafted" value={claims.appeals_drafted ?? 0} />
-          <StatRow label="Appeals Pending Review" value={claims.appeals_pending_review ?? 0} />
-          <StatRow label="Blocking Issues" value={claims.blocking_issues ?? 0} warn={(claims.blocking_issues ?? 0) > 0} />
+          <StatRow label="Ready to Submit" value={claims.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(claims.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 10} />
+          <StatRow label="Blocked for Review" value={claims.blocked_for_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(claims.blocked_for_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Submitted" value={claims.submitted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Denied" value={claims.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(claims.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Rejected" value={claims.rejected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(claims.rejected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Appeals Drafted" value={claims.appeals_drafted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Appeals Pending Review" value={claims.appeals_pending_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Blocking Issues" value={claims.blocking_issues ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(claims.blocking_issues ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
         </Panel>
 
         <Panel title="High-Risk Denials">
-          <StatRow label="High-Value Denials" value={denials.high_value_denials ?? 0} warn={(denials.high_value_denials ?? 0) > 0} />
-          <StatRow label="Total Denied Value" value={`$${((denials.total_denied_value_cents ?? 0) / 100).toLocaleString()}`} warn={(denials.total_denied_value_cents ?? 0) > 50000} />
+          <StatRow label="High-Value Denials" value={denials.high_value_denials ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(denials.high_value_denials ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Total Denied Value" value={`$${((denials.total_denied_value_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`} warn={(denials.total_denied_value_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 50000} />
           {(denials.top_denials || []).length > 0 && (
             <div className="mt-3">
               <div className="text-[10px] text-zinc-500 uppercase mb-1">Largest Denials</div>
@@ -180,52 +180,52 @@ export default function OpsCommandPage() {
       {/* Grid: Patient Balances + Collections + Debt Setoff */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Panel title="Patient Balances">
-          <StatRow label="Open Balances" value={balances.open_balances ?? 0} />
-          <StatRow label="Autopay Pending" value={balances.autopay_pending ?? 0} />
-          <StatRow label="Payment Plan Active" value={balances.payment_plan_active ?? 0} />
-          <StatRow label="Collections Ready" value={balances.collections_ready ?? 0} warn={(balances.collections_ready ?? 0) > 0} />
-          <StatRow label="Sent to Collections" value={balances.sent_to_collections ?? 0} />
-          <StatRow label="Written Off" value={balances.written_off ?? 0} />
-          <StatRow label="Total Outstanding" value={`$${((balances.total_outstanding_cents ?? 0) / 100).toLocaleString()}`} />
+          <StatRow label="Open Balances" value={balances.open_balances ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Autopay Pending" value={balances.autopay_pending ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Payment Plan Active" value={balances.payment_plan_active ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Collections Ready" value={balances.collections_ready ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(balances.collections_ready ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Sent to Collections" value={balances.sent_to_collections ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Written Off" value={balances.written_off ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Total Outstanding" value={`$${((balances.total_outstanding_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`} />
         </Panel>
 
         <Panel title="Collections Review">
-          <StatRow label="Pending Reviews" value={collections.pending_reviews ?? 0} warn={(collections.pending_reviews ?? 0) > 0} />
-          <StatRow label="Approved for Collections" value={collections.approved_for_collections ?? 0} />
-          <StatRow label="Total at Collections Stage" value={collections.total_at_collections_stage ?? 0} />
+          <StatRow label="Pending Reviews" value={collections.pending_reviews ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(collections.pending_reviews ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Approved for Collections" value={collections.approved_for_collections ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Total at Collections Stage" value={collections.total_at_collections_stage ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
         </Panel>
 
         <Panel title="Debt Setoff Program">
-          <StatRow label="Active Enrollments" value={setoff.active_enrollments ?? 0} />
-          <StatRow label="Pending Batches" value={setoff.pending_batches ?? 0} />
-          <StatRow label="Submitted Batches" value={setoff.submitted_batches ?? 0} />
-          <StatRow label="Claims at Setoff Stage" value={setoff.claims_at_setoff_stage ?? 0} />
-          <StatRow label="Pending Amount" value={`$${((setoff.total_pending_amount_cents ?? 0) / 100).toLocaleString()}`} />
+          <StatRow label="Active Enrollments" value={setoff.active_enrollments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Pending Batches" value={setoff.pending_batches ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Submitted Batches" value={setoff.submitted_batches ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Claims at Setoff Stage" value={setoff.claims_at_setoff_stage ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Pending Amount" value={`$${((setoff.total_pending_amount_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`} />
         </Panel>
       </div>
 
       {/* Grid: Agency Gaps + Comms Health + CrewLink */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Panel title="Agency Profile Gaps">
-          <StatRow label="Total Tenants" value={gaps.total_tenants ?? 0} />
-          <StatRow label="Missing Tax Profile" value={gaps.missing_tax_profile ?? 0} warn={(gaps.missing_tax_profile ?? 0) > 0} />
-          <StatRow label="Missing Public Sector" value={gaps.missing_public_sector_profile ?? 0} warn={(gaps.missing_public_sector_profile ?? 0) > 0} />
-          <StatRow label="Missing Billing Policy" value={gaps.missing_billing_policy ?? 0} warn={(gaps.missing_billing_policy ?? 0) > 0} />
+          <StatRow label="Total Tenants" value={gaps.total_tenants ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Missing Tax Profile" value={gaps.missing_tax_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(gaps.missing_tax_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Missing Public Sector" value={gaps.missing_public_sector_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(gaps.missing_public_sector_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Missing Billing Policy" value={gaps.missing_billing_policy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(gaps.missing_billing_policy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
         </Panel>
 
         <Panel title="Communications Health">
-          <StatRow label="Total Channels" value={comms.total_channels ?? 0} />
-          <StatRow label="Degraded Channels" value={comms.degraded_channels ?? 0} warn={(comms.degraded_channels ?? 0) > 0} />
-          <StatRow label="Open Threads" value={comms.open_threads ?? 0} />
-          <StatRow label="Messages (24h)" value={comms.messages_last_24h ?? 0} />
-          <StatRow label="Failed Messages" value={comms.failed_messages ?? 0} warn={(comms.failed_messages ?? 0) > 0} />
+          <StatRow label="Total Channels" value={comms.total_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Degraded Channels" value={comms.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(comms.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Open Threads" value={comms.open_threads ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Messages (24h)" value={comms.messages_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Failed Messages" value={comms.failed_messages ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(comms.failed_messages ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
         </Panel>
 
         <Panel title="CrewLink Paging Health">
-          <StatRow label="Active Alerts" value={crew.active_alerts ?? 0} />
-          <StatRow label="Escalations (24h)" value={crew.escalations_last_24h ?? 0} warn={(crew.escalations_last_24h ?? 0) > 0} />
-          <StatRow label="Pending No Response" value={crew.pending_no_response ?? 0} warn={(crew.pending_no_response ?? 0) > 0} />
-          <StatRow label="Completed (24h)" value={crew.completed_last_24h ?? 0} />
+          <StatRow label="Active Alerts" value={crew.active_alerts ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+          <StatRow label="Escalations (24h)" value={crew.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(crew.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Pending No Response" value={crew.pending_no_response ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} warn={(crew.pending_no_response ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0} />
+          <StatRow label="Completed (24h)" value={crew.completed_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
         </Panel>
       </div>
     </div>

@@ -113,12 +113,12 @@ export default function SuccessCommandPage() {
   }
 
   const KPI_CARDS = [
-    { label: 'Stalled Implementations', value: summary?.stalled_implementations ?? 0, color: summary?.stalled_implementations ? 'text-red-400' : 'text-green-400', link: '/founder/success-command/implementations' },
-    { label: 'High-Severity Tickets', value: summary?.high_severity_tickets ?? 0, color: summary?.high_severity_tickets ? 'text-red-400' : 'text-green-400', link: '/founder/success-command/support' },
-    { label: 'At-Risk Accounts', value: summary?.at_risk_accounts ?? 0, color: summary?.at_risk_accounts ? 'text-[#FF4D00]' : 'text-green-400', link: '#' },
-    { label: 'Training Gaps', value: summary?.training_gaps ?? 0, color: summary?.training_gaps ? 'text-yellow-400' : 'text-green-400', link: '/founder/success-command/training' },
-    { label: 'Low Adoption Modules', value: summary?.low_adoption_modules ?? 0, color: summary?.low_adoption_modules ? 'text-yellow-400' : 'text-green-400', link: '/founder/success-command/adoption' },
-    { label: 'Expansion Ready', value: summary?.expansion_ready_signals ?? 0, color: 'text-cyan-400', link: '/founder/success-command/renewal' },
+    { label: 'Stalled Implementations', value: summary?.stalled_implementations ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: summary?.stalled_implementations ? 'text-red-400' : 'text-green-400', link: '/founder/success-command/implementations' },
+    { label: 'High-Severity Tickets', value: summary?.high_severity_tickets ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: summary?.high_severity_tickets ? 'text-red-400' : 'text-green-400', link: '/founder/success-command/support' },
+    { label: 'At-Risk Accounts', value: summary?.at_risk_accounts ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: summary?.at_risk_accounts ? 'text-[#FF4D00]' : 'text-green-400', link: '#' },
+    { label: 'Training Gaps', value: summary?.training_gaps ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: summary?.training_gaps ? 'text-yellow-400' : 'text-green-400', link: '/founder/success-command/training' },
+    { label: 'Low Adoption Modules', value: summary?.low_adoption_modules ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: summary?.low_adoption_modules ? 'text-yellow-400' : 'text-green-400', link: '/founder/success-command/adoption' },
+    { label: 'Expansion Ready', value: summary?.expansion_ready_signals ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'text-cyan-400', link: '/founder/success-command/renewal' },
   ];
 
   return (

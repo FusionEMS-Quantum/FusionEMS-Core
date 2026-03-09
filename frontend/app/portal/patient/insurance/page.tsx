@@ -147,10 +147,10 @@ export default function PatientInsurancePage() {
       {billing && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Billed', value: `$${(billing.total_billed ?? 0).toLocaleString()}`, icon: Shield, color: 'blue' },
-            { label: 'Insurance Covered', value: `$${(billing.insurance_covered ?? 0).toLocaleString()}`, icon: CheckCircle, color: 'green' },
-            { label: 'Patient Responsibility', value: `$${(billing.patient_responsibility ?? 0).toLocaleString()}`, icon: Clock, color: 'yellow' },
-            { label: 'Outstanding', value: `$${(billing.outstanding_balance ?? 0).toLocaleString()}`, icon: XCircle, color: 'red' },
+            { label: 'Total Billed', value: `$${(billing.total_billed ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toLocaleString()}`, icon: Shield, color: 'blue' },
+            { label: 'Insurance Covered', value: `$${(billing.insurance_covered ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toLocaleString()}`, icon: CheckCircle, color: 'green' },
+            { label: 'Patient Responsibility', value: `$${(billing.patient_responsibility ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toLocaleString()}`, icon: Clock, color: 'yellow' },
+            { label: 'Outstanding', value: `$${(billing.outstanding_balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toLocaleString()}`, icon: XCircle, color: 'red' },
           ].map((kpi) => (
             <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
               <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
@@ -179,15 +179,15 @@ export default function PatientInsurancePage() {
             </div>
             <div>
               <span className="text-gray-400">Copay:</span>
-              <span className="ml-2 text-white">${eligibility.copay ?? 0}</span>
+              <span className="ml-2 text-white">${eligibility.copay ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
             </div>
             <div>
               <span className="text-gray-400">Deductible Remaining:</span>
-              <span className="ml-2 text-white">${eligibility.deductible_remaining ?? 0}</span>
+              <span className="ml-2 text-white">${eligibility.deductible_remaining ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
             </div>
             <div>
               <span className="text-gray-400">OOP Remaining:</span>
-              <span className="ml-2 text-white">${eligibility.out_of_pocket_remaining ?? 0}</span>
+              <span className="ml-2 text-white">${eligibility.out_of_pocket_remaining ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
             </div>
             {eligibility.checked_at && (
               <div>

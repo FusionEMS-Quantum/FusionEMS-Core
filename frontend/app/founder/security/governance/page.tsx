@@ -217,7 +217,7 @@ export default function GovernanceCommandPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
-              <ScoreRing score={summary?.health_score ?? 0} label="Security Health" color={healthColor} />
+              <ScoreRing score={summary?.health_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} label="Security Health" color={healthColor} />
               <ScoreRing score={policyCompleteness} label="Policy Complete" color={policyCompleteness >= 80 ? STATUS_COLOR.GREEN : STATUS_COLOR.YELLOW} />
               <ScoreRing score={interopScore} label="Interop Ready" color={STATUS_COLOR.BLUE} />
               <ScoreRing score={summary ? Math.max(100 - summary.failed_logins_24h * 10, 0) : 100} label="Auth Health" color={summary && summary.failed_logins_24h > 3 ? STATUS_COLOR.RED : STATUS_COLOR.GREEN} />
@@ -233,10 +233,10 @@ export default function GovernanceCommandPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <TrustBadge label="Failed Logins (24h)" status={summary && summary.failed_logins_24h > 3 ? 'RED' : 'GREEN'} count={summary?.failed_logins_24h ?? 0} />
-              <TrustBadge label="PHI Access (24h)" status={summary && summary.phi_access_count_24h > 50 ? 'ORANGE' : 'GREEN'} count={summary?.phi_access_count_24h ?? 0} />
-              <TrustBadge label="Pending Approvals" status={summary && summary.pending_approvals_count > 0 ? 'YELLOW' : 'GREEN'} count={summary?.pending_approvals_count ?? 0} />
-              <TrustBadge label="Exports (7d)" status={summary && summary.recent_exports_7d > 10 ? 'YELLOW' : 'GREEN'} count={summary?.recent_exports_7d ?? 0} />
+              <TrustBadge label="Failed Logins (24h)" status={summary && summary.failed_logins_24h > 3 ? 'RED' : 'GREEN'} count={summary?.failed_logins_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+              <TrustBadge label="PHI Access (24h)" status={summary && summary.phi_access_count_24h > 50 ? 'ORANGE' : 'GREEN'} count={summary?.phi_access_count_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+              <TrustBadge label="Pending Approvals" status={summary && summary.pending_approvals_count > 0 ? 'YELLOW' : 'GREEN'} count={summary?.pending_approvals_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
+              <TrustBadge label="Exports (7d)" status={summary && summary.recent_exports_7d > 10 ? 'YELLOW' : 'GREEN'} count={summary?.recent_exports_7d ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} />
             </div>
           </section>
 
@@ -249,10 +249,10 @@ export default function GovernanceCommandPage() {
               </div>
             </div>
             <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <MeterBar label="Failed Logins" value={summary?.failed_logins_24h ?? 0} max={20} color={STATUS_COLOR.RED} />
-              <MeterBar label="PHI Access" value={summary?.phi_access_count_24h ?? 0} max={200} color={STATUS_COLOR.ORANGE} />
-              <MeterBar label="Pending Actions" value={summary?.pending_approvals_count ?? 0} max={20} color={STATUS_COLOR.YELLOW} />
-              <MeterBar label="Data Exports" value={summary?.recent_exports_7d ?? 0} max={50} color={STATUS_COLOR.BLUE} />
+              <MeterBar label="Failed Logins" value={summary?.failed_logins_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} max={20} color={STATUS_COLOR.RED} />
+              <MeterBar label="PHI Access" value={summary?.phi_access_count_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} max={200} color={STATUS_COLOR.ORANGE} />
+              <MeterBar label="Pending Actions" value={summary?.pending_approvals_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} max={20} color={STATUS_COLOR.YELLOW} />
+              <MeterBar label="Data Exports" value={summary?.recent_exports_7d ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} max={50} color={STATUS_COLOR.BLUE} />
             </div>
           </section>
 

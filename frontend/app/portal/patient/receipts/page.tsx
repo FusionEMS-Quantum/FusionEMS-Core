@@ -77,7 +77,7 @@ export default function ReceiptsPage() {
     return (r.data?.status ?? '') === filter;
   });
 
-  const totalPaid = filtered.reduce((sum, r) => sum + (r.data?.amount ?? 0), 0);
+  const totalPaid = filtered.reduce((sum, r) => sum + (r.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">

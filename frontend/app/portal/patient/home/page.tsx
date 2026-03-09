@@ -79,8 +79,8 @@ export default function PatientHomeDashboard() {
         ]) as [Statement[], Payment[]];
         setStatements(stmts);
         setPayments(pays);
-        const totalBalance = stmts.reduce((acc, s) => acc + (s.data?.amount_due_cents ?? 0), 0);
-        const totalPaid = pays.reduce((acc, p) => acc + ((p.data?.amount ?? 0) * 100), 0);
+        const totalBalance = stmts.reduce((acc, s) => acc + (s.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
+        const totalPaid = pays.reduce((acc, p) => acc + ((p.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 100), 0);
         setSummary({ total_balance: totalBalance, payment_count: pays.length, statement_count: stmts.length, total_paid: totalPaid });
       } catch {
         // Non-fatal — render with empty state
@@ -91,7 +91,7 @@ export default function PatientHomeDashboard() {
     void load();
   }, []);
 
-  const hasBalance = (summary?.total_balance ?? 0) > 0;
+  const hasBalance = (summary?.total_balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0;
 
   return (
     <div style={S.page}>
@@ -125,7 +125,7 @@ export default function PatientHomeDashboard() {
           <div style={{ background: 'rgba(255,77,0,0.06)', border: '1px solid rgba(255,77,0,0.2)', padding: '14px 20px', clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#FF4D00', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Balance Due</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-text-primary)' }}>{fmt(summary?.total_balance ?? 0)}</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-text-primary)' }}>{fmt(summary?.total_balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
             </div>
             <Link href="/portal/patient/pay" style={{ padding: '10px 24px', background: '#FF4D00', color: '#000', fontWeight: 700, fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)', boxShadow: '0 0 20px rgba(255,77,0,0.2)', whiteSpace: 'nowrap' }}>
               Pay Now →
@@ -137,17 +137,17 @@ export default function PatientHomeDashboard() {
         <div style={S.gridRow}>
           <div style={S.statCard}>
             <div style={S.statLabel}>Current Balance</div>
-            <div style={{ ...S.statValue, color: hasBalance ? '#FF4D00' : '#10B981' }}>{loading ? '—' : fmt(summary?.total_balance ?? 0)}</div>
+            <div style={{ ...S.statValue, color: hasBalance ? '#FF4D00' : '#10B981' }}>{loading ? '—' : fmt(summary?.total_balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
             <div style={S.statSub}>{hasBalance ? 'Amount due now' : 'Account is current'}</div>
           </div>
           <div style={S.statCard}>
             <div style={S.statLabel}>Total Paid</div>
-            <div style={S.statValue}>{loading ? '—' : fmt(summary?.total_paid ?? 0)}</div>
-            <div style={S.statSub}>{summary?.payment_count ?? 0} payment{(summary?.payment_count ?? 0) !== 1 ? 's' : ''} on record</div>
+            <div style={S.statValue}>{loading ? '—' : fmt(summary?.total_paid ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
+            <div style={S.statSub}>{summary?.payment_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} payment{(summary?.payment_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) !== 1 ? 's' : ''} on record</div>
           </div>
           <div style={S.statCard}>
             <div style={S.statLabel}>Statements</div>
-            <div style={S.statValue}>{loading ? '—' : (summary?.statement_count ?? 0)}</div>
+            <div style={S.statValue}>{loading ? '—' : (summary?.statement_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
             <div style={S.statSub}>Total statements on file</div>
           </div>
           <div style={{ ...S.statCard, background: 'rgba(255,77,0,0.04)', border: '1px solid rgba(255,77,0,0.15)' }}>
@@ -180,8 +180,8 @@ export default function PatientHomeDashboard() {
                     <div style={S.rowSub}>{s.data?.incident_date ?? 'N/A'} · {s.data?.service_type ?? 'EMS Transport'}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: (s.data?.amount_due_cents ?? 0) > 0 ? '#FF4D00' : '#10B981' }}>
-                      {fmt(s.data?.amount_due_cents ?? 0)}
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: (s.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? '#FF4D00' : '#10B981' }}>
+                      {fmt(s.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                     </span>
                     {statusChip(s.data?.status)}
                   </div>
@@ -206,7 +206,7 @@ export default function PatientHomeDashboard() {
                     <div style={S.rowSub}>{p.data?.posted_at ? new Date(p.data.posted_at).toLocaleDateString() : 'On file'}</div>
                   </div>
                   <span style={{ fontSize: '14px', fontWeight: 700, color: '#10B981' }}>
-                    ${((p.data?.amount ?? 0)).toFixed(2)}
+                    ${((p.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())).toFixed(2)}
                   </span>
                 </div>
               ))}

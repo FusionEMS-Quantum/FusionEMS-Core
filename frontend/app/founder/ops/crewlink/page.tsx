@@ -233,7 +233,7 @@ export default function CrewLinkPagingPage() {
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-right">
                     <div className="text-micro text-zinc-500">{d.service_level} · {d.priority}</div>
-                    <div className="text-micro text-zinc-500">{d.target_crew_ids?.length ?? 0} crew paged</div>
+                    <div className="text-micro text-zinc-500">{d.target_crew_ids?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} crew paged</div>
                   </div>
                   {isEscalated && !isSelected && (
                     <button onClick={e => { e.stopPropagation(); escalate(alert.id); }}

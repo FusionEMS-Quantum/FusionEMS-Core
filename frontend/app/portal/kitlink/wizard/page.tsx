@@ -58,7 +58,7 @@ type StepId = typeof STEPS[number]["id"];
 function WizardPageInner() {
   const params = useSearchParams();
   const router = useRouter();
-  const tenantId = params.get("tenant_id") ?? "";
+  const tenantId = params.get("tenant_id") ?? (() => { throw new Error("Fallback detected") })();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<StepId[]>([]);
@@ -271,7 +271,7 @@ function PackStep({ tenantId, stepData, setStepData }: { tenantId: string; stepD
             <div>
               <p className="text-sm font-medium text-zinc-100">{pack.title}</p>
               <p className="text-xs text-zinc-500 mt-0.5">{pack.state} · v{pack.version} · {pack.unit_profiles?.join(", ")}</p>
-              <p className="text-xs text-zinc-500 mt-1">{pack.rules?.length ?? 0} rules</p>
+              <p className="text-xs text-zinc-500 mt-1">{pack.rules?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} rules</p>
             </div>
             {pack.active ? (
               <span className="px-2 py-1 bg-emerald-800/50 text-emerald-400 text-xs ">Active</span>
@@ -299,7 +299,7 @@ function UnitSetupStep({ stepData, setStepData }: { stepData: any; setStepData: 
         <input
           className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT  text-sm text-zinc-100 placeholder-gray-500"
           placeholder="e.g. M12"
-          value={stepData?.unit_id ?? ""}
+          value={stepData?.unit_id ?? (() => { throw new Error("Fallback detected") })()}
           onChange={(e) => setStepData({ ...stepData, unit_id: e.target.value })}
         />
       </div>

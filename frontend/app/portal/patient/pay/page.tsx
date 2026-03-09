@@ -57,15 +57,15 @@ function PatientPayPageContent() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const balanceDue = useMemo(() => {
-    const due = statement?.data?.amount_due_cents ?? 0;
+    const due = statement?.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
     return due / 100;
   }, [statement]);
 
   const totalBilled = useMemo(() => {
     const billed = statement?.data?.amount_billed_cents;
     if (typeof billed === 'number') return billed / 100;
-    const paid = statement?.data?.amount_paid_cents ?? 0;
-    const due = statement?.data?.amount_due_cents ?? 0;
+    const paid = statement?.data?.amount_paid_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+    const due = statement?.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
     return (paid + due) / 100;
   }, [statement]);
 
@@ -96,7 +96,7 @@ function PatientPayPageContent() {
 
         if (!cancelled) {
           setStatement(picked);
-          const due = (picked.data?.amount_due_cents ?? 0) / 100;
+          const due = (picked.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100;
           setAmount(due > 0 ? due.toFixed(2) : '0.00');
         }
       } catch (err) {

@@ -560,8 +560,8 @@ export default function CADDispatchPage() {
   };
 
   const sortedCalls = [...calls].sort((a, b) => {
-    const pa = PRIORITY_CONFIG[a.priority]?.sortOrder ?? 0;
-    const pb = PRIORITY_CONFIG[b.priority]?.sortOrder ?? 0;
+    const pa = PRIORITY_CONFIG[a.priority]?.sortOrder ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+    const pb = PRIORITY_CONFIG[b.priority]?.sortOrder ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
     if (pa !== pb) return pb - pa;
     return new Date(a.call_received_at).getTime() - new Date(b.call_received_at).getTime();
   });

@@ -574,14 +574,14 @@ export default function FounderExecutivePage() {
   const mrrDisplay = mrr != null ? `$${(mrr / 100).toLocaleString()}` : '—';
   const arrDisplay = arr != null ? `$${(arr / 100).toLocaleString()}` : '—';
   const tenantCount = metrics?.tenant_count ?? '—';
-  const errorCount = metrics?.error_count_1h ?? 0;
+  const errorCount = metrics?.error_count_1h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
   const totalAR = aging ? aging.buckets.reduce((a, b) => a + b.total_cents, 0) / 100 : null;
 
   const degradedModules = TELEMETRY_MODULES.filter((key) => moduleStatus[key] === 'error');
   const hasTelemetryDegradation = degradedModules.length > 0;
 
   const denialHeatmap = billingDenials?.heatmap ?? [];
-  const complianceScoreValue = ((complianceStatus?.compliance_packs?.active_count ?? 0) * 20)
+  const complianceScoreValue = ((complianceStatus?.compliance_packs?.active_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 20)
     + (complianceStatus?.nemsis?.certified ? 30 : 0)
     + (complianceStatus?.neris?.onboarded ? 30 : 0);
   const complianceScore = `${Math.min(100, complianceScoreValue)}%`;
@@ -593,24 +593,24 @@ export default function FounderExecutivePage() {
   ) / 2;
   const exportSuccessRate = `${Math.round(exportSuccessRateValue * 100)}%`;
 
-  const billingHealthScoreNum = Number(billingHealth?.health_score ?? 0);
+  const billingHealthScoreNum = Number(billingHealth?.health_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })());
   const complianceScoreNum = Math.min(100, complianceScoreValue);
-  const failedDeployments = opsData?.deployment_issues?.failed_deployments ?? 0;
-  const pastDueSubscriptions = opsData?.payment_failures?.past_due_subscriptions ?? 0;
-  const degradedChannels = opsData?.comms_health?.degraded_channels ?? 0;
-  const crewEscalations = opsData?.crewlink_health?.escalations_last_24h ?? 0;
+  const failedDeployments = opsData?.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const pastDueSubscriptions = opsData?.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const degradedChannels = opsData?.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const crewEscalations = opsData?.crewlink_health?.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
 
   const apiHealthScore = clampScore(100 - Math.min(80, errorCount * 3) - degradedModules.length * 8);
   const operationsScore = clampScore(100 - failedDeployments * 20 - crewEscalations * 4 - degradedModules.length * 10);
-  const supportScore = clampScore(100 - degradedChannels * 30 - (opsData?.comms_health?.failed_messages ?? 0));
-  const schedulingScore = clampScore(100 - crewEscalations * 12 - (opsData?.crewlink_health?.pending_no_response ?? 0) * 2);
+  const supportScore = clampScore(100 - degradedChannels * 30 - (opsData?.comms_health?.failed_messages ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()));
+  const schedulingScore = clampScore(100 - crewEscalations * 12 - (opsData?.crewlink_health?.pending_no_response ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 2);
 
   const commandDomainHealth: DomainHealth[] = [
     {
       domain: 'billing',
       score: clampScore(billingHealthScoreNum),
-      trend: (billingKpis?.denial_rate ?? 0) > 10 ? 'down' : 'stable',
-      alertCount: (billingAlerts?.total ?? 0) + (billingLeakage?.item_count ?? 0),
+      trend: (billingKpis?.denial_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 10 ? 'down' : 'stable',
+      alertCount: (billingAlerts?.total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) + (billingLeakage?.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
       topIssue: billingAlerts?.alerts?.[0]?.type?.replaceAll('_', ' ') || 'Billing telemetry nominal',
     },
     {
@@ -634,7 +634,7 @@ export default function FounderExecutivePage() {
       domain: 'support',
       score: supportScore,
       trend: degradedChannels > 0 ? 'down' : 'stable',
-      alertCount: degradedChannels + (opsData?.comms_health?.failed_messages ?? 0),
+      alertCount: degradedChannels + (opsData?.comms_health?.failed_messages ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
       topIssue: degradedChannels > 0 ? `${degradedChannels} communication channels degraded` : 'Communication channels healthy',
     },
     {
@@ -730,7 +730,7 @@ export default function FounderExecutivePage() {
   const activeIncidentCount = failedDeployments + degradedChannels + pastDueSubscriptions + degradedModules.length;
   const founderOverallSeverity: SeverityLevel = hasTelemetryDegradation || activeIncidentCount > 0
     ? 'BLOCKING'
-    : (billingAlerts?.total ?? 0) > 0 || (opsData?.claims_pipeline?.denied ?? 0) > 0
+    : (billingAlerts?.total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 || (opsData?.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0
       ? 'HIGH'
       : 'LOW';
 
@@ -745,15 +745,15 @@ export default function FounderExecutivePage() {
   };
 
   const riskInfrastructure: Array<{ text: string; level: 'ok' | 'warn' | 'crit' }> = [
-    { text: `${opsData?.deployment_issues?.failed_deployments ?? 0} failed deployments`, level: (opsData?.deployment_issues?.failed_deployments ?? 0) > 0 ? 'crit' : 'ok' },
-    { text: `${opsData?.comms_health?.degraded_channels ?? 0} degraded comms channels`, level: (opsData?.comms_health?.degraded_channels ?? 0) > 0 ? 'warn' : 'ok' },
-    { text: `${opsData?.crewlink_health?.escalations_last_24h ?? 0} crew escalations (24h)`, level: (opsData?.crewlink_health?.escalations_last_24h ?? 0) > 0 ? 'warn' : 'ok' },
+    { text: `${opsData?.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} failed deployments`, level: (opsData?.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+    { text: `${opsData?.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} degraded comms channels`, level: (opsData?.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
+    { text: `${opsData?.crewlink_health?.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} crew escalations (24h)`, level: (opsData?.crewlink_health?.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
   ];
 
   const riskBusiness: Array<{ text: string; level: 'ok' | 'warn' | 'crit' }> = [
-    { text: `${opsData?.payment_failures?.past_due_subscriptions ?? 0} past-due subscriptions`, level: (opsData?.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'crit' : 'ok' },
-    { text: `${opsData?.claims_pipeline?.denied ?? 0} denied claims`, level: (opsData?.claims_pipeline?.denied ?? 0) > 0 ? 'crit' : 'ok' },
-    { text: `${billingLeakage?.item_count ?? 0} leakage candidates`, level: (billingLeakage?.item_count ?? 0) > 0 ? 'warn' : 'ok' },
+    { text: `${opsData?.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} past-due subscriptions`, level: (opsData?.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+    { text: `${opsData?.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} denied claims`, level: (opsData?.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+    { text: `${billingLeakage?.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} leakage candidates`, level: (billingLeakage?.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
   ];
 
   const complianceGauges: Array<{ label: string; value: number; color: string }> = [
@@ -769,7 +769,7 @@ export default function FounderExecutivePage() {
     },
     {
       label: 'Compliance Packs',
-      value: Math.min(100, (complianceStatus?.compliance_packs?.active_count ?? 0) * 20),
+      value: Math.min(100, (complianceStatus?.compliance_packs?.active_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 20),
       color: 'var(--color-status-info)',
     },
   ];
@@ -943,7 +943,7 @@ export default function FounderExecutivePage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <KpiCard label="Active MRR" value={growthMrrDisplay} sub="live subscription base" trend="up" color="var(--color-status-info)" />
                 <KpiCard label="Pipeline" value={growthPipelineDisplay} sub="pending proposal value" trend="up" color="var(--color-status-warning)" />
-                <KpiCard label="Conversion" value={`${growthSummary?.proposal_to_paid_conversion_pct ?? 0}%`} sub="proposal → paid" trend="flat" color="var(--color-status-active)" />
+                <KpiCard label="Conversion" value={`${growthSummary?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`} sub="proposal → paid" trend="flat" color="var(--color-status-active)" />
                 <KpiCard label="Graph Mailbox" value={growthSummary?.graph_mailbox_configured ? 'ONLINE' : 'MISSING'} sub="outbound founder email" trend={growthSummary?.graph_mailbox_configured ? 'up' : 'down'} color={growthSummary?.graph_mailbox_configured ? 'var(--color-status-active)' : 'var(--color-brand-red)'} />
               </div>
 
@@ -952,10 +952,10 @@ export default function FounderExecutivePage() {
                 <span className="font-bold text-zinc-100">{requiredGrowthConnected}/{requiredGrowthServices.length}</span>
                 <span className="text-zinc-500">•</span>
                 <span className="text-zinc-400">Blocked items</span>
-                <span className={`font-bold ${(growthWizard?.blocked_items.length ?? 0) > 0 ? 'text-red-300' : 'text-green-300'}`}>{growthWizard?.blocked_items.length ?? 0}</span>
+                <span className={`font-bold ${(growthWizard?.blocked_items.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'text-red-300' : 'text-green-300'}`}>{growthWizard?.blocked_items.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
               </div>
 
-              {(growthWizard?.blocked_items.length ?? 0) > 0 && (
+              {(growthWizard?.blocked_items.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
                 <div className="mt-3 grid grid-cols-1 gap-2">
                   {growthWizard?.blocked_items.slice(0, 4).map((item) => (
                     <div key={item} className="px-3 py-2 border border-red-500/25 bg-red-500/[0.08] text-xs text-red-200">
@@ -1156,46 +1156,46 @@ export default function FounderExecutivePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               <KpiCard
                 label="Failed Deployments"
-                value={String(opsData.deployment_issues?.failed_deployments ?? 0)}
+                value={String(opsData.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                 sub="Blocking agencies"
-                trend={(opsData.deployment_issues?.failed_deployments ?? 0) > 0 ? 'down' : 'flat'}
-                color={(opsData.deployment_issues?.failed_deployments ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                trend={(opsData.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
+                color={(opsData.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
               />
               <KpiCard
                 label="Past-Due Subs"
-                value={String(opsData.payment_failures?.past_due_subscriptions ?? 0)}
+                value={String(opsData.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                 sub="Revenue at risk"
-                trend={(opsData.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'down' : 'flat'}
-                color={(opsData.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                trend={(opsData.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
+                color={(opsData.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
               />
               <KpiCard
                 label="Ready to Submit"
-                value={String(opsData.claims_pipeline?.ready_to_submit ?? 0)}
+                value={String(opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                 sub="Claims waiting"
-                trend={(opsData.claims_pipeline?.ready_to_submit ?? 0) > 0 ? 'up' : 'flat'}
+                trend={(opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'up' : 'flat'}
                 color="var(--color-status-warning)"
                 href="/founder/revenue/billing-intelligence"
               />
               <KpiCard
                 label="Denied Claims"
-                value={String(opsData.claims_pipeline?.denied ?? 0)}
+                value={String(opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                 sub="Need appeal review"
-                trend={(opsData.claims_pipeline?.denied ?? 0) > 0 ? 'down' : 'flat'}
-                color={(opsData.claims_pipeline?.denied ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                trend={(opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
+                color={(opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
                 href="/founder/revenue/billing-intelligence"
               />
               <KpiCard
                 label="Active Paging"
-                value={String(opsData.crewlink_health?.active_alerts ?? 0)}
+                value={String(opsData.crewlink_health?.active_alerts ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
                 sub="CrewLink alerts"
                 color="var(--color-status-info)"
               />
               <KpiCard
                 label="Comms Degraded"
-                value={String(opsData.comms_health?.degraded_channels ?? 0)}
-                sub={`of ${opsData.comms_health?.total_channels ?? 0} channels`}
-                trend={(opsData.comms_health?.degraded_channels ?? 0) > 0 ? 'down' : 'flat'}
-                color={(opsData.comms_health?.degraded_channels ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                value={String(opsData.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+                sub={`of ${opsData.comms_health?.total_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} channels`}
+                trend={(opsData.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
+                color={(opsData.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
               />
             </div>
 
@@ -1203,24 +1203,24 @@ export default function FounderExecutivePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Claims Pipeline */}
               <RiskCard label="Claims Pipeline" items={[
-                { text: `${opsData.claims_pipeline?.ready_to_submit ?? 0} ready to submit`, level: (opsData.claims_pipeline?.ready_to_submit ?? 0) > 0 ? 'warn' : 'ok' },
-                { text: `${opsData.claims_pipeline?.blocked_for_review ?? 0} blocked for review`, level: (opsData.claims_pipeline?.blocked_for_review ?? 0) > 0 ? 'crit' : 'ok' },
-                { text: `${opsData.claims_pipeline?.denied ?? 0} denied`, level: (opsData.claims_pipeline?.denied ?? 0) > 0 ? 'crit' : 'ok' },
-                { text: `${opsData.claims_pipeline?.appeals_drafted ?? 0} appeals drafted`, level: 'warn' },
-                { text: `${opsData.claims_pipeline?.blocking_issues ?? 0} blocking issues`, level: (opsData.claims_pipeline?.blocking_issues ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} ready to submit`, level: (opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.claims_pipeline?.blocked_for_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} blocked for review`, level: (opsData.claims_pipeline?.blocked_for_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} denied`, level: (opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.appeals_drafted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} appeals drafted`, level: 'warn' },
+                { text: `${opsData.claims_pipeline?.blocking_issues ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} blocking issues`, level: (opsData.claims_pipeline?.blocking_issues ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
               ]} />
               {/* Patient Balances */}
               <RiskCard label="Patient Balances" items={[
-                { text: `${opsData.patient_balance_review?.open_balances ?? 0} open balances`, level: 'warn' },
-                { text: `${opsData.patient_balance_review?.autopay_pending ?? 0} autopay pending`, level: 'ok' },
-                { text: `${opsData.patient_balance_review?.collections_ready ?? 0} collections ready`, level: (opsData.patient_balance_review?.collections_ready ?? 0) > 0 ? 'crit' : 'ok' },
-                { text: `$${((opsData.patient_balance_review?.total_outstanding_cents ?? 0) / 100).toLocaleString()} outstanding`, level: (opsData.patient_balance_review?.total_outstanding_cents ?? 0) > 100000 ? 'crit' : 'warn' },
+                { text: `${opsData.patient_balance_review?.open_balances ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} open balances`, level: 'warn' },
+                { text: `${opsData.patient_balance_review?.autopay_pending ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} autopay pending`, level: 'ok' },
+                { text: `${opsData.patient_balance_review?.collections_ready ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} collections ready`, level: (opsData.patient_balance_review?.collections_ready ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+                { text: `$${((opsData.patient_balance_review?.total_outstanding_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()} outstanding`, level: (opsData.patient_balance_review?.total_outstanding_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 100000 ? 'crit' : 'warn' },
               ]} />
               {/* Profile Gaps */}
               <RiskCard label="Agency Profile Gaps" items={[
-                { text: `${opsData.profile_gaps?.missing_tax_profile ?? 0} missing tax profile`, level: (opsData.profile_gaps?.missing_tax_profile ?? 0) > 0 ? 'crit' : 'ok' },
-                { text: `${opsData.profile_gaps?.missing_billing_policy ?? 0} missing billing policy`, level: (opsData.profile_gaps?.missing_billing_policy ?? 0) > 0 ? 'warn' : 'ok' },
-                { text: `${opsData.profile_gaps?.missing_public_sector_profile ?? 0} missing public sector`, level: (opsData.profile_gaps?.missing_public_sector_profile ?? 0) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_tax_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} missing tax profile`, level: (opsData.profile_gaps?.missing_tax_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_billing_policy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} missing billing policy`, level: (opsData.profile_gaps?.missing_billing_policy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_public_sector_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} missing public sector`, level: (opsData.profile_gaps?.missing_public_sector_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
               ]} />
             </div>
           </div>
@@ -1264,7 +1264,7 @@ export default function FounderExecutivePage() {
               </thead>
               <tbody>
                 {denialHeatmap.map((row) => {
-                  const total = billingDenials?.total_denials ?? 0;
+                  const total = billingDenials?.total_denials ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
                   const pct = total > 0 ? (row.count / total) * 100 : 0;
                   return (
                   <tr key={row.reason_code}>

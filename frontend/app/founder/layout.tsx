@@ -112,8 +112,19 @@ const NAV_DOMAINS = [
     ],
   },
   {
+    id: 'growth-engine',
+    label: '9 · AI Growth Engine',
+    icon: '◈',
+    color: '#FF4D00',
+    links: [
+      { href: '/founder/growth/publish', label: 'Publishing Control' },
+      { href: '/founder/growth/demo-engine', label: 'Demo Engine' },
+      { href: '/founder/growth/automations', label: 'Workflow Automations' },
+    ],
+  },
+  {
     id: 'pwa-mobile',
-    label: '9 · PWA & Mobile',
+    label: '10 · PWA & Mobile',
     icon: '◈',
     color: 'var(--color-system-fleet)',
     links: [
@@ -125,7 +136,7 @@ const NAV_DOMAINS = [
   },
   {
     id: 'infrastructure',
-    label: '10 · Infrastructure',
+    label: '11 · Infrastructure',
     icon: '◈',
     color: 'var(--color-text-muted)',
     links: [
@@ -138,7 +149,7 @@ const NAV_DOMAINS = [
   },
   {
     id: 'founder-tools',
-    label: '11 · Founder Tools',
+    label: '12 · Founder Tools',
     icon: '◈',
     color: '#FF4D00',
     links: [

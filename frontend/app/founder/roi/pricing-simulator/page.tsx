@@ -367,15 +367,15 @@ export default function PricingSimulatorPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <StatCard
                 label="Live Monthly Cost"
-                value={`$${((pricingSimulation?.monthly_cents ?? 0) / 100).toLocaleString()}`}
+                value={`$${((pricingSimulation?.monthly_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`}
                 color="var(--color-status-warning)"
                 sub="ROI pricing simulation API"
               />
               <StatCard
                 label="Live Annual Cost"
-                value={`$${((pricingSimulation?.annual_cents ?? 0) / 100).toLocaleString()}`}
+                value={`$${((pricingSimulation?.annual_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`}
                 color="var(--color-status-info)"
-                sub={`Annual discount: ${pricingSimulation?.annual_savings_pct ?? 0}%`}
+                sub={`Annual discount: ${pricingSimulation?.annual_savings_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`}
               />
               <StatCard
                 label="Cost / Transport"

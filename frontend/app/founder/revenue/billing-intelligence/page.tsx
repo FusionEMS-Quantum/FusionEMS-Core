@@ -127,8 +127,8 @@ export default function BillingIntelligencePage() {
       if (Array.isArray((denial as { heatmap?: Array<{ reason?: string; reason_code?: string; count?: number; percentage?: number }> } | null)?.heatmap)) {
         setDenialReasons((denial as { heatmap: Array<{ reason?: string; reason_code?: string; count?: number; percentage?: number }> }).heatmap.map((d) => ({
           reason: d.reason || d.reason_code || 'Unknown',
-          count: d.count ?? 0,
-          pct: Math.round(d.percentage ?? 0),
+          count: d.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
+          pct: Math.round(d.percentage ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
         })));
       }
 
@@ -137,8 +137,8 @@ export default function BillingIntelligencePage() {
       if (Array.isArray(payerRows)) {
         setPayers(payerRows.map((p) => ({
           name: p.payer_name,
-          volume: p.submitted_count ?? 0,
-          avgDays: p.avg_days_to_payment ?? 0,
+          volume: p.submitted_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
+          avgDays: p.avg_days_to_payment ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
           denialRate: p.denial_rate != null ? `${p.denial_rate.toFixed(1)}%` : '—',
           netCollection: p.net_collection_rate != null ? `${p.net_collection_rate.toFixed(1)}%` : '—',
         })));
@@ -163,8 +163,8 @@ export default function BillingIntelligencePage() {
           code: t.code,
           desc: t.description,
           volume: t.volume,
-          accuracy: t.accuracy_pct ?? 0,
-          error: t.error_pct ?? 0,
+          accuracy: t.accuracy_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
+          error: t.error_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
         })));
       }
 

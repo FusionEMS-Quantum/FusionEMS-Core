@@ -122,15 +122,15 @@ function RevenueTrendView({ data }: { data: RevenueTrendPoint[] }) {
     return <QuantumEmptyState title="No revenue trend data" description="Revenue trend will populate as claims are processed." icon="chart" />;
   }
 
-  const maxBilled = Math.max(...data.map(d => d.gross_billed ?? 0), 1);
+  const maxBilled = Math.max(...data.map(d => d.gross_billed ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 1);
 
   return (
     <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
       <div className="text-micro uppercase tracking-widest text-zinc-500 mb-4">Revenue Trend</div>
       <div className="space-y-2">
         {data.map((pt, i) => {
-          const billed = pt.gross_billed ?? 0;
-          const collected = pt.collected ?? 0;
+          const billed = pt.gross_billed ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+          const collected = pt.collected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
           const collectionPct = billed > 0 ? (collected / billed) * 100 : 0;
           return (
             <div key={i} className="flex items-center gap-3">
@@ -186,14 +186,14 @@ function PayerPerformanceTable({ rows }: { rows: PayerRow[] }) {
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <div className="w-16 h-1.5 bg-zinc-950/10  overflow-hidden">
-                    <div className={`h-full  ${(row.clean_claim_rate ?? 0) >= 90 ? 'bg-green-500' : (row.clean_claim_rate ?? 0) >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                         style={{ width: `${row.clean_claim_rate ?? 0}%` }} />
+                    <div className={`h-full  ${(row.clean_claim_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 90 ? 'bg-green-500' : (row.clean_claim_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                         style={{ width: `${row.clean_claim_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%` }} />
                   </div>
                   <span className="text-micro text-zinc-500">{row.clean_claim_rate != null ? fmtPct(row.clean_claim_rate) : '—'}</span>
                 </div>
               </td>
               <td className="px-4 py-3">
-                <span className={`text-sm font-semibold ${(row.denial_rate ?? 0) > 10 ? 'text-red-400' : (row.denial_rate ?? 0) > 5 ? 'text-yellow-400' : 'text-green-400'}`}>
+                <span className={`text-sm font-semibold ${(row.denial_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 10 ? 'text-red-400' : (row.denial_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 5 ? 'text-yellow-400' : 'text-green-400'}`}>
                   {row.denial_rate != null ? fmtPct(row.denial_rate) : '—'}
                 </span>
               </td>
@@ -214,7 +214,7 @@ function DenialHeatmap({ denials }: { denials: DenialEntry[] }) {
     return <QuantumEmptyState title="No denial data" description="Denial patterns will appear as claims are processed." icon="x-circle" />;
   }
 
-  const topDenials = [...denials].sort((a, b) => (b.count ?? 0) - (a.count ?? 0)).slice(0, 10);
+  const topDenials = [...denials].sort((a, b) => (b.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) - (a.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())).slice(0, 10);
   const max = topDenials[0]?.count ?? 1;
 
   return (
@@ -227,13 +227,13 @@ function DenialHeatmap({ denials }: { denials: DenialEntry[] }) {
             <div className="flex-1 h-6 bg-zinc-950/[0.04] chamfer-4 overflow-hidden relative">
               <div
                 className="h-full bg-red-500/40 chamfer-4 flex items-center px-2 transition-all"
-                style={{ width: `${((d.count ?? 0) / max) * 100}%` }}
+                style={{ width: `${((d.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / max) * 100}%` }}
               >
                 <span className="text-micro text-red-300 whitespace-nowrap overflow-hidden">{d.reason || d.payer || '—'}</span>
               </div>
             </div>
             <div className="text-right w-20 flex-shrink-0">
-              <div className="text-micro font-bold text-red-400">{d.count ?? 0}</div>
+              <div className="text-micro font-bold text-red-400">{d.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
               {d.amount != null && <div className="text-micro text-zinc-500">{fmt$(d.amount)}</div>}
             </div>
           </div>
@@ -252,7 +252,7 @@ function RevenueLeakageView({ data }: { data: RevenueLeakage | null }) {
     <div className="space-y-4">
       <div className="bg-red-900/20 border border-red-500/30 chamfer-8 p-4">
         <div className="text-sm text-zinc-500 mb-1">Estimated Total Revenue Leakage</div>
-        <div className="text-3xl font-black text-red-400">{fmt$(data.total_leakage ?? 0)}</div>
+        <div className="text-3xl font-black text-red-400">{fmt$(data.total_leakage ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}</div>
       </div>
       {(data.categories || []).length > 0 && (
         <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
@@ -360,11 +360,11 @@ export default function BillingOpsPage() {
         { label: 'Clean Claim Rate', value: rawKPIs.clean_claim_rate != null ? fmtPct(rawKPIs.clean_claim_rate) : '—', color: 'text-green-400', trend: rawKPIs.clean_claim_trend },
         { label: 'Collection Rate', value: rawKPIs.collection_rate != null ? fmtPct(rawKPIs.collection_rate) : '—', color: 'text-blue-400', trend: rawKPIs.collection_trend },
         { label: 'Avg Days in AR', value: rawKPIs.avg_days_ar != null ? `${rawKPIs.avg_days_ar}d` : '—', color: 'text-zinc-100' },
-        { label: 'Denial Rate', value: rawKPIs.denial_rate != null ? fmtPct(rawKPIs.denial_rate) : '—', color: (rawKPIs.denial_rate ?? 0) > 10 ? 'text-red-400' : 'text-zinc-100' },
+        { label: 'Denial Rate', value: rawKPIs.denial_rate != null ? fmtPct(rawKPIs.denial_rate) : '—', color: (rawKPIs.denial_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 10 ? 'text-red-400' : 'text-zinc-100' },
         { label: 'Total Billed (MTD)', value: rawKPIs.total_billed_mtd != null ? fmt$(rawKPIs.total_billed_mtd) : '—' },
         { label: 'Total Collected (MTD)', value: rawKPIs.total_collected_mtd != null ? fmt$(rawKPIs.total_collected_mtd) : '—', color: 'text-green-400' },
         { label: 'Open AR Balance', value: rawKPIs.open_ar != null ? fmt$(rawKPIs.open_ar) : '—', color: 'text-yellow-400' },
-        { label: 'Billing Health Score', value: healthData?.score != null ? `${healthData.score}/100` : '—', color: (healthData?.score ?? 0) >= 80 ? 'text-green-400' : 'text-yellow-400' },
+        { label: 'Billing Health Score', value: healthData?.score != null ? `${healthData.score}/100` : '—', color: (healthData?.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 80 ? 'text-green-400' : 'text-yellow-400' },
       ]);
 
       setRevenueTrend(Array.isArray(trendData) ? trendData : trendData?.trend || []);

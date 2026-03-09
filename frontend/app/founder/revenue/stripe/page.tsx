@@ -126,15 +126,15 @@ export default function StripeDashboardPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><TrendingUp className="w-4 h-4" /> Paid Claims</div>
-            <div className="text-2xl font-bold text-blue-400">{dashboard?.paid_claims ?? 0}</div>
+            <div className="text-2xl font-bold text-blue-400">{dashboard?.paid_claims ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><AlertTriangle className="w-4 h-4" /> Denial Rate</div>
-            <div className="text-2xl font-bold text-amber-400">{dashboard?.denial_rate_pct ?? 0}%</div>
+            <div className="text-2xl font-bold text-amber-400">{dashboard?.denial_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1"><Users className="w-4 h-4" /> Clean Claim Rate</div>
-            <div className="text-2xl font-bold text-cyan-400">{dashboard?.clean_claim_rate_pct ?? 0}%</div>
+            <div className="text-2xl font-bold text-cyan-400">{dashboard?.clean_claim_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
         </div>
 
@@ -153,11 +153,11 @@ export default function StripeDashboardPage() {
               </div>
               <div>
                 <div className="text-gray-400 text-sm">Matched Payments</div>
-                <div className="font-semibold text-emerald-400">{recon.matched_count ?? 0}</div>
+                <div className="font-semibold text-emerald-400">{recon.matched_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
               </div>
               <div>
                 <div className="text-gray-400 text-sm">Unmatched</div>
-                <div className="font-semibold text-red-400">{recon.unmatched_count ?? 0}</div>
+                <div className="font-semibold text-red-400">{recon.unmatched_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
               </div>
               <div>
                 <div className="text-gray-400 text-sm">Discrepancy</div>
@@ -187,7 +187,7 @@ export default function StripeDashboardPage() {
                     <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30">
                       <td className="py-2">{t.month ?? `Month ${i + 1}`}</td>
                       <td className="py-2 text-right text-emerald-400">{formatCents(t.revenue_cents)}</td>
-                      <td className="py-2 text-right text-gray-300">{t.claim_count ?? 0}</td>
+                      <td className="py-2 text-right text-gray-300">{t.claim_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -217,8 +217,8 @@ export default function StripeDashboardPage() {
                     <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30">
                       <td className="py-2 font-medium">{r.name ?? `Tenant ${i + 1}`}</td>
                       <td className="py-2 text-right text-emerald-400">{formatCents(r.revenue_cents)}</td>
-                      <td className="py-2 text-right text-gray-300">{r.total_claims ?? 0}</td>
-                      <td className="py-2 text-right text-blue-400">{r.paid_claims ?? 0}</td>
+                      <td className="py-2 text-right text-gray-300">{r.total_claims ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</td>
+                      <td className="py-2 text-right text-blue-400">{r.paid_claims ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</td>
                     </tr>
                   ))}
                 </tbody>

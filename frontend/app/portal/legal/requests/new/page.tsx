@@ -354,7 +354,7 @@ export default function PublicLegalRequestIntakePage() {
           <Input
             label="Estimated Page Count"
             type="number"
-            value={String(form.requested_page_count ?? 0)}
+            value={String(form.requested_page_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
             onChange={(event) => setForm((prev) => ({ ...prev, requested_page_count: Number(event.target.value || 0) }))}
           />
           <Input

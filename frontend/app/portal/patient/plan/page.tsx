@@ -127,7 +127,7 @@ export default function PatientCarePlanPage() {
   }
 
   const activePlans = plans.filter((p) => p.status === 'active');
-  const totalOwed = plans.reduce((sum, p) => sum + (p.remaining_balance ?? 0), 0);
+  const totalOwed = plans.reduce((sum, p) => sum + (p.remaining_balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">

@@ -70,7 +70,7 @@ export default function BillingCommandPage() {
   const fmtPct = (v: unknown) => typeof v === "number" ? `${v}%` : "—";
   const fmtNum = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
 
-  const healthStatus = String(health.status ?? "");
+  const healthStatus = String(health.status ?? (() => { throw new Error("Fallback detected") })());
   const healthColor = healthStatus === "excellent" ? "var(--color-status-active)" : healthStatus === "good" ? "var(--color-status-active)" : healthStatus === "fair" ? "var(--color-status-warning)" : "var(--color-brand-red)";
 
   const FEATURES = [
@@ -123,7 +123,7 @@ export default function BillingCommandPage() {
         <KpiCard label="Claim Revenue" value={fmt$(exec.total_revenue_cents)} color="var(--color-status-info)" />
         <KpiCard label="MRR" value={fmt$(exec.mrr_cents)} color="var(--color-status-info)" sub="Monthly Recurring" />
         <KpiCard label="ARR" value={fmt$(exec.arr_cents)} color="var(--color-status-info)" sub="Annual Run Rate" />
-        <KpiCard label="Revenue Leakage" value={fmt$(leakage.total_leakage_cents)} color="var(--color-brand-red)" sub={`${leakage.item_count ?? 0} items`} />
+        <KpiCard label="Revenue Leakage" value={fmt$(leakage.total_leakage_cents)} color="var(--color-brand-red)" sub={`${leakage.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} items`} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

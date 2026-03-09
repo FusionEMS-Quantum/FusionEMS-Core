@@ -87,7 +87,7 @@ export default function BroadcastPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
             <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Users className="w-4 h-4" /> Total Recipients</div>
-            <div className="text-2xl font-bold text-emerald-400">{broadcasts.reduce((a, b) => a + (b.recipients ?? 0), 0)}</div>
+            <div className="text-2xl font-bold text-emerald-400">{broadcasts.reduce((a, b) => a + (b.recipients ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0)}</div>
           </div>
         </div>
 

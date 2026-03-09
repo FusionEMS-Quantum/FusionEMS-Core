@@ -251,27 +251,27 @@ export default function FounderRelationshipsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 24 }}>
         <KPICard
           label="Identity Confidence"
-          value={`${ic?.confidence_pct ?? 0}%`}
-          sub={`${ic?.verified_count ?? 0} / ${ic?.total_patients ?? 0} verified`}
-          color={pctColor(ic?.confidence_pct ?? 0)}
+          value={`${ic?.confidence_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`}
+          sub={`${ic?.verified_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} / ${ic?.total_patients ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} verified`}
+          color={pctColor(ic?.confidence_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
         />
         <KPICard
           label="Responsible Party"
-          value={`${rp?.completion_pct ?? 0}%`}
-          sub={`${rp?.disputed_count ?? 0} disputed`}
-          color={pctColor(rp?.completion_pct ?? 0)}
+          value={`${rp?.completion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`}
+          sub={`${rp?.disputed_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} disputed`}
+          color={pctColor(rp?.completion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
         />
         <KPICard
           label="Facility Health"
-          value={`${fh?.health_pct ?? 0}%`}
-          sub={`${fh?.high_friction_count ?? 0} high friction`}
-          color={pctColor(fh?.health_pct ?? 0)}
+          value={`${fh?.health_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`}
+          sub={`${fh?.high_friction_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} high friction`}
+          color={pctColor(fh?.health_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
         />
         <KPICard
           label="Comm Preferences"
-          value={`${cc?.completeness_pct ?? 0}%`}
-          sub={`${cc?.with_preferences ?? 0} / ${cc?.total_patients ?? 0}`}
-          color={pctColor(cc?.completeness_pct ?? 0)}
+          value={`${cc?.completeness_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`}
+          sub={`${cc?.with_preferences ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} / ${cc?.total_patients ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}`}
+          color={pctColor(cc?.completeness_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
         />
       </div>
 
@@ -291,36 +291,36 @@ export default function FounderRelationshipsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Identity Confidence</span><span>{ic?.confidence_pct ?? 0}%</span>
+              <span>Identity Confidence</span><span>{ic?.confidence_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</span>
             </div>
-            <ProgressBar pct={ic?.confidence_pct ?? 0} color={pctColor(ic?.confidence_pct ?? 0)} />
+            <ProgressBar pct={ic?.confidence_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color={pctColor(ic?.confidence_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Responsible Party</span><span>{rp?.completion_pct ?? 0}%</span>
+              <span>Responsible Party</span><span>{rp?.completion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</span>
             </div>
-            <ProgressBar pct={rp?.completion_pct ?? 0} color={pctColor(rp?.completion_pct ?? 0)} />
+            <ProgressBar pct={rp?.completion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color={pctColor(rp?.completion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Facility Health</span><span>{fh?.health_pct ?? 0}%</span>
+              <span>Facility Health</span><span>{fh?.health_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</span>
             </div>
-            <ProgressBar pct={fh?.health_pct ?? 0} color={pctColor(fh?.health_pct ?? 0)} />
+            <ProgressBar pct={fh?.health_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color={pctColor(fh?.health_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Communication Prefs</span><span>{cc?.completeness_pct ?? 0}%</span>
+              <span>Communication Prefs</span><span>{cc?.completeness_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</span>
             </div>
-            <ProgressBar pct={cc?.completeness_pct ?? 0} color={pctColor(cc?.completeness_pct ?? 0)} />
+            <ProgressBar pct={cc?.completeness_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color={pctColor(cc?.completeness_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} />
           </div>
         </div>
       </div>
 
       {/* ── SIGNAL METRICS ──────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
-        <KPICard label="Duplicate Queue" value={String(data?.duplicate_review_count ?? 0)} color="var(--color-signal-amber, #f59e0b)" />
-        <KPICard label="Facility Contact Gaps" value={String(data?.facility_contact_gaps ?? 0)} color="var(--color-signal-yellow, #eab308)" />
-        <KPICard label="Frequent Utilizers" value={String(data?.frequent_utilizer_count ?? 0)} color="var(--color-signal-red, #ef4444)" />
+        <KPICard label="Duplicate Queue" value={String(data?.duplicate_review_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} color="var(--color-signal-amber, #f59e0b)" />
+        <KPICard label="Facility Contact Gaps" value={String(data?.facility_contact_gaps ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} color="var(--color-signal-yellow, #eab308)" />
+        <KPICard label="Frequent Utilizers" value={String(data?.frequent_utilizer_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())} color="var(--color-signal-red, #ef4444)" />
       </div>
 
       {/* ── TOP ACTIONS ─────────────────────────────────────────────── */}

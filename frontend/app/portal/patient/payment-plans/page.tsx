@@ -66,8 +66,8 @@ function PlanProgressBar({ paid, total }: { paid: number; total: number }) {
 
 function InstallmentCalendar({ plan }: { plan: PaymentPlan }) {
   const d = plan.data ?? {};
-  const total = d.installments_total ?? 0;
-  const remaining = d.installments_remaining ?? 0;
+  const total = d.installments_total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const remaining = d.installments_remaining ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
   const paid = total - remaining;
 
   if (!total) return null;
@@ -179,8 +179,8 @@ export default function PaymentPlansPage() {
             plans.map(plan => {
               const d = plan.data ?? {};
               const statusCfg = STATUS_MAP[d.status ?? ''] ?? STATUS_MAP.paused;
-              const paid = d.amount_paid_cents ?? 0;
-              const total = d.total_balance_cents ?? 0;
+              const paid = d.amount_paid_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+              const total = d.total_balance_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
               return (
                 <div key={plan.id} className="bg-[#0A0A0B] border border-zinc-800" style={{ clipPath: clip10 }}>
                   {/* Plan header */}

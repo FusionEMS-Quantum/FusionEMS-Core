@@ -113,7 +113,7 @@ function InvoicesContent() {
                   </div>
                   <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{inv.data?.incident_date ?? inv.data?.service_date ?? '—'}</div>
                   <div style={{ fontSize: '13px' }}>{fmt(inv.data?.amount_billed_cents)}</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: (inv.data?.amount_due_cents ?? 0) > 0 ? '#FF4D00' : '#10B981' }}>{fmt(inv.data?.amount_due_cents)}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: (inv.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? '#FF4D00' : '#10B981' }}>{fmt(inv.data?.amount_due_cents)}</div>
                   <div><span style={{ ...S.chip, background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>{cfg.label}</span></div>
                 </Link>
               );

@@ -130,8 +130,8 @@ export default function PortalDeaCmsPage() {
                 Score {deaScore ?? "—"} · {deaPassed ? "PASS" : "FAIL"}
               </p>
               <p className="text-xs text-zinc-500">Hard block: {deaHardBlock ? "YES" : "NO"}</p>
-              <p className="text-xs text-zinc-500">Open discrepancies: {deaOpenDiscrepancies ?? 0}</p>
-              <p className="text-xs text-zinc-500">Unwitnessed waste events: {deaUnwitnessed ?? 0}</p>
+              <p className="text-xs text-zinc-500">Open discrepancies: {deaOpenDiscrepancies ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</p>
+              <p className="text-xs text-zinc-500">Unwitnessed waste events: {deaUnwitnessed ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</p>
             </>
           )}
         </div>

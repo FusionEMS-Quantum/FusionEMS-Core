@@ -241,7 +241,7 @@ export default function ProposalTrackerPage() {
       });
     }
 
-    if ((kpis?.proposal_to_paid_conversion_pct ?? 0) < 25) {
+    if ((kpis?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) < 25) {
       actions.push({
         id: 'proposal-conversion-boost',
         title: 'Conversion is below target; align pricing assumptions and outreach sequence.',
@@ -418,10 +418,10 @@ export default function ProposalTrackerPage() {
       <Panel>
         <SectionHeader number="3" title="Proposal Analytics" sub="Conversion and pipeline posture" />
         <div className="grid grid-cols-4 gap-3">
-          <StatCard label="Total Events" value={kpis?.total_events ?? 0} color="var(--color-status-info)" />
-          <StatCard label="Active Subs" value={kpis?.active_subscriptions ?? 0} color="var(--color-status-active)" />
+          <StatCard label="Total Events" value={kpis?.total_events ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color="var(--color-status-info)" />
+          <StatCard label="Active Subs" value={kpis?.active_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color="var(--color-status-active)" />
           <StatCard label="Accept Rate" value={kpis ? `${kpis.proposal_to_paid_conversion_pct.toFixed(2)}%` : '—'} color="var(--color-status-active)" />
-          <StatCard label="Pipeline Value" value={`$${((pipeline?.pending_pipeline_cents ?? 0) / 100).toLocaleString()}`} color="var(--color-status-warning)" />
+          <StatCard label="Pipeline Value" value={`$${((pipeline?.pending_pipeline_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`} color="var(--color-status-warning)" />
         </div>
         <div className="mt-4 space-y-3">
           <div>
@@ -429,14 +429,14 @@ export default function ProposalTrackerPage() {
               <span className="text-body text-zinc-400">Accept Rate</span>
               <span className="text-body font-bold text-status-active">{kpis ? `${kpis.proposal_to_paid_conversion_pct.toFixed(2)}%` : '—'}</span>
             </div>
-            <ProgressBar value={kpis?.proposal_to_paid_conversion_pct ?? 0} max={100} color="var(--color-status-active)" />
+            <ProgressBar value={kpis?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} max={100} color="var(--color-status-active)" />
           </div>
           <div>
             <div className="flex justify-between mb-1.5">
               <span className="text-body text-zinc-400">Pipeline / MRR Ratio</span>
-              <span className="text-body font-bold text-status-warning">{(pipeline?.pipeline_to_mrr_ratio ?? 0).toFixed(2)}x</span>
+              <span className="text-body font-bold text-status-warning">{(pipeline?.pipeline_to_mrr_ratio ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toFixed(2)}x</span>
             </div>
-            <ProgressBar value={Math.min((pipeline?.pipeline_to_mrr_ratio ?? 0) * 20, 100)} max={100} color="var(--color-status-warning)" />
+            <ProgressBar value={Math.min((pipeline?.pipeline_to_mrr_ratio ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 20, 100)} max={100} color="var(--color-status-warning)" />
           </div>
         </div>
       </Panel>

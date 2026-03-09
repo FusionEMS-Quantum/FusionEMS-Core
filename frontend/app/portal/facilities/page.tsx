@@ -792,7 +792,7 @@ export default function FacilitiesPage() {
             {
               label: 'Network Health',
               value: facilityHealth?.health_pct != null ? `${Math.round(facilityHealth.health_pct)}%` : '—',
-              color: (facilityHealth?.health_pct ?? 0) >= 85 ? 'text-green-400' : 'text-yellow-400',
+              color: (facilityHealth?.health_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 85 ? 'text-green-400' : 'text-yellow-400',
             },
             {
               label: 'High Friction',
@@ -816,8 +816,8 @@ export default function FacilitiesPage() {
           {[
             {
               label: 'Facility Contact Gaps',
-              value: (summary?.facility_contact_gaps ?? 0).toString(),
-              color: (summary?.facility_contact_gaps ?? 0) > 0 ? 'text-yellow-400' : 'text-green-400',
+              value: (summary?.facility_contact_gaps ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(),
+              color: (summary?.facility_contact_gaps ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'text-yellow-400' : 'text-green-400',
             },
             {
               label: 'Median Turnaround',

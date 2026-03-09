@@ -134,7 +134,7 @@ export default function ExportStatusPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
             <div className="text-gray-400 text-sm mb-1">Performance Score</div>
-            <div className={`text-4xl font-bold ${(perf?.score ?? 0) >= 80 ? 'text-emerald-400' : (perf?.score ?? 0) >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
+            <div className={`text-4xl font-bold ${(perf?.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 80 ? 'text-emerald-400' : (perf?.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
               {perf?.score ?? '—'}
             </div>
             <div className="text-gray-400 text-sm">{perf?.grade ?? ''}</div>

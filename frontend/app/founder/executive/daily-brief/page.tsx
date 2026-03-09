@@ -127,8 +127,8 @@ export default function DailyBriefPage() {
           {health ? (
             <div className="flex items-center gap-8">
               <div className="text-center">
-                <div className={`text-5xl font-bold ${(health.score ?? 0) >= 80 ? 'text-emerald-400' : (health.score ?? 0) >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
-                  {health.score ?? 0}
+                <div className={`text-5xl font-bold ${(health.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 80 ? 'text-emerald-400' : (health.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
+                  {health.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}
                 </div>
                 <div className="text-gray-400 text-sm mt-1">Score</div>
               </div>
@@ -160,15 +160,15 @@ export default function DailyBriefPage() {
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
             <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><BarChart3 className="w-3.5 h-3.5" /> Total Claims</div>
-            <div className="text-xl font-bold text-blue-400">{summary?.total_claims ?? 0}</div>
+            <div className="text-xl font-bold text-blue-400">{summary?.total_claims ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
             <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><TrendingUp className="w-3.5 h-3.5" /> Clean Rate</div>
-            <div className="text-xl font-bold text-cyan-400">{summary?.clean_claim_rate_pct ?? 0}%</div>
+            <div className="text-xl font-bold text-cyan-400">{summary?.clean_claim_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
             <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><AlertTriangle className="w-3.5 h-3.5" /> Denial Rate</div>
-            <div className="text-xl font-bold text-amber-400">{summary?.denial_rate_pct ?? 0}%</div>
+            <div className="text-xl font-bold text-amber-400">{summary?.denial_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</div>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
             <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><Clock className="w-3.5 h-3.5" /> Avg Days to Pay</div>

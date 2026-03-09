@@ -487,7 +487,7 @@ function IncidentForm({
       const json = await validatePortalFireIncident(currentId);
       setValidationResult(json);
       if (json.valid) pushToast('Validation passed', 'success');
-      else pushToast(`${json.issues?.filter((i: ValidationIssue) => i.severity === 'error').length ?? 0} errors found`, 'error');
+      else pushToast(`${json.issues?.filter((i: ValidationIssue) => i.severity === 'error').length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} errors found`, 'error');
     } catch (e: unknown) {
       pushToast(e instanceof Error ? e.message : 'Validation failed', 'error');
     } finally {
@@ -521,7 +521,7 @@ function IncidentForm({
 
   // Section error counts
   const sectionErrors = (sectionId: string) => issuesForSection(sectionId).filter((i) => i.severity === 'error').length;
-  const totalErrors = validationResult?.issues.filter((i) => i.severity === 'error').length ?? 0;
+  const totalErrors = validationResult?.issues.filter((i) => i.severity === 'error').length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
 
   function getInputClass(path: string) {
     return fieldError(path) ? inputErrorClass : inputClass;

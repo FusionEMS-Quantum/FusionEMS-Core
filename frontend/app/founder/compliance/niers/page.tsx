@@ -136,7 +136,7 @@ export default function NIERSManagerPage() {
                       <td className={`py-2 ${e.status === 'completed' ? 'text-emerald-400' : e.status === 'failed' ? 'text-red-400' : 'text-amber-400'}`}>
                         {e.status ?? '—'}
                       </td>
-                      <td className="py-2 text-right">{e.record_count ?? e.incident_ids?.length ?? 0}</td>
+                      <td className="py-2 text-right">{e.record_count ?? e.incident_ids?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</td>
                       <td className="py-2 text-gray-400">{e.created_at ?? '—'}</td>
                       <td className="py-2 text-red-400 text-xs">{e.errors?.join(', ') || '—'}</td>
                     </tr>

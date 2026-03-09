@@ -44,7 +44,7 @@ export default function PaymentsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const totalPaid = payments.reduce((acc, p) => acc + (p.data?.amount ?? 0), 0);
+  const totalPaid = payments.reduce((acc, p) => acc + (p.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
   const pending = payments.filter((p) => p.data?.status === 'pending').length;
 
   return (
@@ -120,7 +120,7 @@ export default function PaymentsPage() {
                     {p.data?.method ?? 'Online'}
                   </div>
                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#10B981' }}>
-                    ${(p.data?.amount ?? 0).toFixed(2)}
+                    ${(p.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toFixed(2)}
                   </div>
                   <div>
                     <span style={{ ...S.chip, background: statusCfg.bg, border: `1px solid ${statusCfg.border}`, color: statusCfg.color }}>

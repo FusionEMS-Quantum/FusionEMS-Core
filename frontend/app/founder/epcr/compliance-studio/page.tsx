@@ -179,8 +179,8 @@ export default function ComplianceStudioPage() {
     }
   };
 
-  const blockingCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'BLOCKING').length ?? 0;
-  const mediumCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'MEDIUM').length ?? 0;
+  const blockingCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'BLOCKING').length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const mediumCount = validationResult?.issues.filter((i) => validationSeverityToCanonical(i.severity) === 'MEDIUM').length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
 
   return (
     <div className="p-5 space-y-6 min-h-screen bg-black">
