@@ -16,33 +16,39 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/founder/documents", tags=["Founder Documents"])
 
-LEGAL_TEMPLATES = [
-    {
-        "doc_type": "BAA",
-        "template_version": "1.0",
-        "description": "HIPAA Business Associate Agreement — covers permitted uses, safeguards, breach notification, subcontractors, PHI return/destroy, and HHS availability.",
-        "required": True,
-    },
-    {
-        "doc_type": "MSA",
-        "template_version": "1.0",
-        "description": "Master Subscription Agreement — covers parties, subscription scope, support SLAs, fees, customer responsibilities, AI disclaimer, confidentiality, IP, warranties, liability cap, term/termination, data export, and governing law.",
-        "required": True,
-    },
-    {
-        "doc_type": "ORDER_FORM",
-        "template_version": "1.0",
-        "description": "Order Form — captures agency details, selected modules, call volume tier, monthly base fee, and per-claim trigger definition.",
-        "required": True,
-    },
-]
-
-
 @router.get("/legal-templates")
 async def list_legal_templates(
     current: CurrentUser = Depends(require_role("founder")),
+    db: Session = Depends(db_session_dependency),
 ):
-    return {"templates": LEGAL_TEMPLATES}
+    """Returns legal templates from the database. Templates are managed in S3/DB."""
+    try:
+        rows = (
+            db.execute(
+                text(
+                    "SELECT id, data, created_at FROM legal_templates "
+                    "WHERE (data->>'active')::boolean IS TRUE "
+                    "ORDER BY created_at DESC"
+                )
+            )
+            .mappings()
+            .all()
+        )
+        templates = [
+            {
+                "id": str(row["id"]),
+                "doc_type": (row["data"] or {}).get("doc_type"),
+                "template_version": (row["data"] or {}).get("template_version"),
+                "description": (row["data"] or {}).get("description"),
+                "required": (row["data"] or {}).get("required", False),
+                "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
+            }
+            for row in rows
+        ]
+    except Exception:
+        logger.warning("legal_templates table not available, returning empty list", exc_info=True)
+        templates = []
+    return {"templates": templates, "source": "database"}
 
 
 @router.get("/executed-documents")

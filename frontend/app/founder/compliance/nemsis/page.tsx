@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useRef } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
+import {
+  simulateWisconsinNEMSIS,
+  validateNEMSISRawXml,
+  nemsisCopilotExplain,
+} from '@/services/api';
 
 interface ValidationIssue {
   id?: string;
@@ -89,11 +87,7 @@ export default function NemsisPage() {
     setIsSimulating(true);
     setWisconsinJobs([]);
     try {
-      const res = await fetch(`${API}/api/v1/nemsis/simulate_wisconsin`, {
-        method: 'POST',
-        headers: { Authorization: getToken() }
-      });
-      const data = await res.json();
+      const data = await simulateWisconsinNEMSIS();
       if (data.jobs) setWisconsinJobs(data.jobs);
     } catch (e) {
       console.error("Simulation failed", e);
@@ -121,17 +115,7 @@ export default function NemsisPage() {
     setCopilotError('');
 
     try {
-      const res = await fetch(`${API}/api/v1/nemsis/validate_raw_xml`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/xml',
-          Authorization: getToken(),
-        },
-        body: xmlContent,
-      });
-      
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await validateNEMSISRawXml(xmlContent);
       
       setValidationSuccess(data.valid);
       
@@ -182,19 +166,10 @@ export default function NemsisPage() {
     setCopilotError('');
     
     try {
-      const res = await fetch(`${API}/api/v1/nemsis/copilot/explain`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: getToken(),
-        },
-        body: JSON.stringify({
-          issues,
-          context: { version: "3.5.1", state: "WI" }
-        }),
+      const json = await nemsisCopilotExplain({
+        issues,
+        context: { version: "3.5.1", state: "WI" }
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
       setCopilotResult(json);
     } catch (e) {
       setCopilotError(e instanceof Error ? e.message : 'Copilot explain failed');

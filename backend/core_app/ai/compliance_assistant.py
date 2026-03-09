@@ -1,9 +1,13 @@
+import logging
 import uuid
 from typing import Any
 
 from sqlalchemy.orm import Session
 
+from core_app.core.config import get_settings
 from core_app.services.governance_service import GovernanceService
+
+logger = logging.getLogger(__name__)
 
 
 class ComplianceAssistant:
@@ -14,45 +18,45 @@ class ComplianceAssistant:
     def analyze_issue(self, _tenant_id: uuid.UUID, issue_type: str, context: dict[str, Any]) -> dict[str, Any]:  # pylint: disable=unused-argument
         """
         AI Governance analysis of a security/compliance event.
-        Returns a structured recommendation for the founder.
+        Calls LLM when configured; returns degraded response otherwise.
         """
-        # In a real build, this would call a LLM.
-        # Here we provide deterministic logic for key patterns mentioned in directive.
-
-        if issue_type == "FAILED_LOGIN_SPIKE":
+        settings = get_settings()
+        if not settings.openai_api_key:
+            logger.warning("Compliance LLM analysis unavailable — OpenAI API key not configured")
             return {
-                "ISSUE": "Multiple failed login attempts detected",
-                "SEVERITY": "HIGH",
-                "SOURCE": "AUTH_EVENT",
-                "WHAT_IS_WRONG": f"There have been {context.get('count')} failed login attempts from IP {context.get('ip')} in the last hour.",
-                "WHY_IT_MATTERS": "This may indicate a brute-force attack or a credential stuffing attempt against your agency.",
-                "WHAT_YOU_SHOULD_DO": "Consider locking the affected account or blocking the source IP if it is not a known provider location.",
-                "TRUST_CONTEXT": "Authentication boundaries protect the front door of your clinical data.",
-                "HUMAN_REVIEW": "REQUIRED",
-                "CONFIDENCE": "HIGH"
+                "status": "degraded",
+                "reason": "LLM API not configured",
+                "issue_type": issue_type,
+                "recommendations": [],
             }
 
-        if issue_type == "UNAUDITED_PHI_EXPORT":
-            return {
-                "ISSUE": "Sensitive PHI Export without clear clinical reason",
-                "SEVERITY": "MEDIUM",
-                "SOURCE": "EXPORT_EVENT",
-                "WHAT_IS_WRONG": "A user exported 50+ patient records using a custom filter with no associated incident reference.",
-                "WHY_IT_MATTERS": "Large scale data exports are high-risk events for HIPAA compliance and data sovereignty.",
-                "WHAT_YOU_SHOULD_DO": "Review the export logs and verify the 'Actor Reason' provided by the user.",
-                "TRUST_CONTEXT": "Export traceability is a non-negotiable part of PHI data protection.",
-                "HUMAN_REVIEW": "RECOMMENDED",
-                "CONFIDENCE": "MEDIUM"
-            }
+        try:
+            import openai
 
-        return {
-            "ISSUE": "General Compliance Review",
-            "SEVERITY": "LOW",
-            "SOURCE": "POLICY",
-            "WHAT_IS_WRONG": "Routine policy review suggested for new tenant onboarding.",
-            "WHY_IT_MATTERS": "Ensures all default security controls are aligned with agency SOPs.",
-            "WHAT_YOU_SHOULD_DO": "Review tenant policy settings in the Governance Command Center.",
-            "TRUST_CONTEXT": "Continuous compliance requires proactive policy verification.",
-            "HUMAN_REVIEW": "SAFE_TO_AUTO_PROCESS",
-            "CONFIDENCE": "HIGH"
-        }
+            client = openai.OpenAI(api_key=settings.openai_api_key)
+            prompt = (
+                f"You are a HIPAA compliance and security analyst for an EMS SaaS platform.\n"
+                f"Analyze this security/compliance event and return a JSON object with keys: "
+                f"ISSUE, SEVERITY (HIGH/MEDIUM/LOW), SOURCE, WHAT_IS_WRONG, WHY_IT_MATTERS, "
+                f"WHAT_YOU_SHOULD_DO, TRUST_CONTEXT, HUMAN_REVIEW (REQUIRED/RECOMMENDED/SAFE_TO_AUTO_PROCESS), CONFIDENCE.\n\n"
+                f"Issue type: {issue_type}\n"
+                f"Context: {context}\n"
+            )
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"},
+                temperature=0.1,
+            )
+            import json
+
+            content = response.choices[0].message.content or "{}"
+            return json.loads(content)
+        except Exception:
+            logger.exception("LLM compliance analysis failed, returning degraded response")
+            return {
+                "status": "degraded",
+                "reason": "LLM analysis call failed",
+                "issue_type": issue_type,
+                "recommendations": [],
+            }

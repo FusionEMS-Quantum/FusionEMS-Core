@@ -7,15 +7,19 @@ import { useToast } from '@/components/ui/ProductPolish';
 import { TabBar, TabPanel } from '@/components/ui/InteractionPatterns';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
 import type { SeverityLevel } from '@/lib/design-system/tokens';
+import {
+  createPortalFleetInspectionTemplate,
+  createPortalFleetWorkOrder,
+  getPortalFleetReadiness,
+  getPortalFleetUnitReadiness,
+  listPortalFleetAlerts,
+  listPortalFleetInspectionTemplates,
+  listPortalFleetWorkOrders,
+  resolvePortalFleetAlert,
+  updatePortalFleetWorkOrder,
+} from '@/services/api';
 
 import { useState, useEffect, useCallback } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -157,11 +161,7 @@ export default function FleetPage() {
   const fetchFleet = useCallback(async () => {
     setFleetBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/readiness/fleet`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      setFleet(await r.json());
+      setFleet(await getPortalFleetReadiness());
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to load fleet readiness');
     } finally {
@@ -173,11 +173,7 @@ export default function FleetPage() {
     setUnitDetailBusy(true);
     setUnitDetail(null);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/readiness/units/${unitId}`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      setUnitDetail(await r.json());
+      setUnitDetail(await getPortalFleetUnitReadiness(unitId));
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to load unit detail');
     } finally {
@@ -188,12 +184,7 @@ export default function FleetPage() {
   const fetchAlerts = useCallback(async () => {
     setAlertsBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/alerts?unresolved_only=true`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setAlerts(Array.isArray(data) ? data : (data.alerts ?? []));
+      setAlerts(await listPortalFleetAlerts(true));
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to load alerts');
     } finally {
@@ -204,12 +195,7 @@ export default function FleetPage() {
   const fetchWorkOrders = useCallback(async () => {
     setWoBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/maintenance/work-orders`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setWorkOrders(Array.isArray(data) ? data : (data.work_orders ?? []));
+      setWorkOrders(await listPortalFleetWorkOrders());
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to load work orders');
     } finally {
@@ -220,12 +206,7 @@ export default function FleetPage() {
   const fetchTemplates = useCallback(async () => {
     setInspBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/inspections/templates`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setTemplates(Array.isArray(data) ? data : (data.templates ?? []));
+      setTemplates(await listPortalFleetInspectionTemplates());
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Failed to load inspection templates');
     } finally {
@@ -251,12 +232,7 @@ export default function FleetPage() {
   async function resolveAlert(alertId: string) {
     setResolvingId(alertId);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/alerts/${alertId}/resolve`, {
-        method: 'PATCH',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note: resolveNote[alertId] || '' }),
-      });
-      if (!r.ok) throw new Error(await r.text());
+      await resolvePortalFleetAlert(alertId, { note: resolveNote[alertId] || '' });
       setAlerts((prev) => prev.filter((a) => a.alert_id !== alertId));
       toast.success('Alert resolved');
     } catch (e: unknown) {
@@ -273,18 +249,13 @@ export default function FleetPage() {
     }
     setWoSubmitBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/maintenance/work-orders`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          unit_id: woForm.unit_id.trim(),
-          title: woForm.title.trim(),
-          description: woForm.description || undefined,
-          priority: woForm.priority,
-          due_date: woForm.due_date || undefined,
-        }),
+      await createPortalFleetWorkOrder({
+        unit_id: woForm.unit_id.trim(),
+        title: woForm.title.trim(),
+        description: woForm.description || undefined,
+        priority: woForm.priority,
+        due_date: woForm.due_date || undefined,
       });
-      if (!r.ok) throw new Error(await r.text());
       toast.success('Work order created');
       setWoForm({ unit_id: '', title: '', description: '', priority: 'routine', due_date: '' });
       fetchWorkOrders();
@@ -298,12 +269,7 @@ export default function FleetPage() {
   // ── Update work order status ──
   async function updateWOStatus(woId: string, status: WOStatus) {
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/maintenance/work-orders/${woId}`, {
-        method: 'PATCH',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (!r.ok) throw new Error(await r.text());
+      await updatePortalFleetWorkOrder(woId, { status });
       setWorkOrders((prev) => prev.map((w) => w.work_order_id === woId ? { ...w, status } : w));
       toast.success('Status updated');
     } catch (e: unknown) {
@@ -316,16 +282,11 @@ export default function FleetPage() {
     if (!inspForm.name.trim()) { toast.error('Name is required'); return; }
     setInspSubmitBusy(true);
     try {
-      const r = await fetch(`${API}/api/v1/fleet-intelligence/inspections/templates`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: inspForm.name.trim(),
-          vehicle_type: inspForm.vehicle_type,
-          frequency: inspForm.frequency,
-        }),
+      await createPortalFleetInspectionTemplate({
+        name: inspForm.name.trim(),
+        vehicle_type: inspForm.vehicle_type,
+        frequency: inspForm.frequency,
       });
-      if (!r.ok) throw new Error(await r.text());
       toast.success('Template created');
       setInspForm({ name: '', vehicle_type: 'ground', frequency: 'daily' });
       fetchTemplates();

@@ -188,35 +188,24 @@ async def validate_raw_xml(
         "raw_warnings": validation["warnings"]
     }
 
-@router.post("/simulate_wisconsin")
-async def simulate_wisconsin(
-    request: Request,
+@router.get("/exports")
+async def list_exports(
     current: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(db_session_dependency)
+    db: Session = Depends(db_session_dependency),
 ):
+    """Return real NEMSIS export jobs for this tenant from the database."""
     svc = DominationService(db, get_event_publisher())
-
-    # Generate 5 mock payloads
+    rows = svc.repo("nemsis_export_jobs").list(tenant_id=current.tenant_id, limit=50)
     jobs = []
-    for i in range(5):
-        job = {
-            "status": "completed",
-            "range": {
-                "start": f"2026-03-01T0{i}:00:00Z",
-                "end": f"2026-03-01T0{i+1}:00:00Z"
-            },
-            "agency": {"id": "WI-1029", "name": "Wisconsin Advanced EMS"},
-            "xml_b64": base64.b64encode(b"<EMSDataSet><Record/></EMSDataSet>").decode(),
-            "simulated": True,
-            "rules_passed": 142
-        }
-        res = await svc.create(
-            table="nemsis_export_jobs",
-            tenant_id=current.tenant_id,
-            actor_user_id=current.user_id,
-            data=job,
-            correlation_id=getattr(request.state, "correlation_id", None)
-        )
-        jobs.append(res)
-
-    return {"status": "success", "jobs": jobs}
+    for row in rows:
+        data = row.get("data", {})
+        jobs.append({
+            "id": str(row.get("id", "")),
+            "status": data.get("status"),
+            "range": data.get("range"),
+            "agency": data.get("agency"),
+            "error": data.get("error"),
+            "has_xml": bool(data.get("xml_b64")),
+            "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
+        })
+    return {"jobs": jobs, "total": len(jobs)}

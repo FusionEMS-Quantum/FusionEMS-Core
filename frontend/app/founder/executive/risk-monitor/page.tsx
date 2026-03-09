@@ -1,35 +1,282 @@
 'use client';
+
+import { useEffect, useState } from 'react';
+import { AlertTriangle, ArrowLeft, RefreshCw, Shield, ShieldAlert, TrendingDown, Users } from 'lucide-react';
 import Link from 'next/link';
-import { QuantumEmptyState } from '@/components/ui';
+import {
+  getChurnRisk,
+  getBillingAlerts,
+  getARConcentrationRisk,
+  getFraudAnomalies,
+  getMarginRiskByTenant,
+} from '@/services/api';
+
+interface ChurnSignal {
+  tenant_id?: string;
+  name?: string;
+  risk_score?: number;
+  signals?: string[];
+  last_activity?: string;
+}
+
+interface AlertItem {
+  type?: string;
+  severity?: string;
+  message?: string;
+  metric?: string;
+}
+
+interface ARRisk {
+  payer_name?: string;
+  exposure_cents?: number;
+  concentration_pct?: number;
+  aging_bucket?: string;
+}
+
+interface FraudAnomaly {
+  claim_id?: string;
+  anomaly_type?: string;
+  confidence?: number;
+  detail?: string;
+}
+
+interface MarginTenant {
+  tenant_id?: string;
+  name?: string;
+  risk_level?: string;
+  margin_pct?: number;
+  denial_rate_pct?: number;
+  revenue_cents?: number;
+}
 
 export default function RiskMonitorPage() {
-  return (
-    <div className="p-5 min-h-screen">
-      <div className="hud-rail pb-3 mb-6">
-        <div className="micro-caps mb-1">Executive</div>
-        <h1 className="text-h2 font-bold text-zinc-100">Risk Monitor</h1>
-        <p className="text-body text-zinc-500 mt-1">Real-time risk assessment across clinical, financial, and operational domains.</p>
+  const [churn, setChurn] = useState<ChurnSignal[]>([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [arRisk, setArRisk] = useState<ARRisk[]>([]);
+  const [fraud, setFraud] = useState<FraudAnomaly[]>([]);
+  const [marginTenants, setMarginTenants] = useState<MarginTenant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [churnRes, alertRes, arRes, fraudRes, marginRes] = await Promise.allSettled([
+        getChurnRisk(),
+        getBillingAlerts(),
+        getARConcentrationRisk(),
+        getFraudAnomalies(),
+        getMarginRiskByTenant(),
+      ]);
+      if (churnRes.status === 'fulfilled') {
+        const cd = churnRes.value;
+        setChurn(Array.isArray(cd?.signals) ? cd.signals : Array.isArray(cd?.tenants) ? cd.tenants : Array.isArray(cd) ? cd : []);
+      }
+      if (alertRes.status === 'fulfilled') {
+        const ad = alertRes.value;
+        setAlerts(Array.isArray(ad?.alerts) ? ad.alerts : Array.isArray(ad) ? ad : []);
+      }
+      if (arRes.status === 'fulfilled') {
+        const ar = arRes.value;
+        setArRisk(Array.isArray(ar?.payers) ? ar.payers : Array.isArray(ar) ? ar : []);
+      }
+      if (fraudRes.status === 'fulfilled') {
+        const fd = fraudRes.value;
+        setFraud(Array.isArray(fd?.anomalies) ? fd.anomalies : Array.isArray(fd) ? fd : []);
+      }
+      if (marginRes.status === 'fulfilled') {
+        const md = marginRes.value;
+        const highRisk = (Array.isArray(md?.tenants) ? md.tenants : [])
+          .filter((t: MarginTenant) => t.risk_level === 'high' || t.risk_level === 'critical');
+        setMarginTenants(highRisk);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load risk data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const riskColor = (level?: string) => {
+    if (level === 'critical') return 'text-red-400';
+    if (level === 'high') return 'text-orange-400';
+    if (level === 'medium') return 'text-amber-400';
+    return 'text-emerald-400';
+  };
+
+  const formatCents = (cents: number | undefined) =>
+    cents != null ? `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$0.00';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
-      <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 shadow-elevation-1">
-        <QuantumEmptyState
-          title="Not Yet Configured"
-          description="This module is scheduled for an upcoming release. Contact your account manager for early access."
-          icon={
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="6" y="10" width="36" height="28" rx="2" />
-              <path d="M6 18h36M16 10V6M32 10V6" />
-              <circle cx="24" cy="30" r="4" />
-            </svg>
-          }
-          action={
-            <Link
-              href="/founder"
-                className="inline-flex items-center gap-2 px-4 py-2 text-label font-label uppercase tracking-[var(--tracking-label)] text-[#FF4D00] hover:text-[#FF4D00] transition-colors duration-fast"
-            >
-              &larr; Back to Command Center
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Link href="/founder/executive" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2">
+              <ArrowLeft className="w-4 h-4" /> Back to Executive
             </Link>
-          }
-        />
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <ShieldAlert className="w-8 h-8 text-red-400" />
+              Risk Monitor
+            </h1>
+            <p className="text-gray-400 mt-1">Real-time risk intelligence — churn, revenue, compliance, fraud</p>
+          </div>
+          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400" />
+            <span className="text-red-300">{error}</span>
+          </div>
+        )}
+
+        {/* Risk Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
+            <Users className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-amber-400">{churn.length}</div>
+            <div className="text-gray-400 text-sm">Churn Signals</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
+            <AlertTriangle className="w-6 h-6 text-red-400 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-red-400">{alerts.length}</div>
+            <div className="text-gray-400 text-sm">Active Alerts</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
+            <TrendingDown className="w-6 h-6 text-orange-400 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-orange-400">{marginTenants.length}</div>
+            <div className="text-gray-400 text-sm">High-Risk Tenants</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
+            <Shield className="w-6 h-6 text-violet-400 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-violet-400">{fraud.length}</div>
+            <div className="text-gray-400 text-sm">Fraud Anomalies</div>
+          </div>
+        </div>
+
+        {/* Churn Risk */}
+        {churn.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-amber-400" /> Churn Risk Signals
+            </h2>
+            <div className="space-y-2">
+              {churn.map((c, i) => (
+                <div key={i} className="flex items-center justify-between bg-gray-800/50 rounded px-4 py-3">
+                  <div>
+                    <span className="font-medium">{c.name ?? c.tenant_id ?? `Signal ${i + 1}`}</span>
+                    {c.signals && <span className="text-gray-400 text-sm ml-3">{c.signals.join(', ')}</span>}
+                  </div>
+                  <span className={`font-mono text-sm ${(c.risk_score ?? 0) > 70 ? 'text-red-400' : 'text-amber-400'}`}>
+                    {c.risk_score ?? 0}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Margin-At-Risk Tenants */}
+        {marginTenants.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <TrendingDown className="w-5 h-5 text-orange-400" /> High-Risk Margin Tenants
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-gray-400 border-b border-gray-800">
+                  <th className="text-left py-2">Tenant</th>
+                  <th className="text-right py-2">Revenue</th>
+                  <th className="text-right py-2">Margin</th>
+                  <th className="text-right py-2">Denial Rate</th>
+                  <th className="text-right py-2">Risk</th>
+                </tr></thead>
+                <tbody>
+                  {marginTenants.map((t, i) => (
+                    <tr key={i} className="border-b border-gray-800/50">
+                      <td className="py-2">{t.name ?? 'Unknown'}</td>
+                      <td className="py-2 text-right text-emerald-400">{formatCents(t.revenue_cents)}</td>
+                      <td className="py-2 text-right">{t.margin_pct ?? 0}%</td>
+                      <td className="py-2 text-right text-amber-400">{t.denial_rate_pct ?? 0}%</td>
+                      <td className={`py-2 text-right font-semibold uppercase ${riskColor(t.risk_level)}`}>{t.risk_level}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* AR Concentration */}
+        {arRisk.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">AR Concentration Risk</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-gray-400 border-b border-gray-800">
+                  <th className="text-left py-2">Payer</th>
+                  <th className="text-right py-2">Exposure</th>
+                  <th className="text-right py-2">Concentration</th>
+                  <th className="text-right py-2">Aging</th>
+                </tr></thead>
+                <tbody>
+                  {arRisk.map((a, i) => (
+                    <tr key={i} className="border-b border-gray-800/50">
+                      <td className="py-2">{a.payer_name ?? 'Unknown'}</td>
+                      <td className="py-2 text-right text-emerald-400">{formatCents(a.exposure_cents)}</td>
+                      <td className="py-2 text-right">{a.concentration_pct ?? 0}%</td>
+                      <td className="py-2 text-right text-gray-400">{a.aging_bucket ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Fraud Anomalies */}
+        {fraud.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-violet-400" /> Fraud Anomalies
+            </h2>
+            <div className="space-y-2">
+              {fraud.map((f, i) => (
+                <div key={i} className="flex items-center justify-between bg-gray-800/50 rounded px-4 py-3">
+                  <div>
+                    <span className="font-mono text-sm text-gray-400">{f.claim_id ?? '—'}</span>
+                    <span className="ml-3 text-sm">{f.anomaly_type ?? f.detail ?? 'Anomaly detected'}</span>
+                  </div>
+                  <span className="text-sm font-mono text-violet-400">{f.confidence != null ? `${(f.confidence * 100).toFixed(0)}%` : '—'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* No Risks State */}
+        {churn.length === 0 && alerts.length === 0 && marginTenants.length === 0 && fraud.length === 0 && (
+          <div className="bg-gray-900 border border-emerald-800 rounded-lg p-8 text-center">
+            <Shield className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-emerald-400">All Systems Nominal</h3>
+            <p className="text-gray-400 mt-1">No active risk signals detected across all monitored domains.</p>
+          </div>
+        )}
       </div>
     </div>
   );

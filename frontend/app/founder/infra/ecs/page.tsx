@@ -1,257 +1,137 @@
 'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { ArrowLeft, Box, RefreshCw, AlertTriangle, Activity, Server, Layers } from 'lucide-react';
+import { getSystemHealthDashboard, getSystemHealthServices, getSystemHealthAlerts } from '@/services/api';
 
-function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
-  return (
-    <div className="border-b border-border-subtle pb-2 mb-4">
-      <div className="flex items-baseline gap-3">
-          <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
-      </div>
-    </div>
-  );
-}
+interface ServiceStatus { name: string; status: string; running_count?: number; desired_count?: number; cpu_pct?: number; memory_pct?: number; }
+interface AlertItem { id: string; severity: string; message: string; created_at?: string; resolved?: boolean; }
+interface HealthDash { overall_status?: string; service_count?: number; healthy_count?: number; }
 
-function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
-  const colors = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
-      style={{ borderColor: `${colors[status]}40`, color: colors[status], background: `${colors[status]}12` }}>
-      <span className="w-1 h-1 " style={{ background: colors[status] }} />
-      {label}
-    </span>
-  );
-}
+export default function ECSServicesPage() {
+  const [health, setHealth] = useState<HealthDash | null>(null);
+  const [services, setServices] = useState<ServiceStatus[]>([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
-  return (
-    <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
-      <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
-    </div>
-  );
-}
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [hRes, sRes, aRes] = await Promise.allSettled([
+        getSystemHealthDashboard(), getSystemHealthServices(), getSystemHealthAlerts(),
+      ]);
+      if (hRes.status === 'fulfilled') setHealth(hRes.value);
+      if (sRes.status === 'fulfilled') {
+        const s = sRes.value;
+        setServices(Array.isArray(s?.services) ? s.services : Array.isArray(s) ? s : []);
+      }
+      if (aRes.status === 'fulfilled') {
+        const a = aRes.value;
+        setAlerts(Array.isArray(a?.alerts) ? a.alerts : Array.isArray(a) ? a : []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load ECS data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
-      style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}>
-      {children}
-    </div>
-  );
-}
+  useEffect(() => { loadData(); }, []);
 
-const SERVICES = [
-  { name: 'api-service',     tasks: '2/2', cpu: 34, mem: 41, status: 'ok' as const },
-  { name: 'worker-service',  tasks: '2/2', cpu: 12, mem: 28, status: 'ok' as const },
-  { name: 'opa-sidecar',     tasks: '1/1', cpu:  2, mem:  8, status: 'ok' as const },
-  { name: 'otel-collector',  tasks: '1/1', cpu:  5, mem: 12, status: 'ok' as const },
-  { name: 'redis-proxy',     tasks: '1/1', cpu:  8, mem: 15, status: 'ok' as const },
-  { name: 'scheduler',       tasks: '1/1', cpu:  6, mem: 11, status: 'ok' as const },
-];
+  const statusColor = (s: string) => {
+    if (s === 'healthy' || s === 'running' || s === 'ACTIVE') return 'text-emerald-400';
+    if (s === 'degraded' || s === 'warning') return 'text-amber-400';
+    return 'text-red-400';
+  };
 
-const HEALTH_CHECKS = [
-  { endpoint: '/health',    rt: '12ms',    status: 'ok' as const },
-  { endpoint: '/api/v1/',   rt: '48ms',    status: 'ok' as const },
-  { endpoint: '/ws',        rt: 'active',  status: 'ok' as const },
-  { endpoint: '/metrics',   rt: '8ms',     status: 'ok' as const },
-];
-
-const LOGS = [
-  { ts: '2026-02-27 09:42:01', svc: 'api-service',    level: 'INFO' as const,  msg: 'Request handled successfully: POST /api/v1/incidents (201)' },
-  { ts: '2026-02-27 09:41:58', svc: 'worker-service', level: 'WARN' as const,  msg: 'High memory usage on worker task (82%)' },
-  { ts: '2026-02-27 09:41:55', svc: 'otel-collector',  level: 'INFO' as const, msg: 'Trace batch exported: 1200 spans flushed to OTLP endpoint' },
-  { ts: '2026-02-27 09:41:50', svc: 'scheduler',      level: 'INFO' as const,  msg: 'Scheduled job run completed: billing_sweep (0 errors)' },
-  { ts: '2026-02-27 09:41:45', svc: 'redis-proxy',    level: 'INFO' as const,  msg: 'Connection pool healthy: 12/20 active connections' },
-];
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-export default function ECSClusterHealth() {
-  const [refreshed, setRefreshed] = useState(false);
-
-  function handleRefresh() {
-    setRefreshed(true);
-    setTimeout(() => setRefreshed(false), 1200);
-  }
+  if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center"><RefreshCw className="w-8 h-8 animate-spin text-emerald-400" /></div>;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 px-6 py-8 font-mono">
-      <div className="max-w-6xl mx-auto space-y-8">
-
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
           <div>
-            <div className="text-body font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>
-              MODULE 10 · INFRASTRUCTURE
-            </div>
-            <h1 className="text-2xl font-bold uppercase tracking-widest text-zinc-100">ECS Cluster Health</h1>
-            <p className="text-[12px] text-zinc-500 mt-1">
-              Fargate cluster · task health · ALB metrics · auto scaling
-            </p>
+            <Link href="/founder/infra" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Infrastructure Hub</Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3"><Box className="w-8 h-8 text-orange-400" /> ECS Service Management</h1>
+            <p className="text-gray-400 mt-1">Container services, auto-scaling, and deployment pipeline monitoring</p>
           </div>
-          <div className="flex items-center gap-3 mt-1">
-            <Badge label="All Services Healthy" status="ok" />
-            <button
-              onClick={handleRefresh}
-              className="px-3 py-1.5 text-body font-bold uppercase tracking-widest border transition-all"
-              style={{
-                borderColor: 'rgba(255,107,26,0.4)',
-                color: refreshed ? 'var(--color-text-primary)' : '#FF4D00',
-                background: refreshed ? 'rgba(255,107,26,0.2)' : 'rgba(255,107,26,0.06)',
-              }}
-            >
-              {refreshed ? 'Refreshed' : 'Refresh'}
-            </button>
+          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm"><RefreshCw className="w-4 h-4" /> Refresh</button>
+        </div>
+
+        {error && <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-red-400" /><span className="text-red-300">{error}</span></div>}
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Activity className="w-4 h-4" /> Cluster Status</div>
+            <div className={`text-2xl font-bold uppercase ${statusColor(health?.overall_status ?? 'unknown')}`}>{health?.overall_status ?? 'Unknown'}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Server className="w-4 h-4" /> Total Services</div>
+            <div className="text-2xl font-bold text-blue-400">{health?.service_count ?? services.length}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Layers className="w-4 h-4" /> Healthy</div>
+            <div className="text-2xl font-bold text-emerald-400">{health?.healthy_count ?? services.filter(s => s.status === 'running' || s.status === 'healthy').length}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><AlertTriangle className="w-4 h-4" /> Active Alerts</div>
+            <div className="text-2xl font-bold text-amber-400">{alerts.filter(a => !a.resolved).length}</div>
           </div>
         </div>
 
-        {/* MODULE 1 — Cluster Overview */}
-        <section>
-          <SectionHeader number="1" title="Cluster Overview" sub="ECS Fargate · us-east-1" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <StatCard label="Running Tasks"  value={8}        color="var(--color-status-active)" />
-            <StatCard label="Desired Tasks"  value={8}        />
-            <StatCard label="Pending"        value={0}        color="var(--color-status-active)" />
-            <StatCard label="CPU Utilization" value="34%"     color="var(--color-status-warning)" />
-            <StatCard label="Memory Util"    value="41%"      color="var(--color-status-warning)" />
-            <StatCard label="Uptime 30d"     value="99.97%"   color="var(--color-status-active)" />
-          </div>
-        </section>
-
-        {/* MODULE 2 — Service Status Table */}
-        <section>
-          <SectionHeader number="2" title="Service Status" sub="per-service breakdown" />
-          <Panel>
-            <div className="overflow-x-auto">
-              <table className="w-full text-body">
-                <thead>
-                  <tr className="text-zinc-500 uppercase tracking-widest border-b border-border-subtle">
-                    <th className="text-left py-2 pr-4 font-semibold">Service</th>
-                    <th className="text-right py-2 px-4 font-semibold">Tasks</th>
-                    <th className="text-right py-2 px-4 font-semibold">CPU%</th>
-                    <th className="text-right py-2 px-4 font-semibold">Memory%</th>
-                    <th className="text-right py-2 pl-4 font-semibold">Status</th>
+        {/* Services Table */}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-lg font-semibold flex items-center gap-2"><Box className="w-5 h-5 text-orange-400" /> ECS Services</h2></div>
+          {services.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">No ECS services detected. Data will populate when cluster telemetry connects.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Service</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Status</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Running</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Desired</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">CPU</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Memory</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {services.map((s, i) => (
+                  <tr key={i} className="hover:bg-gray-800/30">
+                    <td className="px-6 py-3 text-white font-medium">{s.name}</td>
+                    <td className={`px-6 py-3 font-bold uppercase ${statusColor(s.status)}`}>{s.status}</td>
+                    <td className="px-6 py-3 text-blue-400">{s.running_count ?? '—'}</td>
+                    <td className="px-6 py-3 text-gray-400">{s.desired_count ?? '—'}</td>
+                    <td className="px-6 py-3 text-cyan-400">{s.cpu_pct != null ? `${s.cpu_pct}%` : '—'}</td>
+                    <td className="px-6 py-3 text-violet-400">{s.memory_pct != null ? `${s.memory_pct}%` : '—'}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {SERVICES.map((s, i) => (
-                    <tr key={s.name} className={`border-b border-border-subtle ${i % 2 === 0 ? 'bg-[rgba(255,255,255,0.01)]' : ''}`}>
-                      <td className="py-2.5 pr-4 font-semibold text-zinc-100">{s.name}</td>
-                      <td className="py-2.5 px-4 text-right text-zinc-400">{s.tasks}</td>
-                      <td className="py-2.5 px-4 text-right" style={{ color: s.cpu > 60 ? 'var(--color-status-warning)' : 'var(--color-status-active)' }}>{s.cpu}%</td>
-                      <td className="py-2.5 px-4 text-right" style={{ color: s.mem > 60 ? 'var(--color-status-warning)' : 'var(--color-status-active)' }}>{s.mem}%</td>
-                      <td className="py-2.5 pl-4 text-right"><Badge label={s.status} status={s.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 3 — Auto Scaling Policy */}
-        <section>
-          <SectionHeader number="3" title="Auto Scaling Policy" sub="Application Auto Scaling" />
-          <Panel>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2.5">
-              {[
-                { k: 'Min Tasks',            v: '2' },
-                { k: 'Max Tasks',            v: '10' },
-                { k: 'Current Tasks',        v: '8' },
-                { k: 'Target CPU',           v: '70%' },
-                { k: 'Scale-Out Threshold',  v: '>70% CPU for 3 min' },
-                { k: 'Scale-In Threshold',   v: '<30% CPU for 10 min' },
-              ].map(({ k, v }) => (
-                <div key={k} className="flex justify-between items-center border-b border-border-subtle py-1.5">
-                  <span className="text-body text-zinc-500 uppercase tracking-wider">{k}</span>
-                  <span className="text-body font-semibold text-zinc-100">{v}</span>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 4 — ALB Metrics */}
-        <section>
-          <SectionHeader number="4" title="ALB Metrics" sub="Application Load Balancer" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <StatCard label="Request Rate"       value="342 req/min" />
-            <StatCard label="P50 Latency"        value="48ms"        color="var(--color-status-active)" />
-            <StatCard label="P95 Latency"        value="210ms"       color="var(--color-status-warning)" />
-            <StatCard label="5xx Rate"           value="0.01%"       color="var(--color-status-active)" />
-            <StatCard label="Active Connections" value={87}          />
-          </div>
-        </section>
-
-        {/* MODULE 5 — Health Check Status */}
-        <section>
-          <SectionHeader number="5" title="Health Check Status" sub="ALB target group health" />
-          <Panel>
-            <div className="space-y-2">
-              <div className="grid grid-cols-3 text-micro font-semibold uppercase tracking-widest text-zinc-500 border-b border-border-subtle pb-2 mb-1">
-                <span>Endpoint</span>
-                <span className="text-center">Response Time</span>
-                <span className="text-right">Status</span>
-              </div>
-              {HEALTH_CHECKS.map((h) => (
-                <div key={h.endpoint} className="grid grid-cols-3 items-center py-1.5 border-b border-border-subtle">
-                  <span className="text-body font-semibold text-zinc-100">{h.endpoint}</span>
-                  <span className="text-body text-zinc-400 text-center">{h.rt}</span>
-                  <span className="text-right"><Badge label={h.status} status={h.status} /></span>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 6 — Container Log Preview */}
-        <section>
-          <SectionHeader number="6" title="Container Log Preview" sub="last 5 entries" />
-          <Panel>
-            <div className="space-y-1.5">
-              {LOGS.map((l, i) => (
-                <div key={i} className="flex items-start gap-3 py-1.5 border-b border-border-subtle last:border-0">
-                  <span className="text-micro text-zinc-500 whitespace-nowrap shrink-0">{l.ts}</span>
-                  <span className="text-micro font-semibold text-system-cad whitespace-nowrap shrink-0 w-28">{l.svc}</span>
-                  <span className="shrink-0">
-                    <Badge label={l.level} status={l.level === 'WARN' ? 'warn' : 'info'} />
-                  </span>
-                  <span className="text-body text-zinc-400">{l.msg}</span>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </section>
-
-        {/* MODULE 7 — Task History */}
-        <section>
-          <SectionHeader number="7" title="Task History" sub="last 7 days" />
-          <Panel>
-            <div className="text-body text-zinc-500 mb-4">Last 7 days — all tasks stable</div>
-            <div className="grid grid-cols-7 gap-2">
-              {DAYS.map((day) => (
-                <div key={day} className="flex flex-col items-center gap-2 p-3 bg-zinc-950/[0.02] border border-border-subtle"
-                  style={{ clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)' }}>
-                  <span className="text-micro uppercase tracking-widest text-zinc-500">{day}</span>
-                  <span className="w-2.5 h-2.5 " style={{ background: 'var(--color-status-active)', boxShadow: '0 0 6px color-mix(in srgb, var(--color-status-active) 53%, transparent)' }} />
-                  <span className="text-micro font-bold" style={{ color: 'var(--q-green)' }}>8/8</span>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </section>
-
-        {/* Back link */}
-        <div className="pt-2 pb-8">
-          <Link href="/founder" className="text-[12px] font-semibold uppercase tracking-wider transition-opacity hover:opacity-70" style={{ color: '#FF4D00' }}>
-            ← Back to Founder Command OS
-          </Link>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
+        {/* Alerts */}
+        {alerts.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-lg font-semibold flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-400" /> Infrastructure Alerts</h2></div>
+            <div className="divide-y divide-gray-800">
+              {alerts.slice(0, 10).map((a) => (
+                <div key={a.id} className="px-6 py-3 flex items-center justify-between">
+                  <div>
+                    <span className={`text-xs font-bold uppercase mr-2 ${a.severity === 'critical' ? 'text-red-400' : a.severity === 'warning' ? 'text-amber-400' : 'text-blue-400'}`}>{a.severity}</span>
+                    <span className="text-white text-sm">{a.message}</span>
+                  </div>
+                  <span className="text-gray-500 text-xs">{a.created_at ? new Date(a.created_at).toLocaleString() : ''}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

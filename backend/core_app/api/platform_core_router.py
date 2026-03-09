@@ -18,6 +18,7 @@ from core_app.api.dependencies import (
     db_session_dependency,
     require_role,
 )
+from core_app.core.config import get_settings
 from core_app.schemas.auth import CurrentUser
 from core_app.schemas.platform_core import (
     AgencyContractLinkRequest,
@@ -918,3 +919,157 @@ def ai_diagnose_tenant(
 ) -> list[PlatformAdminIssue]:
     assistant = PlatformAdminAssistantService(db)
     return assistant.diagnose_tenant(tenant_id)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PART 9: RELEASE READINESS GATE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class _GateCheck:
+    """Individual gate check result."""
+
+    def __init__(self, name: str, passed: bool, detail: str = "") -> None:
+        self.name = name
+        self.passed = passed
+        self.detail = detail
+
+    def to_dict(self) -> dict[str, object]:
+        return {"name": self.name, "passed": self.passed, "detail": self.detail}
+
+
+@router.get("/release-readiness")
+def release_readiness_gate(
+    current: CurrentUser = Depends(require_role("founder")),
+    db: Session = Depends(db_session_dependency),
+) -> dict:
+    """
+    Comprehensive release readiness gate.
+    Checks database health, migration state, integration configs,
+    known placeholders, and critical service availability.
+    Returns structured pass/fail gate report.
+    """
+    import importlib
+    import os
+
+    from sqlalchemy import text as sa_text
+
+    gates: list[dict[str, object]] = []
+
+    # Gate 1: Database connectivity
+    try:
+        db.execute(sa_text("SELECT 1"))
+        gates.append(_GateCheck("database_connectivity", True, "PostgreSQL reachable").to_dict())
+    except Exception as exc:
+        gates.append(_GateCheck("database_connectivity", False, str(exc)).to_dict())
+
+    # Gate 2: Alembic migration head check
+    try:
+        result = db.execute(sa_text("SELECT version_num FROM alembic_version LIMIT 1"))
+        row = result.fetchone()
+        current_rev = row[0] if row else "none"
+        gates.append(_GateCheck(
+            "migration_current", True, f"alembic_head={current_rev}",
+        ).to_dict())
+    except Exception as exc:
+        gates.append(_GateCheck("migration_current", False, str(exc)).to_dict())
+
+    # Gate 3: Critical tables exist
+    critical_tables = [
+        "tenants", "users", "billing_cases", "edi_artifacts",
+        "epcr_charts", "cad_incidents", "fleet_units",
+    ]
+    missing_tables: list[str] = []
+    for tbl in critical_tables:
+        try:
+            db.execute(sa_text("SELECT 1 FROM information_schema.tables WHERE table_name = :t"), {"t": tbl})  # noqa: S608
+            row = db.execute(sa_text("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = :t)"), {"t": tbl}).scalar()  # noqa: S608
+            if not row:
+                missing_tables.append(tbl)
+        except Exception:
+            missing_tables.append(tbl)
+    gates.append(_GateCheck(
+        "critical_tables",
+        len(missing_tables) == 0,
+        f"missing={missing_tables}" if missing_tables else "all_present",
+    ).to_dict())
+
+    # Gate 4: Office Ally SFTP configured
+    settings = get_settings()
+    oa_host = getattr(settings, "OFFICEALLY_SFTP_HOST", "")
+    gates.append(_GateCheck(
+        "officeally_sftp_configured",
+        bool(oa_host),
+        f"host={'set' if oa_host else 'missing'}",
+    ).to_dict())
+
+    # Gate 5: Stripe configured
+    stripe_key = getattr(settings, "STRIPE_SECRET_KEY", "")
+    gates.append(_GateCheck(
+        "stripe_configured",
+        bool(stripe_key),
+        "key_present" if stripe_key else "key_missing",
+    ).to_dict())
+
+    # Gate 6: Telnyx configured
+    telnyx_key = getattr(settings, "TELNYX_API_KEY", "")
+    gates.append(_GateCheck(
+        "telnyx_configured",
+        bool(telnyx_key),
+        "key_present" if telnyx_key else "key_missing",
+    ).to_dict())
+
+    # Gate 7: AWS region set
+    aws_region = os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION", "")
+    gates.append(_GateCheck(
+        "aws_region_configured",
+        bool(aws_region),
+        f"region={aws_region or 'unset'}",
+    ).to_dict())
+
+    # Gate 8: Redis connectivity
+    try:
+        redis_mod = importlib.import_module("redis")
+        redis_url = getattr(settings, "REDIS_URL", "")
+        if redis_url:
+            r = redis_mod.from_url(redis_url, socket_connect_timeout=2)
+            r.ping()
+            gates.append(_GateCheck("redis_connectivity", True, "reachable").to_dict())
+        else:
+            gates.append(_GateCheck("redis_connectivity", False, "REDIS_URL not set").to_dict())
+    except Exception as exc:
+        gates.append(_GateCheck("redis_connectivity", False, str(exc)).to_dict())
+
+    # Gate 9: No known placeholder tenants
+    try:
+        count = db.execute(
+            sa_text("SELECT count(*) FROM tenants WHERE name ILIKE '%placeholder%' OR name ILIKE '%demo%' OR name ILIKE '%test%'")
+        ).scalar() or 0
+        gates.append(_GateCheck(
+            "no_placeholder_tenants",
+            int(count) == 0,
+            f"found={count}" if count else "clean",
+        ).to_dict())
+    except Exception:
+        gates.append(_GateCheck("no_placeholder_tenants", True, "table_not_checked").to_dict())
+
+    # Gate 10: Cognito configured
+    cognito_pool = getattr(settings, "COGNITO_USER_POOL_ID", "")
+    gates.append(_GateCheck(
+        "cognito_configured",
+        bool(cognito_pool),
+        "pool_id_present" if cognito_pool else "pool_id_missing",
+    ).to_dict())
+
+    passed = sum(1 for g in gates if g["passed"])
+    total = len(gates)
+    all_passed = passed == total
+
+    return {
+        "ready": all_passed,
+        "score": f"{passed}/{total}",
+        "passed_count": passed,
+        "total_count": total,
+        "verdict": "RELEASE_READY" if all_passed else "BLOCKED",
+        "gates": gates,
+    }

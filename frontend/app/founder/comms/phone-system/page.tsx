@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  getVoiceAdvancedAbTests,
+  getVoiceAdvancedCallbackSlots,
+  getVoiceAdvancedDashboard,
+  getVoiceAdvancedImprovementTickets,
+  getVoiceAdvancedReviewQueue,
+} from '@/services/api';
 
 function PageHeader() {
   return (
@@ -184,7 +191,7 @@ const VOICE_MODULES = [
   { n: 15,  title: 'Disposition Codes', desc: 'Every call ends with standardized reason/outcome codes.', cat: 'analytics', status: 'active' },
   { n: 16,  title: 'Call Deflection Analytics', desc: 'Measure how many calls AI resolves without founder.', cat: 'analytics', status: 'active' },
   { n: 17,  title: 'Voice FAQ Builder', desc: 'Convert text FAQs into voice-friendly responses.', cat: 'voice', status: 'configured' },
-  { n: 18,  title: 'Multi-Language Voice', desc: 'Optional bilingual support.', cat: 'voice', status: 'pending' },
+  { n: 18,  title: 'Multi-Language Voice', desc: 'Optional bilingual support.', cat: 'voice', status: 'pending_deployment' },
   { n: 19,  title: 'Hold Music Replacement', desc: 'AI updates caller on progress ("checking claim status").', cat: 'voice', status: 'active' },
   { n: 20,  title: 'Callback Scheduling', desc: 'AI schedules callback slots when you\'re busy.', cat: 'voice', status: 'active' },
   { n: 21,  title: 'Inbound SLA Management', desc: 'Different call handling policies per tenant plan.', cat: 'compliance', status: 'active' },
@@ -282,18 +289,16 @@ export default function PhoneSystemPage() {
   const [improvementTickets, setImprovementTickets] = useState<Record<string, unknown>[]>([]);
   const [callbackSlots, setCallbackSlots] = useState<Record<string, unknown>[]>([]);
   const [abTests, setAbTests] = useState<Record<string, unknown>[]>([]);
-  const API = process.env.NEXT_PUBLIC_API_BASE ?? '';
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const h: Record<string, string> | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
-    const fetcher = (path: string) => fetch(`${API}${path}`, h ? { headers: h } : {}).then(r => r.ok ? r.json() : null).catch(() => null);
-    fetcher('/api/v1/voice-advanced/dashboard').then((d: unknown) => d && setAdvDashboard(d as Record<string, unknown>));
-    fetcher('/api/v1/voice-advanced/review-queue').then((d: unknown) => Array.isArray(d) && setReviewQueue(d as Record<string, unknown>[]));
-    fetcher('/api/v1/voice-advanced/improvement-tickets').then((d: unknown) => Array.isArray(d) && setImprovementTickets(d as Record<string, unknown>[]));
-    fetcher('/api/v1/voice-advanced/callback-optimizer/slots').then((d: unknown) => Array.isArray(d) && setCallbackSlots(d as Record<string, unknown>[]));
-    fetcher('/api/v1/voice-advanced/ab-tests').then((d: unknown) => Array.isArray(d) && setAbTests(d as Record<string, unknown>[]));
-  }, [API]);
+    void getVoiceAdvancedDashboard().then((d) => {
+      if (d) setAdvDashboard(d);
+    });
+    void getVoiceAdvancedReviewQueue().then((d) => setReviewQueue(d));
+    void getVoiceAdvancedImprovementTickets().then((d) => setImprovementTickets(d));
+    void getVoiceAdvancedCallbackSlots().then((d) => setCallbackSlots(d));
+    void getVoiceAdvancedAbTests().then((d) => setAbTests(d));
+  }, []);
 
   const filtered = VOICE_MODULES.filter((m) => {
     if (catFilter !== 'all' && m.cat !== catFilter) return false;

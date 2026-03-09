@@ -3,8 +3,7 @@ import { QuantumTableSkeleton } from '@/components/ui';
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? '';
+import { getGraphMail, getGraphMailMessage, getGraphMailAttachments, sendGraphMail, replyGraphMail } from '@/services/api';
 
 type MessageSummary = {
   id: string;
@@ -65,8 +64,7 @@ export default function FounderEmailPage() {
 
   const load = (folder = 'inbox') => {
     setLoading(true);
-    fetch(`${API}/api/v1/founder/graph/mail?folder=${folder}&top=30`)
-      .then((r) => r.json())
+    getGraphMail(folder, 30)
       .then((d) => setMessages(d.value ?? []))
       .catch(() => setMessages([]))
       .finally(() => setLoading(false));
@@ -77,10 +75,10 @@ export default function FounderEmailPage() {
   const openMessage = async (msg: MessageSummary) => {
     try {
       const [detail, atts] = await Promise.all([
-        fetch(`${API}/api/v1/founder/graph/mail/${msg.id}`).then((r) => r.json()),
-        fetch(`${API}/api/v1/founder/graph/mail/${msg.id}/attachments`).then((r) => r.json()),
+        getGraphMailMessage(msg.id),
+        getGraphMailAttachments(msg.id),
       ]);
-      setSelected(detail);
+      setSelected(detail as MessageDetail);
       setAttachments(atts.value ?? []);
       setView('inbox');
     } catch (err: unknown) {
@@ -93,19 +91,17 @@ export default function FounderEmailPage() {
     if (!composeForm.to || !composeForm.subject) { setSendError('To and Subject are required'); return; }
     setSending(true);
     try {
-      const resp = await fetch(`${API}/api/v1/founder/graph/mail/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: composeForm.to.split(',').map((s) => s.trim()).filter(Boolean),
-          cc: composeForm.cc ? composeForm.cc.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
-          subject: composeForm.subject,
-          body_html: composeForm.body.replace(/\n/g, '<br>'),
-        }),
+      await sendGraphMail({
+        to: composeForm.to.split(',').map((s) => s.trim()).filter(Boolean),
+        cc: composeForm.cc ? composeForm.cc.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        subject: composeForm.subject,
+        body_html: composeForm.body.replace(/\n/g, '<br>'),
       });
-      if (!resp.ok) { const e = await resp.json(); setSendError(e.detail ?? 'Send failed'); return; }
       setComposeForm({ to: '', cc: '', subject: '', body: '' });
       setView('inbox');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Send failed';
+      setSendError(msg);
     } finally {
       setSending(false);
     }
@@ -115,11 +111,7 @@ export default function FounderEmailPage() {
     if (!selected || !replyBody) return;
     setSending(true);
     try {
-      await fetch(`${API}/api/v1/founder/graph/mail/${selected.id}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment_html: replyBody.replace(/\n/g, '<br>') }),
-      });
+      await replyGraphMail(selected.id, { body_html: replyBody.replace(/\n/g, '<br>') });
       setReplyBody('');
       setView('inbox');
     } finally {
@@ -128,7 +120,7 @@ export default function FounderEmailPage() {
   };
 
   const downloadAttachment = (msgId: string, att: Attachment) => {
-    window.open(`${API}/api/v1/founder/graph/mail/${msgId}/attachments/${att.id}/download`, '_blank');
+    window.open(`/api/v1/founder/graph/mail/${msgId}/attachments/${att.id}/download`, '_blank');
   };
 
   const inputCls = 'w-full bg-bg-input border border-border-DEFAULT text-zinc-100 text-xs px-3 py-2 chamfer-4 focus:outline-none focus:border-orange';

@@ -78,6 +78,7 @@ module "networking" {
   private_app_subnet_cidrs  = var.private_app_subnet_cidrs
   private_data_subnet_cidrs = var.private_data_subnet_cidrs
   nat_gateway_mode          = var.nat_gateway_mode
+  interface_endpoint_services = var.interface_endpoint_services
   acm_certificate_arn       = module.acm.certificate_arn
   tags                      = local.common_tags
 }
@@ -233,6 +234,73 @@ module "observability" {
   tags                            = local.common_tags
 }
 
+# ─── 10b. Security & Compliance Control Plane ──────────────────────────────
+
+module "cloudtrail" {
+  source = "../../modules/cloudtrail"
+
+  environment      = var.environment
+  project          = var.project
+  alert_topic_arn  = module.observability.alert_topic_arn
+  audit_bucket_arn = module.s3.audit_bucket_arn
+  tags             = local.common_tags
+}
+
+module "guardduty" {
+  source = "../../modules/guardduty"
+
+  environment     = var.environment
+  project         = var.project
+  alert_topic_arn = module.observability.alert_topic_arn
+  tags            = local.common_tags
+}
+
+module "aws_config" {
+  source = "../../modules/aws-config"
+
+  environment             = var.environment
+  project                 = var.project
+  record_global_resources = var.aws_region == "us-east-1"
+  tags                    = local.common_tags
+}
+
+module "security_hub" {
+  source = "../../modules/security-hub"
+
+  environment          = var.environment
+  project              = var.project
+  alert_topic_arn      = module.observability.alert_topic_arn
+  enable_cis_standard  = true
+  enable_nist_standard = true
+  tags                 = local.common_tags
+}
+
+module "backup" {
+  source = "../../modules/backup"
+
+  environment          = var.environment
+  project              = var.project
+  alert_topic_arn      = module.observability.alert_topic_arn
+  dr_vault_arn         = ""
+  backup_resource_arns = []
+  tags                 = local.common_tags
+}
+
+module "vulnerability_scanning" {
+  source = "../../modules/vulnerability-scanning"
+
+  environment     = var.environment
+  project         = var.project
+  alert_topic_arn = module.observability.alert_topic_arn
+  enable_macie    = true
+  phi_bucket_ids = [
+    module.s3.docs_bucket_name,
+    module.s3.exports_bucket_name,
+    module.s3.audit_bucket_name,
+  ]
+  tags = local.common_tags
+}
+
 # ─── 11. Edge (CloudFront + Route53) ────────────────────────────────────────
 
 module "edge" {
@@ -287,6 +355,7 @@ module "telnyx_central_billing_line" {
   telnyx_api_key_secret_arn = module.secrets.app_secret_arn
   desired_tollfree_prefix   = var.central_billing_desired_tollfree_prefix
   existing_phone_e164       = var.central_billing_existing_phone_e164
+  cnam_display_name         = "FusionEMS"
   tags                      = local.common_tags
 }
 

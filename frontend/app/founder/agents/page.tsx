@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getAgentStreamUrl, sendAgentCommand } from '@/services/api';
 
 type Subnet = {
   name: string;
@@ -37,8 +38,7 @@ export default function AgentsIntelligenceMatrix() {
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || "";
-    const es = new EventSource(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/founder/agents/stream?token=${encodeURIComponent(token)}`);
+    const es = new EventSource(getAgentStreamUrl());
 
     es.onopen = () => setConnectionStatus("LINK ESTABLISHED");
     es.onerror = () => setConnectionStatus("SIGNAL LOST - RETRYING...");
@@ -106,15 +106,7 @@ export default function AgentsIntelligenceMatrix() {
     if (!commandInput.trim()) return;
     setIsSending(true);
     try {
-      const token = localStorage.getItem("token") || "";
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/founder/agents/command`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ command: commandInput }),
-      });
+      await sendAgentCommand({ command: commandInput });
       setCommandInput("");
     } catch(err) {
       console.error(err);

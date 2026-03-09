@@ -1,263 +1,218 @@
 'use client';
-import Link from 'next/link';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Calendar, Users, AlertTriangle, Clock, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import {
+  getSchedulingCoverageDashboard,
+  listShiftTemplates,
+  getSchedulingAIDrafts,
+  getSchedulingFatigueReport,
+} from '@/services/api';
 
-const DOMAIN_COLOR = 'var(--color-system-fleet)';
+interface CoverageDashboard {
+  total_slots?: number;
+  filled_slots?: number;
+  open_slots?: number;
+  coverage_percent?: number;
+}
 
-function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
-  return (
-    <div className="mb-4">
-      <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
-        {number} · {title}
+interface ShiftTemplate {
+  id: string;
+  name: string;
+  start_time: string;
+  end_time: string;
+  crew_required: number;
+  days_of_week?: string[];
+}
+
+interface AIDraft {
+  id: string;
+  shift_date: string;
+  crew_member: string;
+  shift_name: string;
+  ai_confidence?: number;
+  status: string;
+}
+
+interface FatigueEntry {
+  crew_member: string;
+  hours_last_48: number;
+  fatigue_risk: string;
+}
+
+export default function PWASchedulingPage() {
+  const [coverage, setCoverage] = useState<CoverageDashboard | null>(null);
+  const [templates, setTemplates] = useState<ShiftTemplate[]>([]);
+  const [drafts, setDrafts] = useState<AIDraft[]>([]);
+  const [fatigue, setFatigue] = useState<FatigueEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const results = await Promise.allSettled([
+          getSchedulingCoverageDashboard(),
+          listShiftTemplates(),
+          getSchedulingAIDrafts(),
+          getSchedulingFatigueReport(),
+        ]);
+        if (results[0].status === 'fulfilled') {
+          const d = results[0].value;
+          setCoverage(d?.data ?? d);
+        }
+        if (results[1].status === 'fulfilled') {
+          const t = results[1].value;
+          setTemplates(Array.isArray(t?.data) ? t.data : Array.isArray(t) ? t : []);
+        }
+        if (results[2].status === 'fulfilled') {
+          const d = results[2].value;
+          setDrafts(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
+        }
+        if (results[3].status === 'fulfilled') {
+          const f = results[3].value;
+          setFatigue(Array.isArray(f?.data) ? f.data : Array.isArray(f) ? f : []);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load scheduling data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500" />
       </div>
-      {sub && <p className="text-body text-zinc-500">{sub}</p>}
-    </div>
-  );
-}
+    );
+  }
 
-function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  if (error) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+      </div>
+    );
+  }
+
+  const pct = coverage?.coverage_percent ?? (coverage?.total_slots ? Math.round(((coverage.filled_slots ?? 0) / coverage.total_slots) * 100) : 0);
+  const highFatigue = fatigue.filter((f) => f.fatigue_risk === 'high').length;
+
   return (
-    <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className}`}
-      style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
-    >
-      {children}
-    </div>
-  );
-}
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center gap-3">
+        <Link href="/founder/pwa" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
+        <Calendar className="h-6 w-6 text-violet-400" />
+        <h1 className="text-2xl font-bold text-white">PWA Scheduling</h1>
+      </div>
 
-const badgeColors = {
-  ok: { bg: 'rgba(76,175,80,0.15)', color: 'var(--q-green)' },
-  warn: { bg: 'rgba(255,152,0,0.15)', color: 'var(--q-yellow)' },
-  error: { bg: 'rgba(229,57,53,0.15)', color: 'var(--q-red)' },
-  info: { bg: 'rgba(41,182,246,0.15)', color: 'var(--color-status-info)' },
-};
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Coverage', value: `${pct}%`, icon: Users, color: pct >= 90 ? 'green' : pct >= 70 ? 'yellow' : 'red' },
+          { label: 'Open Slots', value: coverage?.open_slots ?? 0, icon: Calendar, color: 'blue' },
+          { label: 'AI Drafts', value: drafts.length, icon: Clock, color: 'purple' },
+          { label: 'Fatigue Alerts', value: highFatigue, icon: AlertTriangle, color: highFatigue > 0 ? 'red' : 'green' },
+        ].map((kpi) => (
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
+            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+            <div className="text-2xl font-bold text-white">{kpi.value}</div>
+          </motion.div>
+        ))}
+      </div>
 
-function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
-  const s = badgeColors[status];
-  return (
-    <span
-      className="text-micro font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {label}
-    </span>
-  );
-}
-
-function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
-  return (
-    <Panel>
-      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
-      <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
-    </Panel>
-  );
-}
-
-function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
-  const pct = Math.min(100, (value / max) * 100);
-  return (
-    <div className="h-2  bg-zinc-950/[0.07] overflow-hidden w-full">
-      <div
-        className="h-full  transition-all duration-700"
-        style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
-      />
-    </div>
-  );
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.4 } }),
-};
-
-const scheduleRows = [
-  { unit: 'M-01', lead: 'J. Martinez', partner: 'T. Williams', start: '06:00', end: '18:00', status: 'active' },
-  { unit: 'M-03', lead: 'R. Chen', partner: 'A. Patel', start: '06:00', end: '18:00', status: 'active' },
-  { unit: 'M-07', lead: 'D. Thompson', partner: 'S. Nguyen', start: '06:00', end: '18:00', status: 'active' },
-  { unit: 'M-09', lead: 'K. Okafor', partner: 'L. Rivera', start: '12:00', end: '00:00', status: 'standby' },
-  { unit: 'M-12', lead: 'P. Vasquez', partner: 'M. Brooks', start: '12:00', end: '00:00', status: 'active' },
-  { unit: 'M-15', lead: 'E. Hoffman', partner: 'C. Tanaka', start: '18:00', end: '06:00', status: 'standby' },
-  { unit: 'M-18', lead: 'N. Davis', partner: 'TBD', start: '18:00', end: '06:00', status: 'open' },
-  { unit: 'M-21', lead: 'B. Reyes', partner: 'TBD', start: '00:00', end: '12:00', status: 'open' },
-];
-
-const schedStatusMap: Record<string, 'ok' | 'warn' | 'error' | 'info'> = {
-  active: 'ok',
-  standby: 'info',
-  open: 'error',
-};
-
-const complianceBars = [
-  { label: 'Minimum Staffing', value: 100, max: 100, color: 'var(--q-green)', display: '100%' },
-  { label: 'Credential Compliance', value: 97, max: 100, color: DOMAIN_COLOR, display: '97%' },
-  { label: 'Fatigue Score Avg', value: 2.1, max: 10, color: 'var(--q-yellow)', display: '2.1 / 10' },
-  { label: 'Coverage Rate', value: 93, max: 100, color: 'var(--color-system-billing)', display: '93%' },
-];
-
-const openShifts = [
-  { station: 'Station 4 — North', time: '18:00 – 06:00', cert: 'Paramedic (ALS)', id: 1 },
-  { station: 'Station 7 — Downtown', time: '00:00 – 12:00', cert: 'AEMT', id: 2 },
-];
-
-const fatigueRoster = [
-  { name: 'T. Williams', kss: 3, hours: 10 },
-  { name: 'J. Martinez', kss: 2, hours: 9 },
-  { name: 'D. Thompson', kss: 5, hours: 12 },
-  { name: 'A. Patel', kss: 4, hours: 11 },
-  { name: 'K. Okafor', kss: 7, hours: 14 },
-  { name: 'P. Vasquez', kss: 8, hours: 16 },
-];
-
-const kssColor = (k: number) => k < 4 ? 'var(--color-status-active)' : k <= 6 ? 'var(--color-status-warning)' : 'var(--color-brand-red)';
-const kssBadge = (k: number): 'ok' | 'warn' | 'error' => k < 4 ? 'ok' : k <= 6 ? 'warn' : 'error';
-
-const appFeatures = [
-  { name: 'Mobile Clock-In', enabled: true },
-  { name: 'Shift Swap Requests', enabled: true },
-  { name: 'OT Notifications', enabled: true },
-  { name: 'Coverage Alerts', enabled: true },
-  { name: 'Calendar Sync', enabled: true },
-  { name: 'Crew Messaging', enabled: true },
-];
-
-export default function SchedulingPage() {
-  return (
-    <div className="p-5 min-h-screen bg-black">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
-        <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
-          9 · PWA &amp; MOBILE
+      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+        <div className="p-4 border-b border-gray-700">
+          <h2 className="text-sm font-semibold text-white">Shift Templates</h2>
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Mobile Scheduling Interface</h1>
-        <p className="text-xs text-zinc-500 mt-1">Shift management · Coverage monitoring · Fatigue tracking</p>
-      </motion.div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+            <tr>
+              <th className="px-4 py-3 text-left">Template</th>
+              <th className="px-4 py-3 text-left">Start</th>
+              <th className="px-4 py-3 text-left">End</th>
+              <th className="px-4 py-3 text-left">Crew Required</th>
+              <th className="px-4 py-3 text-left">Days</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {templates.length === 0 ? (
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No shift templates configured.</td></tr>
+            ) : templates.map((t) => (
+              <tr key={t.id} className="hover:bg-gray-700/50">
+                <td className="px-4 py-3 text-white font-medium">{t.name}</td>
+                <td className="px-4 py-3 text-gray-300">{t.start_time}</td>
+                <td className="px-4 py-3 text-gray-300">{t.end_time}</td>
+                <td className="px-4 py-3 text-gray-300">{t.crew_required}</td>
+                <td className="px-4 py-3 text-gray-400">{t.days_of_week?.join(', ') ?? 'All'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* MODULE 1 — Shift Coverage Overview */}
-      <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 1" title="Shift Coverage Overview" sub="Current operational staffing state" />
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <StatCard label="Current Shifts" value={8} color={DOMAIN_COLOR} />
-          <StatCard label="Covered Units" value={12} color="var(--color-status-active)" />
-          <StatCard label="Open Shifts" value={2} color="var(--color-brand-red)" />
-          <StatCard label="On-Call" value={4} color="var(--color-status-warning)" />
-          <StatCard label="Overtime Hours" value={14} color="var(--color-system-compliance)" sub="Today" />
-        </div>
-      </motion.div>
-
-      {/* MODULE 2 — Today's Schedule Table */}
-      <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 2" title="Today's Schedule" sub="Active and upcoming unit assignments" />
-        <Panel>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-zinc-500 border-b border-border-subtle">
-                  {['Unit', 'Crew Lead', 'Partner', 'Shift Start', 'Shift End', 'Status'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-4 font-bold uppercase tracking-widest text-micro">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {scheduleRows.map((row, i) => (
-                  <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-2.5 pr-4 text-zinc-100 font-bold">{row.unit}</td>
-                    <td className="py-2.5 pr-4 text-zinc-100">{row.lead}</td>
-                    <td className="py-2.5 pr-4 text-zinc-400">{row.partner}</td>
-                    <td className="py-2.5 pr-4 text-zinc-400 font-mono">{row.start}</td>
-                    <td className="py-2.5 pr-4 text-zinc-400 font-mono">{row.end}</td>
-                    <td className="py-2.5"><Badge label={row.status} status={schedStatusMap[row.status]} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {drafts.length > 0 && (
+        <div className="bg-gray-800 border border-purple-500/30 rounded-lg overflow-hidden">
+          <div className="p-4 border-b border-gray-700">
+            <h2 className="text-sm font-semibold text-white">AI Schedule Drafts</h2>
           </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 3 — Schedule Compliance */}
-      <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 3" title="Schedule Compliance" sub="Regulatory and operational benchmarks" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {complianceBars.map((item, i) => (
-            <Panel key={i}>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-body font-bold text-zinc-100 uppercase tracking-widest">{item.label}</span>
-                <span className="text-body font-bold" style={{ color: item.color }}>{item.display}</span>
-              </div>
-              <ProgressBar value={item.value} max={item.max} color={item.color} />
-            </Panel>
-          ))}
+          <table className="w-full text-sm">
+            <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+              <tr>
+                <th className="px-4 py-3 text-left">Crew</th>
+                <th className="px-4 py-3 text-left">Shift</th>
+                <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3 text-left">Confidence</th>
+                <th className="px-4 py-3 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {drafts.map((d) => (
+                <tr key={d.id} className="hover:bg-gray-700/50">
+                  <td className="px-4 py-3 text-white">{d.crew_member}</td>
+                  <td className="px-4 py-3 text-gray-300">{d.shift_name}</td>
+                  <td className="px-4 py-3 text-gray-300">{d.shift_date}</td>
+                  <td className="px-4 py-3 text-gray-300">{d.ai_confidence ? `${(d.ai_confidence * 100).toFixed(0)}%` : '—'}</td>
+                  <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-900/50 text-purple-300">{d.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </motion.div>
+      )}
 
-      {/* MODULE 4 — Open Shift Alerts */}
-      <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 4" title="Open Shift Alerts" sub="Unfilled shifts requiring immediate coverage" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {openShifts.map((shift) => (
-            <Panel key={shift.id}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-xs font-bold text-zinc-100 mb-1">{shift.station}</div>
-                  <div className="text-body text-zinc-400 mb-1 font-mono">{shift.time}</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-micro text-zinc-500 uppercase tracking-widest">Required:</span>
-                    <Badge label={shift.cert} status="info" />
-                  </div>
-                </div>
-                <button
-                  className="text-micro font-bold uppercase tracking-widest px-3 py-1.5 chamfer-4 border shrink-0 transition-colors"
-                  style={{ borderColor: 'var(--color-status-active)', color: 'var(--q-green)', background: 'rgba(76,175,80,0.08)' }}
-                  onClick={() => {}}
-                >
-                  Fill Shift
-                </button>
-              </div>
-            </Panel>
-          ))}
+      {fatigue.length > 0 && (
+        <div className="bg-gray-800 border border-red-500/30 rounded-lg overflow-hidden">
+          <div className="p-4 border-b border-gray-700">
+            <h2 className="text-sm font-semibold text-white">Fatigue Report</h2>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+              <tr>
+                <th className="px-4 py-3 text-left">Crew Member</th>
+                <th className="px-4 py-3 text-left">Hours (48h)</th>
+                <th className="px-4 py-3 text-left">Risk Level</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {fatigue.map((f, i) => (
+                <tr key={i} className="hover:bg-gray-700/50">
+                  <td className="px-4 py-3 text-white">{f.crew_member}</td>
+                  <td className="px-4 py-3 text-gray-300">{f.hours_last_48}h</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${f.fatigue_risk === 'high' ? 'bg-red-900/50 text-red-300' : f.fatigue_risk === 'medium' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-green-900/50 text-green-300'}`}>{f.fatigue_risk}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </motion.div>
-
-      {/* MODULE 5 — Fatigue Risk Monitor */}
-      <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 5" title="Fatigue Risk Monitor" sub="KSS fatigue scoring — green &lt;4 | yellow 4-6 | red &gt;6" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {fatigueRoster.map((crew, i) => (
-            <Panel key={i}>
-              <div className="flex justify-between items-start mb-2">
-                <div className="text-xs font-bold text-zinc-100">{crew.name}</div>
-                <Badge label={`KSS ${crew.kss}`} status={kssBadge(crew.kss)} />
-              </div>
-              <div className="mb-2">
-                <ProgressBar value={crew.kss} max={10} color={kssColor(crew.kss)} />
-              </div>
-              <div className="flex justify-between text-micro">
-                <span className="text-zinc-500">Hours on duty</span>
-                <span style={{ color: crew.hours >= 14 ? 'var(--color-brand-red)' : 'rgba(255,255,255,0.55)' }} className="font-bold">{crew.hours}h</span>
-              </div>
-            </Panel>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* MODULE 6 — Scheduling App Features */}
-      <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
-        <SectionHeader number="MOD 6" title="Scheduling App Features" sub="Mobile feature availability status" />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {appFeatures.map((feat, i) => (
-            <Panel key={i} className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-100">{feat.name}</span>
-              <Badge label={feat.enabled ? 'Enabled' : 'Disabled'} status={feat.enabled ? 'ok' : 'error'} />
-            </Panel>
-          ))}
-        </div>
-      </motion.div>
-
-        <Link href="/founder" className="text-xs text-orange-dim hover:text-[#FF4D00] transition-colors">
-        &larr; Back to Founder Command OS
-      </Link>
+      )}
     </div>
   );
 }

@@ -42,7 +42,7 @@ resource "aws_sns_topic_subscription" "email" {
 resource "aws_cloudwatch_log_group" "audit" {
   name              = "/audit/${local.name_prefix}"
   retention_in_days = var.log_retention_days
-  kms_key_id        = var.kms_key_arn != "" ? var.kms_key_arn : "alias/aws/logs"
+  kms_key_id        = var.kms_key_arn != "" ? var.kms_key_arn : null
 
   tags = local.common_tags
 }

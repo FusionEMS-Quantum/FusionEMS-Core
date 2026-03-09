@@ -81,6 +81,23 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: python scripts/ci_gate_route_matrix.py
 
+  compliance-program:
+    name: Compliance Program Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Validate compliance artifacts
+        run: python scripts/validate_compliance_program.py
+      - name: Upload compliance evidence manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-evidence-manifest
+          path: artifacts/compliance-evidence-manifest.json
+          if-no-files-found: error
+
   security-scan:
     name: Security Scan (Checkov)
     runs-on: ubuntu-latest
@@ -196,7 +213,7 @@ jobs:
   deploy-gate:
     name: Deploy Gate
     runs-on: ubuntu-latest
-    needs: [backend-lint, backend-test, ci-gates, security-scan, frontend-build, frontend-test, migration-validate, docker-build]
+    needs: [backend-lint, backend-test, ci-gates, compliance-program, security-scan, frontend-build, frontend-test, migration-validate, docker-build]
     if: github.ref == 'refs/heads/main'
     steps:
       - run: echo "All gates passed — deploy approved"

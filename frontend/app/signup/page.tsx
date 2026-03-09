@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+import {
+  getPublicPricingCatalog,
+  lookupPublicOnboardingNpi,
+  submitPublicOnboardingApplication,
+} from '@/services/api';
 
 interface SchedulingTier {
   code: string;
@@ -115,12 +118,10 @@ export default function SignupPage() {
     setCatalogLoading(true);
     setCatalogError('');
     try {
-      const res = await fetch(`${API_BASE}/public/pricing/catalog`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Catalog = await res.json();
+      const data = await getPublicPricingCatalog<Catalog>();
       setCatalog(data);
-    } catch (e: any) {
-      setCatalogError(e.message || 'Failed to load pricing');
+    } catch (e: unknown) {
+      setCatalogError(e instanceof Error ? e.message : 'Failed to load pricing');
     } finally {
       setCatalogLoading(false);
     }
@@ -149,16 +150,11 @@ export default function SignupPage() {
     setNpiLookupLoading(true);
     setNpiLookupError('');
     try {
-      const res = await fetch(`${API_BASE}/public/onboarding/nppes/lookup/${encodeURIComponent(npiNumber.trim())}`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail || `Lookup failed (${res.status})`);
-      }
-      const data = await res.json();
+      const data = await lookupPublicOnboardingNpi<{ legal_organization_name?: string; state?: string }>(npiNumber.trim());
       if (!agencyName && data?.legal_organization_name) setAgencyName(data.legal_organization_name);
       if (!state && data?.state) setState(data.state);
-    } catch (e: any) {
-      setNpiLookupError(e.message || 'NPI lookup failed');
+    } catch (e: unknown) {
+      setNpiLookupError(e instanceof Error ? e.message : 'NPI lookup failed');
     } finally {
       setNpiLookupLoading(false);
     }
@@ -194,16 +190,11 @@ export default function SignupPage() {
         collector_vendor_name: collectorVendor,
         placement_method: placementMethod,
       };
-      const res = await fetch(`${API_BASE}/public/onboarding/apply`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b?.detail || `Error ${res.status}`); }
-      const data = await res.json();
+      const data = await submitPublicOnboardingApplication<{ application_id?: string; id?: string }>(payload);
       localStorage.setItem('qs_app_id', data.application_id || data.id || '');
       localStorage.setItem('qs_agency_name', agencyName);
       router.push('/signup/legal');
-    } catch (e: any) { setError(e.message); }
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Failed to submit onboarding application'); }
     finally { setLoading(false); }
   }
 

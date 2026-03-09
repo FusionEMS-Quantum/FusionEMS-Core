@@ -14,8 +14,26 @@ import {
   type DomainHealth,
 } from '@/components/shells/FounderCommand';
 import type { SeverityLevel, SystemDomain } from '@/lib/design-system/tokens';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import {
+  getARConcentrationRisk,
+  getBillingAlerts,
+  getBillingARAgingReport,
+  getBillingExecutiveSummary,
+  getBillingHealth,
+  getBillingKPIs,
+  getComplianceCommandSummary,
+  getDenialHeatmap,
+  getFounderComplianceStatus,
+  getFounderDashboardMetrics,
+  getFounderGrowthSetupWizard,
+  getFounderGrowthSummary,
+  getFounderOpsSummary,
+  getMarginRiskByTenant,
+  getReleaseReadiness,
+  getRevenueLeakage,
+  getRevenueTrend,
+  startFounderLaunchOrchestrator,
+} from '@/services/api';
 
 type FetchStatus = 'idle' | 'loading' | 'ready' | 'error';
 type TelemetryModuleKey =
@@ -23,6 +41,8 @@ type TelemetryModuleKey =
   | 'arAging'
   | 'compliance'
   | 'ops'
+  | 'growthSummary'
+  | 'growthWizard'
   | 'billingHealth'
   | 'billingKpis'
   | 'billingExecutive'
@@ -30,7 +50,9 @@ type TelemetryModuleKey =
   | 'billingConcentration'
   | 'billingDenials'
   | 'billingAlerts'
-  | 'revenueTrend';
+  | 'revenueTrend'
+  | 'releaseReadiness'
+  | 'marginRisk';
 
 type FounderDashboardMetrics = {
   mrr_cents: number;
@@ -157,11 +179,101 @@ type RevenueTrendSummary = {
   forecast?: Array<{ month: string; projected_cents: number; confidence: string }>;
 };
 
+type ReleaseReadinessGate = {
+  name: string;
+  passed: boolean;
+  detail: string;
+};
+
+type ReleaseReadinessSummary = {
+  ready: boolean;
+  score: string;
+  passed_count: number;
+  total_count: number;
+  verdict: string;
+  gates: ReleaseReadinessGate[];
+};
+
+type MarginRiskTenant = {
+  tenant_id: string;
+  name: string;
+  billing_tier: string | null;
+  total_claims: number;
+  revenue_cents: number;
+  denied_count: number;
+  denial_rate_pct: number;
+  net_margin_cents: number;
+  margin_pct: number;
+  risk_level: string;
+};
+
+type MarginRiskSummary = {
+  tenants: MarginRiskTenant[];
+  total_tenants: number;
+  high_risk_count: number;
+  as_of: string;
+};
+
+type GrowthSummaryMetric = {
+  key: string;
+  value: number;
+};
+
+type FounderGrowthSummary = {
+  generated_at: string;
+  conversion_events_total: number;
+  proposals_total: number;
+  proposals_pending: number;
+  active_subscriptions: number;
+  proposal_to_paid_conversion_pct: number;
+  pending_pipeline_cents: number;
+  active_mrr_cents: number;
+  pipeline_to_mrr_ratio: number;
+  graph_mailbox_configured: boolean;
+  funnel_stage_counts: GrowthSummaryMetric[];
+  lead_tier_distribution: GrowthSummaryMetric[];
+  lead_score_buckets: GrowthSummaryMetric[];
+};
+
+type GrowthConnectionStatus = {
+  service_key: string;
+  label: string;
+  required: boolean;
+  connected: boolean;
+  install_state: string;
+  permissions_state: string;
+  permission_errors: string[];
+  token_state: string;
+  health_state: string;
+  retry_count: number;
+  blocking_reason?: string | null;
+};
+
+type FounderGrowthSetupWizard = {
+  generated_at: string;
+  autopilot_ready: boolean;
+  blocked_items: string[];
+  services: GrowthConnectionStatus[];
+};
+
+type LaunchMode = 'autopilot' | 'approval-first' | 'draft-only';
+
+type LaunchOrchestratorRun = {
+  run_id: string;
+  mode: LaunchMode;
+  queued_sync_jobs: number;
+  blocked_items: string[];
+  status: 'started' | 'blocked';
+  generated_at: string;
+};
+
 const TELEMETRY_MODULES: TelemetryModuleKey[] = [
   'dashboard',
   'arAging',
   'compliance',
   'ops',
+  'growthSummary',
+  'growthWizard',
   'billingHealth',
   'billingKpis',
   'billingExecutive',
@@ -170,6 +282,8 @@ const TELEMETRY_MODULES: TelemetryModuleKey[] = [
   'billingDenials',
   'billingAlerts',
   'revenueTrend',
+  'releaseReadiness',
+  'marginRisk',
 ];
 
 const MODULE_LABELS: Record<TelemetryModuleKey, string> = {
@@ -177,6 +291,8 @@ const MODULE_LABELS: Record<TelemetryModuleKey, string> = {
   arAging: 'A/R aging',
   compliance: 'Compliance status',
   ops: 'Operations summary',
+  growthSummary: 'Growth runtime summary',
+  growthWizard: 'Growth setup wizard',
   billingHealth: 'Billing health',
   billingKpis: 'Billing KPIs',
   billingExecutive: 'Billing executive summary',
@@ -185,6 +301,8 @@ const MODULE_LABELS: Record<TelemetryModuleKey, string> = {
   billingDenials: 'Denial heatmap',
   billingAlerts: 'Billing alerts',
   revenueTrend: 'Revenue trend',
+  releaseReadiness: 'Release readiness',
+  marginRisk: 'Margin risk',
 };
 
 const INITIAL_MODULE_STATUS: Record<TelemetryModuleKey, FetchStatus> = {
@@ -192,6 +310,8 @@ const INITIAL_MODULE_STATUS: Record<TelemetryModuleKey, FetchStatus> = {
   arAging: 'idle',
   compliance: 'idle',
   ops: 'idle',
+  growthSummary: 'idle',
+  growthWizard: 'idle',
   billingHealth: 'idle',
   billingKpis: 'idle',
   billingExecutive: 'idle',
@@ -200,6 +320,8 @@ const INITIAL_MODULE_STATUS: Record<TelemetryModuleKey, FetchStatus> = {
   billingDenials: 'idle',
   billingAlerts: 'idle',
   revenueTrend: 'idle',
+  releaseReadiness: 'idle',
+  marginRisk: 'idle',
 };
 
 function clampScore(value: number): number {
@@ -354,6 +476,12 @@ export default function FounderExecutivePage() {
   const [complianceStatus, setComplianceStatus] = useState<FounderComplianceStatus | null>(null);
   const [complianceCommandSummary, setComplianceCommandSummary] = useState<ComplianceCommandSummaryBrief | null>(null);
   const [opsData, setOpsData] = useState<FounderOpsSummary | null>(null);
+  const [growthSummary, setGrowthSummary] = useState<FounderGrowthSummary | null>(null);
+  const [growthWizard, setGrowthWizard] = useState<FounderGrowthSetupWizard | null>(null);
+  const [launchMode, setLaunchMode] = useState<LaunchMode>('approval-first');
+  const [launchBusy, setLaunchBusy] = useState(false);
+  const [launchRun, setLaunchRun] = useState<LaunchOrchestratorRun | null>(null);
+  const [launchError, setLaunchError] = useState<string | null>(null);
   const [billingHealth, setBillingHealth] = useState<BillingHealthSummary | null>(null);
   const [billingKpis, setBillingKpis] = useState<BillingKpisSummary | null>(null);
   const [billingExec, setBillingExec] = useState<BillingExecutiveSummary | null>(null);
@@ -362,28 +490,20 @@ export default function FounderExecutivePage() {
   const [billingDenials, setBillingDenials] = useState<BillingDenialHeatmap | null>(null);
   const [billingAlerts, setBillingAlerts] = useState<BillingAlertsSummary | null>(null);
   const [revenueTrend, setRevenueTrend] = useState<RevenueTrendSummary | null>(null);
+  const [releaseReadiness, setReleaseReadiness] = useState<ReleaseReadinessSummary | null>(null);
+  const [marginRisk, setMarginRisk] = useState<MarginRiskSummary | null>(null);
   const [moduleStatus, setModuleStatus] = useState<Record<TelemetryModuleKey, FetchStatus>>(INITIAL_MODULE_STATUS);
   const [moduleErrors, setModuleErrors] = useState<Partial<Record<TelemetryModuleKey, string>>>({});
 
   const fetchAllTelemetry = useCallback((): void => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-    const fetchJson = async <T,>(url: string): Promise<T> => {
-      const res = await fetch(url, { headers });
-      if (!res.ok) {
-        throw new Error(`Request failed (${res.status}) ${url}`);
-      }
-      return res.json() as Promise<T>;
-    };
-
     const runFetch = async <T,>(
       key: TelemetryModuleKey,
-      url: string,
+      loader: () => Promise<T>,
       setter: (_payload: T) => void,
     ): Promise<void> => {
       setModuleStatus((prev) => ({ ...prev, [key]: 'loading' }));
       try {
-        const payload = await fetchJson<T>(url);
+        const payload = await loader();
         setter(payload);
         setModuleStatus((prev) => ({ ...prev, [key]: 'ready' }));
         setModuleErrors((prev) => {
@@ -399,27 +519,55 @@ export default function FounderExecutivePage() {
       }
     };
 
-    void runFetch<FounderDashboardMetrics>('dashboard', `${API}/api/v1/founder/dashboard`, setMetrics);
-    void runFetch<ArAgingSummary>('arAging', `${API}/api/v1/billing/ar-aging`, setAging);
-    void runFetch<FounderComplianceStatus>('compliance', `${API}/api/v1/founder/compliance/status`, setComplianceStatus);
+    void runFetch<FounderDashboardMetrics>('dashboard', getFounderDashboardMetrics, setMetrics);
+    void runFetch<ArAgingSummary>('arAging', getBillingARAgingReport, setAging);
+    void runFetch<FounderComplianceStatus>('compliance', getFounderComplianceStatus, setComplianceStatus);
     // Also fetch the 7-domain compliance command summary for enriched domain health
-    fetchJson<ComplianceCommandSummaryBrief>(`${API}/api/v1/compliance/command/summary?days=30`)
+    getComplianceCommandSummary(30)
       .then(setComplianceCommandSummary)
       .catch(() => { /* graceful degradation: fall back to basic compliance status */ });
-    void runFetch<FounderOpsSummary>('ops', `${API}/api/v1/founder/ops/summary`, setOpsData);
-    void runFetch<BillingHealthSummary>('billingHealth', `${API}/api/v1/billing-command/billing-health`, setBillingHealth);
-    void runFetch<BillingKpisSummary>('billingKpis', `${API}/api/v1/billing-command/billing-kpis`, setBillingKpis);
-    void runFetch<BillingExecutiveSummary>('billingExecutive', `${API}/api/v1/billing-command/executive-summary`, setBillingExec);
-    void runFetch<BillingLeakageSummary>('billingLeakage', `${API}/api/v1/billing-command/revenue-leakage`, setBillingLeakage);
-    void runFetch<BillingArConcentration>('billingConcentration', `${API}/api/v1/billing-command/ar-concentration-risk`, setBillingArConcentration);
-    void runFetch<BillingDenialHeatmap>('billingDenials', `${API}/api/v1/billing-command/denial-heatmap`, setBillingDenials);
-    void runFetch<BillingAlertsSummary>('billingAlerts', `${API}/api/v1/billing-command/billing-alerts`, setBillingAlerts);
-    void runFetch<RevenueTrendSummary>('revenueTrend', `${API}/api/v1/billing-command/revenue-trend`, setRevenueTrend);
+    void runFetch<FounderOpsSummary>('ops', getFounderOpsSummary, setOpsData);
+    void runFetch<FounderGrowthSummary>('growthSummary', getFounderGrowthSummary, setGrowthSummary);
+    void runFetch<FounderGrowthSetupWizard>('growthWizard', getFounderGrowthSetupWizard, setGrowthWizard);
+    void runFetch<BillingHealthSummary>('billingHealth', getBillingHealth, setBillingHealth);
+    void runFetch<BillingKpisSummary>('billingKpis', getBillingKPIs, setBillingKpis);
+    void runFetch<BillingExecutiveSummary>('billingExecutive', getBillingExecutiveSummary, setBillingExec);
+    void runFetch<BillingLeakageSummary>('billingLeakage', getRevenueLeakage, setBillingLeakage);
+    void runFetch<BillingArConcentration>('billingConcentration', getARConcentrationRisk, setBillingArConcentration);
+    void runFetch<BillingDenialHeatmap>('billingDenials', getDenialHeatmap, setBillingDenials);
+    void runFetch<BillingAlertsSummary>('billingAlerts', getBillingAlerts, setBillingAlerts);
+    void runFetch<RevenueTrendSummary>('revenueTrend', getRevenueTrend, setRevenueTrend);
+    void runFetch<ReleaseReadinessSummary>('releaseReadiness', getReleaseReadiness, setReleaseReadiness);
+    void runFetch<MarginRiskSummary>('marginRisk', getMarginRiskByTenant, setMarginRisk);
   }, []);
 
   useEffect(() => {
     fetchAllTelemetry();
   }, [fetchAllTelemetry]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      fetchAllTelemetry();
+    }, 15000);
+    return () => window.clearInterval(intervalId);
+  }, [fetchAllTelemetry]);
+
+  const startLaunchOrchestrator = useCallback(async (): Promise<void> => {
+    setLaunchBusy(true);
+    setLaunchError(null);
+    try {
+      const payload = await startFounderLaunchOrchestrator({ mode: launchMode, auto_queue_sync_jobs: true }) as LaunchOrchestratorRun;
+      setLaunchRun(payload);
+      if (payload.status === 'blocked') {
+        setLaunchError(`Launch blocked: ${payload.blocked_items.join(' · ') || 'setup prerequisites not satisfied'}`);
+      }
+      fetchAllTelemetry();
+    } catch (e: unknown) {
+      setLaunchError(e instanceof Error ? e.message : 'Unable to start launch orchestrator');
+    } finally {
+      setLaunchBusy(false);
+    }
+  }, [fetchAllTelemetry, launchMode]);
 
   const mrr = metrics?.mrr_cents;
   const arr = mrr != null ? mrr * 12 : null;
@@ -513,6 +661,22 @@ export default function FounderExecutivePage() {
       severity: mapOpsSeverityToActionSeverity(action.severity),
       href: action.domain === 'billing' ? '/billing-command' : '/founder/ops/command',
     })),
+    ...((growthWizard?.blocked_items ?? []).slice(0, 4).map((item, index) => ({
+      id: `growth-wizard-blocked-${index}`,
+      label: item,
+      domain: 'ops' as const,
+      severity: 'BLOCKING' as const,
+      href: '/founder/integration-command',
+    }))),
+    ...(growthSummary && !growthSummary.graph_mailbox_configured
+      ? [{
+          id: 'growth-graph-missing',
+          label: 'Microsoft 365 Graph mailbox credentials missing for founder outbound automation',
+          domain: 'support' as const,
+          severity: 'HIGH' as const,
+          href: '/founder/tools/email',
+        }]
+      : []),
     ...(billingAlerts?.alerts ?? []).map((alert, index) => ({
       id: `billing-alert-${index}-${alert.type}`,
       label: `${alert.type.replaceAll('_', ' ')} (${alert.count})`,
@@ -527,7 +691,7 @@ export default function FounderExecutivePage() {
       severity: 'BLOCKING' as const,
       href: '/founder',
     })),
-  ], [billingAlerts?.alerts, degradedModules, opsData?.top_actions]);
+  ], [billingAlerts?.alerts, degradedModules, growthSummary, growthWizard?.blocked_items, opsData?.top_actions]);
 
   const founderNextActions = useMemo<NextAction[]>(() => {
     const actions: NextAction[] = commandTopActions.slice(0, 8).map((action) => ({
@@ -628,6 +792,10 @@ export default function FounderExecutivePage() {
   const concentrationTop = billingArConcentration?.concentration?.[0];
   const arConcentrationDisplay = concentrationTop ? `${concentrationTop.payer} ${concentrationTop.pct}%` : '—';
   const arAtRiskDisplay = billingArConcentration?.total_ar_cents != null ? `$${(billingArConcentration.total_ar_cents / 100).toLocaleString()}` : '—';
+  const requiredGrowthServices = growthWizard?.services.filter((service) => service.required) ?? [];
+  const requiredGrowthConnected = requiredGrowthServices.filter((service) => service.connected).length;
+  const growthMrrDisplay = growthSummary ? `$${(growthSummary.active_mrr_cents / 100).toLocaleString()}` : '—';
+  const growthPipelineDisplay = growthSummary ? `$${(growthSummary.pending_pipeline_cents / 100).toLocaleString()}` : '—';
 
   return (
     <div className="p-5 space-y-8 min-h-screen">
@@ -704,6 +872,124 @@ export default function FounderExecutivePage() {
       </div>
 
       <NextBestActionCard actions={founderNextActions} title="Founder Command Next Best Actions" maxVisible={5} />
+
+      <div>
+        <SectionHeader
+          number="X"
+          title="Growth Engine Warp Core"
+          sub="Live autopilot readiness, connected-service health, and launch execution"
+        />
+        {moduleStatus.growthSummary === 'loading' || moduleStatus.growthWizard === 'loading' ? (
+          <QuantumEmptyState
+            title="Loading growth command telemetry..."
+            description="Pulling live growth summary and setup wizard status from founder integration APIs."
+            icon="activity"
+          />
+        ) : moduleStatus.growthSummary === 'error' || moduleStatus.growthWizard === 'error' ? (
+          <QuantumEmptyState
+            title="Growth engine telemetry unavailable"
+            description={moduleErrors.growthSummary || moduleErrors.growthWizard || 'Growth command endpoints are not responding.'}
+            icon="activity"
+          />
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-4">
+            <div
+              className="relative overflow-hidden border p-5"
+              style={{
+                borderColor: growthWizard?.autopilot_ready ? 'rgba(34,197,94,0.35)' : 'rgba(255,77,0,0.4)',
+                background: 'radial-gradient(circle at 20% 0%, rgba(255,77,0,0.16), transparent 55%), #0A0A0B',
+                clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)',
+              }}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <div className="text-micro uppercase tracking-wider text-zinc-400">Autopilot Readiness</div>
+                  <div className={`text-lg font-black ${growthWizard?.autopilot_ready ? 'text-green-300' : 'text-orange-300'}`}>
+                    {growthWizard?.autopilot_ready ? 'READY FOR AUTOPILOT' : 'BLOCKED — HUMAN SETUP REQUIRED'}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={launchMode}
+                    onChange={(event) => setLaunchMode(event.target.value as LaunchMode)}
+                    className="h-8 bg-black/40 border border-white/20 px-2 text-xs text-zinc-100"
+                  >
+                    <option value="autopilot">autopilot</option>
+                    <option value="approval-first">approval-first</option>
+                    <option value="draft-only">draft-only</option>
+                  </select>
+                  <button
+                    onClick={() => { void startLaunchOrchestrator(); }}
+                    disabled={launchBusy}
+                    className="h-8 px-3 bg-orange-600/25 border border-orange-400/50 text-orange-200 text-xs font-semibold hover:bg-orange-600/35 disabled:opacity-50"
+                  >
+                    {launchBusy ? 'Launching…' : 'Start Launch Orchestrator'}
+                  </button>
+                </div>
+              </div>
+
+              {launchError && (
+                <div className="mb-3 px-3 py-2 border border-red-500/40 bg-red-500/10 text-xs text-red-200">
+                  {launchError}
+                </div>
+              )}
+
+              {launchRun && (
+                <div className="mb-3 px-3 py-2 border border-white/20 bg-black/30 text-xs text-zinc-300">
+                  Run {launchRun.run_id.slice(0, 8)} · {launchRun.status.toUpperCase()} · mode {launchRun.mode} · queued sync jobs {launchRun.queued_sync_jobs}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <KpiCard label="Active MRR" value={growthMrrDisplay} sub="live subscription base" trend="up" color="var(--color-status-info)" />
+                <KpiCard label="Pipeline" value={growthPipelineDisplay} sub="pending proposal value" trend="up" color="var(--color-status-warning)" />
+                <KpiCard label="Conversion" value={`${growthSummary?.proposal_to_paid_conversion_pct ?? 0}%`} sub="proposal → paid" trend="flat" color="var(--color-status-active)" />
+                <KpiCard label="Graph Mailbox" value={growthSummary?.graph_mailbox_configured ? 'ONLINE' : 'MISSING'} sub="outbound founder email" trend={growthSummary?.graph_mailbox_configured ? 'up' : 'down'} color={growthSummary?.graph_mailbox_configured ? 'var(--color-status-active)' : 'var(--color-brand-red)'} />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs">
+                <span className="text-zinc-400">Required services connected</span>
+                <span className="font-bold text-zinc-100">{requiredGrowthConnected}/{requiredGrowthServices.length}</span>
+                <span className="text-zinc-500">•</span>
+                <span className="text-zinc-400">Blocked items</span>
+                <span className={`font-bold ${(growthWizard?.blocked_items.length ?? 0) > 0 ? 'text-red-300' : 'text-green-300'}`}>{growthWizard?.blocked_items.length ?? 0}</span>
+              </div>
+
+              {(growthWizard?.blocked_items.length ?? 0) > 0 && (
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  {growthWizard?.blocked_items.slice(0, 4).map((item) => (
+                    <div key={item} className="px-3 py-2 border border-red-500/25 bg-red-500/[0.08] text-xs text-red-200">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+              <div className="text-micro uppercase tracking-wider text-zinc-500 mb-3">Connected Services Matrix</div>
+              <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                {(growthWizard?.services ?? []).map((service) => (
+                  <div key={service.service_key} className="border border-white/10 bg-black/20 p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-semibold text-zinc-100">{service.label}</div>
+                      <div className={`text-[10px] uppercase tracking-wider ${service.connected ? 'text-green-300' : 'text-red-300'}`}>
+                        {service.connected ? 'connected' : 'disconnected'}
+                      </div>
+                    </div>
+                    <div className="mt-1 text-[11px] text-zinc-400">
+                      {service.install_state} · perms {service.permissions_state} · token {service.token_state} · health {service.health_state} · retry {service.retry_count}
+                    </div>
+                    {service.required && !service.connected && (
+                      <div className="mt-1 text-[11px] text-red-200">required service is not ready</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* MODULE 1–4 · Revenue & Tenant Metrics */}
       <div>
@@ -1147,6 +1433,124 @@ export default function FounderExecutivePage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* MODULE 16 · Release Readiness Gate */}
+      <div>
+        <SectionHeader number="16" title="Release Readiness Gate" sub="Infrastructure · integrations · deployment prerequisites" />
+        {moduleStatus.releaseReadiness === 'loading' || moduleStatus.releaseReadiness === 'idle' ? (
+          <QuantumEmptyState title="Checking release gates..." description="Querying platform release readiness endpoint." icon="activity" />
+        ) : moduleStatus.releaseReadiness === 'error' ? (
+          <QuantumEmptyState
+            title="Release readiness unavailable"
+            description={moduleErrors.releaseReadiness ?? 'Release gate endpoint is not responding.'}
+            icon="activity"
+          />
+        ) : releaseReadiness ? (
+          <div className="bg-[#0A0A0B] border p-4" style={{
+            borderColor: releaseReadiness.ready ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)',
+            clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)',
+          }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className={`text-xl font-black ${releaseReadiness.ready ? 'text-status-active' : 'text-red-bright'}`}>
+                  {releaseReadiness.ready ? '✓' : '✗'}
+                </span>
+                <div>
+                  <div className={`text-sm font-bold ${releaseReadiness.ready ? 'text-status-active' : 'text-red-bright'}`}>
+                    {releaseReadiness.verdict}
+                  </div>
+                  <div className="text-body text-zinc-500">Gates passed: {releaseReadiness.score}</div>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+              {releaseReadiness.gates.map((gate) => (
+                <div
+                  key={gate.name}
+                  className="flex items-center gap-2 px-3 py-2 border"
+                  style={{
+                    borderColor: gate.passed ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
+                    background: gate.passed ? 'rgba(34,197,94,0.05)' : 'rgba(239,68,68,0.05)',
+                  }}
+                >
+                  <span className={`w-2 h-2 flex-shrink-0 ${gate.passed ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-300">
+                      {gate.name.replaceAll('_', ' ')}
+                    </div>
+                    <div className="text-[9px] text-zinc-500">{gate.detail}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <QuantumEmptyState title="No readiness data" description="Release gate response was empty." icon="activity" />
+        )}
+      </div>
+
+      {/* MODULE 17 · Margin Risk by Tenant */}
+      <div>
+        <SectionHeader number="17" title="Margin Risk by Tenant" sub="Revenue vs cost exposure · per-tenant profitability" />
+        {moduleStatus.marginRisk === 'loading' || moduleStatus.marginRisk === 'idle' ? (
+          <QuantumEmptyState title="Loading margin analysis..." description="Computing per-tenant margin risk." icon="activity" />
+        ) : moduleStatus.marginRisk === 'error' ? (
+          <QuantumEmptyState
+            title="Margin risk unavailable"
+            description={moduleErrors.marginRisk ?? 'Margin risk analytics endpoint is not responding.'}
+            icon="activity"
+          />
+        ) : marginRisk && marginRisk.tenants.length > 0 ? (
+          <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 overflow-x-auto" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-micro font-bold uppercase tracking-widest text-zinc-500">
+                {marginRisk.total_tenants} tenants · {marginRisk.high_risk_count} at risk
+              </div>
+              <span className="text-body text-zinc-500">as of {marginRisk.as_of?.slice(0, 10)}</span>
+            </div>
+            <table className="w-full min-w-[700px] text-xs">
+              <thead>
+                <tr>
+                  <th className="text-left text-micro uppercase tracking-wider text-zinc-500 pb-2 pr-2 font-semibold">Tenant</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Claims</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Revenue</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Denial %</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Net Margin</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Margin %</th>
+                  <th className="text-center text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Risk</th>
+                </tr>
+              </thead>
+              <tbody>
+                {marginRisk.tenants.map((t) => {
+                  const riskColor = t.risk_level === 'critical' ? 'var(--color-brand-red)' : t.risk_level === 'high' ? '#FF4D00' : t.risk_level === 'medium' ? 'var(--color-status-warning)' : 'var(--color-status-active)';
+                  return (
+                    <tr key={t.tenant_id} className="border-b border-white/5 last:border-0">
+                      <td className="text-zinc-300 pr-2 py-1.5 whitespace-nowrap">{t.name}</td>
+                      <td className="text-zinc-100 text-right px-1 py-1.5">{t.total_claims}</td>
+                      <td className="text-zinc-100 text-right px-1 py-1.5">${(t.revenue_cents / 100).toLocaleString()}</td>
+                      <td className="text-zinc-100 text-right px-1 py-1.5">{t.denial_rate_pct}%</td>
+                      <td className="text-right px-1 py-1.5" style={{ color: t.net_margin_cents >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>
+                        ${(t.net_margin_cents / 100).toLocaleString()}
+                      </td>
+                      <td className="text-right px-1 py-1.5" style={{ color: riskColor }}>{t.margin_pct}%</td>
+                      <td className="text-center px-1 py-1.5">
+                        <span
+                          className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                          style={{ color: riskColor, background: `color-mix(in srgb, ${riskColor} 12%, transparent)` }}
+                        >
+                          {t.risk_level}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <QuantumEmptyState title="No margin data" description="No tenant margin risk data available." icon="activity" />
+        )}
       </div>
 
       {/* Quick Nav to all 12 Domains */}

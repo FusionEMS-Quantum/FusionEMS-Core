@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { registerAuthRep } from '@/services/api';
 
 const PANEL_STYLE = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -58,23 +59,15 @@ export default function RepLoginPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/auth-rep/register`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: phone.trim(),
-            patient_account_id: sessionStorage.getItem('rep_patient_id') ?? '00000000-0000-0000-0000-000000000000',
-            relationship: sessionStorage.getItem('rep_relationship') ?? 'self',
-            full_name: sessionStorage.getItem('rep_full_name') ?? phone.trim(),
-            delivery_method: 'sms',
-          }),
-        }
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail ?? `Request failed (${res.status})`);
+      const result = await registerAuthRep({
+        phone: phone.trim(),
+        patient_account_id: sessionStorage.getItem('rep_patient_id') ?? '00000000-0000-0000-0000-000000000000',
+        relationship: sessionStorage.getItem('rep_relationship') ?? 'self',
+        full_name: sessionStorage.getItem('rep_full_name') ?? phone.trim(),
+        delivery_method: 'sms',
+      });
+      if (!result.ok) {
+        throw new Error(result.detail ?? `Request failed (${result.status})`);
       }
       sessionStorage.setItem('rep_phone', phone.trim());
       router.push('/portal/rep/verify');

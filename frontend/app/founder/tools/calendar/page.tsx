@@ -1,309 +1,150 @@
 'use client';
-import { motion } from 'framer-motion';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { ArrowLeft, Calendar, RefreshCw, AlertTriangle, Clock, Users, Shield } from 'lucide-react';
+import { getSchedulingCoverageDashboard, listShiftTemplates, getExpiringCredentials, listSchedulingSwaps } from '@/services/api';
 
-function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
-  return (
-    <div className="border-b border-border-subtle pb-2 mb-4">
-      <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
-      </div>
-    </div>
-  );
-}
+interface CoverageDash { total_shifts?: number; covered_shifts?: number; gap_count?: number; coverage_pct?: number; }
+interface ShiftTemplate { id: string; name: string; start_time?: string; end_time?: string; crew_required?: number; recurrence?: string; }
+interface ExpiringCred { id: string; user_name?: string; credential_type?: string; expires_at?: string; }
+interface Swap { id: string; requester_name?: string; status?: string; shift_date?: string; }
 
-function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
-  const c = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', error: 'var(--color-brand-red)', info: 'var(--color-status-info)' };
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 chamfer-4 text-micro font-semibold uppercase tracking-wider border"
-      style={{ borderColor: `${c[status]}40`, color: c[status], background: `${c[status]}12` }}
-    >
-      <span className="w-1 h-1 " style={{ background: c[status] }} />
-      {label}
-    </span>
-  );
-}
+export default function ToolsCalendarPage() {
+  const [coverage, setCoverage] = useState<CoverageDash | null>(null);
+  const [templates, setTemplates] = useState<ShiftTemplate[]>([]);
+  const [expiring, setExpiring] = useState<ExpiringCred[]>([]);
+  const [swaps, setSwaps] = useState<Swap[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
-      style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
-    >
-      {children}
-    </div>
-  );
-}
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const TODAY_INDEX = 0;
-
-const WEEK_EVENTS: Record<number, string[]> = {
-  0: ['Agency Operations Call 2pm'],
-  1: ['Stripe billing cycle'],
-  2: [],
-  3: ['NEMSIS deadline TX'],
-  4: ['Team sync 10am'],
-  5: [],
-  6: [],
-};
-
-const WEEK_DATES = [27, 28, 29, 30, 31, 1, 2];
-
-const UPCOMING_EVENTS = [
-  { date: 'Feb 3', event: 'Agency B onboarding call', category: 'Sales', priority: 'high' as const },
-  { date: 'Feb 5', event: 'Stripe invoice cycle', category: 'Billing', priority: 'warn' as const },
-  { date: 'Feb 7', event: 'NEMSIS submission deadline (TX)', category: 'Compliance', priority: 'high' as const },
-  { date: 'Feb 10', event: 'Credential expiry: Paramedic-04', category: 'Compliance', priority: 'high' as const },
-  { date: 'Feb 12', event: 'Q1 investor update', category: 'Executive', priority: 'warn' as const },
-  { date: 'Feb 14', event: 'Platform audit review', category: 'Compliance', priority: 'high' as const },
-  { date: 'Feb 18', event: 'Agency C renewal', category: 'Revenue', priority: 'warn' as const },
-  { date: 'Feb 20', event: 'State API maintenance window', category: 'Infra', priority: 'info' as const },
-  { date: 'Feb 25', event: 'Board meeting prep', category: 'Executive', priority: 'high' as const },
-  { date: 'Mar 1', event: 'Q1 compliance report', category: 'Compliance', priority: 'warn' as const },
-];
-
-const RECURRING = [
-  { freq: 'Daily', label: 'AI briefing', time: '07:00 UTC', note: 'auto-generated' },
-  { freq: 'Weekly', label: 'Export health summary', time: 'Mon 08:00', note: 'auto-sent email' },
-  { freq: 'Monthly', label: 'Stripe billing cycle', time: '1st', note: 'auto-processed' },
-  { freq: 'Monthly', label: 'AR aging report', time: '5th', note: 'auto-generated' },
-  { freq: 'Quarterly', label: 'Compliance review', time: '—', note: 'manual reminder' },
-];
-
-const COMPLIANCE_DEADLINES = [
-  { label: 'NEMSIS TX submission', days: 5, status: 'warn' as const },
-  { label: 'DEA renewal (Provider-02)', days: 28, status: 'ok' as const },
-  { label: 'HIPAA audit window', days: 45, status: 'ok' as const },
-];
-
-export default function FounderCalendarPage() {
-  const [selectedDay, setSelectedDay] = useState<number>(TODAY_INDEX);
-  const [form, setForm] = useState({ title: '', date: '', category: 'Compliance', priority: 'high' });
-
-  const priorityStatus = (p: string): 'ok' | 'warn' | 'error' | 'info' => {
-    if (p === 'high') return 'error';
-    if (p === 'warn') return 'warn';
-    if (p === 'low') return 'info';
-    return 'warn';
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [cRes, tRes, eRes, sRes] = await Promise.allSettled([
+        getSchedulingCoverageDashboard(), listShiftTemplates(), getExpiringCredentials(), listSchedulingSwaps(),
+      ]);
+      if (cRes.status === 'fulfilled') setCoverage(cRes.value);
+      if (tRes.status === 'fulfilled') {
+        const t = tRes.value;
+        setTemplates(Array.isArray(t?.templates) ? t.templates : Array.isArray(t) ? t : []);
+      }
+      if (eRes.status === 'fulfilled') {
+        const e = eRes.value;
+        setExpiring(Array.isArray(e?.credentials) ? e.credentials : Array.isArray(e) ? e : []);
+      }
+      if (sRes.status === 'fulfilled') {
+        const s = sRes.value;
+        setSwaps(Array.isArray(s?.swaps) ? s.swaps : Array.isArray(s) ? s : []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load calendar data');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => { loadData(); }, []);
+
+  if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center"><RefreshCw className="w-8 h-8 animate-spin text-emerald-400" /></div>;
+
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-[#FF4D00]/70 font-mono tracking-widest uppercase">
-            MODULE 11 · FOUNDER TOOLS
-          </span>
-          <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
-            ← Back to Founder OS
-          </Link>
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-100" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
-          Founder Calendar
-        </h1>
-        <p className="text-xs text-zinc-500 mt-1">Meetings · deadlines · billing cycles · compliance events</p>
-      </motion.div>
-
-      {/* MODULE 1 — This Week */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Panel>
-          <SectionHeader number="1" title="This Week" sub="Mon 27 Jan – Sun 2 Feb" />
-          <div className="grid grid-cols-7 gap-2">
-            {DAYS.map((day, i) => (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(i)}
-                className="flex flex-col items-center p-2 chamfer-4 transition-all"
-                style={{
-                  background: selectedDay === i ? 'rgba(255,107,26,0.1)' : 'rgba(255,255,255,0.02)',
-                  border: i === TODAY_INDEX
-                    ? '1px solid #FF4D00'
-                    : selectedDay === i
-                    ? '1px solid rgba(255,107,26,0.4)'
-                    : '1px solid rgba(255,255,255,0.06)',
-                }}
-              >
-                <span className="text-micro font-semibold text-zinc-500 uppercase tracking-widest">{day}</span>
-                <span
-                  className="text-lg font-bold mt-0.5"
-                  style={{ color: i === TODAY_INDEX ? '#FF4D00' : 'rgba(255,255,255,0.85)' }}
-                >
-                  {WEEK_DATES[i]}
-                </span>
-                <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
-                  {WEEK_EVENTS[i].length > 0 ? (
-                    <>
-                      <span className="w-1.5 h-1.5  bg-[#FF4D00]" />
-                      <span className="text-[8px] text-zinc-500 text-center leading-tight mt-0.5 line-clamp-2">
-                        {WEEK_EVENTS[i][0]}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-[9px] text-zinc-500">clear</span>
-                  )}
-                </div>
-              </button>
-            ))}
+    <div className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Link href="/founder/tools" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Tools</Link>
+            <h1 className="text-3xl font-bold flex items-center gap-3"><Calendar className="w-8 h-8 text-blue-400" /> Organization Calendar</h1>
+            <p className="text-gray-400 mt-1">Shift coverage, training events, compliance deadlines, and swap requests</p>
           </div>
-          {WEEK_EVENTS[selectedDay].length > 0 && (
-            <div className="mt-3 p-2 bg-brand-orange/[0.06] border border-brand-orange/[0.15] chamfer-4">
-              <span className="text-micro text-[#FF4D00] font-semibold">{DAYS[selectedDay]} selected: </span>
-              <span className="text-body text-zinc-100">{WEEK_EVENTS[selectedDay].join(', ')}</span>
-            </div>
-          )}
-        </Panel>
-      </motion.div>
+          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm"><RefreshCw className="w-4 h-4" /> Refresh</button>
+        </div>
 
-      {/* MODULE 2 — Upcoming Events */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-        <Panel>
-          <SectionHeader number="2" title="Upcoming Events" />
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border-subtle">
-                  {['Date', 'Event', 'Category', 'Priority'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-zinc-500 font-semibold uppercase tracking-wider text-micro">
-                      {h}
-                    </th>
-                  ))}
+        {error && <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-red-400" /><span className="text-red-300">{error}</span></div>}
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Calendar className="w-4 h-4" /> Total Shifts</div>
+            <div className="text-2xl font-bold text-blue-400">{coverage?.total_shifts ?? 0}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Users className="w-4 h-4" /> Coverage</div>
+            <div className="text-2xl font-bold text-emerald-400">{coverage?.coverage_pct ?? 0}%</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Clock className="w-4 h-4" /> Coverage Gaps</div>
+            <div className="text-2xl font-bold text-amber-400">{coverage?.gap_count ?? 0}</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+            <div className="text-gray-400 text-sm mb-1 flex items-center gap-1"><Shield className="w-4 h-4" /> Expiring Certs</div>
+            <div className="text-2xl font-bold text-red-400">{expiring.length}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Shift Templates */}
+          <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-lg font-semibold flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-400" /> Shift Templates</h2></div>
+            {templates.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">No shift templates configured.</div>
+            ) : (
+              <div className="divide-y divide-gray-800">
+                {templates.map((t) => (
+                  <div key={t.id} className="px-6 py-3">
+                    <div className="text-white font-medium">{t.name}</div>
+                    <div className="text-gray-400 text-xs mt-1">{t.start_time} — {t.end_time} · {t.crew_required ?? 0} crew · {t.recurrence ?? 'one-time'}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Swap Requests */}
+          <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-lg font-semibold flex items-center gap-2"><Users className="w-5 h-5 text-violet-400" /> Swap Requests</h2></div>
+            {swaps.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">No pending swap requests.</div>
+            ) : (
+              <div className="divide-y divide-gray-800">
+                {swaps.map((s) => (
+                  <div key={s.id} className="px-6 py-3 flex justify-between items-center">
+                    <div>
+                      <div className="text-white text-sm">{s.requester_name ?? 'Unknown'}</div>
+                      <div className="text-gray-500 text-xs">{s.shift_date}</div>
+                    </div>
+                    <span className={`text-xs font-bold uppercase ${s.status === 'approved' ? 'text-emerald-400' : s.status === 'pending' ? 'text-amber-400' : 'text-red-400'}`}>{s.status}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Expiring Credentials */}
+        {expiring.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-800"><h2 className="text-lg font-semibold flex items-center gap-2"><Shield className="w-5 h-5 text-red-400" /> Expiring Credentials</h2></div>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Crew Member</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Credential</th>
+                  <th className="text-left px-6 py-3 text-gray-400 font-medium">Expires</th>
                 </tr>
               </thead>
-              <tbody>
-                {UPCOMING_EVENTS.map((ev, i) => (
-                  <tr key={i} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
-                    <td className="py-2 px-2 font-mono text-brand-orange">{ev.date}</td>
-                    <td className="py-2 px-2 text-zinc-100">{ev.event}</td>
-                    <td className="py-2 px-2 text-zinc-500">{ev.category}</td>
-                    <td className="py-2 px-2">
-                      <Badge
-                        label={ev.priority === 'warn' ? 'medium' : ev.priority === 'info' ? 'low' : ev.priority}
-                        status={priorityStatus(ev.priority)}
-                      />
-                    </td>
+              <tbody className="divide-y divide-gray-800">
+                {expiring.map((c) => (
+                  <tr key={c.id}>
+                    <td className="px-6 py-3 text-white">{c.user_name}</td>
+                    <td className="px-6 py-3 text-gray-400">{c.credential_type}</td>
+                    <td className="px-6 py-3 text-red-400">{c.expires_at ? new Date(c.expires_at).toLocaleDateString() : '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 3 — Add Event */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <Panel>
-          <SectionHeader number="3" title="Add Event" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Event Title</label>
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="Event title"
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-zinc-500"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Date</label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Category</label>
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
-              >
-                {['Compliance', 'Sales', 'Billing', 'Executive', 'Infra'].map((c) => (
-                  <option key={c} value={c} className="bg-[#0A0A0B]">{c}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Priority</label>
-              <select
-                value={form.priority}
-                onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
-              >
-                {['high', 'medium', 'low'].map((p) => (
-                  <option key={p} value={p} className="bg-[#0A0A0B]">{p}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-end">
-              <button
-                className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
-                style={{ background: '#FF4D00', color: '#000' }}
-                onClick={() => setForm({ title: '', date: '', category: 'Compliance', priority: 'high' })}
-              >
-                Add Event
-              </button>
-            </div>
-          </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 4 — Recurring Events */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-        <Panel>
-          <SectionHeader number="4" title="Recurring Events" />
-          <div className="space-y-2">
-            {RECURRING.map((r, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-border-subtle last:border-0">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
-                    style={{ background: 'rgba(255,107,26,0.12)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.25)' }}
-                  >
-                    {r.freq}
-                  </span>
-                  <span className="text-xs text-zinc-100">{r.label}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-micro font-mono text-zinc-500">{r.time}</span>
-                  <span className="text-micro text-zinc-500 italic">{r.note}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 5 — Compliance Deadlines */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Panel>
-          <SectionHeader number="5" title="Compliance Deadlines" sub="upcoming" />
-          <div className="space-y-3">
-            {COMPLIANCE_DEADLINES.map((cd, i) => (
-              <div key={i} className="flex items-center justify-between py-2 px-3 chamfer-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span className="text-xs text-zinc-100">{cd.label}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-body font-mono text-zinc-400">{cd.days} days</span>
-                  <Badge label={`${cd.days}d`} status={cd.status} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      </motion.div>
-
-      <div className="pt-2">
-        <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
-          ← Back to Founder OS
-        </Link>
+        )}
       </div>
     </div>
   );

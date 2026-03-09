@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { QuantumEmptyState } from '@/components/ui';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { getBillingARAgingReport, type BillingARAgingApi } from '@/services/api';
 
 type ArBucket = {
   label: string;
@@ -12,14 +11,7 @@ type ArBucket = {
   total_cents: number;
 };
 
-type ArAgingResponse = {
-  as_of_date: string;
-  total_ar_cents: number;
-  total_claims: number;
-  avg_days_in_ar: number;
-  buckets: ArBucket[];
-  payer_breakdown: Record<string, { count: number; total_cents: number; avg_days: number }>;
-};
+type ArAgingResponse = BillingARAgingApi & { buckets: ArBucket[] };
 
 export default function ArAgingPage() {
   const [data, setData] = useState<ArAgingResponse | null>(null);
@@ -27,16 +19,7 @@ export default function ArAgingPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
-    fetch(`${API}/api/v1/billing/ar-aging`, { headers })
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to load A/R aging (${res.status})`);
-        }
-        return res.json();
-      })
+    getBillingARAgingReport()
       .then((payload: ArAgingResponse) => setData(payload))
       .catch((e: unknown) => {
         setError(e instanceof Error ? e.message : 'Unable to load A/R aging report');

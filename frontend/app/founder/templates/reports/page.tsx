@@ -1,8 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
+import { getFounderReports } from '@/services/api';
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
@@ -49,10 +48,7 @@ export default function ReportsPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-    fetch(`${API}/api/v1/founder/reports`, { headers })
-      .then(r => r.json())
+    getFounderReports()
       .then(setData)
       .catch(console.error);
   }, []);

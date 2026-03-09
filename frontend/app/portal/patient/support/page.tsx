@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { sendPatientPortalBillingChatMessage, submitPatientPortalSupportRequest } from '@/services/api';
 
 type SupportCategory =
   | 'billing_question'
@@ -84,7 +85,6 @@ export default function SupportPage() {
   ]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   const handleFormChange = (field: keyof SupportForm, value: string | boolean) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -95,12 +95,7 @@ export default function SupportPage() {
     if (!form.category || !form.subject.trim() || !form.message.trim()) return;
     setSubmitting(true);
     try {
-      await fetch(`${apiBase}/api/v1/portal/support`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      await submitPatientPortalSupportRequest(form);
       setSubmitted(true);
     } catch {
       setSubmitted(true); // still show success — will be retried by background worker
@@ -116,13 +111,7 @@ export default function SupportPage() {
     setChatMessages(prev => [...prev, { role: 'user', text }]);
     setChatLoading(true);
     try {
-      const r = await fetch(`${apiBase}/api/v1/ai/patient-chat`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, context: 'patient_billing' }),
-      });
-      const d = await r.json();
+      const d = await sendPatientPortalBillingChatMessage({ message: text, context: 'patient_billing' });
       setChatMessages(prev => [...prev, { role: 'ai', text: d.reply ?? d.message ?? 'Let me connect you with a billing specialist for more help.' }]);
     } catch {
       setChatMessages(prev => [...prev, { role: 'ai', text: 'I\'m having trouble right now. For immediate help, you can call our billing line or submit a support request.' }]);

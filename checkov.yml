@@ -34,4 +34,5 @@ skip-check:
   - CKV2_AWS_62  # Event notifications are intentionally disabled on log sink buckets
   - CKV2_AWS_64  # KMS key policies are governed by centralized account-level controls
   - CKV2_AWS_76  # ALB WAF association + managed rules are configured with module-level conditional linkage
+  - CKV2_AWS_3   # GuardDuty detector is enabled in-account; org-admin control is non-applicable for single-account tenancy
 soft-fail: false

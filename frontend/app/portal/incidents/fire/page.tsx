@@ -1,12 +1,15 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
+import {
+  createPortalFireIncident,
+  exportPortalNerisIncident,
+  getPortalFirePackRules,
+  getPortalNerisOnboardingStatus,
+  listPortalFireDepartmentApparatus,
+  listPortalFireIncidents,
+  updatePortalFireIncident,
+  validatePortalFireIncident,
+} from '@/services/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -453,25 +456,20 @@ function IncidentForm({
     setSavingDraft(true);
     try {
       const payload = buildPayload();
-      let res: Response;
+      let json: Record<string, unknown>;
       if (currentId) {
-        res = await fetch(`${API}/api/v1/incidents/fire/${currentId}`, {
-          method: 'PATCH',
-          headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        json = await updatePortalFireIncident(currentId, payload);
       } else {
-        res = await fetch(`${API}/api/v1/incidents/fire`, {
-          method: 'POST',
-          headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        json = await createPortalFireIncident(payload);
       }
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
-      if (!currentId) setCurrentId(json.id ?? json.incident_id);
+      if (!currentId) {
+        const createdId = String(json.id ?? json.incident_id ?? '');
+        if (createdId) {
+          setCurrentId(createdId);
+        }
+      }
       pushToast('Draft saved', 'success');
-      onSaved(json);
+      onSaved(json as unknown as Incident);
     } catch (e: unknown) {
       pushToast(e instanceof Error ? e.message : 'Save failed', 'error');
     } finally {
@@ -486,12 +484,7 @@ function IncidentForm({
     }
     setValidating(true);
     try {
-      const res = await fetch(`${API}/api/v1/incidents/fire/${currentId}/validate`, {
-        method: 'POST',
-        headers: { Authorization: getToken() },
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.detail ?? `HTTP ${res.status}`);
+      const json = await validatePortalFireIncident(currentId);
       setValidationResult(json);
       if (json.valid) pushToast('Validation passed', 'success');
       else pushToast(`${json.issues?.filter((i: ValidationIssue) => i.severity === 'error').length ?? 0} errors found`, 'error');
@@ -506,13 +499,10 @@ function IncidentForm({
     if (!currentId) return;
     setExportingId(currentId);
     try {
-      const res = await fetch(`${API}/api/v1/neris/exports`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ department_id: departmentId, incident_ids: [currentId] }),
+      const blob = await exportPortalNerisIncident({
+        department_id: departmentId,
+        incident_ids: [currentId],
       });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -919,47 +909,48 @@ export default function FireIncidentsPage() {
 
   // Fetch pack rules and department id
   useEffect(() => {
-    fetch(`${API}/api/v1/incidents/fire/pack-rules`, {
-      headers: { Authorization: getToken() },
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => {
-        if (!d) return;
-        setPackRules(d);
-        if (d.department_id) setDepartmentId(d.department_id);
-      })
-      .catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/tenant/neris/onboarding/status`, {
-      headers: { Authorization: getToken() },
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => d?.department?.id && setDepartmentId(d.department.id))
-      .catch((e: unknown) => { console.warn("[fetch error]", e); });
+    const loadContext = async () => {
+      try {
+        const d = await getPortalFirePackRules();
+        if (d) {
+          setPackRules(d as PackRules);
+          if (d.department_id) {
+            setDepartmentId(d.department_id);
+          }
+        }
+      } catch (e: unknown) {
+        console.warn('[fetch error]', e);
+      }
+
+      try {
+        const d = await getPortalNerisOnboardingStatus();
+        if (d?.department?.id) {
+          setDepartmentId(d.department.id);
+        }
+      } catch (e: unknown) {
+        console.warn('[fetch error]', e);
+      }
+    };
+
+    void loadContext();
   }, []);
 
   // Fetch apparatus
   useEffect(() => {
     if (!departmentId) return;
-    fetch(`${API}/api/v1/incidents/fire/departments/${departmentId}/apparatus`, {
-      headers: { Authorization: getToken() },
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => d && setApparatus(Array.isArray(d) ? d : d.apparatus ?? []))
-      .catch((e: unknown) => { console.warn("[fetch error]", e); });
+    listPortalFireDepartmentApparatus(departmentId)
+      .then((d) => setApparatus(d as ApparatusOption[]))
+      .catch((e: unknown) => { console.warn('[fetch error]', e); });
   }, [departmentId]);
 
   // Fetch incidents
   const fetchIncidents = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      const res = await fetch(`${API}/api/v1/incidents/fire?${params.toString()}`, {
-        headers: { Authorization: getToken() },
+      const data = await listPortalFireIncidents({
+        status: statusFilter !== 'all' ? statusFilter : undefined,
       });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setIncidents(Array.isArray(data) ? data : data.incidents ?? []);
+      setIncidents(data as Incident[]);
     } catch {
       pushToast('Failed to load incidents', 'error');
     } finally {

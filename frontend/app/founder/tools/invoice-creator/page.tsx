@@ -1,9 +1,8 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { useState, useEffect, useCallback } from 'react';
+import { getInvoices, createInvoice as createInvoiceApi, sendInvoiceReminder, markInvoicePaid, getInvoiceSettings, updateInvoiceSettings } from '@/services/api';
 
 type InvoiceItem = {
   id: string;
@@ -95,42 +94,31 @@ export default function InvoiceCreatorPage() {
 
   const subtotal = lineItems.reduce((s, l) => s + l.amount, 0);
 
-  const authHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-    return headers;
-  };
-
-  const loadInvoices = async () => {
-    const res = await fetch(`${API}/api/v1/founder/business/invoices?limit=500`, {
-      headers: authHeaders(),
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to load invoices (${res.status})`);
-    }
-    const payload = (await res.json()) as InvoiceResponse;
+  const loadInvoices = useCallback(async () => {
+    const payload = (await getInvoices(500)) as InvoiceResponse;
     setInvoices(payload.invoices ?? []);
-    setSummary(payload.summary ?? summary);
-  };
+    setSummary(payload.summary ?? {
+      invoices_this_month: 0,
+      total_invoiced_cents: 0,
+      total_paid_cents: 0,
+      paid_count: 0,
+      outstanding_count: 0,
+    });
+  }, []);
 
-  const loadSettings = async () => {
-    const res = await fetch(`${API}/api/v1/founder/business/invoice-settings`, {
-      headers: authHeaders(),
-    });
-    if (!res.ok) {
-      return;
+  const loadSettings = useCallback(async () => {
+    try {
+      const payload = await getInvoiceSettings();
+      setSettings((prev) => ({
+        company: payload.company ?? prev.company,
+        address: payload.address ?? prev.address,
+        terms: payload.terms ?? prev.terms,
+        lateFee: payload.lateFee ?? prev.lateFee,
+      }));
+    } catch {
+      // settings may not exist yet — keep defaults
     }
-    const payload = await res.json();
-    setSettings({
-      company: payload.company ?? settings.company,
-      address: payload.address ?? settings.address,
-      terms: payload.terms ?? settings.terms,
-      lateFee: payload.lateFee ?? settings.lateFee,
-    });
-  };
+  }, []);
 
   function addLineItem() {
     setLineItems([...lineItems, { desc: '', amount: 0 }]);
@@ -142,7 +130,7 @@ export default function InvoiceCreatorPage() {
         setError(e instanceof Error ? e.message : 'Unable to load invoice data');
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [loadInvoices, loadSettings]);
 
   const OUTSTANDING = invoices.filter((inv) => inv.status === 'outstanding' || inv.status === 'overdue');
 
@@ -152,60 +140,33 @@ export default function InvoiceCreatorPage() {
       return;
     }
 
-    const res = await fetch(`${API}/api/v1/founder/business/invoices`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({
-        client: invoiceForm.client,
-        invoice_date: invoiceForm.invoiceDate,
-        due_date: invoiceForm.dueDate,
-        description: invoiceForm.description,
-        line_items: lineItems.map((item) => ({
-          desc: item.desc || 'Line item',
-          amount_cents: Math.max(0, Math.round(item.amount * 100)),
-        })),
-      }),
+    await createInvoiceApi({
+      client: invoiceForm.client,
+      invoice_date: invoiceForm.invoiceDate,
+      due_date: invoiceForm.dueDate,
+      description: invoiceForm.description,
+      line_items: lineItems.map((item) => ({
+        desc: item.desc || 'Line item',
+        amount_cents: Math.max(0, Math.round(item.amount * 100)),
+      })),
     });
-    if (!res.ok) {
-      throw new Error(`Unable to create invoice (${res.status})`);
-    }
 
     setInvoiceForm((prev) => ({ ...prev, client: '', description: '' }));
     await loadInvoices();
   };
 
   const sendReminder = async (invoiceId: string) => {
-    const res = await fetch(`${API}/api/v1/founder/business/invoices/${invoiceId}/send-reminder`, {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({ channel: 'email' }),
-    });
-    if (!res.ok) {
-      throw new Error(`Reminder failed (${res.status})`);
-    }
+    await sendInvoiceReminder(invoiceId, { channel: 'email' });
     await loadInvoices();
   };
 
   const markPaid = async (invoiceId: string) => {
-    const res = await fetch(`${API}/api/v1/founder/business/invoices/${invoiceId}/mark-paid`, {
-      method: 'POST',
-      headers: authHeaders(),
-    });
-    if (!res.ok) {
-      throw new Error(`Mark-paid failed (${res.status})`);
-    }
+    await markInvoicePaid(invoiceId);
     await loadInvoices();
   };
 
   const saveSettings = async () => {
-    const res = await fetch(`${API}/api/v1/founder/business/invoice-settings`, {
-      method: 'PUT',
-      headers: authHeaders(),
-      body: JSON.stringify(settings),
-    });
-    if (!res.ok) {
-      throw new Error(`Settings save failed (${res.status})`);
-    }
+    await updateInvoiceSettings(settings);
   };
 
   return (

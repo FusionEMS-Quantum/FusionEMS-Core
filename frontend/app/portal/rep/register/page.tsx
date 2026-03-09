@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { registerAuthRep } from '@/services/api';
 
 const PANEL_STYLE = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -131,30 +132,22 @@ export default function RepRegisterPage() {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('rep_token') ?? '';
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/auth-rep/register`,
+      const result = await registerAuthRep(
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            full_name: fullName.trim(),
-            relationship,
-            email: email.trim() || undefined,
-            phone: phone.trim() || undefined,
-            patient_account_id: patientAccount.trim(),
-            delivery_method: 'sms',
-          }),
-        }
+          full_name: fullName.trim(),
+          relationship,
+          email: email.trim() || undefined,
+          phone: phone.trim() || undefined,
+          patient_account_id: patientAccount.trim(),
+          delivery_method: 'sms',
+        },
+        token || undefined
       );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail ?? `Registration failed (${res.status})`);
+      if (!result.ok) {
+        throw new Error(result.detail ?? `Registration failed (${result.status})`);
       }
-      const body = await res.json();
-      if (body.session_id) sessionStorage.setItem('rep_session_id', body.session_id);
+      const sessionId = typeof result.data.session_id === 'string' ? result.data.session_id : '';
+      if (sessionId) sessionStorage.setItem('rep_session_id', sessionId);
       router.push('/portal/rep/sign');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');

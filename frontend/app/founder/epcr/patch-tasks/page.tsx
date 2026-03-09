@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { getNEMSISPatchTasks, updateNEMSISPatchTask } from '@/services/api';
 
 type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'rejected';
 
@@ -39,11 +40,8 @@ export default function PatchTasksPage() {
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/patch-tasks`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setTasks(Array.isArray(data) ? data : (data.tasks ?? []));
-      }
+      const data = await getNEMSISPatchTasks();
+      setTasks(Array.isArray(data) ? data : (data.tasks ?? []));
     } catch (e: unknown) {
       console.warn('[patch-tasks fetch error]', e);
     } finally {
@@ -58,19 +56,12 @@ export default function PatchTasksPage() {
   const updateStatus = async (id: string, newStatus: TaskStatus) => {
     setUpdatingId(id);
     try {
-      const res = await fetch(`/api/v1/nemsis/studio/patch-tasks/${id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (res.ok) {
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === id ? { ...t, data: { ...t.data, status: newStatus } } : t
-          )
-        );
-      }
+      await updateNEMSISPatchTask(id, { status: newStatus });
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === id ? { ...t, data: { ...t.data, status: newStatus } } : t
+        )
+      );
     } catch (e: unknown) {
       console.warn('[patch-task update error]', e);
     } finally {

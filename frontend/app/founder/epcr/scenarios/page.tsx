@@ -1,6 +1,7 @@
 'use client';
 import { QuantumTableSkeleton } from '@/components/ui';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getNEMSISScenarios, uploadNEMSISScenario, runNEMSISScenario } from '@/services/api';
 
 interface Scenario {
   id: string;
@@ -30,11 +31,8 @@ export default function ScenariosPage() {
   const fetchScenarios = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/scenarios`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setScenarios(Array.isArray(data) ? data : (data.scenarios ?? []));
-      }
+      const data = await getNEMSISScenarios();
+      setScenarios(Array.isArray(data) ? data : (data.scenarios ?? []));
     } finally {
       setLoading(false);
     }
@@ -50,17 +48,9 @@ export default function ScenariosPage() {
     const form = new FormData();
     form.append('file', files[0]);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/nemsis/studio/scenarios/upload`, {
-        method: 'POST',
-        credentials: 'include',
-        body: form,
-      });
-      if (res.ok) {
-        setUploadStatus(`Uploaded: ${files[0].name}`);
-        fetchScenarios();
-      } else {
-        setUploadStatus(`Error: ${res.status}`);
-      }
+      await uploadNEMSISScenario(form);
+      setUploadStatus(`Uploaded: ${files[0].name}`);
+      fetchScenarios();
     } catch (e: unknown) {
       setUploadStatus(`Error: ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -69,18 +59,8 @@ export default function ScenariosPage() {
   const runScenario = async (id: string) => {
     setRunningId(id);
     try {
-      const res = await fetch(`/api/v1/nemsis/studio/scenarios/${id}/run`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setRunResults((prev) => ({ ...prev, [id]: { passed: data.passed, issue_count: data.issue_count ?? 0, message: data.message } }));
-      } else {
-        setRunResults((prev) => ({ ...prev, [id]: { passed: false, issue_count: 0, message: `HTTP ${res.status}` } }));
-      }
+      const data = await runNEMSISScenario(id);
+      setRunResults((prev) => ({ ...prev, [id]: { passed: data.passed, issue_count: data.issue_count ?? 0, message: data.message } }));
     } catch (e: unknown) {
       setRunResults((prev) => ({ ...prev, [id]: { passed: false, issue_count: 0, message: e instanceof Error ? e.message : String(e) } }));
     } finally {

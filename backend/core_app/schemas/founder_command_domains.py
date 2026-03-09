@@ -126,3 +126,63 @@ class FlightMissionResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class GrowthSummaryMetric(BaseModel):
+    key: str
+    value: int
+
+
+class FounderGrowthSummary(BaseModel):
+    generated_at: datetime
+    conversion_events_total: int
+    proposals_total: int
+    proposals_pending: int
+    active_subscriptions: int
+    proposal_to_paid_conversion_pct: float
+    pending_pipeline_cents: int
+    active_mrr_cents: int
+    pipeline_to_mrr_ratio: float
+    graph_mailbox_configured: bool
+    funnel_stage_counts: list[GrowthSummaryMetric]
+    lead_tier_distribution: list[GrowthSummaryMetric]
+    lead_score_buckets: list[GrowthSummaryMetric]
+    integration_health: IntegrationCommandSummary
+
+
+class GrowthConnectionStatus(BaseModel):
+    service_key: str
+    label: str
+    required: bool
+    connected: bool
+    install_state: str
+    permissions_state: str
+    permission_errors: list[str] = Field(default_factory=list)
+    token_state: str
+    health_state: str
+    last_successful_activity: datetime | None = None
+    last_failed_activity: datetime | None = None
+    retry_count: int = 0
+    available_automations: list[str] = Field(default_factory=list)
+    blocking_reason: str | None = None
+
+
+class FounderGrowthSetupWizard(BaseModel):
+    generated_at: datetime
+    autopilot_ready: bool
+    blocked_items: list[str] = Field(default_factory=list)
+    services: list[GrowthConnectionStatus]
+
+
+class LaunchOrchestratorStartRequest(BaseModel):
+    mode: Literal["autopilot", "approval-first", "draft-only"] = "approval-first"
+    auto_queue_sync_jobs: bool = True
+
+
+class LaunchOrchestratorRunResponse(BaseModel):
+    run_id: UUID
+    mode: str
+    queued_sync_jobs: int
+    blocked_items: list[str]
+    status: Literal["started", "blocked"]
+    generated_at: datetime

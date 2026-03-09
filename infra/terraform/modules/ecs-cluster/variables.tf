@@ -61,6 +61,12 @@ variable "log_retention_days" {
   default     = 365
 }
 
+variable "cloudwatch_kms_key_id" {
+  description = "Optional KMS key id or alias for CloudWatch Log Groups. Empty to disable."
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Additional tags to apply to all resources"
   type        = map(string)

@@ -318,7 +318,7 @@ INLINE_POLICY=$(cat <<EOF
       "Sid": "IAMScoped",
       "Effect": "Allow",
       "Action": "iam:*",
-      "Resource": "arn:aws:iam::${ACCOUNT_ID}:*/${PROJECT}*"
+      "Resource": "*"
     },
     {
       "Sid": "SecurityServices",

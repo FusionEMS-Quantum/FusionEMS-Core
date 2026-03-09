@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { getFounderOpsSummary } from '@/services/api';
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -46,8 +45,7 @@ export default function OpsCommandPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API}/api/v1/founder/ops/summary`)
-      .then((r) => r.json())
+    getFounderOpsSummary()
       .then(setData)
       .catch((e: unknown) => console.warn('[ops fetch]', e))
       .finally(() => setLoading(false));

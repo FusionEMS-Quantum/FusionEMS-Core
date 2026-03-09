@@ -11,7 +11,11 @@ from core_app.schemas.auth import CurrentUser
 from core_app.schemas.founder_command_domains import (
     ConnectorSyncJobCreateRequest,
     ConnectorSyncJobResponse,
+    FounderGrowthSetupWizard,
+    FounderGrowthSummary,
     IntegrationCommandSummary,
+    LaunchOrchestratorRunResponse,
+    LaunchOrchestratorStartRequest,
     SyncDeadLetterCreateRequest,
     SyncDeadLetterResponse,
 )
@@ -30,6 +34,41 @@ def get_integration_command_summary(
 ) -> IntegrationCommandSummary:
     svc = FounderCommandDomainService(db)
     return svc.get_integration_command_summary()
+
+
+@router.get("/growth-summary", response_model=FounderGrowthSummary)
+def get_growth_summary(
+    current: CurrentUser = Depends(require_role("founder")),
+    db: Session = Depends(db_session_dependency),
+) -> FounderGrowthSummary:
+    svc = FounderCommandDomainService(db)
+    return svc.get_growth_summary(tenant_id=current.tenant_id)
+
+
+@router.get("/growth-setup-wizard", response_model=FounderGrowthSetupWizard)
+def get_growth_setup_wizard(
+    current: CurrentUser = Depends(require_role("founder")),
+    db: Session = Depends(db_session_dependency),
+) -> FounderGrowthSetupWizard:
+    svc = FounderCommandDomainService(db)
+    return svc.get_growth_setup_wizard(tenant_id=current.tenant_id)
+
+
+@router.post("/launch-orchestrator/start", response_model=LaunchOrchestratorRunResponse)
+def start_launch_orchestrator(
+    payload: LaunchOrchestratorStartRequest,
+    current: CurrentUser = Depends(require_role("founder")),
+    db: Session = Depends(db_session_dependency),
+) -> LaunchOrchestratorRunResponse:
+    svc = FounderCommandDomainService(db)
+    run = svc.start_launch_orchestrator(
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        mode=payload.mode,
+        auto_queue_sync_jobs=payload.auto_queue_sync_jobs,
+    )
+    db.commit()
+    return run
 
 
 @router.get("/failed-sync-jobs", response_model=list[ConnectorSyncJobResponse])

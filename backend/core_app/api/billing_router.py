@@ -15,6 +15,7 @@ from core_app.api.dependencies import (
 )
 from core_app.billing.ar_aging import compute_ar_aging, compute_revenue_forecast
 from core_app.billing.artifacts import store_edi_artifact
+from core_app.billing.edi_service import EDIService
 from core_app.billing.pre_submission_rules import PreSubmissionRulesEngine
 from core_app.billing.validation import BillingValidator
 from core_app.billing.x12_835 import parse_835
@@ -25,6 +26,11 @@ from core_app.fax.telnyx_service import TelnyxConfig, TelnyxNotConfigured, send_
 from core_app.integrations.officeally import (
     OfficeAllyClientError,
     OfficeAllySftpConfig,
+    poll_claim_status_responses,
+    poll_eligibility_responses,
+    poll_era_files,
+    submit_270_eligibility_inquiry,
+    submit_276_claim_status_inquiry,
     submit_837_via_sftp,
 )
 from core_app.models.billing import Claim as ClaimModel
@@ -655,3 +661,330 @@ async def billing_health_score(
         recommendations=score.recommendations,
         computed_at=score.computed_at,
     )
+
+
+# ── Office Ally Clearinghouse: Eligibility / Claim Status / ERA ────────────
+
+
+class EligibilityInquiryRequest(BaseModel):
+    patient_id: str = Field(..., description="Patient UUID")
+    member_id: str = Field(..., description="Insurance member ID")
+    payer_id: str = Field(default="", description="Payer identifier")
+    service_date: str = Field(default="", description="Date of service YYYYMMDD")
+
+
+class ClaimStatusInquiryRequest(BaseModel):
+    claim_id: str = Field(..., description="Claim UUID")
+    member_id: str = Field(default="", description="Insurance member ID")
+    payer_id: str = Field(default="", description="Payer identifier")
+
+
+def _get_sftp_config() -> OfficeAllySftpConfig:
+    """Build OfficeAllySftpConfig from application settings."""
+    settings = get_settings()
+    return OfficeAllySftpConfig(
+        host=getattr(settings, "OFFICEALLY_SFTP_HOST", ""),
+        port=int(getattr(settings, "OFFICEALLY_SFTP_PORT", 22)),
+        username=getattr(settings, "OFFICEALLY_SFTP_USER", ""),
+        password=getattr(settings, "OFFICEALLY_SFTP_PASS", ""),
+        remote_dir=getattr(settings, "OFFICEALLY_SFTP_DIR", "/outbound"),
+        inbound_dir=getattr(settings, "OFFICEALLY_SFTP_INBOUND_DIR", "/inbound"),
+        era_dir=getattr(settings, "OFFICEALLY_SFTP_ERA_DIR", "/era"),
+        eligibility_dir=getattr(settings, "OFFICEALLY_SFTP_ELIGIBILITY_DIR", "/eligibility"),
+        claim_status_dir=getattr(settings, "OFFICEALLY_SFTP_CLAIM_STATUS_DIR", "/claim_status"),
+    )
+
+
+@router.post("/eligibility/inquire")
+async def submit_eligibility_inquiry(
+    body: EligibilityInquiryRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Submit a 270 Eligibility Inquiry to the clearinghouse via SFTP."""
+    require_role(current, ["founder", "billing", "admin"])
+    publisher = get_event_publisher()
+    svc = DominationService(db, publisher)
+
+    # Build minimal 270 X12 envelope
+    isa_control = str(uuid.uuid4().int)[:9].zfill(9)
+    x12_lines = [
+        f"ISA*00*          *00*          *ZZ*FUSIONEMS      *ZZ*OFFICEALLY     *000000*0000*^*00501*{isa_control}*0*P*:~",
+        "GS*HS*FUSIONEMS*OFFICEALLY*20250101*0000*1*X*005010X279A1~",
+        "ST*270*0001*005010X279A1~",
+        "BHT*0022*13*ELG001*20250101*0000~",
+        "HL*1**20*1~",
+        f"NM1*PR*2*{body.payer_id or 'UNKNOWN'}*****PI*{body.payer_id or 'UNKNOWN'}~",
+        "HL*2*1*22*1~",
+        "NM1*1P*2*FUSIONEMS*****XX*0000000000~",
+        "HL*3*2*23*0~",
+        f"NM1*IL*1*PATIENT*****MI*{body.member_id}~",
+        f"DTP*291*D8*{body.service_date or '20250101'}~",
+        "EQ*30~",
+        "SE*12*0001~",
+        "GE*1*1~",
+        f"IEA*1*{isa_control}~",
+    ]
+    x12_text = "\n".join(x12_lines)
+    x12_bytes = x12_text.encode("utf-8")
+    file_name = f"270_{current.tenant_id}_{body.patient_id}_{isa_control}.x12"
+
+    cfg = _get_sftp_config()
+    try:
+        remote_path = submit_270_eligibility_inquiry(
+            cfg=cfg, file_name=file_name, x12_bytes=x12_bytes,
+        )
+    except OfficeAllyClientError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    # Track the inquiry in the domination table
+    record = await svc.create(
+        table="edi_artifacts",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data={
+            "entity_type": "eligibility_inquiry",
+            "patient_id": body.patient_id,
+            "member_id": body.member_id,
+            "payer_id": body.payer_id,
+            "file_type": "270",
+            "file_name": file_name,
+            "remote_path": remote_path,
+            "status": "submitted",
+            "submitted_at": str(uuid.uuid4())[:8],
+        },
+    )
+    publisher.publish_sync(
+        topic=f"tenant.{current.tenant_id}.billing.eligibility.submitted",
+        tenant_id=current.tenant_id,
+        entity_id=str(record["id"]),
+        entity_type="eligibility_inquiry",
+        event_type="ELIGIBILITY_INQUIRY_SUBMITTED",
+        payload={"patient_id": body.patient_id, "file_name": file_name},
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {"inquiry_id": str(record["id"]), "file_name": file_name, "status": "submitted"}
+
+
+@router.post("/eligibility/poll")
+async def poll_eligibility(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Poll clearinghouse for 271 Eligibility Response files via SFTP."""
+    require_role(current, ["founder", "billing", "admin"])
+    publisher = get_event_publisher()
+    svc = DominationService(db, publisher)
+    cfg = _get_sftp_config()
+
+    try:
+        files = poll_eligibility_responses(cfg=cfg, max_files=50)
+    except OfficeAllyClientError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    ingested: list[dict[str, Any]] = []
+    for f in files:
+        record = await svc.create(
+            table="edi_artifacts",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            data={
+                "entity_type": "eligibility_response",
+                "file_type": "271",
+                "file_name": f["filename"],
+                "content_preview": f["content"][:500],
+                "size_bytes": f["size_bytes"],
+                "status": "ingested",
+            },
+        )
+        ingested.append({"artifact_id": str(record["id"]), "filename": f["filename"]})
+
+    publisher.publish_sync(
+        topic=f"tenant.{current.tenant_id}.billing.eligibility.polled",
+        tenant_id=current.tenant_id,
+        entity_id=None,
+        entity_type="eligibility_response",
+        event_type="ELIGIBILITY_RESPONSES_POLLED",
+        payload={"file_count": len(ingested)},
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {"polled_count": len(ingested), "files": ingested}
+
+
+@router.post("/claims/status-inquiry")
+async def submit_claim_status_inquiry(
+    body: ClaimStatusInquiryRequest,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Submit a 276 Claim Status Inquiry to the clearinghouse via SFTP."""
+    require_role(current, ["founder", "billing", "admin"])
+    publisher = get_event_publisher()
+    svc = DominationService(db, publisher)
+
+    isa_control = str(uuid.uuid4().int)[:9].zfill(9)
+    x12_lines = [
+        f"ISA*00*          *00*          *ZZ*FUSIONEMS      *ZZ*OFFICEALLY     *000000*0000*^*00501*{isa_control}*0*P*:~",
+        "GS*HN*FUSIONEMS*OFFICEALLY*20250101*0000*1*X*005010X212~",
+        "ST*276*0001*005010X212~",
+        "BHT*0010*13*CSI001*20250101*0000~",
+        "HL*1**20*1~",
+        f"NM1*PR*2*{body.payer_id or 'UNKNOWN'}*****PI*{body.payer_id or 'UNKNOWN'}~",
+        "HL*2*1*21*1~",
+        "NM1*41*2*FUSIONEMS*****46*000000000~",
+        "HL*3*2*19*0~",
+        f"NM1*IL*1*PATIENT*****MI*{body.member_id or 'UNKNOWN'}~",
+        f"TRN*1*{body.claim_id}*FUSIONEMS~",
+        f"REF*BLT*{body.claim_id}~",
+        "SE*12*0001~",
+        "GE*1*1~",
+        f"IEA*1*{isa_control}~",
+    ]
+    x12_text = "\n".join(x12_lines)
+    x12_bytes = x12_text.encode("utf-8")
+    file_name = f"276_{current.tenant_id}_{body.claim_id}_{isa_control}.x12"
+
+    cfg = _get_sftp_config()
+    try:
+        remote_path = submit_276_claim_status_inquiry(
+            cfg=cfg, file_name=file_name, x12_bytes=x12_bytes,
+        )
+    except OfficeAllyClientError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    record = await svc.create(
+        table="edi_artifacts",
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        data={
+            "entity_type": "claim_status_inquiry",
+            "claim_id": body.claim_id,
+            "file_type": "276",
+            "file_name": file_name,
+            "remote_path": remote_path,
+            "status": "submitted",
+        },
+    )
+    publisher.publish_sync(
+        topic=f"tenant.{current.tenant_id}.billing.claim-status.submitted",
+        tenant_id=current.tenant_id,
+        entity_id=str(record["id"]),
+        entity_type="claim_status_inquiry",
+        event_type="CLAIM_STATUS_INQUIRY_SUBMITTED",
+        payload={"claim_id": body.claim_id, "file_name": file_name},
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {"inquiry_id": str(record["id"]), "file_name": file_name, "status": "submitted"}
+
+
+@router.post("/claims/status-poll")
+async def poll_claim_status(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Poll clearinghouse for 277 Claim Status Response files, ingest via EDIService."""
+    require_role(current, ["founder", "billing", "admin"])
+    publisher = get_event_publisher()
+    svc = DominationService(db, publisher)
+    edi_svc = EDIService(db, publisher, current.tenant_id)
+    cfg = _get_sftp_config()
+
+    try:
+        files = poll_claim_status_responses(cfg=cfg, max_files=50)
+    except OfficeAllyClientError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    results: list[dict[str, Any]] = []
+    for f in files:
+        parsed = edi_svc.parse_277(f["content"])
+        record = await svc.create(
+            table="edi_artifacts",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            data={
+                "entity_type": "claim_status_response",
+                "file_type": "277",
+                "file_name": f["filename"],
+                "size_bytes": f["size_bytes"],
+                "parsed_claim_ids": parsed.get("claim_ids", []),
+                "parsed_status_codes": parsed.get("status_codes", []),
+                "status": "ingested",
+            },
+        )
+        results.append({
+            "artifact_id": str(record["id"]),
+            "filename": f["filename"],
+            "claim_ids": parsed.get("claim_ids", []),
+            "status_codes": parsed.get("status_codes", []),
+        })
+
+    publisher.publish_sync(
+        topic=f"tenant.{current.tenant_id}.billing.claim-status.polled",
+        tenant_id=current.tenant_id,
+        entity_id=None,
+        entity_type="claim_status_response",
+        event_type="CLAIM_STATUS_RESPONSES_POLLED",
+        payload={"file_count": len(results)},
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {"polled_count": len(results), "results": results}
+
+
+@router.post("/eras/poll")
+async def poll_eras(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Poll clearinghouse for 835 ERA files, parse and ingest via EDIService."""
+    require_role(current, ["founder", "billing", "admin"])
+    publisher = get_event_publisher()
+    svc = DominationService(db, publisher)
+    edi_svc = EDIService(db, publisher, current.tenant_id)
+    cfg = _get_sftp_config()
+
+    try:
+        files = poll_era_files(cfg=cfg, max_files=50)
+    except OfficeAllyClientError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    results: list[dict[str, Any]] = []
+    for f in files:
+        parsed = await edi_svc.parse_835(f["content"])
+        record = await svc.create(
+            table="edi_artifacts",
+            tenant_id=current.tenant_id,
+            actor_user_id=current.user_id,
+            data={
+                "entity_type": "era_remittance",
+                "file_type": "835",
+                "file_name": f["filename"],
+                "size_bytes": f["size_bytes"],
+                "payment_amount": parsed.get("payment_amount", 0),
+                "check_number": parsed.get("check_number", ""),
+                "claim_count": len(parsed.get("claims", [])),
+                "status": "ingested",
+            },
+        )
+        results.append({
+            "artifact_id": str(record["id"]),
+            "filename": f["filename"],
+            "payment_amount": parsed.get("payment_amount", 0),
+            "check_number": parsed.get("check_number", ""),
+            "claim_count": len(parsed.get("claims", [])),
+        })
+
+    publisher.publish_sync(
+        topic=f"tenant.{current.tenant_id}.billing.era.polled",
+        tenant_id=current.tenant_id,
+        entity_id=None,
+        entity_type="era_remittance",
+        event_type="ERA_FILES_POLLED",
+        payload={"file_count": len(results)},
+        correlation_id=getattr(request.state, "correlation_id", None),
+    )
+    return {"polled_count": len(results), "results": results}

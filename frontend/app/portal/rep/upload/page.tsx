@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { uploadAuthRepDocument } from '@/services/api';
 
 const PANEL_STYLE = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -115,24 +116,16 @@ export default function RepUploadPage() {
     try {
       const token = sessionStorage.getItem('rep_token') ?? '';
       const sessionId = sessionStorage.getItem('rep_session_id') ?? '';
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('document_type', docType);
-      formData.append('session_id', sessionId);
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/auth-rep/upload-document`,
+      const result = await uploadAuthRepDocument(
         {
-          method: 'POST',
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: formData,
-        }
+          file: selectedFile,
+          document_type: docType,
+          session_id: sessionId,
+        },
+        token || undefined
       );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail ?? `Upload failed (${res.status})`);
+      if (!result.ok) {
+        throw new Error(result.detail ?? `Upload failed (${result.status})`);
       }
       router.push('/portal/rep/sign');
     } catch (err: unknown) {

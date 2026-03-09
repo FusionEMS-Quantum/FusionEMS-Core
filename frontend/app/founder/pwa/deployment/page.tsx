@@ -1,262 +1,149 @@
 'use client';
-import Link from 'next/link';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Rocket, Server, ShieldCheck, AlertCircle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import {
+  getSystemHealthDashboard,
+  getSystemHealthServices,
+  getSSLExpiration,
+  getBackupsStatus,
+} from '@/services/api';
 
-const DOMAIN_COLOR = 'var(--color-system-fleet)';
+interface ServiceRecord {
+  name: string;
+  status: string;
+  version?: string;
+  desired_count?: number;
+  running_count?: number;
+  last_deployed?: string;
+}
 
-function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
-  return (
-    <div className="mb-4">
-      <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
-        {number} · {title}
+interface DashboardData {
+  total_services?: number;
+  healthy?: number;
+  degraded?: number;
+  down?: number;
+}
+
+export default function PWADeploymentPage() {
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [services, setServices] = useState<ServiceRecord[]>([]);
+  const [ssl, setSsl] = useState<Record<string, unknown> | null>(null);
+  const [backups, setBackups] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const results = await Promise.allSettled([
+          getSystemHealthDashboard(),
+          getSystemHealthServices(),
+          getSSLExpiration(),
+          getBackupsStatus(),
+        ]);
+        if (results[0].status === 'fulfilled') {
+          const d = results[0].value;
+          setDashboard(d?.data ?? d);
+        }
+        if (results[1].status === 'fulfilled') {
+          const s = results[1].value;
+          setServices(Array.isArray(s?.data) ? s.data : Array.isArray(s) ? s : []);
+        }
+        if (results[2].status === 'fulfilled') {
+          const s = results[2].value;
+          setSsl(s?.data ?? s);
+        }
+        if (results[3].status === 'fulfilled') {
+          const b = results[3].value;
+          setBackups(b?.data ?? b);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load deployment data');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500" />
       </div>
-      {sub && <p className="text-body text-zinc-500">{sub}</p>}
-    </div>
-  );
-}
+    );
+  }
 
-function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  if (error) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+      </div>
+    );
+  }
+
+  const totalSvc = dashboard?.total_services ?? services.length;
+  const healthy = dashboard?.healthy ?? 0;
+  const sslExpiry = ssl && typeof ssl === 'object' ? (ssl as Record<string, string>).expires_at ?? '—' : '—';
+  const lastBackup = backups && typeof backups === 'object' ? (backups as Record<string, string>).last_backup_at ?? '—' : '—';
+
   return (
-    <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className}`}
-      style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
-    >
-      {children}
-    </div>
-  );
-}
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex items-center gap-3">
+        <Link href="/founder/pwa" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
+        <Rocket className="h-6 w-6 text-cyan-400" />
+        <h1 className="text-2xl font-bold text-white">PWA Deployment Manager</h1>
+      </div>
 
-const badgeColors = {
-  ok: { bg: 'rgba(76,175,80,0.15)', color: 'var(--q-green)' },
-  warn: { bg: 'rgba(255,152,0,0.15)', color: 'var(--q-yellow)' },
-  error: { bg: 'rgba(229,57,53,0.15)', color: 'var(--q-red)' },
-  info: { bg: 'rgba(41,182,246,0.15)', color: 'var(--color-status-info)' },
-};
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Services', value: totalSvc, icon: Server, color: 'cyan' },
+          { label: 'Healthy', value: healthy, icon: ShieldCheck, color: 'green' },
+          { label: 'SSL Expiry', value: sslExpiry !== '—' ? new Date(sslExpiry).toLocaleDateString() : '—', icon: ShieldCheck, color: 'blue' },
+          { label: 'Last Backup', value: lastBackup !== '—' ? new Date(lastBackup).toLocaleDateString() : '—', icon: AlertCircle, color: 'purple' },
+        ].map((kpi) => (
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
+            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+            <div className="text-2xl font-bold text-white">{kpi.value}</div>
+          </motion.div>
+        ))}
+      </div>
 
-function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'error' | 'info' }) {
-  const s = badgeColors[status];
-  return (
-    <span
-      className="text-micro font-bold uppercase tracking-widest px-2 py-0.5 chamfer-4"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {label}
-    </span>
-  );
-}
-
-function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
-  return (
-    <Panel>
-      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
-      <div className="text-2xl font-black" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
-    </Panel>
-  );
-}
-
-function ProgressBar({ value, max, color }: { value: number; max: number; color?: string }) {
-  const pct = Math.min(100, (value / max) * 100);
-  return (
-    <div className="h-2  bg-zinc-950/[0.07] overflow-hidden w-full">
-      <div
-        className="h-full  transition-all duration-700"
-        style={{ width: `${pct}%`, background: color ?? DOMAIN_COLOR }}
-      />
-    </div>
-  );
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.4 } }),
-};
-
-const versionDist = [
-  { version: 'v2.4.1', devices: 44, pct: '93.6%', status: 'ok' as const },
-  { version: 'v2.4.0', devices: 2, pct: '4.3%', status: 'warn' as const },
-  { version: 'v2.3.9', devices: 1, pct: '2.1%', status: 'error' as const },
-];
-
-const pipeline = [
-  { stage: 'Build', status: 'ok' as const, ts: '2026-02-27 07:14', note: 'Webpack 5.91 · 2m 14s' },
-  { stage: 'Test', status: 'ok' as const, ts: '2026-02-27 07:16', note: '214 tests passed · 0 failed' },
-  { stage: 'Stage', status: 'ok' as const, ts: '2026-02-27 07:19', note: 'Staging smoke tests passed' },
-  { stage: 'Deploy', status: 'ok' as const, ts: '2026-02-27 07:23', note: 'CDN invalidation complete' },
-  { stage: 'Verify', status: 'ok' as const, ts: '2026-02-27 07:25', note: '44/47 devices confirmed' },
-];
-
-const deviceUpdates = [
-  { id: 'DEV-001', version: 'v2.4.1', lastSeen: '2min ago', updateStatus: 'ok' as const },
-  { id: 'DEV-007', version: 'v2.4.1', lastSeen: '4min ago', updateStatus: 'ok' as const },
-  { id: 'DEV-012', version: 'v2.4.0', lastSeen: '18min ago', updateStatus: 'warn' as const },
-  { id: 'DEV-019', version: 'v2.4.0', lastSeen: '1hr ago', updateStatus: 'warn' as const },
-  { id: 'DEV-031', version: 'v2.3.9', lastSeen: '3hr ago', updateStatus: 'error' as const },
-];
-
-const featureFlags = [
-  { name: 'Offline Mode', enabled: true },
-  { name: 'Push Notifications', enabled: true },
-  { name: 'Background Sync', enabled: true },
-  { name: 'Biometric Auth', enabled: false },
-  { name: 'Dark Mode Auto', enabled: true },
-  { name: 'GPS Tracking', enabled: true },
-];
-
-export default function DeploymentPage() {
-  return (
-    <div className="p-5 min-h-screen bg-black">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="pb-4 mb-6 border-b border-border-DEFAULT">
-        <div className="text-micro font-bold uppercase tracking-widest mb-1" style={{ color: DOMAIN_COLOR }}>
-          9 · PWA &amp; MOBILE
+      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+        <div className="p-4 border-b border-gray-700">
+          <h2 className="text-sm font-semibold text-white">Deployed Services</h2>
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">PWA Deployment Monitor</h1>
-        <p className="text-xs text-zinc-500 mt-1">Release pipeline · Version distribution · Device update tracking</p>
-      </motion.div>
-
-      {/* MODULE 1 — Deployment Status */}
-      <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 1" title="Deployment Status" sub="Current release health across fleet" />
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-          <StatCard label="Current Version" value="v2.4.1" color={DOMAIN_COLOR} />
-          <StatCard label="Last Deploy" value="2h ago" color="rgba(255,255,255,0.55)" />
-          <StatCard label="Total Devices" value={47} color="rgba(255,255,255,0.7)" />
-          <StatCard label="Updated" value={44} color="var(--color-status-active)" />
-          <StatCard label="Pending" value={3} color="var(--color-status-warning)" />
-          <StatCard label="Deploy Success" value="99.1%" color="var(--color-status-info)" />
-        </div>
-      </motion.div>
-
-      {/* MODULE 2 — Version Distribution */}
-      <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 2" title="Version Distribution" sub="App version spread across device fleet" />
-        <Panel>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-zinc-500 border-b border-border-subtle">
-                  {['Version', 'Device Count', 'Percentage', 'Status'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-micro">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {versionDist.map((row, i) => (
-                  <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-3 pr-6 text-zinc-100 font-bold font-mono">{row.version}</td>
-                    <td className="py-3 pr-6 text-zinc-100">{row.devices} devices</td>
-                    <td className="py-3 pr-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-24">
-                          <ProgressBar value={parseFloat(row.pct)} max={100} color={badgeColors[row.status].color} />
-                        </div>
-                        <span className="text-zinc-400">{row.pct}</span>
-                      </div>
-                    </td>
-                    <td className="py-3"><Badge label={row.status === 'ok' ? 'Current' : row.status === 'warn' ? 'Outdated' : 'Legacy'} status={row.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 3 — Deployment Pipeline */}
-      <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 3" title="Deployment Pipeline" sub="Last release — v2.4.1 · 2026-02-27" />
-        <Panel>
-          <div className="relative">
-            {/* connector line */}
-            <div className="absolute left-[15px] top-4 bottom-4 w-px bg-zinc-950/[0.08]" />
-            <div className="space-y-0">
-              {pipeline.map((step, i) => (
-                <div key={i} className="flex items-start gap-4 py-3 border-b border-border-subtle last:border-0">
-                  <div
-                    className="w-8 h-8  shrink-0 flex items-center justify-center text-micro font-black border-2 z-10"
-                    style={{
-                      background: 'var(--q-surface)',
-                      borderColor: badgeColors[step.status].color,
-                      color: badgeColors[step.status].color,
-                    }}
-                  >
-                    {i + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-0.5">
-                      <span className="text-xs font-bold text-zinc-100 uppercase tracking-widest">{step.stage}</span>
-                      <Badge label={step.status === 'ok' ? 'Passed' : step.status === 'warn' ? 'Warning' : 'Failed'} status={step.status} />
-                    </div>
-                    <div className="text-micro text-zinc-500">{step.note}</div>
-                    <div className="text-micro text-zinc-500 font-mono mt-0.5">{step.ts}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 4 — Device Update Status */}
-      <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 4" title="Device Update Status" sub="Per-device update rollout tracking" />
-        <Panel>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-zinc-500 border-b border-border-subtle">
-                  {['Device ID', 'Version', 'Last Seen', 'Update Status'].map(h => (
-                    <th key={h} className="text-left pb-2 pr-6 font-bold uppercase tracking-widest text-micro">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {deviceUpdates.map((d, i) => (
-                  <tr key={i} className="border-b border-border-subtle last:border-0">
-                    <td className="py-2.5 pr-6 text-zinc-100 font-mono font-bold">{d.id}</td>
-                    <td className="py-2.5 pr-6 text-zinc-100 font-mono">{d.version}</td>
-                    <td className="py-2.5 pr-6 text-zinc-400">{d.lastSeen}</td>
-                    <td className="py-2.5">
-                      <Badge
-                        label={d.updateStatus === 'ok' ? 'Up to date' : d.updateStatus === 'warn' ? 'Update available' : 'Needs update'}
-                        status={d.updateStatus}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-      </motion.div>
-
-      {/* MODULE 5 — PWA Feature Flags */}
-      <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-        <SectionHeader number="MOD 5" title="PWA Feature Flags" sub="Runtime feature toggle state" />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {featureFlags.map((flag, i) => (
-            <Panel key={i} className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-100">{flag.name}</span>
-              <Badge label={flag.enabled ? 'Enabled' : 'Disabled'} status={flag.enabled ? 'ok' : 'error'} />
-            </Panel>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* MODULE 6 — CDN & Cache Health */}
-      <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
-        <SectionHeader number="MOD 6" title="CDN &amp; Cache Health" sub="Edge delivery and bundle performance" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <StatCard label="Cache Hit Rate" value="94%" sub="Last 24h avg" color="var(--color-status-active)" />
-          <StatCard label="CDN Latency" value="18ms" sub="P50 global avg" color={DOMAIN_COLOR} />
-          <StatCard label="Bundle Size" value="2.1 MB" sub="Gzipped: 618 KB" color="var(--color-status-info)" />
-        </div>
-      </motion.div>
-
-        <Link href="/founder" className="text-xs text-orange-dim hover:text-[#FF4D00] transition-colors">
-        &larr; Back to Founder Command OS
-      </Link>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+            <tr>
+              <th className="px-4 py-3 text-left">Service</th>
+              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-left">Version</th>
+              <th className="px-4 py-3 text-left">Running / Desired</th>
+              <th className="px-4 py-3 text-left">Last Deployed</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {services.length === 0 ? (
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No deployment data available.</td></tr>
+            ) : services.map((s, i) => (
+              <tr key={i} className="hover:bg-gray-700/50">
+                <td className="px-4 py-3 text-white font-medium">{s.name}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${s.status === 'healthy' ? 'bg-green-900/50 text-green-300' : s.status === 'degraded' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-red-900/50 text-red-300'}`}>{s.status}</span>
+                </td>
+                <td className="px-4 py-3 text-gray-300">{s.version ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-300">{s.running_count ?? '—'} / {s.desired_count ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-400">{s.last_deployed ? new Date(s.last_deployed).toLocaleString() : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

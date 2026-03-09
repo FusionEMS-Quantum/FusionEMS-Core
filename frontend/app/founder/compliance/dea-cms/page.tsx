@@ -11,7 +11,16 @@ import {
   FounderStatusBar,
   type DomainHealth,
 } from '@/components/shells/FounderCommand';
-import { getAuthHeaderValue } from '@/services/auth';
+import {
+  createDEAEvidenceBundle,
+  getCMSGateAuditHistory,
+  getCMSGateAuditSummary,
+  getDEAEvidenceBundleDetail,
+  getDEAEvidenceBundlesHistory,
+  getDEANarcoticsAuditHistory,
+  runDEANarcoticsAudit,
+  verifyDEAEvidenceBundleHash,
+} from '@/services/api';
 
 type Severity = "ok" | "warn" | "critical";
 
@@ -123,12 +132,6 @@ interface EvidenceBundleVerifyResult {
   verified_at: string;
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
-
-function getToken(): string {
-  return getAuthHeaderValue();
-}
-
 function fmtTs(value: string | undefined): string {
   if (!value) return "—";
   try {
@@ -162,8 +165,7 @@ export default function FounderDEACMSPage() {
   const [busy, setBusy] = useState(false);
   const [bundleBusy, setBundleBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+  const [error, setError] = useState('');
   const commandActions = useMemo<NextAction[]>(() => {
     const actions: NextAction[] = [];
 
@@ -251,39 +253,16 @@ export default function FounderDEACMSPage() {
     ];
   }, [bundleHistory.length, cmsSummary, deaLatest]);
 
-  const authHeaders = useMemo(
-    () => ({ Authorization: getToken(), "Content-Type": "application/json" }),
-    [],
-  );
-
   const refresh = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [deaHistoryRes, cmsSummaryRes, cmsHistoryRes, bundleHistoryRes] = await Promise.all([
-        fetch(`${API}/api/v1/dea-compliance/audits/narcotics/history?limit=10`, {
-          headers: { Authorization: getToken() },
-        }),
-        fetch(`${API}/api/v1/cms-gate/audit/summary?days=30`, {
-          headers: { Authorization: getToken() },
-        }),
-        fetch(`${API}/api/v1/cms-gate/audit/history?limit=10`, {
-          headers: { Authorization: getToken() },
-        }),
-        fetch(`${API}/api/v1/dea-compliance/evidence-bundles/history?limit=10`, {
-          headers: { Authorization: getToken() },
-        }),
+      const [deaRows, summary, history, bundleRows] = await Promise.all([
+        getDEANarcoticsAuditHistory(10),
+        getCMSGateAuditSummary(30),
+        getCMSGateAuditHistory(10),
+        getDEAEvidenceBundlesHistory(10),
       ]);
-
-      if (!deaHistoryRes.ok) throw new Error(`DEA history failed (${deaHistoryRes.status})`);
-      if (!cmsSummaryRes.ok) throw new Error(`CMS summary failed (${cmsSummaryRes.status})`);
-      if (!cmsHistoryRes.ok) throw new Error(`CMS history failed (${cmsHistoryRes.status})`);
-      if (!bundleHistoryRes.ok) throw new Error(`Bundle history failed (${bundleHistoryRes.status})`);
-
-      const deaRows = (await deaHistoryRes.json()) as DEAAuditResult[];
-      const summary = (await cmsSummaryRes.json()) as CMSAuditSummary;
-      const history = (await cmsHistoryRes.json()) as CMSAuditHistoryRow[];
-      const bundleRows = (await bundleHistoryRes.json()) as EvidenceBundleHistoryRow[];
 
       setDeaHistory(deaRows);
       setDeaLatest(deaRows.length > 0 ? deaRows[0] : null);
@@ -305,15 +284,10 @@ export default function FounderDEACMSPage() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`${API}/api/v1/dea-compliance/audits/narcotics`, {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({ lookback_days: lookbackDays, min_count_events: 1 }),
-      });
-      if (!response.ok) {
-        throw new Error(`DEA audit failed (${response.status})`);
-      }
-      const audit = (await response.json()) as DEAAuditResult;
+      const audit = (await runDEANarcoticsAudit({
+        lookback_days: lookbackDays,
+        min_count_events: 1,
+      })) as DEAAuditResult;
       setDeaLatest(audit);
       await refresh();
     } catch (e: unknown) {
@@ -328,15 +302,10 @@ export default function FounderDEACMSPage() {
     setError("");
     setBundleVerify(null);
     try {
-      const response = await fetch(`${API}/api/v1/dea-compliance/evidence-bundles`, {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({ lookback_days: lookbackDays, include_raw_rows: false }),
-      });
-      if (!response.ok) {
-        throw new Error(`Bundle generation failed (${response.status})`);
-      }
-      const bundle = (await response.json()) as EvidenceBundleDetail;
+      const bundle = (await createDEAEvidenceBundle({
+        lookback_days: lookbackDays,
+        include_raw_rows: false,
+      })) as EvidenceBundleDetail;
       setBundleDetail(bundle);
       await refresh();
     } catch (e: unknown) {
@@ -351,14 +320,7 @@ export default function FounderDEACMSPage() {
     setBundleVerify(null);
     setError("");
     try {
-      const response = await fetch(
-        `${API}/api/v1/dea-compliance/evidence-bundles/${bundleId}?include_artifacts=true`,
-        { headers: { Authorization: getToken() } },
-      );
-      if (!response.ok) {
-        throw new Error(`Bundle load failed (${response.status})`);
-      }
-      const detail = (await response.json()) as EvidenceBundleDetail;
+      const detail = (await getDEAEvidenceBundleDetail(bundleId)) as EvidenceBundleDetail;
       setBundleDetail(detail);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load evidence bundle");
@@ -371,14 +333,7 @@ export default function FounderDEACMSPage() {
     setBundleBusy(true);
     setError("");
     try {
-      const response = await fetch(
-        `${API}/api/v1/dea-compliance/evidence-bundles/${bundleId}/verify-hash`,
-        { headers: { Authorization: getToken() } },
-      );
-      if (!response.ok) {
-        throw new Error(`Bundle verify failed (${response.status})`);
-      }
-      const result = (await response.json()) as EvidenceBundleVerifyResult;
+      const result = (await verifyDEAEvidenceBundleHash(bundleId)) as EvidenceBundleVerifyResult;
       setBundleVerify(result);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to verify bundle hash");

@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
+import {
+  listSupportInboxThreads,
+  listSupportThreadMessages,
+  resolveSupportInboxThread,
+  sendSupportInboxReply,
+  summarizeSupportInboxThread,
+  type SupportThreadApi,
+  type SupportThreadMessageApi,
+} from '@/services/api';
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -22,28 +24,6 @@ function relativeTime(iso: string): string {
 
 type ThreadStatus = 'open' | 'escalated' | 'resolved';
 type FilterTab = 'all' | 'escalated' | 'open' | 'resolved';
-
-interface SupportThread {
-  id: string;
-  status: ThreadStatus;
-  unread: boolean;
-  escalated: boolean;
-  updated_at: string;
-  data: {
-    title?: string;
-    context?: {
-      agency_name?: string;
-    };
-    last_message?: string;
-  };
-}
-
-interface SupportMessage {
-  id: string;
-  sender_role: 'agency' | 'founder' | 'ai';
-  content: string;
-  created_at: string;
-}
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 interface ToastItem {
@@ -105,10 +85,10 @@ function StatusBadge({ status }: { status: ThreadStatus }) {
 }
 
 export default function SupportInboxPage() {
-  const [threads, setThreads] = useState<SupportThread[]>([]);
+  const [threads, setThreads] = useState<SupportThreadApi[]>([]);
   const [filter, setFilter] = useState<FilterTab>('all');
-  const [activeThread, setActiveThread] = useState<SupportThread | null>(null);
-  const [messages, setMessages] = useState<SupportMessage[]>([]);
+  const [activeThread, setActiveThread] = useState<SupportThreadApi | null>(null);
+  const [messages, setMessages] = useState<SupportThreadMessageApi[]>([]);
   const [replyText, setReplyText] = useState('');
   const [summary, setSummary] = useState<string | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -122,12 +102,8 @@ export default function SupportInboxPage() {
   // ── Fetch threads ──────────────────────────────────────────────────────────
   const fetchThreads = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/v1/support/inbox?status=open&limit=50`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error('Failed to load threads');
-      const data = await res.json();
-      setThreads(Array.isArray(data) ? data : data.threads ?? []);
+      const data = await listSupportInboxThreads({ status: 'open', limit: 50 });
+      setThreads(data);
     } catch (err: unknown) {
       console.warn("[inbox] refresh", err);
     }
@@ -145,12 +121,8 @@ export default function SupportInboxPage() {
     setSummary(null);
     setSummaryOpen(false);
     try {
-      const res = await fetch(`${API}/api/v1/support/threads/${threadId}/messages`, {
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error('Failed to load messages');
-      const data = await res.json();
-      setMessages(Array.isArray(data) ? data : data.messages ?? []);
+      const data = await listSupportThreadMessages(threadId);
+      setMessages(data);
     } catch {
       pushToast('Failed to load messages', 'error');
     } finally {
@@ -171,12 +143,7 @@ export default function SupportInboxPage() {
     if (!activeThread || !replyText.trim()) return;
     setSendingReply(true);
     try {
-      const res = await fetch(`${API}/api/v1/support/inbox/${activeThread.id}/reply`, {
-        method: 'POST',
-        headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: replyText.trim() }),
-      });
-      if (!res.ok) throw new Error();
+      await sendSupportInboxReply(activeThread.id, { content: replyText.trim() });
       setReplyText('');
       await fetchMessages(activeThread.id);
       pushToast('Reply sent', 'success');
@@ -188,14 +155,10 @@ export default function SupportInboxPage() {
   }
 
   // ── Resolve thread ─────────────────────────────────────────────────────────
-  async function resolveThread(thread: SupportThread) {
+  async function resolveThread(thread: SupportThreadApi) {
     setResolvingId(thread.id);
     try {
-      const res = await fetch(`${API}/api/v1/support/inbox/${thread.id}/resolve`, {
-        method: 'POST',
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error();
+      await resolveSupportInboxThread(thread.id);
       pushToast('Thread resolved', 'success');
       await fetchThreads();
       if (activeThread?.id === thread.id) {
@@ -213,13 +176,8 @@ export default function SupportInboxPage() {
     if (!activeThread) return;
     setSummarizing(true);
     try {
-      const res = await fetch(`${API}/api/v1/support/inbox/${activeThread.id}/summarize`, {
-        method: 'POST',
-        headers: { Authorization: getToken() },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setSummary(data.summary ?? data.content ?? JSON.stringify(data));
+      const summaryText = await summarizeSupportInboxThread(activeThread.id);
+      setSummary(summaryText);
       setSummaryOpen(true);
     } catch {
       pushToast('Summarize failed', 'error');
@@ -237,11 +195,11 @@ export default function SupportInboxPage() {
 
   const unreadCount = threads.filter((t) => t.unread).length;
 
-  function agencyName(t: SupportThread): string {
+  function agencyName(t: SupportThreadApi): string {
     return t.data?.context?.agency_name || t.data?.title || 'Unknown Agency';
   }
 
-  function lastPreview(t: SupportThread): string {
+  function lastPreview(t: SupportThreadApi): string {
     const raw = t.data?.last_message ?? '';
     return raw.length > 60 ? raw.slice(0, 60) + '…' : raw;
   }

@@ -12,7 +12,13 @@ import {
   TerminalSquare,
   Network,
 } from "lucide-react";
-import { getQuantumStrategies, uploadQuantumCSV, getQuantumVaultDocuments } from "@/services/api";
+import {
+  getQuantumStrategies,
+  uploadQuantumCSV,
+  getQuantumVaultDocuments,
+  getQuantumEfileRealtimeStatusStreamUrl,
+  getQuantumVaultRenderUrl,
+} from "@/services/api";
 
 type TrackingEvent = {
   step: string;
@@ -59,9 +65,7 @@ export default function QuantumTaxShieldPage() {
     setIsTracking(true);
     setEfileLog([]);
     // Setup SSE connection
-    const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/quantum-founder/efile/realtime-status`
-    );
+    const eventSource = new EventSource(getQuantumEfileRealtimeStatusStreamUrl());
 
     eventSource.onmessage = (event) => {
       const parsedData = JSON.parse(event.data);
@@ -362,7 +366,7 @@ export default function QuantumTaxShieldPage() {
             <div className="col-span-1 lg:col-span-2 bg-zinc-950  shadow-[0_0_15px_rgba(0,0,0,0.6)] overflow-hidden min-h-[600px]">
               {selectedDocId ? (
                 <iframe 
-                  src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/quantum-founder/vault/render/${selectedDocId}`} 
+                  src={getQuantumVaultRenderUrl(selectedDocId)}
                   className="w-full h-full border-0"
                   title="Document Viewer"
                 />

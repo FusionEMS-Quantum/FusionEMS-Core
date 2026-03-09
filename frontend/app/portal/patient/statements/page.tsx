@@ -4,6 +4,7 @@ import { QuantumTableSkeleton } from '@/components/ui';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BILLING_PHONE_DISPLAY, BILLING_PHONE_TEL } from '@/lib/phone';
+import { getPatientStatements } from '@/services/api';
 
 type StatementStatus = 'paid' | 'pending' | 'overdue' | 'in_review';
 
@@ -90,9 +91,7 @@ export default function PatientStatementsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/patient/statements`);
-        if (!res.ok) throw new Error('Not OK');
-        const data = await res.json();
+        const data = await getPatientStatements();
         setStatements(data);
       } catch (e: unknown) {
         console.warn('[statements load error]', e);

@@ -3,8 +3,16 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ModuleDashboardShell } from "@/components/shells/PageShells";
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
+import {
+  getStandaloneMobileOpsAdoptionKpis,
+  getStandaloneMobileOpsCredentialCompliance,
+  getStandaloneMobileOpsDevices,
+  getStandaloneMobileOpsPushAnalytics,
+  getStandaloneMobileOpsPwaDeployments,
+  getStandaloneMobileOpsStaffingShortagePredictor,
+  getStandaloneMobileOpsSyncHealth,
+  getStandaloneMobileOpsVersionAdoption,
+} from "@/services/api";
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -61,14 +69,31 @@ export default function MobileOpsPage() {
   const [shortage, setShortage] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
-    fetch(`${API}/api/v1/mobile-ops/pwa/deployments`).then(r => r.json()).then(setDeployments).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/devices`).then(r => r.json()).then(setDevices).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/pwa/version-adoption`).then(r => r.json()).then(setVersionAdoption).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/sync/health`).then(r => r.json()).then(setSyncHealth).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/push/analytics`).then(r => r.json()).then(setPushAnalytics).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/adoption/kpis`).then(r => r.json()).then(setAdoptionKpis).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/credentials/compliance`).then(r => r.json()).then(setCredCompliance).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/mobile-ops/staffing/shortage-predictor`).then(r => r.json()).then(setShortage).catch((e: unknown) => { console.warn("[fetch error]", e); });
+    void Promise.allSettled([
+      getStandaloneMobileOpsPwaDeployments(),
+      getStandaloneMobileOpsDevices(),
+      getStandaloneMobileOpsVersionAdoption(),
+      getStandaloneMobileOpsSyncHealth(),
+      getStandaloneMobileOpsPushAnalytics(),
+      getStandaloneMobileOpsAdoptionKpis(),
+      getStandaloneMobileOpsCredentialCompliance(),
+      getStandaloneMobileOpsStaffingShortagePredictor(),
+    ]).then((results) => {
+      if (results[0].status === "fulfilled") setDeployments(results[0].value);
+      if (results[1].status === "fulfilled") setDevices(results[1].value);
+      if (results[2].status === "fulfilled") setVersionAdoption(results[2].value as { version_adoption?: Array<{ version: string; count: number; pct: number }>; total_devices?: number });
+      if (results[3].status === "fulfilled") setSyncHealth(results[3].value);
+      if (results[4].status === "fulfilled") setPushAnalytics(results[4].value);
+      if (results[5].status === "fulfilled") setAdoptionKpis(results[5].value);
+      if (results[6].status === "fulfilled") setCredCompliance(results[6].value);
+      if (results[7].status === "fulfilled") setShortage(results[7].value);
+
+      results.forEach((result) => {
+        if (result.status === "rejected") {
+          console.warn("[fetch error]", result.reason);
+        }
+      });
+    });
   }, []);
 
   const fmtN = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");

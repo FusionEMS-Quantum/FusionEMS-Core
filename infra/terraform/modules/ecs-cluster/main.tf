@@ -64,7 +64,10 @@ resource "aws_ecr_repository" "backend" {
   }
 
   encryption_configuration {
-    encryption_type = "KMS"
+    # Match live state (AES256) to avoid unnecessary repository replacement.
+    # If you later want KMS-backed encryption, perform a controlled migration
+    # to create new repos or re-encrypt artifacts with minimal disruption.
+    encryption_type = "AES256"
   }
 
   tags = merge(local.common_tags, {
@@ -81,7 +84,8 @@ resource "aws_ecr_repository" "frontend" {
   }
 
   encryption_configuration {
-    encryption_type = "KMS"
+    # Match live state (AES256) to avoid unnecessary repository replacement.
+    encryption_type = "AES256"
   }
 
   tags = merge(local.common_tags, {
@@ -256,7 +260,9 @@ resource "aws_wafv2_web_acl_association" "alb" {
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${local.name_prefix}"
   retention_in_days = var.log_retention_days
-  kms_key_id        = "alias/aws/logs"
+  # Set optionally via module input to avoid applying a KMS association when
+  # the alias/key does not exist in the target account/region.
+  kms_key_id        = var.cloudwatch_kms_key_id != "" ? var.cloudwatch_kms_key_id : null
 
   tags = merge(local.common_tags, {
     Name = "/ecs/${local.name_prefix}"

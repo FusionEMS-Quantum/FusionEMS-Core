@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalNotifications, markPortalNotificationsRead, markPortalNotificationRead } from '@/services/api';
 
 interface Notification {
   id: string;
@@ -56,24 +57,22 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/portal/notifications`, { credentials: 'include' })
-      .then(r => r.json())
+    getPortalNotifications()
       .then(d => setNotifications(Array.isArray(d) ? d : d.items ?? []))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load notifications'))
       .finally(() => setLoading(false));
-  }, [apiBase]);
+  }, []);
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    fetch(`${apiBase}/api/v1/portal/notifications/read-all`, { method: 'POST', credentials: 'include' }).catch(() => null);
+    markPortalNotificationsRead().catch(() => null);
   };
 
   const markRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    fetch(`${apiBase}/api/v1/portal/notifications/${id}/read`, { method: 'POST', credentials: 'include' }).catch(() => null);
+    markPortalNotificationRead(id).catch(() => null);
   };
 
   const filtered = filter === 'unread' ? notifications.filter(n => !n.read) : notifications;

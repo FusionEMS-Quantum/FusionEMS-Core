@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+import { getPublicOnboardingStatus } from '@/services/api';
 const POLL_INTERVAL_MS = 5000;
 
 type ProvisioningStatus =
@@ -150,14 +149,7 @@ export default function SuccessPage() {
 
   const poll = useCallback(async (appId: string) => {
     try {
-      const res = await fetch(`${API_BASE}/public/onboarding/status/${appId}`);
-      if (!res.ok) {
-        let msg = `Status check failed (${res.status})`;
-        try { const b = await res.json(); if (b?.detail) msg = b.detail; } catch {}
-        setPollError(msg);
-        return;
-      }
-      const data: StatusResponse = await res.json();
+      const data = await getPublicOnboardingStatus<StatusResponse>(appId);
       setStatusData(data);
       setPollError('');
 

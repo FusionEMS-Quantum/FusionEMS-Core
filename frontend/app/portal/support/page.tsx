@@ -6,15 +6,12 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
-function authHeader(): Record<string, string> {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: 'Bearer ' + (localStorage.getItem('qs_token') || ''),
-  };
-}
+import {
+  createPortalSupportThread,
+  createPortalSupportThreadMessage,
+  listPortalSupportThreadMessages,
+  listPortalSupportThreads,
+} from '@/services/api';
 
 type ThreadType =
   | 'General Support'
@@ -106,18 +103,12 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/api/v1/support/threads`, {
-        method: 'POST',
-        headers: authHeader(),
-        body: JSON.stringify({
-          thread_type: threadType,
-          title: title.trim(),
-          initial_message: initialMessage.trim(),
-        }),
+      const data = await createPortalSupportThread({
+        thread_type: threadType,
+        title: title.trim(),
+        initial_message: initialMessage.trim(),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: SupportThread = await res.json();
-      onCreate(data);
+      onCreate(data as SupportThread);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Request failed';
       setError(message);
@@ -230,12 +221,8 @@ export default function AgencySupportPage() {
   // ── Fetch threads ──────────────────────────────────────────────────────────
   const fetchThreads = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/v1/support/threads`, {
-        headers: authHeader(),
-      });
-      if (!res.ok) return;
-      const data: SupportThread[] = await res.json();
-      setThreads(data);
+      const data = await listPortalSupportThreads();
+      setThreads(data as SupportThread[]);
     } catch (err: unknown) {
       console.warn("[support]", err);
     }
@@ -244,13 +231,8 @@ export default function AgencySupportPage() {
   // ── Fetch messages for active thread ──────────────────────────────────────
   const fetchMessages = useCallback(async (threadId: string) => {
     try {
-      const res = await fetch(
-        `${API}/api/v1/support/threads/${threadId}/messages`,
-        { headers: authHeader() }
-      );
-      if (!res.ok) return;
-      const data: SupportMessage[] = await res.json();
-      setMessages(data);
+      const data = await listPortalSupportThreadMessages(threadId);
+      setMessages(data as SupportMessage[]);
     } catch (err: unknown) {
       console.warn("[support]", err);
     }
@@ -299,15 +281,7 @@ export default function AgencySupportPage() {
     setInput('');
     setSending(true);
     try {
-      const res = await fetch(
-        `${API}/api/v1/support/threads/${selectedThread.id}/messages`,
-        {
-          method: 'POST',
-          headers: authHeader(),
-          body: JSON.stringify({ content }),
-        }
-      );
-      if (!res.ok) throw new Error();
+      await createPortalSupportThreadMessage(selectedThread.id, { content });
       await fetchMessages(selectedThread.id);
     } catch {
       setInput(content); // restore on failure

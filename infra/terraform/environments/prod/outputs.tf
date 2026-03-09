@@ -84,3 +84,35 @@ output "cognito_user_pool_endpoint" {
   description = "Cognito user pool endpoint"
   value       = module.cognito.user_pool_endpoint
 }
+
+# ─── Security Control Plane ────────────────────────────────────────────────
+
+output "cloudtrail_trail_arn" {
+  description = "ARN of the CloudTrail trail"
+  value       = module.cloudtrail.trail_arn
+}
+
+output "guardduty_detector_id" {
+  description = "GuardDuty detector ID"
+  value       = module.guardduty.detector_id
+}
+
+output "aws_config_recorder_id" {
+  description = "AWS Config recorder identifier"
+  value       = module.aws_config.recorder_id
+}
+
+output "security_hub_finding_rule_arn" {
+  description = "EventBridge rule ARN for Security Hub CRITICAL/HIGH findings"
+  value       = module.security_hub.finding_rule_arn
+}
+
+output "backup_vault_arn" {
+  description = "AWS Backup vault ARN"
+  value       = module.backup.vault_arn
+}
+
+output "vulnerability_alarm_arn" {
+  description = "Critical vulnerability CloudWatch alarm ARN"
+  value       = module.vulnerability_scanning.critical_vuln_alarm_arn
+}

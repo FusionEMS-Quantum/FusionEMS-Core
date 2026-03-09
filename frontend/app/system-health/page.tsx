@@ -4,8 +4,17 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ModuleDashboardShell } from "@/components/shells/PageShells";
 import { normalizeSeverity } from "@/lib/design-system/severity";
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
+import {
+  getStandaloneSystemHealthAlerts,
+  getStandaloneSystemHealthBackupsStatus,
+  getStandaloneSystemHealthDashboard,
+  getStandaloneSystemHealthMonitoringCoverage,
+  getStandaloneSystemHealthResilienceScore,
+  getStandaloneSystemHealthServices,
+  getStandaloneSystemHealthSslExpiration,
+  getStandaloneSystemHealthUptimeSla,
+  resolveStandaloneSystemHealthAlert,
+} from "@/services/api";
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -84,14 +93,31 @@ export default function SystemHealthPage() {
   const [coverage, setCoverage] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
-    fetch(`${API}/api/v1/system-health/dashboard`).then(r => r.json()).then(setDash).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/services`).then(r => r.json()).then(d => setServices(d.services ?? [])).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/alerts`).then(r => r.json()).then(setAlerts).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/uptime/sla`).then(r => r.json()).then(setUptime).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/resilience-score`).then(r => r.json()).then(setResilience).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/ssl/expiration`).then(r => r.json()).then(setSsl).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/backups/status`).then(r => r.json()).then(setBackups).catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/system-health/monitoring/coverage`).then(r => r.json()).then(setCoverage).catch((e: unknown) => { console.warn("[fetch error]", e); });
+    void Promise.allSettled([
+      getStandaloneSystemHealthDashboard(),
+      getStandaloneSystemHealthServices(),
+      getStandaloneSystemHealthAlerts(),
+      getStandaloneSystemHealthUptimeSla(),
+      getStandaloneSystemHealthResilienceScore(),
+      getStandaloneSystemHealthSslExpiration(),
+      getStandaloneSystemHealthBackupsStatus(),
+      getStandaloneSystemHealthMonitoringCoverage(),
+    ]).then((results) => {
+      if (results[0].status === "fulfilled") setDash(results[0].value);
+      if (results[1].status === "fulfilled") setServices(results[1].value);
+      if (results[2].status === "fulfilled") setAlerts(results[2].value);
+      if (results[3].status === "fulfilled") setUptime(results[3].value);
+      if (results[4].status === "fulfilled") setResilience(results[4].value);
+      if (results[5].status === "fulfilled") setSsl(results[5].value as { domains?: Array<{ domain: string; expires_in_days: number; status: string }> });
+      if (results[6].status === "fulfilled") setBackups(results[6].value);
+      if (results[7].status === "fulfilled") setCoverage(results[7].value);
+
+      results.forEach((result) => {
+        if (result.status === "rejected") {
+          console.warn("[fetch error]", result.reason);
+        }
+      });
+    });
   }, []);
 
   const fmtN = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
@@ -103,7 +129,7 @@ export default function SystemHealthPage() {
 
   const handleResolveAlert = async (id: string) => {
     try {
-      await fetch(`${API}/api/v1/system-health/alerts/${id}/resolve`, { method: "POST" });
+      await resolveStandaloneSystemHealthAlert(id);
       setAlerts(prev => ({
         ...prev,
         alerts: prev.alerts?.map(a => a.id === id ? { ...a, data: { ...(a.data as Record<string,unknown>), status: "resolved" } } : a),

@@ -55,3 +55,20 @@ github_allowed_subjects = [
   "repo:FusionEMS-Quantum/FusionEMS-Core:ref:refs/heads/main",
   "repo:FusionEMS-Quantum/FusionEMS-Core:pull_request",
 ]
+
+# ─── Centralized Billing Line (Telnyx) ─────────────────────────────────────
+
+central_billing_desired_tollfree_prefix = "888"
+central_billing_existing_phone_e164     = "+18883650144"
+
+# Temporarily exclude interface endpoints that conflict with existing VPC DNS
+# records (e.g., logs/secretsmanager). These are deliberately narrowed to avoid
+# creating endpoints that would fail due to pre-existing DNS domains; revisit
+# with a controlled migration to enable private DNS endpoints safely.
+interface_endpoint_services = [
+  "ecr.api",
+  "ecr.dkr",
+  "sts",
+  "ssm",
+  "kms",
+]

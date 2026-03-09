@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { signAuthRep } from '@/services/api';
 
 const PANEL_STYLE = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -113,24 +114,16 @@ export default function RepSignPage() {
       const token = sessionStorage.getItem('rep_token') ?? '';
       const repId = sessionStorage.getItem('rep_id') ?? '';
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/auth-rep/sign`,
+      const result = await signAuthRep(
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            authorized_rep_id: repId,
-            signature_data: sigDataUrl,
-            agreed_to_terms: true,
-          }),
-        }
+          authorized_rep_id: repId,
+          signature_data: sigDataUrl,
+          agreed_to_terms: true,
+        },
+        token || undefined
       );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.detail ?? `Submission failed (${res.status})`);
+      if (!result.ok) {
+        throw new Error(result.detail ?? `Submission failed (${result.status})`);
       }
       router.push('/portal/patient');
     } catch (err: unknown) {

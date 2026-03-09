@@ -18,8 +18,8 @@ import uuid
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from core_app.core.config import get_settings
 from core_app.core.brand import resolve_tenant_brand
+from core_app.core.config import get_settings
 from core_app.core.errors import AppError
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher

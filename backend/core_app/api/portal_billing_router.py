@@ -9,10 +9,10 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, get_current_user, require_role
+from core_app.api.dependencies import db_session_dependency, require_role
 from core_app.schemas.auth import CurrentUser
 from core_app.services.billing_command_service import BillingCommandService
 from core_app.services.export_offboarding_service import ExportOffboardingService

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { requestPatientPortalPasswordReset } from '@/services/api';
 
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: 'var(--color-bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-body)', position: 'relative' },
@@ -29,13 +30,8 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${apiBase}/api/v1/auth/password-reset/request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      if (!res.ok && res.status !== 404) {
+      const result = await requestPatientPortalPasswordReset({ email: email.trim() });
+      if (!result.ok && result.status !== 404) {
         throw new Error('Unable to process request. Please try again.');
       }
       setSent(true);

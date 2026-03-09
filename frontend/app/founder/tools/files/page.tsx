@@ -1,10 +1,9 @@
 'use client';
 import { QuantumTableSkeleton } from '@/components/ui';
+import { getGraphDriveRoot, getGraphDriveFolder, getGraphDriveItemDownloadUrl } from '@/services/api';
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? '';
 
 type DriveItem = {
   id: string;
@@ -74,11 +73,8 @@ export default function FounderFilesPage() {
 
   const loadFolder = (itemId: string | null) => {
     setLoading(true);
-    const url = itemId
-      ? `${API}/api/v1/founder/graph/drive/folders/${itemId}`
-      : `${API}/api/v1/founder/graph/drive`;
-    fetch(url)
-      .then((r) => r.json())
+    const request = itemId ? getGraphDriveFolder(itemId) : getGraphDriveRoot();
+    request
       .then((d) => setItems(d.value ?? []))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
@@ -107,12 +103,12 @@ export default function FounderFilesPage() {
     if (isOfficeFile(item) && item.webUrl) {
       setPreviewUrl(`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(item.webUrl)}`);
     } else if (isPdf(item)) {
-      setPreviewUrl(`${API}/api/v1/founder/graph/drive/items/${item.id}/download`);
+      setPreviewUrl(getGraphDriveItemDownloadUrl(item.id));
     }
   };
 
   const downloadItem = (item: DriveItem) => {
-    window.open(`${API}/api/v1/founder/graph/drive/items/${item.id}/download`, '_blank');
+    window.open(getGraphDriveItemDownloadUrl(item.id), '_blank');
   };
 
   return (

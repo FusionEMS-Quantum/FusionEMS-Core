@@ -144,7 +144,6 @@ resource "aws_cloudwatch_log_group" "waf" {
 
   name              = "aws-waf-logs-${local.name_prefix}-edge"
   retention_in_days = 365
-  kms_key_id        = "alias/aws/logs"
 
   tags = local.common_tags
 }
@@ -253,6 +252,63 @@ resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "cloudfront_logs" {
+  count  = var.create_cloudfront_log_policy ? 1 : 0
+  bucket = aws_s3_bucket.cloudfront_logs.id
+
+  depends_on = [aws_s3_bucket_public_access_block.cloudfront_logs]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.cloudfront_logs.arn,
+          "${aws_s3_bucket.cloudfront_logs.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      },
+      {
+        Sid    = "AllowLogsDeliveryPutObject"
+        Effect = "Allow"
+        Principal = {
+          Service = [
+            "delivery.logs.amazonaws.com",
+            "logging.s3.amazonaws.com"
+          ]
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.cloudfront_logs.arn}/*"
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      },
+      {
+        Sid    = "AllowLogsDeliveryGetBucketAcl"
+        Effect = "Allow"
+        Principal = {
+          Service = [
+            "delivery.logs.amazonaws.com",
+            "logging.s3.amazonaws.com"
+          ]
+        }
+        Action   = "s3:GetBucketAcl"
+        Resource = aws_s3_bucket.cloudfront_logs.arn
+      }
+    ]
+  })
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" {
   bucket = aws_s3_bucket.cloudfront_logs.id
 
@@ -261,6 +317,24 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" 
       sse_algorithm = "AES256"
     }
   }
+}
+
+resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_acl" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  acl    = "log-delivery-write"
+
+  depends_on = [
+    aws_s3_bucket_ownership_controls.cloudfront_logs,
+    aws_s3_bucket_public_access_block.cloudfront_logs,
+  ]
 }
 
 # ========================= CloudFront Distribution ============================
@@ -344,6 +418,8 @@ resource "aws_cloudfront_distribution" "this" {
       restriction_type = "none"
     }
   }
+
+  depends_on = [aws_s3_bucket_acl.cloudfront_logs]
 
   tags = local.common_tags
 }

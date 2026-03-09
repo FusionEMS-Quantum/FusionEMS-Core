@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { loginPatientPortalSession } from '@/services/api';
 
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-body)', position: 'relative' },
@@ -34,16 +35,9 @@ export default function PatientLoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${apiBase}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.detail || 'Invalid email or password. Please try again.');
+      const result = await loginPatientPortalSession({ email: email.trim(), password });
+      if (!result.ok) {
+        throw new Error(result.detail || 'Invalid email or password. Please try again.');
       }
       router.push('/portal/patient/home');
     } catch (err) {

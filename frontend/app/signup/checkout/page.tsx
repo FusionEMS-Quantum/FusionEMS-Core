@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+import { startPublicOnboardingCheckout } from '@/services/api';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -26,22 +25,7 @@ export default function CheckoutPage() {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/public/onboarding/checkout/start`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ application_id: applicationId }),
-        });
-
-        if (!res.ok) {
-          let msg = `Error ${res.status}: ${res.statusText}`;
-          try {
-            const body = await res.json();
-            if (body?.detail) msg = body.detail;
-          } catch {}
-          throw new Error(msg);
-        }
-
-        const data = await res.json();
+        const data = await startPublicOnboardingCheckout<{ checkout_url?: string }>({ application_id: applicationId });
         const url  = data?.checkout_url || '';
         if (!url) throw new Error('No checkout URL returned from server.');
 

@@ -1,9 +1,14 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
+import {
+  createDispatchRequestPortal,
+  injectDispatchRequestPortal,
+  listDispatchRequestsPortal,
+  listTransportLinkFacilitySchedule,
+  validateDispatchRequestPortal,
+  type DispatchRequestApi,
+} from '@/services/api';
 
 const REQUEST_STATE_COLORS: Record<string, { bg: string; text: string }> = {
   REQUEST_CREATED:    { bg: 'rgba(120,130,140,0.2)', text: '#78909c' },
@@ -51,6 +56,14 @@ interface TransportRequest {
   };
 }
 
+function toTransportRequest(row: DispatchRequestApi): TransportRequest {
+  const data = row.data as TransportRequest['data'];
+  return {
+    id: row.id,
+    data,
+  };
+}
+
 export default function TransportLinkPage() {
   const [requests, setRequests] = useState<TransportRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,27 +82,20 @@ export default function TransportLinkPage() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/api/v1/dispatch/requests?limit=100`, { headers: { Authorization: getToken() } });
-      if (r.ok) {
-        const j = await r.json();
-        // Filter to facility/interfacility requests
-        const all = Array.isArray(j) ? j : (j.requests ?? j.data ?? []);
-        setRequests(all.filter((r: TransportRequest) => r.data?.origin_facility));
-      }
+      const all = await listDispatchRequestsPortal(100);
+      setRequests(all.map(toTransportRequest).filter((r) => r.data?.origin_facility));
     } finally { setLoading(false); }
   }, []);
 
   // Also get from transportlink endpoint
   const loadTransportlink = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/api/v1/transportlink/facilities/00000000-0000-0000-0000-000000000000/schedule`, { headers: { Authorization: getToken() } });
-      if (r.ok) {
-        const all = await r.json();
-        if (Array.isArray(all)) setRequests(prev => {
-          const ids = new Set(prev.map(p => p.id));
-          return [...prev, ...all.filter((r: TransportRequest) => !ids.has(r.id))];
-        });
-      }
+      const all = await listTransportLinkFacilitySchedule('00000000-0000-0000-0000-000000000000');
+      setRequests(prev => {
+        const ids = new Set(prev.map(p => p.id));
+        const mapped = all.map(toTransportRequest);
+        return [...prev, ...mapped.filter((r) => !ids.has(r.id))];
+      });
     } catch { /* ignore */ }
   }, []);
 
@@ -99,39 +105,28 @@ export default function TransportLinkPage() {
     if (!newReq.origin_address || !newReq.origin_facility) return;
     setCreating(true);
     try {
-      const r = await fetch(`${API}/api/v1/dispatch/requests`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newReq,
-          request_type: 'INTERFACILITY',
-          state: 'REQUEST_CREATED',
-        }),
+      await createDispatchRequestPortal({
+        ...newReq,
+        request_type: 'INTERFACILITY',
+        state: 'REQUEST_CREATED',
       });
-      if (r.ok) {
-        showToast('Facility transport request created');
-        setNewReq({ origin_facility: '', destination_facility: '', origin_address: '', destination_address: '', service_level: 'BLS', priority: 'P2', chief_complaint: '', contact_name: '', contact_phone: '' });
-        setActiveTab('requests');
-        load();
-      }
+      showToast('Facility transport request created');
+      setNewReq({ origin_facility: '', destination_facility: '', origin_address: '', destination_address: '', service_level: 'BLS', priority: 'P2', chief_complaint: '', contact_name: '', contact_phone: '' });
+      setActiveTab('requests');
+      load();
     } finally { setCreating(false); }
   };
 
   const injectToCad = async (requestId: string) => {
-    const r = await fetch(`${API}/api/v1/dispatch/requests/${requestId}/inject`, {
-      method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    const j = await r.json();
+    const j = await injectDispatchRequestPortal(requestId);
     if (!j.error) { showToast('Injected to CAD — mission created'); load(); }
     else showToast(`Error: ${j.error}`);
   };
 
   const validate = async (requestId: string) => {
-    const r = await fetch(`${API}/api/v1/dispatch/requests/${requestId}/validate`, {
-      method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    if (r.ok) { showToast('Request validated'); load(); }
+    await validateDispatchRequestPortal(requestId);
+    showToast('Request validated');
+    load();
   };
 
   const pending = requests.filter(r => ['REQUEST_CREATED', 'REQUEST_VALIDATED'].includes(r.data?.state));

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getPortalPaymentPlans, submitPortalSupportRequest } from '@/services/api';
 
 interface PaymentPlan {
   id: string;
@@ -111,25 +112,18 @@ export default function PaymentPlansPage() {
   const [simulatorBalance, setSimulatorBalance] = useState('50000');
   const [simulatorMonths, setSimulatorMonths] = useState('6');
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
   useEffect(() => {
-    fetch(`${apiBase}/api/v1/portal/payment-plans`, { credentials: 'include' })
-      .then(r => r.json())
+    getPortalPaymentPlans()
       .then(d => setPlans(Array.isArray(d) ? d : d.items ?? []))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load payment plans'))
       .finally(() => setLoading(false));
-  }, [apiBase]);
+  }, []);
 
   const handleRequest = async () => {
     setRequesting(true);
     try {
-      await fetch(`${apiBase}/api/v1/portal/support`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: 'payment_plan', subject: 'Payment Plan Request', message: 'Patient requesting a payment plan. Please contact.' }),
-      });
+      await submitPortalSupportRequest({ category: 'payment_plan', subject: 'Payment Plan Request', body: 'Patient requesting a payment plan. Please contact.' });
       setRequestSent(true);
     } catch {
       setRequestSent(true);

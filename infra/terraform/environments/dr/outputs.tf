@@ -84,3 +84,19 @@ output "neris_export_queue_url" {
   description = "NERIS export SQS queue URL"
   value       = module.sqs.queue_urls["neris-export"]
 }
+
+# ─── Security Control Plane ────────────────────────────────────────────────
+
+output "cloudtrail_trail_arn" {
+  description = "ARN of the CloudTrail trail"
+  value       = module.cloudtrail.trail_arn
+}
+
+
+
+
+output "backup_vault_arn" {
+  description = "AWS Backup vault ARN"
+  value       = module.backup.vault_arn
+}
+

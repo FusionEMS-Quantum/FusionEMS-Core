@@ -1,33 +1,58 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
+import {
+  getStandaloneBillingDashboardArAging,
+  getStandaloneBillingDashboardExecutiveSummary,
+  getStandaloneBillingDashboardKpis,
+  getStandaloneBillingDashboardPayerPerformance,
+} from '@/services/api';
 
-const KPI_CARDS = [
-  { label: 'MRR', value: '$2,847,391', sub: 'Monthly Recurring Revenue', accent: 'var(--color-status-info)' },
-  { label: 'YTD Revenue', value: '$31,204,770', sub: 'Year-to-date collected', accent: 'var(--color-status-info)' },
-  { label: 'Clean Claim Rate', value: '94.2%', sub: 'First-pass acceptance', accent: 'var(--color-status-active)' },
-  { label: 'Avg Days in AR', value: '28.4', sub: 'Days outstanding', accent: 'var(--color-status-warning)' },
-  { label: 'Denial Rate', value: '3.8%', sub: 'Claims denied by payer', accent: 'var(--color-brand-red)' },
-  { label: 'Collection Rate', value: '91.7%', sub: 'Net collection efficiency', accent: 'var(--color-status-info)' },
-];
+type FetchStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-const AR_AGING = [
-  { bucket: '0 – 30 Days', count: 1842, amount: '$1,204,388', pct: '42.3%' },
-  { bucket: '31 – 60 Days', count: 934, amount: '$689,241', pct: '24.2%' },
-  { bucket: '61 – 90 Days', count: 521, amount: '$398,112', pct: '14.0%' },
-  { bucket: '91 – 120 Days', count: 318, amount: '$261,804', pct: '9.2%' },
-  { bucket: '120+ Days', count: 294, amount: '$293,477', pct: '10.3%' },
-];
+interface BillingKpis {
+  clean_claim_rate?: number;
+  denial_rate?: number;
+  total_claims?: number;
+  total_revenue_cents?: number;
+  avg_days_in_ar?: number;
+  net_collection_rate?: number;
+}
 
-const PAYER_PERF = [
-  { payer: 'Medicare', submitted: '$1,182,440', paid: '$1,049,822', denial: '2.1%', avgDays: 21 },
-  { payer: 'Medicaid', submitted: '$634,200', paid: '$521,410', denial: '5.8%', avgDays: 34 },
-  { payer: 'BCBS', submitted: '$488,760', paid: '$441,200', denial: '3.4%', avgDays: 27 },
-  { payer: 'UHC', submitted: '$374,100', paid: '$330,480', denial: '4.2%', avgDays: 31 },
-  { payer: 'Aetna', submitted: '$298,880', paid: '$266,014', denial: '3.9%', avgDays: 29 },
-  { payer: 'Self-Pay', submitted: '$187,340', paid: '$94,210', denial: '0.0%', avgDays: 62 },
-];
+interface ExecSummary {
+  mrr_cents?: number;
+  total_revenue_cents?: number;
+}
+
+interface ArBucket {
+  label: string;
+  count: number;
+  total_cents: number;
+}
+
+interface ArAgingResponse {
+  buckets: ArBucket[];
+  total_ar_cents?: number;
+  total_claims?: number;
+  avg_days_in_ar?: number;
+}
+
+interface PayerRow {
+  payer: string;
+  submitted_cents: number;
+  paid_cents: number;
+  denial_rate: number;
+  avg_days_to_pay: number;
+}
+
+interface PayerPerformanceResponse {
+  payers: PayerRow[];
+}
+
+function fmt$(cents: number): string {
+  return `$${(cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+}
 
 const TH_STYLE: React.CSSProperties = {
   padding: '10px 12px',
@@ -56,6 +81,55 @@ const TD_MONO: React.CSSProperties = {
 };
 
 export default function BillingDashboardPage() {
+  const [kpis, setKpis] = useState<BillingKpis | null>(null);
+  const [exec, setExec] = useState<ExecSummary | null>(null);
+  const [aging, setAging] = useState<ArAgingResponse | null>(null);
+  const [payers, setPayers] = useState<PayerPerformanceResponse | null>(null);
+
+  const [kpiStatus, setKpiStatus] = useState<FetchStatus>('idle');
+  const [agingStatus, setAgingStatus] = useState<FetchStatus>('idle');
+  const [payerStatus, setPayerStatus] = useState<FetchStatus>('idle');
+
+  const fetchAll = useCallback(() => {
+    setKpiStatus('loading');
+    Promise.all([
+      getStandaloneBillingDashboardKpis(),
+      getStandaloneBillingDashboardExecutiveSummary(),
+    ])
+      .then(([k, e]) => { setKpis(k); setExec(e); setKpiStatus('ready'); })
+      .catch(() => setKpiStatus('error'));
+
+    setAgingStatus('loading');
+    getStandaloneBillingDashboardArAging()
+      .then((d) => { setAging(d); setAgingStatus('ready'); })
+      .catch(() => setAgingStatus('error'));
+
+    setPayerStatus('loading');
+    getStandaloneBillingDashboardPayerPerformance()
+      .then((d) => { setPayers(d); setPayerStatus('ready'); })
+      .catch(() => setPayerStatus('error'));
+  }, []);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const mrrDisplay = exec?.mrr_cents != null ? fmt$(exec.mrr_cents) : '—';
+  const ytdDisplay = exec?.total_revenue_cents != null ? fmt$(exec.total_revenue_cents) : '—';
+  const cleanClaimDisplay = kpis?.clean_claim_rate != null ? `${kpis.clean_claim_rate.toFixed(1)}%` : '—';
+  const avgDaysDisplay = kpis?.avg_days_in_ar != null ? kpis.avg_days_in_ar.toFixed(1) : (aging?.avg_days_in_ar != null ? aging.avg_days_in_ar.toFixed(1) : '—');
+  const denialDisplay = kpis?.denial_rate != null ? `${kpis.denial_rate.toFixed(1)}%` : '—';
+  const collectionDisplay = kpis?.net_collection_rate != null ? `${kpis.net_collection_rate.toFixed(1)}%` : '—';
+
+  const kpiCards = [
+    { label: 'MRR', value: mrrDisplay, sub: 'Monthly Recurring Revenue', accent: 'var(--color-status-info)' },
+    { label: 'YTD Revenue', value: ytdDisplay, sub: 'Year-to-date collected', accent: 'var(--color-status-info)' },
+    { label: 'Clean Claim Rate', value: cleanClaimDisplay, sub: 'First-pass acceptance', accent: 'var(--color-status-active)' },
+    { label: 'Avg Days in AR', value: avgDaysDisplay, sub: 'Days outstanding', accent: 'var(--color-status-warning)' },
+    { label: 'Denial Rate', value: denialDisplay, sub: 'Claims denied by payer', accent: 'var(--color-brand-red)' },
+    { label: 'Collection Rate', value: collectionDisplay, sub: 'Net collection efficiency', accent: 'var(--color-status-info)' },
+  ];
+
+  const totalArCents = aging?.buckets?.reduce((s, b) => s + b.total_cents, 0) ?? 0;
+
   return (
     <AppShell>
       <div style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}>
@@ -83,8 +157,13 @@ export default function BillingDashboardPage() {
         </div>
 
         {/* KPI Cards */}
+        {kpiStatus === 'error' && (
+          <div className="mb-4 px-4 py-2 border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B] text-xs font-bold uppercase tracking-wider">
+            Live billing KPIs unavailable — connect to backend
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 mb-10">
-          {KPI_CARDS.map((kpi) => (
+          {kpiCards.map((kpi) => (
             <div
               key={kpi.label}
               style={{
@@ -108,7 +187,7 @@ export default function BillingDashboardPage() {
                   marginBottom: '4px',
                 }}
               >
-                {kpi.value}
+                {kpiStatus === 'loading' ? '...' : kpi.value}
               </div>
               <div
                 style={{
@@ -127,6 +206,11 @@ export default function BillingDashboardPage() {
           <div className="label-caps mb-4" style={{ color: 'var(--color-text-muted)', letterSpacing: 'var(--tracking-label)' }}>
             AR Aging
           </div>
+          {agingStatus === 'error' && (
+            <div className="mb-3 px-4 py-2 border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B] text-xs font-bold uppercase tracking-wider">
+              AR aging data unavailable
+            </div>
+          )}
           <div
             style={{
               background: '#0A0A0B',
@@ -145,20 +229,29 @@ export default function BillingDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {AR_AGING.map((row, i) => (
-                  <tr
-                    key={row.bucket}
-                    style={{
-                      background:
-                        i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
-                    }}
-                  >
-                    <td style={TD_STYLE}>{row.bucket}</td>
-                    <td style={{ ...TD_MONO, textAlign: 'right' }}>{row.count.toLocaleString()}</td>
-                    <td style={{ ...TD_MONO, textAlign: 'right', color: 'var(--color-system-billing)' }}>{row.amount}</td>
-                    <td style={{ ...TD_STYLE, textAlign: 'right' }}>{row.pct}</td>
-                  </tr>
-                ))}
+                {agingStatus === 'loading' && (
+                  <tr><td colSpan={4} style={{ ...TD_STYLE, textAlign: 'center' }}>Loading...</td></tr>
+                )}
+                {agingStatus === 'ready' && aging && aging.buckets.length === 0 && (
+                  <tr><td colSpan={4} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--color-text-muted)' }}>No AR aging data</td></tr>
+                )}
+                {aging?.buckets?.map((row, i) => {
+                  const pct = totalArCents > 0 ? ((row.total_cents / totalArCents) * 100).toFixed(1) : '0.0';
+                  return (
+                    <tr
+                      key={row.label}
+                      style={{
+                        background:
+                          i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
+                      }}
+                    >
+                      <td style={TD_STYLE}>{row.label}</td>
+                      <td style={{ ...TD_MONO, textAlign: 'right' }}>{row.count.toLocaleString()}</td>
+                      <td style={{ ...TD_MONO, textAlign: 'right', color: 'var(--color-system-billing)' }}>{fmt$(row.total_cents)}</td>
+                      <td style={{ ...TD_STYLE, textAlign: 'right' }}>{pct}%</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -169,6 +262,11 @@ export default function BillingDashboardPage() {
           <div className="label-caps mb-4" style={{ color: 'var(--color-text-muted)', letterSpacing: 'var(--tracking-label)' }}>
             Payer Performance
           </div>
+          {payerStatus === 'error' && (
+            <div className="mb-3 px-4 py-2 border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B] text-xs font-bold uppercase tracking-wider">
+              Payer performance data unavailable
+            </div>
+          )}
           <div
             style={{
               background: '#0A0A0B',
@@ -188,12 +286,17 @@ export default function BillingDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {PAYER_PERF.map((row, i) => {
-                  const denialNum = parseFloat(row.denial);
+                {payerStatus === 'loading' && (
+                  <tr><td colSpan={5} style={{ ...TD_STYLE, textAlign: 'center' }}>Loading...</td></tr>
+                )}
+                {payerStatus === 'ready' && payers && payers.payers.length === 0 && (
+                  <tr><td colSpan={5} style={{ ...TD_STYLE, textAlign: 'center', color: 'var(--color-text-muted)' }}>No payer data</td></tr>
+                )}
+                {payers?.payers?.map((row, i) => {
                   const denialColor =
-                    denialNum > 5
+                    row.denial_rate > 5
                       ? 'var(--color-brand-red)'
-                      : denialNum > 3
+                      : row.denial_rate > 3
                       ? 'var(--color-status-warning)'
                       : 'var(--color-status-active)';
                   return (
@@ -213,9 +316,9 @@ export default function BillingDashboardPage() {
                       >
                         {row.payer}
                       </td>
-                      <td style={{ ...TD_MONO, textAlign: 'right' }}>{row.submitted}</td>
+                      <td style={{ ...TD_MONO, textAlign: 'right' }}>{fmt$(row.submitted_cents)}</td>
                       <td style={{ ...TD_MONO, textAlign: 'right', color: 'var(--color-status-active)' }}>
-                        {row.paid}
+                        {fmt$(row.paid_cents)}
                       </td>
                       <td
                         style={{
@@ -224,9 +327,9 @@ export default function BillingDashboardPage() {
                           color: denialColor,
                         }}
                       >
-                        {row.denial}
+                        {row.denial_rate.toFixed(1)}%
                       </td>
-                      <td style={{ ...TD_MONO, textAlign: 'right' }}>{row.avgDays}d</td>
+                      <td style={{ ...TD_MONO, textAlign: 'right' }}>{row.avg_days_to_pay}d</td>
                     </tr>
                   );
                 })}

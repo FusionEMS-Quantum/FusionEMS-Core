@@ -2,13 +2,21 @@
 
 import { useState, useEffect, useCallback } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
+import {
+  checkVisibilityDataMinimization,
+  checkVisibilityZeroTrust,
+  createVisibilityRule,
+  deidentifyVisibilityRecord,
+  deleteVisibilityRule,
+  evaluateVisibilityContext,
+  getVisibilityDashboardBundle,
+  previewVisibilityRedaction,
+  sandboxTestVisibilityRule,
+  setVisibilityKillSwitch,
+  simulateVisibilityRole,
+} from "@/services/api";
 
 const IS_PROD = process.env.NODE_ENV === "production";
-const BASE =
-  process.env.NEXT_PUBLIC_API_BASE ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "";
 
 type Rule = {
   id: string;
@@ -224,70 +232,59 @@ export default function VisibilityRuleMakerPage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  const api = useCallback(async (path: string, method = "GET", body?: unknown) => {
-    const token = typeof window !== "undefined" ? (localStorage.getItem("access_token") || "") : "";
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
-    const res = await fetch(`${BASE}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) return null;
-    return res.json();
-  }, []);
-
   const loadDashboard = useCallback(async () => {
     try {
-      const [dash, r, vm, mg, phi, rm, ks, as_, hm, er, al, an, ap, cl, tw, ea, pol] = await Promise.all([
-        api("/api/v1/visibility/dashboard"),
-        api("/api/v1/visibility/rules"),
-        api("/api/v1/visibility/view-modes"),
-        api("/api/v1/visibility/module-gates"),
-        api("/api/v1/visibility/phi-fields"),
-        api("/api/v1/visibility/role-matrix"),
-        api("/api/v1/visibility/kill-switch/status"),
-        api("/api/v1/visibility/access-score"),
-        api("/api/v1/visibility/heatmap"),
-        api("/api/v1/visibility/endpoint-restrictions"),
-        api("/api/v1/visibility/access-alerts"),
-        api("/api/v1/visibility/anomaly-events"),
-        api("/api/v1/visibility/approval-requests"),
-        api("/api/v1/visibility/compliance-lock/status"),
-        api("/api/v1/visibility/time-windows"),
-        api("/api/v1/visibility/elevated-access"),
-        api("/api/v1/visibility/policies"),
-      ]);
-      if (dash) setDashboard(dash);
-      if (Array.isArray(r)) setRules(r);
-      if (vm) setViewModes(vm);
-      if (mg) setModuleGates(mg);
-      if (phi) setPhiFields(phi);
-      if (rm) setRoleMatrix(rm);
-      if (ks) setKillSwitchStatus(ks);
-      if (as_) setAccessScore(as_);
-      if (hm) setHeatmap(hm);
-      if (er) setEndpointRestrictions(er);
-      if (Array.isArray(al)) setAlerts(al);
-      if (Array.isArray(an)) setAnomalyEvents(an);
-      if (Array.isArray(ap)) setApprovals(ap);
-      if (cl) setComplianceLocks(cl.locks || []);
-      if (Array.isArray(tw)) setTimeWindows(tw);
-      if (Array.isArray(ea)) setElevatedAccess(ea);
-      if (Array.isArray(pol)) setPolicies(pol);
+      const {
+        dashboard: dash,
+        rules: r,
+        viewModes: vm,
+        moduleGates: mg,
+        phiFields: phi,
+        roleMatrix: rm,
+        killSwitchStatus: ks,
+        accessScore: as_,
+        heatmap: hm,
+        endpointRestrictions: er,
+        alerts: al,
+        anomalies: an,
+        approvals: ap,
+        complianceLocks: cl,
+        timeWindows: tw,
+        elevatedAccess: ea,
+        policies: pol,
+      } = await getVisibilityDashboardBundle();
+
+      if (dash) setDashboard(dash as DashboardStats);
+      if (Array.isArray(r)) setRules(r as Rule[]);
+      if (vm) setViewModes(vm as ViewModes);
+      if (mg) setModuleGates(mg as ModuleGates);
+      if (phi) setPhiFields(phi as PhiFields);
+      if (rm) setRoleMatrix(rm as RoleMatrix);
+      if (ks) setKillSwitchStatus(ks as KillSwitchStatus);
+      if (as_) setAccessScore(as_ as AccessScore);
+      if (hm) setHeatmap(hm as Heatmap);
+      if (er) setEndpointRestrictions(er as EndpointRestrictions);
+      if (Array.isArray(al)) setAlerts(al as AccessAlert[]);
+      if (Array.isArray(an)) setAnomalyEvents(an as AnomalyEvent[]);
+      if (Array.isArray(ap)) setApprovals(ap as ApprovalRequest[]);
+      if (cl && typeof cl === 'object' && cl !== null) {
+        const lockPayload = cl as { locks?: ComplianceLock[] };
+        setComplianceLocks(Array.isArray(lockPayload.locks) ? lockPayload.locks : []);
+      }
+      if (Array.isArray(tw)) setTimeWindows(tw as TimeWindow[]);
+      if (Array.isArray(ea)) setElevatedAccess(ea as ElevatedAccess[]);
+      if (Array.isArray(pol)) setPolicies(pol as Policy[]);
     } catch (err: unknown) {
       console.warn("[visibility]", err);
     }
-  }, [api]);
+  }, []);
 
   useEffect(() => { loadDashboard(); }, [loadDashboard]);
 
   const createRule = async () => {
     setLoading(true);
     const fields = newRule.fields.split(",").map((f) => f.trim()).filter(Boolean);
-    const res = await api("/api/v1/visibility/rules", "POST", {
+    const res = await createVisibilityRule({
       rule_name: newRule.rule_name,
       role: newRule.role,
       action: newRule.action,
@@ -303,17 +300,17 @@ export default function VisibilityRuleMakerPage() {
   };
 
   const deleteRule = async (id: string) => {
-    await api(`/api/v1/visibility/rules/${id}`, "DELETE");
+    await deleteVisibilityRule(id);
     loadDashboard();
   };
 
   const evaluateRules = async () => {
-    const res = await api("/api/v1/visibility/evaluate", "POST", { context: evalContext });
+    const res = await evaluateVisibilityContext<EvaluateResult>({ context: evalContext });
     if (res) setEvalResult(res);
   };
 
   const runSandbox = async () => {
-    const res = await api("/api/v1/visibility/rules/sandbox-test", "POST", {
+    const res = await sandboxTestVisibilityRule<Record<string, unknown>>({
       rule: { ...sandboxRule, fields: sandboxRule.fields.split(",").map((f) => f.trim()) },
       test_context: sandboxContext,
     });
@@ -321,7 +318,7 @@ export default function VisibilityRuleMakerPage() {
   };
 
   const runZeroTrust = async () => {
-    const res = await api("/api/v1/visibility/zero-trust/check", "POST", {
+    const res = await checkVisibilityZeroTrust<ZeroTrustResult>({
       resource: zeroTrustInput.resource,
       action: "read",
       context: zeroTrustInput,
@@ -332,7 +329,7 @@ export default function VisibilityRuleMakerPage() {
   const runRedaction = async () => {
     try {
       const record = JSON.parse(redactionRecord);
-      const res = await api("/api/v1/visibility/redaction-preview", "POST", { record, template: redactionTemplate });
+      const res = await previewVisibilityRedaction<Record<string, unknown>>({ record, template: redactionTemplate });
       if (res) setRedactionResult(res);
     } catch { setMsg("Invalid JSON in record input"); }
   };
@@ -340,19 +337,19 @@ export default function VisibilityRuleMakerPage() {
   const runDeidentify = async () => {
     try {
       const record = JSON.parse(deidentInput);
-      const res = await api("/api/v1/visibility/deidentify", "POST", { record });
+      const res = await deidentifyVisibilityRecord<Record<string, unknown>>({ record });
       if (res) setDeidentResult(res);
     } catch { setMsg("Invalid JSON"); }
   };
 
   const runRoleSimulation = async () => {
-    const res = await api("/api/v1/visibility/role-simulation", "POST", { role: simRole });
+    const res = await simulateVisibilityRole<Record<string, unknown>>({ role: simRole });
     if (res) setSimResult(res);
   };
 
   const runMinimization = async () => {
     const fields = minimizeFields.split(",").map((f) => f.trim()).filter(Boolean);
-    const res = await api("/api/v1/visibility/data-minimization/check", "POST", {
+    const res = await checkVisibilityDataMinimization<Record<string, unknown>>({
       requested_fields: fields,
       purpose: minimizePurpose,
     });
@@ -360,7 +357,7 @@ export default function VisibilityRuleMakerPage() {
   };
 
   const triggerKillSwitch = async (activated: boolean) => {
-    await api("/api/v1/visibility/kill-switch", "POST", { activated, reason: "Manual toggle from dashboard" });
+    await setVisibilityKillSwitch({ activated, reason: "Manual toggle from dashboard" });
     loadDashboard();
   };
 

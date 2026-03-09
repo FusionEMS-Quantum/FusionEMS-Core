@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ModalContainer, SystemStatus } from "../../../components/AppShell";
+import { listPublicSystems } from "@/services/api";
 
 type SystemRow = { system_key: string; name: string; description: string; status: SystemStatus; accent?: string };
 
@@ -17,15 +18,7 @@ export default function SystemPage() {
 
   useEffect(() => {
     (async () => {
-      const isProd = process.env.NODE_ENV === "production";
-      const base =
-        process.env.NEXT_PUBLIC_API_BASE ||
-        process.env.NEXT_PUBLIC_BACKEND_URL ||
-        process.env.NEXT_PUBLIC_API_URL ||
-        process.env.BACKEND_URL ||
-        (!isProd ? "http://localhost:8000" : "");
-      const res = await fetch(`${base}/api/v1/systems`, { cache: "no-store" });
-      const systems = (await res.json()) as SystemRow[];
+      const systems = await listPublicSystems<SystemRow[]>();
       const s = systems.find(x => x.system_key === systemKey) || null;
       setSystem(s);
       if (s && s.status !== "ACTIVE") setOpen(true);

@@ -1,8 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
+import { getFounderContracts } from '@/services/api';
 
 function SectionHeader({ number, title, sub }: { number: string; title: string; sub?: string }) {
   return (
@@ -49,10 +48,7 @@ export default function ContractBuilderPage() {
   const [templateVars, setTemplateVars] = useState<string[]>([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-    fetch(`${API}/api/v1/founder/contracts`, { headers })
-      .then(r => r.json())
+    getFounderContracts()
       .then(data => {
         if (data.templates) setTemplates(data.templates);
         if (data.active_contracts) setActiveContracts(data.active_contracts);

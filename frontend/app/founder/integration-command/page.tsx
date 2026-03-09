@@ -5,7 +5,10 @@ import {
   addFounderSyncDeadLetter,
   createFounderSyncJob,
   getFounderFailedSyncJobs,
+  getFounderGrowthSetupWizard,
+  getFounderGrowthSummary,
   getFounderIntegrationCommandSummary,
+  startFounderLaunchOrchestrator,
 } from '@/services/api';
 
 type FounderCommandAction = {
@@ -40,6 +43,60 @@ type SyncJobFormState = {
   errorSummaryJson: string;
 };
 
+type GrowthSummaryMetric = {
+  key: string;
+  value: number;
+};
+
+type GrowthSummary = {
+  generated_at: string;
+  conversion_events_total: number;
+  proposals_total: number;
+  proposals_pending: number;
+  active_subscriptions: number;
+  proposal_to_paid_conversion_pct: number;
+  pending_pipeline_cents: number;
+  active_mrr_cents: number;
+  pipeline_to_mrr_ratio: number;
+  graph_mailbox_configured: boolean;
+  funnel_stage_counts: GrowthSummaryMetric[];
+  lead_tier_distribution: GrowthSummaryMetric[];
+  lead_score_buckets: GrowthSummaryMetric[];
+};
+
+type GrowthConnectionStatus = {
+  service_key: string;
+  label: string;
+  required: boolean;
+  connected: boolean;
+  install_state: string;
+  permissions_state: string;
+  permission_errors: string[];
+  token_state: string;
+  health_state: string;
+  last_successful_activity?: string | null;
+  last_failed_activity?: string | null;
+  retry_count: number;
+  available_automations: string[];
+  blocking_reason?: string | null;
+};
+
+type GrowthSetupWizard = {
+  generated_at: string;
+  autopilot_ready: boolean;
+  blocked_items: string[];
+  services: GrowthConnectionStatus[];
+};
+
+type LaunchRunResponse = {
+  run_id: string;
+  mode: 'autopilot' | 'approval-first' | 'draft-only';
+  queued_sync_jobs: number;
+  blocked_items: string[];
+  status: 'started' | 'blocked';
+  generated_at: string;
+};
+
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
@@ -51,10 +108,15 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 export default function FounderIntegrationCommandPage() {
   const [summary, setSummary] = useState<IntegrationSummary | null>(null);
+  const [growthSummary, setGrowthSummary] = useState<GrowthSummary | null>(null);
+  const [growthWizard, setGrowthWizard] = useState<GrowthSetupWizard | null>(null);
+  const [launchRun, setLaunchRun] = useState<LaunchRunResponse | null>(null);
   const [failedJobs, setFailedJobs] = useState<SyncJob[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [creatingSyncJob, setCreatingSyncJob] = useState(false);
+  const [startingLaunch, setStartingLaunch] = useState(false);
+  const [launchMode, setLaunchMode] = useState<'autopilot' | 'approval-first' | 'draft-only'>('approval-first');
   const [addingDeadLetterForJobId, setAddingDeadLetterForJobId] = useState<string | null>(null);
   const [syncJobForm, setSyncJobForm] = useState<SyncJobFormState>({
     tenantConnectorInstallId: '',
@@ -71,14 +133,20 @@ export default function FounderIntegrationCommandPage() {
   const load = useCallback(async () => {
     try {
       setLoadError(null);
-      const [summaryRes, jobsRes] = await Promise.all([
+      const [summaryRes, growthSummaryRes, growthWizardRes, jobsRes] = await Promise.all([
         getFounderIntegrationCommandSummary(),
+        getFounderGrowthSummary(),
+        getFounderGrowthSetupWizard(),
         getFounderFailedSyncJobs(25),
       ]);
       setSummary(summaryRes as IntegrationSummary);
+      setGrowthSummary(growthSummaryRes as GrowthSummary);
+      setGrowthWizard(growthWizardRes as GrowthSetupWizard);
       setFailedJobs(Array.isArray(jobsRes) ? (jobsRes as SyncJob[]) : []);
     } catch {
       setSummary(null);
+      setGrowthSummary(null);
+      setGrowthWizard(null);
       setFailedJobs([]);
       setLoadError('Unable to load integration command center data.');
     }
@@ -88,6 +156,15 @@ export default function FounderIntegrationCommandPage() {
     load().catch(() => {
       setLoadError('Unable to load integration command center data.');
     });
+  }, [load]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      load().catch(() => {
+        setLoadError('Unable to refresh integration command center data.');
+      });
+    }, 15000);
+    return () => clearInterval(interval);
   }, [load]);
 
   const handleCreateSyncJob = async () => {
@@ -175,7 +252,31 @@ export default function FounderIntegrationCommandPage() {
     }
   };
 
-  if (!summary) {
+  const handleStartLaunch = async () => {
+    setActionMessage(null);
+    setLoadError(null);
+    setStartingLaunch(true);
+    try {
+      const response = await startFounderLaunchOrchestrator({
+        mode: launchMode,
+        auto_queue_sync_jobs: true,
+      });
+      const run = response as LaunchRunResponse;
+      setLaunchRun(run);
+      if (run.status === 'blocked') {
+        setLoadError(`Launch blocked: ${run.blocked_items.join(' · ') || 'Missing required connected services.'}`);
+      } else {
+        setActionMessage(`Launch orchestrator started in ${run.mode} mode. Queued ${run.queued_sync_jobs} sync job(s).`);
+      }
+      await load();
+    } catch {
+      setLoadError('Failed to start launch orchestrator run.');
+    } finally {
+      setStartingLaunch(false);
+    }
+  };
+
+  if (!summary || !growthSummary || !growthWizard) {
     return (
       <div className="mx-auto max-w-7xl p-6">
         <div className=" border border-white/10 bg-zinc-950/[0.03] p-4 text-sm text-white/70">
@@ -206,6 +307,106 @@ export default function FounderIntegrationCommandPage() {
         <Stat label="Webhook Retries" value={summary.pending_webhook_retries} />
         <Stat label="Key Rotation/Revoked" value={summary.revoked_or_rotating_api_credentials} />
         <Stat label="Quota Denials (24h)" value={summary.quota_denial_windows_24h} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
+          <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Growth Engine Runtime</div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <Stat label="Conversions" value={growthSummary.conversion_events_total} />
+            <Stat label="Proposals" value={growthSummary.proposals_total} />
+            <Stat label="Active Subs" value={growthSummary.active_subscriptions} />
+            <Stat label="Pending Pipeline" value={Math.round(growthSummary.pending_pipeline_cents / 100)} />
+          </div>
+          <div className="mt-3 text-xs text-white/60">
+            Proposal→Paid: <span className="font-semibold text-white">{growthSummary.proposal_to_paid_conversion_pct}%</span>
+            {' · '}
+            Pipeline/MRR: <span className="font-semibold text-white">{growthSummary.pipeline_to_mrr_ratio}</span>
+            {' · '}
+            Graph Mailbox: <span className={`font-semibold ${growthSummary.graph_mailbox_configured ? 'text-green-300' : 'text-red-300'}`}>{growthSummary.graph_mailbox_configured ? 'configured' : 'missing'}</span>
+          </div>
+          <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-3">
+            <div className=" border border-white/10 bg-black/20 p-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/50">Funnel Stages</div>
+              {growthSummary.funnel_stage_counts.slice(0, 4).map((item) => (
+                <div key={item.key} className="mt-1 text-xs text-white/80">{item.key}: {item.value}</div>
+              ))}
+            </div>
+            <div className=" border border-white/10 bg-black/20 p-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/50">Lead Tiers</div>
+              {growthSummary.lead_tier_distribution.slice(0, 4).map((item) => (
+                <div key={item.key} className="mt-1 text-xs text-white/80">{item.key}: {item.value}</div>
+              ))}
+            </div>
+            <div className=" border border-white/10 bg-black/20 p-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/50">Score Buckets</div>
+              {growthSummary.lead_score_buckets.map((item) => (
+                <div key={item.key} className="mt-1 text-xs text-white/80">{item.key}: {item.value}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
+          <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Growth Setup Wizard + Launch Orchestrator</div>
+          <div className="mb-3 text-sm">
+            Autopilot readiness:{' '}
+            <span className={`font-semibold ${growthWizard.autopilot_ready ? 'text-green-300' : 'text-red-300'}`}>
+              {growthWizard.autopilot_ready ? 'READY' : 'BLOCKED'}
+            </span>
+          </div>
+          {growthWizard.blocked_items.length > 0 && (
+            <div className="mb-3 border border-red-500/30 bg-red-500/10 p-2 text-xs text-red-200">
+              {growthWizard.blocked_items.map((item) => (
+                <div key={item}>• {item}</div>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {growthWizard.services.map((service) => (
+              <div key={service.service_key} className=" border border-white/10 bg-black/20 p-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-semibold text-white">{service.label}</div>
+                  <div className={`text-[10px] uppercase tracking-wider ${service.connected ? 'text-green-300' : 'text-red-300'}`}>
+                    {service.connected ? 'connected' : 'disconnected'}
+                  </div>
+                </div>
+                <div className="mt-1 text-[11px] text-white/60">
+                  {service.install_state} · perms {service.permissions_state} · token {service.token_state} · health {service.health_state}
+                </div>
+                {service.blocking_reason && (
+                  <div className="mt-1 text-[11px] text-red-200">{service.blocking_reason}</div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-center">
+            <select
+              value={launchMode}
+              onChange={(event) => setLaunchMode(event.target.value as 'autopilot' | 'approval-first' | 'draft-only')}
+              className=" border border-white/15 bg-black/30 px-3 py-2 text-sm text-white"
+            >
+              <option value="autopilot">autopilot</option>
+              <option value="approval-first">approval-first</option>
+              <option value="draft-only">draft-only</option>
+            </select>
+            <button
+              type="button"
+              onClick={handleStartLaunch}
+              disabled={startingLaunch}
+              className=" border border-orange-400/60 bg-[rgba(255,77,0,0.20)] px-3 py-2 text-sm font-semibold text-[#FF4D00] disabled:opacity-50"
+            >
+              {startingLaunch ? 'Starting…' : 'Start Launch Orchestrator'}
+            </button>
+          </div>
+
+          {launchRun && (
+            <div className="mt-3 border border-white/10 bg-black/20 p-2 text-xs text-white/80">
+              run {launchRun.run_id.slice(0, 8)} · {launchRun.status} · queued sync jobs {launchRun.queued_sync_jobs}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">

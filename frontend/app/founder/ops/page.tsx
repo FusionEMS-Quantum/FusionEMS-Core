@@ -1,9 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
+import { getOpsDeploymentRuns, getOpsDeploymentRunSteps, getOpsCommand } from '@/services/api';
 
 // ── Color System ───────────────────────────────────────────────────────────────
 // RED = BLOCKING | ORANGE = HIGH RISK | YELLOW = NEEDS ATTENTION
@@ -102,14 +100,15 @@ function DeploymentRunsPanel() {
   const [steps, setSteps] = useState<Array<Record<string, unknown>>>([]);
 
   useEffect(() => {
-    fetch(`${API}/api/v1/ops/deployment-runs?limit=20`, { headers: { Authorization: getToken() } })
-      .then(r => r.ok ? r.json() : []).then(setRuns).catch(() => {});
+    getOpsDeploymentRuns(20).then(setRuns).catch(() => {});
   }, []);
 
   const loadSteps = async (runId: string) => {
     if (expanded === runId) { setExpanded(null); return; }
-    const r = await fetch(`${API}/api/v1/ops/deployment-runs/${runId}/steps`, { headers: { Authorization: getToken() } });
-    if (r.ok) { const j = await r.json(); setSteps(j.steps ?? []); }
+    try {
+      const j = await getOpsDeploymentRunSteps(runId);
+      setSteps(j.steps ?? []);
+    } catch { /* network error */ }
     setExpanded(runId);
   };
 
@@ -177,12 +176,9 @@ export default function OpsCommandPage() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/api/v1/ops/command`, { headers: { Authorization: getToken() } });
-      if (r.ok) {
-        const j = await r.json();
-        setData(j);
-        setLastRefresh(new Date().toLocaleTimeString());
-      }
+      const j = await getOpsCommand();
+      setData(j);
+      setLastRefresh(new Date().toLocaleTimeString());
     } catch {
       // network error — retain existing data
     } finally {

@@ -1,9 +1,8 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getExpenseLedger, createExpenseEntry } from '@/services/api';
 
 type ExpenseEntry = {
   id: string;
@@ -92,18 +91,18 @@ export default function ExpenseLedgerPage() {
     vendor: '',
   });
 
-  const fetchLedger = async () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-    const res = await fetch(`${API}/api/v1/founder/business/expense-ledger?limit=500`, { headers });
-    if (!res.ok) {
-      throw new Error(`Expense ledger request failed (${res.status})`);
-    }
-    const payload = (await res.json()) as ExpenseLedgerResponse;
+  const fetchLedger = useCallback(async () => {
+    const payload = (await getExpenseLedger(500)) as ExpenseLedgerResponse;
     setEntries(payload.entries ?? []);
     setCategoryBreakdown(payload.category_breakdown ?? []);
-    setSummary(payload.summary ?? summary);
-  };
+    setSummary(payload.summary ?? {
+      month_total_cents: 0,
+      total_cents: 0,
+      entry_count: 0,
+      receipt_missing_count: 0,
+      quickbooks_sync_status: 'unknown',
+    });
+  }, []);
 
   useEffect(() => {
     fetchLedger()
@@ -111,7 +110,7 @@ export default function ExpenseLedgerPage() {
         setError(e instanceof Error ? e.message : 'Unable to load expense ledger');
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [fetchLedger]);
 
   const monthTotalDollars = summary.month_total_cents / 100;
   const largestCategory = categoryBreakdown[0];
@@ -150,30 +149,14 @@ export default function ExpenseLedgerPage() {
       return;
     }
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    const res = await fetch(`${API}/api/v1/founder/business/expense-ledger/entries`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        vendor: expenseForm.vendor,
-        category: expenseForm.category,
-        amount_cents: Math.round(amount * 100),
-        description: expenseForm.description,
-        expense_date: expenseForm.date || new Date().toISOString().slice(0, 10),
-        receipt_attached: false,
-      }),
+    await createExpenseEntry({
+      vendor: expenseForm.vendor,
+      category: expenseForm.category,
+      amount_cents: Math.round(amount * 100),
+      description: expenseForm.description,
+      expense_date: expenseForm.date || new Date().toISOString().slice(0, 10),
+      receipt_attached: false,
     });
-
-    if (!res.ok) {
-      throw new Error(`Failed to save expense (${res.status})`);
-    }
 
     setExpenseForm({ date: '', amount: '', category: 'AWS', description: '', vendor: '' });
     setShowForm(false);

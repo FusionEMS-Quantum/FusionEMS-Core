@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { QuantumEmptyState } from '@/components/ui';
 import { QuantumCardSkeleton } from '@/components/ui';
 import { ModuleDashboardShell } from '@/components/shells/PageShells';
+import { getPortalAgencyMetrics } from '@/services/api';
 
 interface PortalMetadata {
   stat_cards?: Array<{ label: string; value: number | string; href: string }>;
@@ -15,24 +16,19 @@ export default function PortalDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const API = process.env.NEXT_PUBLIC_API_URL || '';
-    fetch(`${API}/api/v1/metrics`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('qs_token') || ''}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('API down');
-        return res.json();
-      })
-      .then((json) => {
-        setData(json.portal || { stat_cards: [] });
-      })
-      .catch((e) => {
+    const loadMetrics = async () => {
+      try {
+        const json = await getPortalAgencyMetrics();
+        setData((json.portal as PortalMetadata) || { stat_cards: [] });
+      } catch (e) {
         console.warn('Failed to fetch agency dashboard', e);
         setData({ stat_cards: [] });
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadMetrics();
   }, []);
 
   return (

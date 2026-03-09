@@ -3,8 +3,14 @@ import { QuantumTableSkeleton } from '@/components/ui';
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-const API = process.env.NEXT_PUBLIC_API_BASE ?? "";
+import {
+  approveStandaloneTemplate,
+  createStandaloneTemplate,
+  deleteStandaloneTemplate,
+  getStandaloneTemplateLifecycleManagement,
+  getStandaloneTemplateTopPerforming,
+  getStandaloneTemplates,
+} from "@/services/api";
 
 type Template = {
   id: string;
@@ -80,36 +86,34 @@ export default function TemplatesPage() {
   const [newContent, setNewContent] = useState("");
 
   useEffect(() => {
-    const params = selectedCategory ? `?category=${selectedCategory}` : "";
-    fetch(`${API}/api/v1/templates${params}`)
-      .then((r) => r.json())
-      .then((d) => setTemplates(d.templates ?? []))
+    setLoading(true);
+    void Promise.all([
+      getStandaloneTemplates(selectedCategory),
+      getStandaloneTemplateLifecycleManagement(),
+      getStandaloneTemplateTopPerforming(),
+    ])
+      .then(([templateResponse, lifecycleResponse, topPerformingResponse]) => {
+        setTemplates(templateResponse.templates ?? []);
+        setLifecycle(lifecycleResponse);
+        setTopPerforming(topPerformingResponse.top_templates ?? []);
+      })
       .catch((e: unknown) => { console.warn("[fetch error]", e); })
       .finally(() => setLoading(false));
-    fetch(`${API}/api/v1/templates/lifecycle/management`)
-      .then((r) => r.json())
-      .then(setLifecycle)
-      .catch((e: unknown) => { console.warn("[fetch error]", e); });
-    fetch(`${API}/api/v1/templates/analytics/top-performing`)
-      .then((r) => r.json())
-      .then((d) => setTopPerforming(d.top_templates ?? []))
-      .catch((e: unknown) => { console.warn("[fetch error]", e); });
   }, [selectedCategory]);
 
   const handleCreate = async () => {
     try {
-      await fetch(`${API}/api/v1/templates`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName, category: newCategory, format: newFormat, content: newContent }),
+      await createStandaloneTemplate({
+        name: newName,
+        category: newCategory,
+        format: newFormat,
+        content: newContent,
       });
       setCreateOpen(false);
       setNewName("");
       setNewContent("");
-    fetch(`${API}/api/v1/templates`)
-      .then((r) => r.json())
-      .then((d) => setTemplates(d.templates ?? []))
-      .catch((e: unknown) => { console.warn("[fetch error]", e); });
+      const refreshed = await getStandaloneTemplates(selectedCategory);
+      setTemplates(refreshed.templates ?? []);
     } catch (err: unknown) {
       console.warn("[templates]", err);
     }
@@ -117,11 +121,7 @@ export default function TemplatesPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      await fetch(`${API}/api/v1/templates/${id}/approve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ template_id: id, action: "approve" }),
-      });
+      await approveStandaloneTemplate(id);
       setTemplates((prev) =>
         prev.map((t) => (t.id === id ? { ...t, data: { ...t.data, status: "approved" } } : t))
       );
@@ -132,7 +132,7 @@ export default function TemplatesPage() {
 
   const handleArchive = async (id: string) => {
     try {
-      await fetch(`${API}/api/v1/templates/${id}`, { method: "DELETE" });
+      await deleteStandaloneTemplate(id);
       setTemplates((prev) => prev.filter((t) => t.id !== id));
     } catch (err: unknown) {
       console.warn("[templates]", err);

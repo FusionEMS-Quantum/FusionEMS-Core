@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ModuleDashboardShell } from "@/components/shells/PageShells";
-import { getAuthHeaderValue } from "@/services/auth";
+import {
+  getCMSGateAuditSummary,
+  getDEANarcoticsAuditHistory,
+  runDEANarcoticsAudit,
+} from "@/services/api";
 
 interface DeaLatest {
   report_id: string;
@@ -33,12 +37,6 @@ interface CmsSummary {
   avg_score: number;
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
-
-function getToken(): string {
-  return getAuthHeaderValue();
-}
-
 function ts(value: string | undefined): string {
   if (!value) return "—";
   try {
@@ -59,19 +57,13 @@ export default function PortalDeaCmsPage() {
     setLoading(true);
     setError("");
     try {
-      const [deaRes, cmsRes] = await Promise.all([
-        fetch(`${API}/api/v1/dea-compliance/audits/narcotics/history?limit=1`, {
-          headers: { Authorization: getToken() },
-        }),
-        fetch(`${API}/api/v1/cms-gate/audit/summary?days=30`, {
-          headers: { Authorization: getToken() },
-        }),
+      const [deaPayload, cmsPayload] = await Promise.all([
+        getDEANarcoticsAuditHistory(1),
+        getCMSGateAuditSummary(30),
       ]);
-      if (!deaRes.ok) throw new Error(`DEA endpoint error (${deaRes.status})`);
-      if (!cmsRes.ok) throw new Error(`CMS endpoint error (${cmsRes.status})`);
 
-      const deaRows = (await deaRes.json()) as DeaLatest[];
-      const cms = (await cmsRes.json()) as CmsSummary;
+      const deaRows = Array.isArray(deaPayload) ? (deaPayload as DeaLatest[]) : [];
+      const cms = cmsPayload as CmsSummary;
       setDeaLatest(deaRows.length > 0 ? deaRows[0] : null);
       setCmsSummary(cms);
     } catch (e: unknown) {
@@ -89,15 +81,7 @@ export default function PortalDeaCmsPage() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`${API}/api/v1/dea-compliance/audits/narcotics`, {
-        method: "POST",
-        headers: {
-          Authorization: getToken(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ lookback_days: 30, min_count_events: 1 }),
-      });
-      if (!response.ok) throw new Error(`DEA audit failed (${response.status})`);
+      await runDEANarcoticsAudit({ lookback_days: 30, min_count_events: 1 });
       await refresh();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to execute DEA audit");

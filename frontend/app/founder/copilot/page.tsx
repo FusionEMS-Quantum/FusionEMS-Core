@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-
-const API = '/api/v1/founder/copilot';
+import { getCopilotSessions, createCopilotSession, getCopilotMessages, sendCopilotMessage, proposeCopilotRun, getCopilotRun, executeCopilotRun, approveCopilotRun, mergeCopilotRun } from '@/services/api';
 
 type Role = 'user' | 'assistant' | 'system';
 interface Message {
@@ -63,23 +62,7 @@ const STATUS_COLORS: Record<string, string> = {
   merged: '#FF4D00',
 };
 
-function authHeaders(): HeadersInit {
-  if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
-async function apiFetch(path: string, opts: RequestInit = {}) {
-  const res = await fetch(path, {
-    ...opts,
-    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(opts.headers || {}) },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || res.statusText);
-  }
-  return res.json();
-}
 
 function PlanPanel({ plan }: { plan: ActionPlan }) {
   return (
@@ -258,14 +241,14 @@ export default function FounderCopilotPage() {
   }, [messages, scrollToBottom]);
 
   useEffect(() => {
-    apiFetch(`${API}/sessions`)
+    getCopilotSessions()
       .then((d) => setSessions(d.sessions || []))
       .catch((e: unknown) => { setError(e instanceof Error ? e.message : "Request failed"); });
   }, []);
 
   const loadMessages = useCallback(async (sessionId: string) => {
     try {
-      const d = await apiFetch(`${API}/sessions/${sessionId}/messages`);
+      const d = await getCopilotMessages(sessionId);
       setMessages(d.messages || []);
     } catch (e: unknown) { console.warn("[fetch error]", e); }
   }, []);
@@ -281,10 +264,7 @@ export default function FounderCopilotPage() {
 
   const newSession = useCallback(async () => {
     try {
-      const s = await apiFetch(`${API}/sessions`, {
-        method: 'POST',
-        body: JSON.stringify({ title: 'New session' }),
-      });
+      const s = await createCopilotSession({ title: 'New session' });
       setSessions((prev) => [s, ...prev]);
       setActiveSession(s);
       setMessages([]);
@@ -309,10 +289,7 @@ export default function FounderCopilotPage() {
     };
     setMessages((prev) => [...prev, tempMsg]);
     try {
-      const d = await apiFetch(`${API}/sessions/${activeSession.id}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ content: text }),
-      });
+      const d = await sendCopilotMessage(activeSession.id, { content: text });
       const assistantMsg: Message = d.message;
       if (d.action_plan) assistantMsg.content_json = d.action_plan;
       setMessages((prev) => [...prev.filter((m) => m.id !== tempMsg.id), assistantMsg]);
@@ -333,10 +310,7 @@ export default function FounderCopilotPage() {
       return;
     }
     try {
-      const run = await apiFetch(`${API}/sessions/${activeSession.id}/runs/propose`, {
-        method: 'POST',
-        body: JSON.stringify({ plan: lastPlan.content_json }),
-      });
+      const run = await proposeCopilotRun(activeSession.id, { plan: lastPlan.content_json });
       setActiveRun(run);
       setRightTab('plan');
     } catch (e: unknown) {
@@ -348,7 +322,7 @@ export default function FounderCopilotPage() {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
       try {
-        const d = await apiFetch(`${API}/runs/${runId}`);
+        const d = await getCopilotRun(runId);
         setActiveRun(d.run);
         if (['passed', 'blocked', 'failed', 'approved', 'merged'].includes(d.run.status)) {
           if (pollRef.current) clearInterval(pollRef.current);
@@ -362,10 +336,7 @@ export default function FounderCopilotPage() {
     setExecuting(true);
     setError(null);
     try {
-      const result = await apiFetch(`${API}/runs/${activeRun.id}/execute`, {
-        method: 'POST',
-        body: JSON.stringify({ ref: 'verdent-upgrades' }),
-      });
+      const result = await executeCopilotRun(activeRun.id, { ref: 'verdent-upgrades' });
       setActiveRun((prev) => prev ? { ...prev, status: result.status, gh_run_id: result.gh_run_id, gh_run_url: result.gh_run_url } : prev);
       setRightTab('gate');
       startPolling(activeRun.id);
@@ -381,10 +352,7 @@ export default function FounderCopilotPage() {
   const approveRun = useCallback(async () => {
     if (!activeRun) return;
     try {
-      const result = await apiFetch(`${API}/runs/${activeRun.id}/approve`, {
-        method: 'POST',
-        body: JSON.stringify({}),
-      });
+      const result = await approveCopilotRun(activeRun.id);
       setActiveRun((prev) => prev ? { ...prev, status: result.status } : prev);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to approve run');
@@ -394,10 +362,7 @@ export default function FounderCopilotPage() {
   const mergeRun = useCallback(async () => {
     if (!activeRun) return;
     try {
-      const result = await apiFetch(`${API}/runs/${activeRun.id}/merge`, {
-        method: 'POST',
-        body: JSON.stringify({}),
-      });
+      const result = await mergeCopilotRun(activeRun.id);
       setActiveRun((prev) => prev ? { ...prev, status: result.status } : prev);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to merge run');

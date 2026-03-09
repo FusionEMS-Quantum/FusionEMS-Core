@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { getPortalStatements } from '@/services/api';
 
 type InvoiceStatus = 'paid' | 'pending' | 'overdue' | 'in_review' | 'partial';
 
@@ -56,10 +57,8 @@ function InvoicesContent() {
   const [filter, setFilter] = useState(filterParam);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-    fetch(`${apiBase}/api/v1/portal/statements?limit=50`, { credentials: 'include' })
-      .then((r) => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
-      .then((d) => setInvoices(Array.isArray(d?.statements) ? d.statements : []))
+    getPortalStatements()
+      .then((data) => setInvoices(data as Invoice[]))
       .catch((err: unknown) => setFetchError(err instanceof Error ? err.message : 'Failed to load invoices'))
       .finally(() => setLoading(false));
   }, []);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { listResponsibleParties } from '@/services/api';
 
 /* ── Types ───────────────────────────────────────────────────────────── */
 
@@ -13,15 +14,6 @@ interface ResponsibleParty {
   email: string | null;
 }
 
-/* ── Helpers ──────────────────────────────────────────────────────────── */
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
-
 /* ── Page ─────────────────────────────────────────────────────────────── */
 
 export default function PatientRelationshipsPage() {
@@ -30,13 +22,8 @@ export default function PatientRelationshipsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/v1/responsible-parties`, {
-        headers: { Authorization: getToken() },
-      });
-      if (res.ok) {
-        const d = await res.json();
-        setParties(d.items || []);
-      }
+      const d = await listResponsibleParties();
+      setParties(d.items || []);
     } catch (_e) {
       /* silent */
     } finally {

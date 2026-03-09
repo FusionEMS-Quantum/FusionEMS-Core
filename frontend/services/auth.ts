@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { API } from './api';
+
 type LoginOptions = {
   redirectTo?: string;
 };
@@ -23,19 +26,29 @@ export function getAuthHeaderValue(): string {
 }
 
 export async function login(email: string, password: string, options?: LoginOptions): Promise<void> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || 'Authentication failed');
+  let token = '';
+  try {
+    const res = await API.post('/api/v1/auth/login', { email, password }, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const payload = (res.data ?? {}) as Record<string, unknown>;
+    const nested = (payload.data ?? {}) as Record<string, unknown>;
+    token = (typeof payload.access_token === 'string' && payload.access_token)
+      || (typeof nested.access_token === 'string' && nested.access_token)
+      || '';
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const detail = (error.response?.data as Record<string, unknown> | undefined)?.detail;
+      if (typeof detail === 'string' && detail.trim().length > 0) {
+        throw new Error(detail);
+      }
+    }
+    throw new Error('Authentication failed');
   }
 
-  const data = await res.json();
-  const token = data.access_token;
+  if (!token) {
+    throw new Error('Authentication failed');
+  }
 
   // Canonical key
   localStorage.setItem('token', token);

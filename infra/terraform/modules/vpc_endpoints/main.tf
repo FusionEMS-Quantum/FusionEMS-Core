@@ -26,7 +26,10 @@ resource "aws_security_group" "interface_endpoints" {
   })
 
   lifecycle {
+    # Avoid replacing the security group when only the description text drifts
+    # between console edits or minor formatting changes.
     create_before_destroy = true
+    ignore_changes = [description]
   }
 }
 

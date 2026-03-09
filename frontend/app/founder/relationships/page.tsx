@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { getRelationshipCommandSummaryPortal } from '@/services/api';
 
 /* ── Types ───────────────────────────────────────────────────────────── */
 
@@ -59,13 +60,6 @@ interface CommandSummary {
 }
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
-
-function getToken(): string {
-  if (typeof window === 'undefined') return '';
-  return 'Bearer ' + (localStorage.getItem('qs_token') || '');
-}
 
 function severityColor(sev: string): string {
   switch (sev) {
@@ -190,12 +184,8 @@ export default function FounderRelationshipsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/v1/founder/relationship-command/summary`, {
-        headers: { Authorization: getToken() },
-      });
-      if (res.ok) {
-        setData(await res.json());
-      }
+      const summary = await getRelationshipCommandSummaryPortal();
+      setData(summary as unknown as CommandSummary);
     } catch (_e) {
       /* silent — retain last good data */
     } finally {

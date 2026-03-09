@@ -13,7 +13,7 @@ import json
 import logging
 import uuid
 import zipfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -291,7 +291,7 @@ class ExportOffboardingService:
         if approved:
             pkg.state = "APPROVED"
             pkg.approved_by = reviewer_id
-            pkg.approved_at = datetime.now(timezone.utc)
+            pkg.approved_at = datetime.now(UTC)
         else:
             pkg.state = "REVOKED"
         pkg.reviewer_notes = reviewer_notes
@@ -381,7 +381,7 @@ class ExportOffboardingService:
 
         token = uuid.uuid4().hex + uuid.uuid4().hex
         from datetime import timedelta
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=expires_hours)
+        expires_at = datetime.now(UTC) + timedelta(hours=expires_hours)
         pkg.secure_link_token = token
         pkg.secure_link_expires_at = expires_at
         pkg.secure_link_revoked = False
@@ -744,7 +744,7 @@ class ExportOffboardingService:
             # Manifest
             manifest = {
                 "version": "1.0",
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
                 "tenant_id": str(tenant_id),
                 "modules": modules,
                 "files": manifest_entries,
@@ -885,7 +885,7 @@ class ExportOffboardingService:
 {tenant_id}
 
 ## Generated
-{datetime.now(timezone.utc).isoformat()}
+{datetime.now(UTC).isoformat()}
 
 ## Modules Included
 {chr(10).join(f'- {m}' for m in modules)}

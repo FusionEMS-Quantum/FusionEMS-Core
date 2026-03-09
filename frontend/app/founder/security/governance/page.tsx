@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '';
+import { getGovernanceSummary, getGovernanceInteropReadiness } from '@/services/api';
 
 /* ── color system per directive ── */
 const STATUS_COLOR = {
@@ -139,13 +138,9 @@ export default function GovernanceCommandPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const headers: HeadersInit = {
-      'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : ''}`,
-    };
-
     Promise.all([
-      fetch(`${API}/api/v1/governance/summary`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`${API}/api/v1/governance/interop-readiness`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
+      getGovernanceSummary().catch(() => null),
+      getGovernanceInteropReadiness().catch(() => null),
     ]).then(([summaryData, interopData]) => {
       if (summaryData) {
         setSummary(summaryData);

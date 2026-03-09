@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { getPatientStatements, payStatement } from '@/services/api';
 
 const FIELD_STYLE: React.CSSProperties = {
   width: '100%',
@@ -43,10 +44,6 @@ type PatientStatement = {
 function PatientPayPageContent() {
   const searchParams = useSearchParams();
   const statementIdFromUrl = searchParams.get('statement_id');
-  const apiBase = useMemo(
-    () => process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || '',
-    []
-  );
 
   const [statement, setStatement] = useState<PatientStatement | null>(null);
   const [loadingStatement, setLoadingStatement] = useState(true);
@@ -84,20 +81,7 @@ function PatientPayPageContent() {
       setStatementError(null);
 
       try {
-        const url = new URL('/api/v1/patient/statements?limit=50', apiBase || window.location.origin);
-        const res = await fetch(url.toString(), {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            Accept: 'application/json',
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to load statements (${res.status})`);
-        }
-
-        const payload = await res.json();
+        const payload = await getPatientStatements(50);
         const statements: PatientStatement[] = Array.isArray(payload?.statements)
           ? payload.statements
           : [];
@@ -131,7 +115,7 @@ function PatientPayPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [apiBase, statementIdFromUrl]);
+  }, [statementIdFromUrl]);
 
   function formatCard(val: string) {
     return val
@@ -159,21 +143,7 @@ function PatientPayPageContent() {
 
     setSubmitting(true);
     try {
-      const url = new URL(`/api/v1/statements/${statement.id}/pay`, apiBase || window.location.origin);
-      const res = await fetch(url.toString(), {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Payment initialization failed (${res.status})`);
-      }
-
-      const payload = await res.json();
+      const payload = await payStatement(statement.id, {});
       const checkoutUrl = payload?.checkout_url;
       if (!checkoutUrl || typeof checkoutUrl !== 'string') {
         throw new Error('Checkout URL not returned by backend.');

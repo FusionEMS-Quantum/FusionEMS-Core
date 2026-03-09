@@ -1,9 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
+import { getStaffingReadiness, getCrewQualifications, getCrewAvailability, updateCrewAvailability, flagCrewFatigue } from '@/services/api';
 
 const SERVICE_LEVELS = ['BLS', 'ALS', 'CCT', 'HEMS'];
 const CERT_FOR_LEVEL: Record<string, string> = { BLS: 'EMT', ALS: 'AEMT', CCT: 'Paramedic', HEMS: 'Flight_Paramedic' };
@@ -59,9 +57,10 @@ export default function StaffingPage() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/api/v1/staffing/readiness`, { headers: { Authorization: getToken() } });
-      if (r.ok) setSummary(await r.json());
-    } finally { setLoading(false); }
+      const data = await getStaffingReadiness();
+      setSummary(data);
+    } catch { /* swallow – loading state handles UI */ }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); const iv = setInterval(load, 15000); return () => clearInterval(iv); }, [load]);
@@ -71,12 +70,10 @@ export default function StaffingPage() {
     setChecking(true);
     setCheckResult(null);
     try {
-      const [qr, ar] = await Promise.all([
-        fetch(`${API}/api/v1/staffing/crew/${checkCrew.crew_member_id}/qualification?service_level=${checkCrew.service_level}`, { headers: { Authorization: getToken() } }),
-        fetch(`${API}/api/v1/staffing/crew/${checkCrew.crew_member_id}/availability`, { headers: { Authorization: getToken() } }),
+      const [qj, aj] = await Promise.all([
+        getCrewQualifications(checkCrew.crew_member_id).catch(() => ({})),
+        getCrewAvailability(checkCrew.crew_member_id).catch(() => ({})),
       ]);
-      const qj = qr.ok ? await qr.json() : {};
-      const aj = ar.ok ? await ar.json() : {};
       setCheckResult({ qualification: qj, availability: aj });
     } finally { setChecking(false); }
   };
@@ -85,24 +82,20 @@ export default function StaffingPage() {
     if (!availForm.crew_member_id) return;
     setSubmitting(true);
     try {
-      const r = await fetch(`${API}/api/v1/staffing/crew/${availForm.crew_member_id}/availability`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(availForm),
-      });
-      if (r.ok) { showToast('Availability updated'); load(); setAvailForm({ crew_member_id: '', status: 'AVAILABLE', note: '' }); }
-    } finally { setSubmitting(false); }
+      await updateCrewAvailability(availForm.crew_member_id, availForm);
+      showToast('Availability updated'); load(); setAvailForm({ crew_member_id: '', status: 'AVAILABLE', note: '' });
+    } catch { /* toast not shown on failure – keeps prior behavior */ }
+    finally { setSubmitting(false); }
   };
 
   const flagFatigue = async () => {
     if (!fatigueForm.crew_member_id || !fatigueForm.reason) return;
     setSubmitting(true);
     try {
-      const r = await fetch(`${API}/api/v1/staffing/crew/${fatigueForm.crew_member_id}/fatigue-flag`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: fatigueForm.reason, hours_on_duty: fatigueForm.hours_on_duty ? parseFloat(fatigueForm.hours_on_duty) : undefined }),
-      });
-      if (r.ok) { showToast('Fatigue flag set — crew will be flagged before assignment'); load(); setFatigueForm({ crew_member_id: '', reason: '', hours_on_duty: '' }); }
-    } finally { setSubmitting(false); }
+      await flagCrewFatigue(fatigueForm.crew_member_id, { reason: fatigueForm.reason, hours_on_duty: fatigueForm.hours_on_duty ? parseFloat(fatigueForm.hours_on_duty) : undefined });
+      showToast('Fatigue flag set — crew will be flagged before assignment'); load(); setFatigueForm({ crew_member_id: '', reason: '', hours_on_duty: '' });
+    } catch { /* toast not shown on failure – keeps prior behavior */ }
+    finally { setSubmitting(false); }
   };
 
   const overallColor = summary?.overall_readiness === 'READY' ? '#4caf50' : summary?.overall_readiness === 'WARNING' ? '#ffc107' : '#ef5350';

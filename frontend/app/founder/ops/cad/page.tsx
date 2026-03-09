@@ -1,9 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-const getToken = () => typeof window !== 'undefined' ? 'Bearer ' + (localStorage.getItem('qs_token') || '') : '';
+import { getDispatchMissions, transitionDispatchMission, cancelDispatchMission, createDispatchRequest, injectDispatchRequest } from '@/services/api';
 
 const STATE_COLORS: Record<string, { bg: string; text: string }> = {
   NEW_REQUEST:          { bg: 'rgba(120,130,140,0.2)', text: '#78909c' },
@@ -93,8 +91,8 @@ export default function CadDispatchPage() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/api/v1/dispatch/missions?limit=100`, { headers: { Authorization: getToken() } });
-      if (r.ok) { const j = await r.json(); setMissions(j.missions ?? []); }
+      const j = await getDispatchMissions(100);
+      setMissions(j.missions ?? []);
     } finally { setLoading(false); }
   }, []);
 
@@ -106,11 +104,7 @@ export default function CadDispatchPage() {
     try {
       const body: Record<string, unknown> = { state };
       if (override) { body.override = true; body.override_reason = overrideReason; }
-      const r = await fetch(`${API}/api/v1/dispatch/missions/${missionId}/transition`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const j = await r.json();
+      const j = await transitionDispatchMission(missionId, body as { state: string });
       setTransitionResult(j);
       if (!j.error) { showToast(`Transitioned to ${state}`); load(); }
     } finally { setTransitioning(false); }
@@ -120,18 +114,9 @@ export default function CadDispatchPage() {
     if (!newRequest.origin_address) return;
     setCreating(true);
     try {
-      // 1. Create request
-      const r1 = await fetch(`${API}/api/v1/dispatch/requests`, {
-        method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(newRequest),
-      });
-      const req = await r1.json();
+      const req = await createDispatchRequest(newRequest);
       if (req.id) {
-        // 2. Inject to CAD
-        await fetch(`${API}/api/v1/dispatch/requests/${req.id}/inject`, {
-          method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
+        await injectDispatchRequest(req.id);
         showToast('Mission created and injected to CAD');
         setNewRequest({ service_level: 'BLS', priority: 'P2', origin_address: '', chief_complaint: '' });
         load();
@@ -321,10 +306,7 @@ export default function CadDispatchPage() {
                         onClick={async () => {
                           const reason = window.prompt('Cancel reason (required):');
                           if (reason) {
-                            await fetch(`${API}/api/v1/dispatch/missions/${m.id}/cancel`, {
-                              method: 'POST', headers: { Authorization: getToken(), 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ reason }),
-                            });
+                            await cancelDispatchMission(m.id, { reason });
                             showToast('Mission cancelled'); load();
                           }
                         }}
