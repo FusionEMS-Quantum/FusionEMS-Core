@@ -7,7 +7,11 @@
 html,
 body {
   height: 100%;
-  background-color: var(--color-bg-base);
+  background:
+    radial-gradient(circle at top, rgba(255, 120, 40, 0.10) 0%, transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 140, 0, 0.08) 0%, transparent 25%),
+    linear-gradient(180deg, #070707 0%, #0a0a0b 45%, #050505 100%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-body);

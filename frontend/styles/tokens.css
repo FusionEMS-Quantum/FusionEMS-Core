@@ -7,9 +7,9 @@
 /* ─── Color Tokens ─────────────────────────────────────────────── */
 :root {
   /* Spec Aliases (canonical names from the Quantum style guide) */
-  --q-bg:        #0B0F14;
-  --q-surface:   #111827;
-  --q-surface-2: #0F172A;
+  --q-bg:        #070707;
+  --q-surface:   #0e0e10;
+  --q-surface-2: #0a0a0b;
   --q-text:      #E5E7EB;
   --q-muted:     #9CA3AF;
   --q-border:    rgba(255, 255, 255, 0.08);
@@ -19,12 +19,12 @@
   --q-yellow:    #F59E0B;
 
   /* Backgrounds */
-  --color-bg-void:         #07090d;
+  --color-bg-void:         #050505;
   --color-bg-base:         var(--q-bg);
   --color-bg-panel:        var(--q-surface);
   --color-bg-panel-raised: var(--q-surface-2);
-  --color-bg-overlay:      #1a2535;
-  --color-bg-input:        #0e161f;
+  --color-bg-overlay:      #141418;
+  --color-bg-input:        #0b0b0d;
 
   /* Borders */
   --color-border-default: var(--q-border);

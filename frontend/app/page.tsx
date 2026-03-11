@@ -60,13 +60,16 @@ export default function LandingPage() {
   const lift = quantumCollected - currentCollected;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-base)] text-gray-200 selection:bg-[var(--q-orange)]/20 selection:text-[var(--q-orange)] overflow-x-hidden font-sans relative">
+    <div className="min-h-screen text-gray-200 selection:bg-[var(--q-orange)]/20 selection:text-[var(--q-orange)] overflow-x-hidden font-sans relative">
       
-      {/* GLOBAL BACKGROUND SYSTEM */}
+      {/* GLOBAL BACKGROUND SYSTEM — aligned with new FQ Quantum aesthetic */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(20,20,25,1)_0%,_rgba(6,6,8,1)_100%)]"></div>
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top, rgba(255,120,40,0.13) 0%, transparent 30%), radial-gradient(circle at bottom right, rgba(255,140,0,0.10) 0%, transparent 28%), linear-gradient(180deg, #070707 0%, #0a0a0b 45%, #050505 100%)' }} />
+        <div className="absolute left-[-8%] top-[-5%] h-[450px] w-[450px] rounded-full bg-orange-500/[0.07] blur-3xl" />
+        <div className="absolute right-[-6%] top-[20%] h-[400px] w-[400px] rounded-full bg-amber-400/[0.07] blur-3xl" />
+        <div className="absolute bottom-[-8%] left-[30%] h-[500px] w-[500px] rounded-full bg-orange-600/[0.07] blur-3xl" />
         {/* Tactical Grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-70"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(circle_at_center,black,transparent_80%)]" />
       </div>
 
       {/* NAVIGATION */}
