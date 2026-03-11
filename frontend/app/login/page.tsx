@@ -1,9 +1,11 @@
 'use client';
 
 import React, { Suspense, useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import QuantumLogo from '@/components/branding/QuantumLogo';
 import { login } from '@/services/auth';
 
 type TabKey = 'staff' | 'billing';
@@ -79,52 +81,46 @@ function LoginPageInner() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: '#000000' }}
+      className="relative min-h-screen overflow-hidden bg-bg-base text-text-primary texture-powder flex flex-col items-center justify-center px-4 py-12"
     >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none opacity-80"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 18% 14%, var(--color-brand-orange-glow), transparent 34%), radial-gradient(circle at 86% 18%, var(--color-border-strong), transparent 36%), linear-gradient(to right, var(--color-border-subtle) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-subtle) 1px, transparent 1px)',
+          backgroundSize: 'auto, auto, 46px 46px, 46px 46px',
+        }}
+      />
+
       {/* Login panel */}
       <div
-        className="w-full max-w-md chamfer-12 border shadow-[var(--elevation-3)]"
-        style={{
-          backgroundColor: 'var(--color-bg-panel)',
-          borderColor:     'var(--color-border-default)',
-        }}
+        className="relative z-10 w-full max-w-md chamfer-12 border border-border-default bg-bg-panel shadow-elevation-4"
       >
+        <div className="h-[2px] bg-gradient-to-r from-orange via-orange-bright to-transparent" />
+
         {/* Wordmark */}
         <div
-          className="hud-rail flex flex-col items-center px-8 pt-8 pb-6"
+          className="hud-rail flex flex-col items-center px-8 pt-8 pb-6 texture-powder"
           style={{ borderBottom: '1px solid var(--color-border-default)' }}
         >
-          <div className="flex items-center gap-2 mb-1">
-            <div
-              className="chamfer-4 flex h-8 w-8 items-center justify-center"
-              style={{
-                backgroundColor: 'var(--q-orange)',
-                color:           'var(--color-text-inverse)',
-                fontFamily:      'var(--font-label)',
-                fontSize:        'var(--text-label)',
-                fontWeight:      700,
-                letterSpacing:   'var(--tracking-label)',
-              }}
-            >
-              FQ
+          <div className="relative flex flex-col items-center">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-[0.08]">
+              <img
+                src="/brand/logo-monogram.svg"
+                alt=""
+                className="h-24 w-24"
+                aria-hidden="true"
+              />
             </div>
-            <span
-              style={{
-                fontFamily:    'var(--font-label)',
-                fontSize:      'var(--text-h3)',
-                fontWeight:    700,
-                letterSpacing: '0.04em',
-                color:         'var(--color-text-primary)',
-                textTransform: 'uppercase',
-              }}
-            >
-              FusionEMS Quantum
-            </span>
+
+            <QuantumLogo size="lg" />
+            <div className="mt-2 micro-caps text-center">
+              <span className="text-orange-bright">Secure Access</span>
+              <span className="mx-2 text-text-muted">•</span>
+              <span className="text-text-muted">Billing-first infrastructure OS</span>
+            </div>
           </div>
-          <p className="micro-caps mt-1" style={{ color: 'var(--color-text-muted)' }}>
-            Billing-first infrastructure OS
-          </p>
         </div>
 
         {/* Tab switcher */}
@@ -143,7 +139,7 @@ function LoginPageInner() {
                   key={tab.key}
                   type="button"
                   onClick={() => handleTabChange(tab.key)}
-                  className="relative flex-1 py-2 transition-all duration-[150ms]"
+                  className="relative flex-1 py-2 transition-all duration-fast ease-out focus-ring"
                   style={{
                     fontFamily:    'var(--font-label)',
                     fontSize:      'var(--text-label)',
@@ -228,9 +224,9 @@ function LoginPageInner() {
           </Button>
 
           <div className="flex justify-center">
-            <button
-              type="button"
-              className="chamfer-4 px-2 py-1 transition-colors duration-[150ms]"
+            <Link
+              href="/forgot-password"
+              className="chamfer-4 px-2 py-1 transition-colors duration-fast ease-out focus-ring"
               style={{
                 fontFamily:    'var(--font-label)',
                 fontSize:      'var(--text-label)',
@@ -239,6 +235,7 @@ function LoginPageInner() {
                 textTransform: 'uppercase',
                 color:         'var(--color-text-muted)',
                 background:    'transparent',
+                textDecoration: 'none',
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.color = 'var(--color-text-secondary)')
@@ -246,10 +243,14 @@ function LoginPageInner() {
               onMouseLeave={(e) =>
                 (e.currentTarget.style.color = 'var(--color-text-muted)')
               }
-              disabled={loading}
+              aria-disabled={loading}
+              tabIndex={loading ? -1 : 0}
+              onClick={(e) => {
+                if (loading) e.preventDefault();
+              }}
             >
               Forgot password?
-            </button>
+            </Link>
           </div>
 
           <div className="flex items-center gap-3 py-3">
