@@ -220,6 +220,43 @@
   pointer-events: none;
 }
 
+/* Quantum field background (subtle motion; token-driven) */
+@keyframes quantum-field-drift {
+  0% {
+    background-position: 0% 0%, 100% 0%, 0 0, 0 0, 0 0;
+  }
+  50% {
+    background-position: 24% 14%, 72% 22%, 18px 10px, -12px -18px, 0 12px;
+  }
+  100% {
+    background-position: 0% 0%, 100% 0%, 0 0, 0 0, 0 0;
+  }
+}
+
+.quantum-field {
+  background-image:
+    radial-gradient(circle at 18% 18%, var(--color-brand-orange-glow), transparent 46%),
+    radial-gradient(circle at 82% 22%, var(--color-brand-red-ghost), transparent 44%),
+    linear-gradient(to right, var(--color-border-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border-subtle) 1px, transparent 1px),
+    repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0px,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+  background-size: 140% 140%, 140% 140%, 54px 54px, 54px 54px, 100% 100%;
+  animation: quantum-field-drift 22s var(--ease-in-out) infinite;
+  filter: saturate(1.05) contrast(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quantum-field {
+    animation: none;
+  }
+}
+
 /* Chamfer utility classes */
 .chamfer-4       { clip-path: var(--chamfer-4);       }
 .chamfer-8       { clip-path: var(--chamfer-8);       }
