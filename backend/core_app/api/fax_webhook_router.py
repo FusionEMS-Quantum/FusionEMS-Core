@@ -16,6 +16,8 @@ from core_app.api.dependencies import db_session_dependency  # pylint: disable=n
 from core_app.core.config import get_settings  # pylint: disable=no-name-in-module
 from core_app.documents.s3_storage import put_bytes
 from core_app.observability.metrics import (  # pylint: disable=no-name-in-module
+    FAX_CLASSIFY_ENQUEUE_TOTAL,
+    FAX_INBOUND_STORE_TOTAL,
     FAX_JOB_STATUS_TRANSITIONS_TOTAL,
     FAX_TELNYX_WEBHOOK_EVENTS_TOTAL,
 )
@@ -442,7 +444,7 @@ def _insert_fax_document(
     db.commit()
 
 
-@router.post("/webhooks/telnyx/fax")
+@router.post("/api/v1/webhooks/telnyx/fax")
 async def telnyx_fax_webhook(
     request: Request,
     db: Session = Depends(db_session_dependency),
@@ -694,12 +696,28 @@ async def telnyx_fax_webhook(
             "telnyx_fax_skipping_download fax_id=%s missing=%s", telnyx_fax_id, missing
         )
 
-    if tenant_id and store_status == "stored":
+    # Record storage outcome metrics even when unrouted.
+    FAX_INBOUND_STORE_TOTAL.labels(store_status=store_status).inc()
+
+    if not tenant_id:
+        # Tenant not resolved; do not attempt tenant-scoped persistence (RLS will block).
+        _mark_event_processed(db, event_id)
+        FAX_TELNYX_WEBHOOK_EVENTS_TOTAL.labels(
+            event_type=event_type or "", outcome="unrouted_tenant"
+        ).inc()
+        return {
+            "status": "ok",
+            "fax_id": telnyx_fax_id,
+            "store_status": store_status,
+            "detail": "tenant_not_resolved",
+        }
+
+    _set_tenant_rls_context(db, tenant_id)
+
+    if store_status == "stored":
         case_id = _route_fax_to_case(db, tenant_id, telnyx_fax_id, from_number)
         if not case_id:
-            logger.info(
-                "telnyx_fax_unrouted fax_id=%s tenant_id=%s", telnyx_fax_id, tenant_id
-            )
+            logger.info("telnyx_fax_unrouted fax_id=%s tenant_id=%s", telnyx_fax_id, tenant_id)
 
     _insert_fax_document(
         db,
@@ -710,31 +728,51 @@ async def telnyx_fax_webhook(
         s3_key=s3_key,
         sha256=sha256_hex,
         case_id=case_id,
-        status=store_status if tenant_id else "unrouted_tenant",
+        status=store_status,
     )
 
-    if tenant_id:
-        _set_tenant_rls_context(db, tenant_id)
-        with suppress(Exception):
-            await _best_effort_emit_platform_event(
-                db=db,
-                tenant_id=tenant_id,
-                event_type="fax.inbound.received",
-                entity_type="fax_document",
-                entity_id=telnyx_fax_id,
-                payload={
-                    "fax_id": telnyx_fax_id,
-                    "provider": "telnyx",
-                    "provider_event_id": event_id,
-                    "provider_event_type": event_type,
-                    "store_status": store_status,
-                    "case_id": case_id,
-                    "occurred_at": _utcnow(),
-                    "folder": "inbox",
-                },
-                idempotency_key=f"telnyx:{event_id}:platform_event",
-                correlation_id=None,
-            )
+    # Persist timeline event for portal delivery timeline.
+    with suppress(Exception):
+        _insert_fax_event(
+            db,
+            tenant_id=tenant_id,
+            event_data={
+                "fax_id": telnyx_fax_id,
+                "event_type": "fax_inbound_received",
+                "source": "telnyx_webhook",
+                "provider": "telnyx",
+                "provider_event_id": event_id,
+                "provider_event_type": event_type,
+                "provider_fax_id": telnyx_fax_id,
+                "store_status": store_status,
+                "case_id": case_id,
+                "s3_key": s3_key,
+                "sha256": sha256_hex,
+                "received_at": _utcnow(),
+            },
+        )
+        db.commit()
+
+    with suppress(Exception):
+        await _best_effort_emit_platform_event(
+            db=db,
+            tenant_id=tenant_id,
+            event_type="fax.inbound.received",
+            entity_type="fax_document",
+            entity_id=telnyx_fax_id,
+            payload={
+                "fax_id": telnyx_fax_id,
+                "provider": "telnyx",
+                "provider_event_id": event_id,
+                "provider_event_type": event_type,
+                "store_status": store_status,
+                "case_id": case_id,
+                "occurred_at": _utcnow(),
+                "folder": "inbox",
+            },
+            idempotency_key=f"telnyx:{event_id}:platform_event",
+            correlation_id=correlation_id,
+        )
 
     if store_status == "stored" and s3_key:
         queue_url = settings.fax_classify_queue_url
@@ -747,12 +785,36 @@ async def telnyx_fax_webhook(
                 "sha256": sha256_hex,
                 "case_id": case_id,
             }
-            sqs_publisher.enqueue(
-                queue_url,
-                job,
-                deduplication_id=telnyx_fax_id,
-            )
-            logger.info("telnyx_fax_enqueued_classify fax_id=%s", telnyx_fax_id)
+            try:
+                sqs_publisher.enqueue(
+                    queue_url,
+                    job,
+                    deduplication_id=telnyx_fax_id,
+                )
+                logger.info("telnyx_fax_enqueued_classify fax_id=%s", telnyx_fax_id)
+                FAX_CLASSIFY_ENQUEUE_TOTAL.labels(outcome="enqueued").inc()
+                with suppress(Exception):
+                    _insert_fax_event(
+                        db,
+                        tenant_id=tenant_id,
+                        event_data={
+                            "fax_id": telnyx_fax_id,
+                            "event_type": "fax_classify_enqueued",
+                            "source": "telnyx_webhook",
+                            "s3_key": s3_key,
+                            "case_id": case_id,
+                            "received_at": _utcnow(),
+                        },
+                    )
+                    db.commit()
+            except Exception as exc:
+                logger.error(
+                    "telnyx_fax_enqueue_classify_failed fax_id=%s tenant_id=%s error=%s",
+                    telnyx_fax_id,
+                    tenant_id,
+                    exc,
+                )
+                FAX_CLASSIFY_ENQUEUE_TOTAL.labels(outcome="failed").inc()
 
     _mark_event_processed(db, event_id)
     FAX_TELNYX_WEBHOOK_EVENTS_TOTAL.labels(event_type=event_type or "", outcome="processed").inc()

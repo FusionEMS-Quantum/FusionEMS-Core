@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import contextlib
-import hashlib
 import logging
 import uuid
 from datetime import UTC, datetime
@@ -13,11 +11,6 @@ from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency, get_current_user
 from core_app.core.config import get_settings
-from core_app.payments.stripe_service import (
-    StripeConfig,
-    StripeNotConfigured,
-    verify_webhook_signature,
-)
 from core_app.pricing.catalog import calculate_quote
 from core_app.schemas.auth import CurrentUser
 from core_app.services.domination_service import DominationService
@@ -138,69 +131,12 @@ async def signup(
     }
 
 
-@router.post("/public/webhooks/stripe", include_in_schema=True)
+@router.post("/public/webhooks/stripe", include_in_schema=False)
 async def stripe_webhook(
-    request: Request, db: Session = Depends(db_session_dependency)
+    _request: Request, db: Session = Depends(db_session_dependency)
 ):
-    settings = get_settings()
-    payload_bytes = await request.body()
-    sig = request.headers.get("Stripe-Signature", "")
-    try:
-        event = verify_webhook_signature(
-            cfg=StripeConfig(
-                secret_key=settings.stripe_secret_key,
-                webhook_secret=settings.stripe_webhook_secret or None,
-            ),
-            payload=payload_bytes,
-            sig_header=sig,
-        )
-    except StripeNotConfigured as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail="invalid_signature") from exc
-
-    event_id = event.get("id")
-    metadata = event.get("data", {}).get("object", {}).get("metadata", {}) or {}
-    application_id = metadata.get("application_id")
-    tenant_id_meta = metadata.get("tenant_id")
-
-    settings_system_tenant = settings.system_tenant_id
-    try:
-        system_uuid = (
-            uuid.UUID(settings_system_tenant)
-            if settings_system_tenant
-            else uuid.uuid4()
-        )
-    except ValueError:
-        system_uuid = uuid.uuid4()
-
-    idempotency_tenant = system_uuid
-    if not application_id and tenant_id_meta:
-        with contextlib.suppress(Exception):
-            idempotency_tenant = uuid.UUID(tenant_id_meta)
-
-    svc = DominationService(db, get_event_publisher())
-    existing = svc.repo("stripe_webhook_receipts").list(idempotency_tenant, limit=2000)
-    if any(r["data"].get("event_id") == event_id for r in existing):
-        return {"status": "duplicate", "event_id": event_id}
-
-    payload_hash = hashlib.sha256(payload_bytes).hexdigest()
-    row = await svc.create(
-        table="stripe_webhook_receipts",
-        tenant_id=idempotency_tenant,
-        actor_user_id=None,
-        data={"event_id": event_id, "payload_hash": payload_hash, "event": event},
-        correlation_id=getattr(request.state, "correlation_id", None),
-    )
-
-    event_type = event.get("type") or event.get("event_type") or ""
-    if event_type in ("checkout.session.completed", "payment_intent.succeeded"):
-        if application_id:
-            await _handle_onboarding_payment(db, application_id, event, request)
-        elif tenant_id_meta:
-            await _handle_tenant_billing_event(db, tenant_id_meta, event, request)
-
-    return {"status": "ok", "receipt_id": row["id"], "event_id": event_id}
+    _ = db
+    raise HTTPException(status_code=410, detail="Use /api/v1/webhooks/stripe")
 
 
 async def _handle_onboarding_payment(

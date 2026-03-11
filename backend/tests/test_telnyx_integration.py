@@ -343,7 +343,7 @@ class TestSmsWebhook:
             mock_settings.return_value.telnyx_messaging_profile_id = "mp-001"
             mock_sms.return_value = {"id": "sms-001"}
 
-            resp = client.post("/webhooks/telnyx/sms", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/sms", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
 
@@ -364,7 +364,7 @@ class TestSmsWebhook:
             mock_settings.return_value.telnyx_from_number = "+18005550000"
             mock_settings.return_value.telnyx_messaging_profile_id = "mp-001"
 
-            resp = client.post("/webhooks/telnyx/sms", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/sms", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
 
@@ -386,7 +386,7 @@ class TestSmsWebhook:
             mock_settings.return_value.telnyx_messaging_profile_id = "mp-001"
             mock_sms.return_value = {"id": "sms-002"}
 
-            resp = client.post("/webhooks/telnyx/sms", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/sms", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
 
@@ -408,7 +408,7 @@ class TestSmsWebhook:
             mock_settings.return_value.telnyx_from_number = "+18005550000"
             mock_settings.return_value.telnyx_messaging_profile_id = "mp-001"
 
-            resp = client.post("/webhooks/telnyx/sms", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/sms", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_sms.assert_not_called()
@@ -425,7 +425,7 @@ class TestSmsWebhook:
             mock_settings.return_value.telnyx_public_key = public_key_b64
             mock_settings.return_value.telnyx_webhook_tolerance_seconds = 300
 
-            resp = client.post("/webhooks/telnyx/sms", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/sms", content=body_bytes, headers=headers)
 
         assert resp.status_code == 400
 
@@ -578,7 +578,7 @@ class TestIvrStateMachine:
             self._patch_settings(ms, public_key_b64)
             mock_answer.return_value = {}
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_answer.assert_called_once()
@@ -597,7 +597,7 @@ class TestIvrStateMachine:
             self._patch_settings(ms, public_key_b64)
             mock_gather.return_value = {}
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_gather.assert_called_once()
@@ -620,7 +620,7 @@ class TestIvrStateMachine:
             self._patch_settings(ms, public_key_b64)
             mock_gather.return_value = {}
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_gather.assert_called_once()
@@ -643,7 +643,7 @@ class TestIvrStateMachine:
             self._patch_settings(ms, public_key_b64)
             mock_transfer.return_value = {}
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_transfer.assert_called_once()
@@ -669,7 +669,7 @@ class TestIvrStateMachine:
             self._patch_settings(ms, public_key_b64)
             mock_gather.return_value = {}
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_gather.assert_called_once()
@@ -737,7 +737,7 @@ class TestIvrStateMachine:
             mock_gather.return_value = {}
             mock_helper.send_payment_link_for_call = AsyncMock(return_value=None)
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
 
@@ -750,7 +750,7 @@ class TestIvrStateMachine:
 
         with patch("core_app.api.voice_webhook_router.get_settings") as ms:
             self._patch_settings(ms, public_key_b64)
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
 
@@ -782,7 +782,7 @@ class TestIvrStateMachine:
             self._patch_settings(ms, public_key_b64)
             mock_gather.return_value = {}
 
-            resp = client.post("/webhooks/telnyx/voice", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/voice", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_gather.assert_not_called()
@@ -902,7 +902,7 @@ class TestFaxWebhook:
             mock_put.return_value = None
             mock_sqs.enqueue.return_value = None
 
-            resp = client.post("/webhooks/telnyx/fax", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/fax", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_put.assert_called_once()
@@ -929,7 +929,7 @@ class TestFaxWebhook:
             s.fax_classify_queue_url = "https://sqs.us-east-1.amazonaws.com/123/fax-classify"
             ms.return_value = s
 
-            resp = client.post("/webhooks/telnyx/fax", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/fax", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_dl.assert_not_called()
@@ -948,7 +948,7 @@ class TestFaxWebhook:
             s.telnyx_webhook_tolerance_seconds = 300
             ms.return_value = s
 
-            resp = client.post("/webhooks/telnyx/fax", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/fax", content=body_bytes, headers=headers)
 
         assert resp.status_code == 400
 
@@ -974,7 +974,7 @@ class TestFaxWebhook:
             s.telnyx_webhook_tolerance_seconds = 300
             ms.return_value = s
 
-            resp = client.post("/webhooks/telnyx/fax", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/fax", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         mock_dl.assert_not_called()
@@ -1061,7 +1061,7 @@ class TestFaxWebhook:
             s.telnyx_webhook_tolerance_seconds = 300
             ms.return_value = s
 
-            resp = client.post("/webhooks/telnyx/fax", content=body_bytes, headers=headers)
+            resp = client.post("/api/v1/webhooks/telnyx/fax", content=body_bytes, headers=headers)
 
         assert resp.status_code == 200
         assert resp.json().get("status") == "ok"

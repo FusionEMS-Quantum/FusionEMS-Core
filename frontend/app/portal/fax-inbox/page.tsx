@@ -32,6 +32,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 type FaxItem = FaxItemApi;
 
 type FilterTab = 'all' | 'unmatched' | 'matched' | 'review';
+type FolderTab = 'inbox' | 'outbox';
 
 function relativeTime(iso?: string): string {
   if (!iso) return 'N/A';
@@ -44,7 +45,15 @@ function relativeTime(iso?: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function MatchChip({ fax }: { fax: FaxItem }) {
+function MatchChip({ fax, folder }: { fax: FaxItem; folder: FolderTab }) {
+  if (folder === 'outbox') {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 chamfer-4 text-micro font-bold bg-[var(--color-bg-base)]/10 text-[var(--color-text-primary)]/60 border border-white/10">
+        OUTBOUND
+      </span>
+    );
+  }
+
   const status = fax.document_match_status ?? fax.status ?? '';
   if (status === 'matched') {
     return (
@@ -81,6 +90,7 @@ export default function FaxInboxPage() {
   const [faxes, setFaxes] = useState<FaxItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [folder, setFolder] = useState<FolderTab>('inbox');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [selected, setSelected] = useState<FaxItem | null>(null);
   const [actionLoading, setActionLoading] = useState('');
@@ -92,7 +102,7 @@ export default function FaxInboxPage() {
     setLoading(true);
     setError('');
     try {
-      const items = await listFaxInbox({ status: 'all', limit: 50 });
+      const items = await listFaxInbox({ folder, status: 'all', limit: 50 });
       setFaxes(items);
       return items;
     } catch (e: unknown) {
@@ -101,9 +111,18 @@ export default function FaxInboxPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [folder]);
 
   useEffect(() => { void fetchFaxes(); }, [fetchFaxes]);
+
+  useEffect(() => {
+    setSelected(null);
+    setEvents([]);
+    setActionMsg('');
+    if (folder === 'outbox' && filter !== 'all') {
+      setFilter('all');
+    }
+  }, [folder]);
 
   // Realtime refresh: Poll for new platform events every 8 seconds
   // When fax.inbound.received or fax.outbound.* events fire, refresh the list
@@ -113,7 +132,7 @@ export default function FaxInboxPage() {
       if (cancelled) return;
       try {
         // Silently refresh fax list in background
-        const items = await listFaxInbox({ status: 'all', limit: 50 });
+        const items = await listFaxInbox({ folder, status: 'all', limit: 50 });
         if (!cancelled) {
           setFaxes(items);
           // If selected fax was updated, update the selection
@@ -133,7 +152,7 @@ export default function FaxInboxPage() {
       cancelled = true;
       clearInterval(pollInterval);
     };
-  }, [selected]);
+  }, [folder, selected]);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +176,7 @@ export default function FaxInboxPage() {
   }, [selected?.id]);
 
   const filteredFaxes = faxes.filter((f) => {
+    if (folder === 'outbox') return true;
     const s = f.document_match_status ?? f.status ?? '';
     if (filter === 'all') return true;
     if (filter === 'matched') return s === 'matched';
@@ -224,6 +244,11 @@ export default function FaxInboxPage() {
     { key: 'review', label: 'Review' },
   ];
 
+  const FOLDER_TABS: { key: FolderTab; label: string }[] = [
+    { key: 'inbox', label: 'Inbox' },
+    { key: 'outbox', label: 'Outbox' },
+  ];
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex flex-col">
       <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 0px)' }}>
@@ -232,19 +257,19 @@ export default function FaxInboxPage() {
           {/* Header */}
           <div className="px-4 pt-5 pb-3 border-b border-border-DEFAULT">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-widest text-[var(--color-text-primary)]/70 uppercase">Fax Inbox</span>
+              <span className="text-xs font-bold tracking-widest text-[var(--color-text-primary)]/70 uppercase">Fax</span>
               <span className="ml-1 bg-[var(--q-orange)]/20 text-[var(--q-orange)] border border-orange/30 text-micro font-bold px-2 py-0.5 ">
                 {faxes.length}
               </span>
             </div>
-            {/* Filter Tabs */}
+            {/* Folder Tabs */}
             <div className="flex gap-1 mt-3">
-              {TABS.map((t) => (
+              {FOLDER_TABS.map((t) => (
                 <button
                   key={t.key}
-                  onClick={() => setFilter(t.key)}
+                  onClick={() => setFolder(t.key)}
                   className={`px-2.5 py-1 chamfer-4 text-body font-semibold transition-colors ${
-                    filter === t.key
+                    folder === t.key
                       ? 'bg-[var(--q-orange)]/20 text-[var(--q-orange)] border border-orange/40'
                       : 'text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)]/70 border border-transparent'
                   }`}
@@ -253,6 +278,24 @@ export default function FaxInboxPage() {
                 </button>
               ))}
             </div>
+            {/* Filter Tabs */}
+            {folder === 'inbox' && (
+              <div className="flex gap-1 mt-3">
+                {TABS.map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setFilter(t.key)}
+                    className={`px-2.5 py-1 chamfer-4 text-body font-semibold transition-colors ${
+                      filter === t.key
+                        ? 'bg-[var(--q-orange)]/20 text-[var(--q-orange)] border border-orange/40'
+                        : 'text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)]/70 border border-transparent'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Fax List */}
@@ -290,7 +333,7 @@ export default function FaxInboxPage() {
                       {pageCount == null ? '— pages' : `${pageCount} page${pageCount !== 1 ? 's' : ''}`}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1.5 items-center">
-                      <MatchChip fax={fax} />
+                      <MatchChip fax={fax} folder={folder} />
                       {confidence != null && (
                         <span className="text-micro text-system-billing font-mono">{Math.round(confidence * 100)}% match</span>
                       )}
@@ -358,10 +401,11 @@ export default function FaxInboxPage() {
               )}
 
               {/* Match Section */}
-              <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-4 space-y-4">
-                <h3 className="text-xs font-bold tracking-widest text-[var(--color-text-primary)]/60 uppercase">Match</h3>
+              {folder === 'inbox' && (
+                <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-4 space-y-4">
+                  <h3 className="text-xs font-bold tracking-widest text-[var(--color-text-primary)]/60 uppercase">Match</h3>
 
-                {(() => {
+                  {(() => {
                   const suggestions = Array.isArray(selected.data?.match_suggestions) ? selected.data.match_suggestions : [];
                   return (
                     <>
@@ -439,7 +483,8 @@ export default function FaxInboxPage() {
 
                   );
                 })()}
-              </div>
+                </div>
+              )}
 
               {/* Delivery Timeline */}
               <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-4 space-y-3">

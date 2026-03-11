@@ -1,6 +1,6 @@
 """Integration tests for the Telnyx fax webhook endpoint.
 
-These tests validate current router behavior at /webhooks/telnyx/fax with
+These tests validate current router behavior at /api/v1/webhooks/telnyx/fax with
 explicit signature and idempotency handling.
 """
 
@@ -66,7 +66,7 @@ def test_rejects_invalid_signature(
 ) -> None:
     monkeypatch.setattr(fax_webhook_router, "verify_telnyx_webhook", lambda **_: False)
 
-    response = client.post("/webhooks/telnyx/fax", json=_payload())
+    response = client.post("/api/v1/webhooks/telnyx/fax", json=_payload())
 
     assert response.status_code == 400
     assert response.json().get("detail") == "invalid_telnyx_signature"
@@ -79,7 +79,7 @@ def test_rejects_invalid_json_when_signature_valid(
     monkeypatch.setattr(fax_webhook_router, "verify_telnyx_webhook", lambda **_: True)
 
     response = client.post(
-        "/webhooks/telnyx/fax",
+        "/api/v1/webhooks/telnyx/fax",
         data="{invalid",
         headers={"Content-Type": "application/json"},
     )
@@ -95,7 +95,7 @@ def test_duplicate_event_short_circuits(
     monkeypatch.setattr(fax_webhook_router, "verify_telnyx_webhook", lambda **_: True)
     monkeypatch.setattr(fax_webhook_router, "_ensure_event_receipt", lambda *_, **__: False)
 
-    response = client.post("/webhooks/telnyx/fax", json=_payload(event_id="evt-dup"))
+    response = client.post("/api/v1/webhooks/telnyx/fax", json=_payload(event_id="evt-dup"))
 
     assert response.status_code == 200
     assert response.json() == {"status": "duplicate"}
@@ -112,9 +112,29 @@ def test_non_received_event_without_tenant_is_ignored(
     monkeypatch.setattr(fax_webhook_router, "_resolve_tenant_by_did", lambda *_, **__: None)
     monkeypatch.setattr(fax_webhook_router, "_mark_event_processed", mark_processed)
 
-    response = client.post("/webhooks/telnyx/fax", json=_payload(event_type="fax.unknown"))
+    response = client.post("/api/v1/webhooks/telnyx/fax", json=_payload(event_type="fax.unknown"))
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert response.json()["detail"] == "non_received_event_ignored"
+    mark_processed.assert_called_once()
+
+
+def test_received_event_without_tenant_skips_persistence(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mark_processed = MagicMock()
+
+    monkeypatch.setattr(fax_webhook_router, "verify_telnyx_webhook", lambda **_: True)
+    monkeypatch.setattr(fax_webhook_router, "_ensure_event_receipt", lambda *_, **__: True)
+    monkeypatch.setattr(fax_webhook_router, "_resolve_tenant_by_did", lambda *_, **__: None)
+    monkeypatch.setattr(fax_webhook_router, "_mark_event_processed", mark_processed)
+
+    response = client.post("/api/v1/webhooks/telnyx/fax", json=_payload(event_type="fax.received"))
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["detail"] == "tenant_not_resolved"
     mark_processed.assert_called_once()

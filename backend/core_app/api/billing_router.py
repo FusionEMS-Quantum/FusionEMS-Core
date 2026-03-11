@@ -498,7 +498,7 @@ async def stripe_webhook(
     ),  # protected endpoint; public webhook should be separate path in pricing_router
     db: Session = Depends(db_session_dependency),
 ):
-    raise HTTPException(status_code=400, detail="Use /api/v1/public/webhooks/stripe")
+    raise HTTPException(status_code=400, detail="Use /api/v1/webhooks/stripe")
 
 
 @router.get("/ar-aging")

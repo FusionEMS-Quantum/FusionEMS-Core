@@ -84,3 +84,15 @@ FAX_JOB_STATUS_TRANSITIONS_TOTAL = Counter(
     "Fax job status transitions",
     ["source", "from_status", "to_status"],
 )
+
+FAX_INBOUND_STORE_TOTAL = Counter(
+    "fusionems_fax_inbound_store_total",
+    "Inbound fax storage outcomes",
+    ["store_status"],
+)
+
+FAX_CLASSIFY_ENQUEUE_TOTAL = Counter(
+    "fusionems_fax_classify_enqueue_total",
+    "Outbound SQS enqueue outcomes for fax classification",
+    ["outcome"],
+)

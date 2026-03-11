@@ -59,13 +59,15 @@ def process_fax_match(message: dict) -> None:
             _Session = sa_orm.sessionmaker(bind=_engine)
             db = _Session()
             try:
+                # RLS requires tenant context for tenant-scoped tables.
+                db.execute(sa.text("SELECT set_config('app.tenant_id', :tid, true)"), {"tid": str(tenant_id)})
                 existing = db.execute(
                     sa.text(
                         "SELECT data->>'match_status' as status FROM document_matches WHERE data->>'fax_id' = :fid AND tenant_id = :tid LIMIT 1"
                     ),
                     {"fid": fax_id, "tid": str(tenant_id)},
                 ).fetchone()
-                if existing and existing.status in ("matched", "suggested"):
+                if existing and existing.status in ("matched", "review"):
                     logger.info(
                         "fax_match_skip_already_processed fax_id=%s status=%s correlation_id=%s",
                         fax_id,
@@ -107,9 +109,13 @@ def process_fax_match(message: dict) -> None:
         if match_result:
             _persist_status(
                 fax_id=fax_id,
-                status="auto_matched",
+                tenant_id=tenant_id,
+                match_status="matched",
                 matched_claim_id=match_result["claim_id"],
                 suggested_matches=None,
+                match_type="qr_match",
+                confidence=1.0,
+                patient_name=match_result.get("patient_name"),
                 database_url=database_url,
             )
             logger.info(
@@ -140,9 +146,13 @@ def process_fax_match(message: dict) -> None:
                 )
                 _persist_status(
                     fax_id=fax_id,
-                    status="auto_matched",
+                    tenant_id=tenant_id,
+                    match_status="matched",
                     matched_claim_id=best["claim_id"],
                     suggested_matches=None,
+                    match_type="auto_probabilistic",
+                    confidence=float(best.get("confidence") or 0.0),
+                    patient_name=str((best.get("claim_data") or {}).get("patient_name") or "") or None,
                     database_url=database_url,
                 )
                 logger.info(
@@ -156,9 +166,13 @@ def process_fax_match(message: dict) -> None:
 
             _persist_status(
                 fax_id=fax_id,
-                status="suggested",
+                tenant_id=tenant_id,
+                match_status="review",
                 matched_claim_id=None,
                 suggested_matches=matches[:5],
+                match_type="suggested",
+                confidence=float(best.get("confidence") or 0.0),
+                patient_name=None,
                 database_url=database_url,
             )
             logger.info(
@@ -171,9 +185,13 @@ def process_fax_match(message: dict) -> None:
 
     _persist_status(
         fax_id=fax_id,
-        status="unmatched",
+        tenant_id=tenant_id,
+        match_status="unmatched",
         matched_claim_id=None,
         suggested_matches=None,
+        match_type=None,
+        confidence=None,
+        patient_name=None,
         database_url=database_url,
     )
     logger.info("fax_match_unmatched fax_id=%s correlation_id=%s", fax_id, correlation_id)
@@ -234,7 +252,16 @@ def _match_by_qr(
             if result:
                 claim_id = str(result.get("id", ""))
                 matcher.attach_to_claim(fax_id, claim_id, "qr_match", actor="auto_qr")
-                return {"claim_id": claim_id}
+                cdata = result.get("data") or {}
+                if isinstance(cdata, str):
+                    try:
+                        cdata = json.loads(cdata)
+                    except Exception:
+                        cdata = {}
+                patient_name = None
+                if isinstance(cdata, dict):
+                    patient_name = str(cdata.get("patient_name") or "").strip() or None
+                return {"claim_id": claim_id, "patient_name": patient_name}
             return None
         finally:
             db.close()
@@ -302,9 +329,13 @@ def _attach_claim(
 def _persist_status(
     *,
     fax_id: str,
-    status: str,
+    tenant_id: str,
+    match_status: str,
     matched_claim_id: str | None,
     suggested_matches: list[dict] | None,
+    match_type: str | None,
+    confidence: float | None,
+    patient_name: str | None,
     database_url: str,
 ) -> None:
     if not database_url:
@@ -312,23 +343,70 @@ def _persist_status(
         return
 
     now = datetime.now(UTC).isoformat()
-    suggested_json = json.dumps(suggested_matches or [], default=str)
+    # Normalize suggestions for the portal UI (score is 0..1).
+    normalized_suggestions: list[dict[str, Any]] = []
+    for item in suggested_matches or []:
+        claim_id = str(item.get("claim_id") or "").strip()
+        if not claim_id:
+            continue
+        claim_data = item.get("claim_data") if isinstance(item.get("claim_data"), dict) else {}
+        pname = str(claim_data.get("patient_name") or "").strip() or None
+        score = item.get("confidence")
+        try:
+            score_f = float(score) if score is not None else None
+        except Exception:
+            score_f = None
+        normalized_suggestions.append(
+            {
+                "claim_id": claim_id,
+                "patient_name": pname,
+                "score": score_f,
+            }
+        )
+    suggested_json = json.dumps(normalized_suggestions, default=str)
 
     try:
         import psycopg
 
         with psycopg.connect(database_url) as conn:
             with conn.cursor() as cur:
+                cur.execute("SELECT set_config('app.tenant_id', %s, true)", (tenant_id,))
+
+                existing = cur.execute(
+                    "SELECT id FROM document_matches "
+                    "WHERE tenant_id = %s AND deleted_at IS NULL AND data->>'fax_id' = %s "
+                    "ORDER BY updated_at DESC LIMIT 1",
+                    (tenant_id, fax_id),
+                ).fetchone()
+
+                patch = {
+                    "fax_id": fax_id,
+                    "match_status": match_status,
+                    "matched_claim_id": matched_claim_id,
+                    "suggested_matches": json.loads(suggested_json),
+                    "match_type": match_type,
+                    "confidence": confidence,
+                    "patient_name": patient_name,
+                    "updated_at": now,
+                }
+                patch_json = json.dumps(patch, default=str)
+
+                if existing and existing[0]:
+                    cur.execute(
+                        "UPDATE document_matches "
+                        "SET data = data || %s::jsonb, version = version + 1, updated_at = now() "
+                        "WHERE tenant_id = %s AND id = %s",
+                        (patch_json, tenant_id, str(existing[0])),
+                    )
+                else:
+                    cur.execute(
+                        "INSERT INTO document_matches (tenant_id, data) VALUES (%s, %s::jsonb)",
+                        (tenant_id, patch_json),
+                    )
+
                 cur.execute(
-                    """
-                    UPDATE fax_documents
-                    SET status = %s,
-                        matched_claim_id = COALESCE(%s, matched_claim_id),
-                        suggested_matches = %s::jsonb,
-                        updated_at = %s
-                    WHERE fax_id = %s
-                    """,
-                    (status, matched_claim_id, suggested_json, now, fax_id),
+                    "UPDATE fax_documents SET updated_at = %s WHERE fax_id = %s",
+                    (now, fax_id),
                 )
             conn.commit()
     except Exception as exc:
