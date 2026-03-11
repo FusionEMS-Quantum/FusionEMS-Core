@@ -17,12 +17,12 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string; s
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4"
       style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-2">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-1">{sub}</div>}
+      {sub && <div className="text-body text-[var(--color-text-muted)] mt-1">{sub}</div>}
     </motion.div>
   );
 }
@@ -70,8 +70,9 @@ export default function BillingCommandPage() {
   const fmtPct = (v: unknown) => typeof v === "number" ? `${v}%` : "—";
   const fmtNum = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
 
-  const healthStatus = String(health.status ?? "");
+  const healthStatus = health.status != null ? String(health.status) : "";
   const healthColor = healthStatus === "excellent" ? "var(--color-status-active)" : healthStatus === "good" ? "var(--color-status-active)" : healthStatus === "fair" ? "var(--color-status-warning)" : "var(--color-brand-red)";
+  const leakageItemsSub = leakage.item_count != null ? `${fmtNum(leakage.item_count)} items` : "Items: —";
 
   const FEATURES = [
     "Global revenue dashboard","Clean claim monitor","Denial heatmap","AR aging analysis",
@@ -104,9 +105,9 @@ export default function BillingCommandPage() {
   return (
     <div className="p-5 space-y-6 min-h-screen">
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">CATEGORY 7</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Billing Command Center</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">100-Feature Revenue Intelligence · AR Aging · Denial Analytics · Payer Performance</p>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[var(--q-orange)]/70 mb-1">CATEGORY 7</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Billing Command Center</h1>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">100-Feature Revenue Intelligence · AR Aging · Denial Analytics · Payer Performance</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -123,39 +124,39 @@ export default function BillingCommandPage() {
         <KpiCard label="Claim Revenue" value={fmt$(exec.total_revenue_cents)} color="var(--color-status-info)" />
         <KpiCard label="MRR" value={fmt$(exec.mrr_cents)} color="var(--color-status-info)" sub="Monthly Recurring" />
         <KpiCard label="ARR" value={fmt$(exec.arr_cents)} color="var(--color-status-info)" sub="Annual Run Rate" />
-        <KpiCard label="Revenue Leakage" value={fmt$(leakage.total_leakage_cents)} color="var(--color-brand-red)" sub={`${leakage.item_count ?? 0} items`} />
+        <KpiCard label="Revenue Leakage" value={fmt$(leakage.total_leakage_cents)} color="var(--color-brand-red)" sub={leakageItemsSub} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)" }}>
-          <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">Denial Heatmap — By Reason Code · {heatmapData.total_denials} total</div>
+        <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)" }}>
+          <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Denial Heatmap — By Reason Code · {heatmapData.total_denials} total</div>
           <div className="space-y-2">
             {heatmapData.heatmap.slice(0, 10).map(entry => {
               const maxCount = heatmapData.heatmap[0]?.count || 1;
               return (
                 <div key={entry.reason_code}>
                   <div className="flex justify-between text-body mb-0.5">
-                    <span className="text-zinc-400 truncate mr-2">{entry.reason_code}</span>
-                    <span className="font-semibold text-zinc-100 flex-shrink-0">{entry.count}</span>
+                    <span className="text-[var(--color-text-secondary)] truncate mr-2">{entry.reason_code}</span>
+                    <span className="font-semibold text-[var(--color-text-primary)] flex-shrink-0">{entry.count}</span>
                   </div>
                   <div className="h-2 bg-[rgba(255,255,255,0.06)] overflow-hidden">
-                    <motion.div className="h-full" style={{ background: entry.count / maxCount > 0.7 ? "var(--color-brand-red)" : entry.count / maxCount > 0.4 ? "#FF4D00" : "var(--color-status-warning)" }} initial={{ width: 0 }} animate={{ width: `${(entry.count / maxCount) * 100}%` }} transition={{ duration: 0.6 }} />
+                    <motion.div className="h-full" style={{ background: entry.count / maxCount > 0.7 ? "var(--color-brand-red)" : entry.count / maxCount > 0.4 ? "var(--q-orange)" : "var(--color-status-warning)" }} initial={{ width: 0 }} animate={{ width: `${(entry.count / maxCount) * 100}%` }} transition={{ duration: 0.6 }} />
                   </div>
                 </div>
               );
             })}
-            {!heatmapData.heatmap.length && <div className="text-xs text-zinc-500">No denial data available</div>}
+            {!heatmapData.heatmap.length && <div className="text-xs text-[var(--color-text-muted)]">No denial data available</div>}
           </div>
         </div>
 
-        <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)" }}>
-          <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">AR Concentration Risk · Total AR: {fmt$(arConc.total_ar_cents)}</div>
+        <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)" }}>
+          <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">AR Concentration Risk · Total AR: {fmt$(arConc.total_ar_cents)}</div>
           {arConc.concentration?.slice(0, 6).map(item => {
             const rc = item.risk === "high" ? "var(--color-brand-red)" : item.risk === "medium" ? "var(--color-status-warning)" : "var(--color-status-active)";
             return (
               <div key={item.payer} className="mb-2">
                 <div className="flex justify-between text-body mb-0.5">
-                  <span className="text-zinc-400">{item.payer}</span>
+                  <span className="text-[var(--color-text-secondary)]">{item.payer}</span>
                   <span className="font-semibold" style={{ color: rc }}>{item.pct}% <span className="uppercase text-[9px]">{item.risk}</span></span>
                 </div>
                 <div className="h-1.5 bg-[rgba(255,255,255,0.06)]  overflow-hidden">
@@ -164,48 +165,48 @@ export default function BillingCommandPage() {
               </div>
             );
           })}
-          {!arConc.concentration?.length && <div className="text-xs text-zinc-500">No AR concentration data</div>}
+          {!arConc.concentration?.length && <div className="text-xs text-[var(--color-text-muted)]">No AR concentration data</div>}
         </div>
       </div>
 
-      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
-        <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">Payer Performance Ranking</div>
+      <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
+        <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Payer Performance Ranking</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs min-w-[600px]">
             <thead>
               <tr className="border-b border-border-subtle">
                 {["Payer","Total","Paid","Denied","Revenue","Clean %","Avg Days"].map(h => (
-                  <th key={h} className="text-left text-micro uppercase tracking-wider text-zinc-500 pb-2 pr-4 font-semibold">{h}</th>
+                  <th key={h} className="text-left text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 pr-4 font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {payers.payers?.map((p, i) => (
                 <tr key={i} className="border-b border-border-subtle hover:bg-[rgba(255,255,255,0.02)]">
-                  <td className="py-2 pr-4 text-zinc-100 font-semibold">{String(p.payer)}</td>
-                  <td className="py-2 pr-4 text-zinc-400">{fmtNum(p.total_claims)}</td>
-                  <td className="py-2 pr-4 text-status-active">{fmtNum(p.paid)}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-primary)] font-semibold">{String(p.payer)}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{fmtNum(p.total_claims)}</td>
+                  <td className="py-2 pr-4 text-[var(--color-status-active)]">{fmtNum(p.paid)}</td>
                   <td className="py-2 pr-4 text-red">{fmtNum(p.denied)}</td>
                   <td className="py-2 pr-4 text-system-billing">{fmt$(p.revenue_cents)}</td>
                   <td className="py-2 pr-4">
-                    <span className={(p.clean_claim_rate_pct as number) >= 90 ? "text-status-active" : (p.clean_claim_rate_pct as number) >= 75 ? "text-status-warning" : "text-red"}>
+                    <span className={(p.clean_claim_rate_pct as number) >= 90 ? "text-[var(--color-status-active)]" : (p.clean_claim_rate_pct as number) >= 75 ? "text-status-warning" : "text-red"}>
                       {fmtPct(p.clean_claim_rate_pct)}
                     </span>
                   </td>
-                  <td className="py-2 pr-4 text-zinc-400">{p.avg_days_to_payment != null ? String(p.avg_days_to_payment) : "N/A"}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{p.avg_days_to_payment != null ? String(p.avg_days_to_payment) : "N/A"}</td>
                 </tr>
               ))}
-              {!payers.payers?.length && <tr><td colSpan={7} className="py-6 text-center text-zinc-500">No payer data available</td></tr>}
+              {!payers.payers?.length && <tr><td colSpan={7} className="py-6 text-center text-[var(--color-text-muted)]">No payer data available</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
 
-      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
-        <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">100 Active Command Features</div>
+      <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}>
+        <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">100 Active Command Features</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
           {FEATURES.map(f => (
-            <div key={f} className="flex items-center gap-1.5 text-micro text-zinc-400">
+            <div key={f} className="flex items-center gap-1.5 text-micro text-[var(--color-text-secondary)]">
               <span className="w-1 h-1  bg-system-billing flex-shrink-0" />
               <span className="truncate">{f}</span>
             </div>

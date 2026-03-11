@@ -40,22 +40,22 @@ interface WorkflowMetric {
 }
 
 const HEALTH_STATE_COLORS: Record<string, string> = {
-  HEALTHY: 'text-green-400 border-green-400/30',
-  MODERATE: 'text-yellow-400 border-yellow-400/30',
-  AT_RISK: 'text-[#FF4D00] border-orange-400/30',
-  CRITICAL: 'text-red-400 border-red-400/30',
-  CHURNING: 'text-red-500 border-red-500/30',
+  HEALTHY: 'text-[var(--color-status-active)] border-green-400/30',
+  MODERATE: 'text-[var(--q-yellow)] border-yellow-400/30',
+  AT_RISK: 'text-[var(--q-orange)] border-orange-400/30',
+  CRITICAL: 'text-[var(--color-brand-red)] border-red-400/30',
+  CHURNING: 'text-[var(--color-brand-red)] border-[var(--color-brand-red)]/30',
 };
 
 function healthScoreColor(score: number): string {
-  if (score >= 80) return 'text-green-400';
+  if (score >= 80) return 'text-[var(--color-status-active)]';
   if (score >= 60) return 'text-yellow-400';
-  if (score >= 40) return 'text-[#FF4D00]';
-  return 'text-red-400';
+  if (score >= 40) return 'text-[var(--q-orange)]';
+  return 'text-[var(--color-brand-red)]';
 }
 
 function adoptionBarColor(pct: number): string {
-  if (pct >= 70) return 'bg-green-400';
+  if (pct >= 70) return 'bg-[var(--color-status-active)]';
   if (pct >= 40) return 'bg-yellow-400';
   return 'bg-red-400';
 }
@@ -103,7 +103,7 @@ export default function AdoptionHealthPage() {
   if (error) {
     return (
       <div className="p-5">
-        <div className="bg-red-500/10 border border-red-500/30 p-4 text-red-400 text-sm">{error}</div>
+        <div className="bg-[var(--color-brand-red)]/10 border border-[var(--color-brand-red)]/30 p-4 text-[var(--color-brand-red)] text-sm">{error}</div>
       </div>
     );
   }
@@ -112,30 +112,30 @@ export default function AdoptionHealthPage() {
     <div className="p-5 space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">SUCCESS · HEALTH</div>
-          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Adoption & Health</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Account health · module adoption · workflow completion</p>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[var(--q-orange)]/70 mb-1">SUCCESS · HEALTH</div>
+          <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Adoption & Health</h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Account health · module adoption · workflow completion</p>
         </div>
         <button onClick={handleRecompute} disabled={computing}
-          className="text-micro px-3 py-1.5 border border-orange-dim text-[#FF4D00]/70 hover:bg-[rgba(255,77,0,0.1)] disabled:opacity-50 transition-colors">
+          className="text-micro px-3 py-1.5 border border-orange-dim text-[var(--q-orange)]/70 hover:bg-[rgba(255,106,0,0.1)] disabled:opacity-50 transition-colors">
           {computing ? 'Computing...' : 'Recompute Health'}
         </button>
       </div>
 
       {loading ? (
         <div className="space-y-3 animate-pulse">
-          <div className="h-32 bg-[#0A0A0B] " />
-          <div className="h-40 bg-[#0A0A0B] " />
+          <div className="h-32 bg-[var(--color-bg-panel)] " />
+          <div className="h-40 bg-[var(--color-bg-panel)] " />
         </div>
       ) : (
         <>
           {/* Account Health Score */}
           {health && (
-            <div className={`bg-[#0A0A0B] border p-5 ${HEALTH_STATE_COLORS[health.state] || 'border-border-DEFAULT'}`}>
+            <div className={`bg-[var(--color-bg-panel)] border p-5 ${HEALTH_STATE_COLORS[health.state] || 'border-border-DEFAULT'}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-micro font-bold text-[#FF4D00]/70">ACCOUNT HEALTH</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">Last computed: {new Date(health.computed_at).toLocaleString()} ({health.trigger})</div>
+                  <div className="text-micro font-bold text-[var(--q-orange)]/70">ACCOUNT HEALTH</div>
+                  <div className="text-xs text-[var(--color-text-muted)] mt-0.5">Last computed: {new Date(health.computed_at).toLocaleString()} ({health.trigger})</div>
                 </div>
                 <div className="text-right">
                   <div className={`text-3xl font-black ${healthScoreColor(health.overall_score)}`}>{health.overall_score.toFixed(0)}</div>
@@ -153,8 +153,8 @@ export default function AdoptionHealthPage() {
                 ].map((f) => (
                   <div key={f.label} className="text-center">
                     <div className={`text-lg font-bold ${healthScoreColor(f.score)}`}>{f.score.toFixed(0)}</div>
-                    <div className="text-micro text-zinc-500">{f.label}</div>
-                    <div className="text-micro text-zinc-500 opacity-60">({f.weight})</div>
+                    <div className="text-micro text-[var(--color-text-muted)]">{f.label}</div>
+                    <div className="text-micro text-[var(--color-text-muted)] opacity-60">({f.weight})</div>
                   </div>
                 ))}
               </div>
@@ -163,20 +163,20 @@ export default function AdoptionHealthPage() {
 
           {/* Module Adoption */}
           <div>
-            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">MODULE ADOPTION</div>
+            <div className="text-micro font-bold text-[var(--q-orange)]/70 mb-2">MODULE ADOPTION</div>
             {adoption.length === 0 ? (
-              <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No adoption metrics recorded yet.</div>
+              <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-6 text-center text-[var(--color-text-muted)] text-sm">No adoption metrics recorded yet.</div>
             ) : (
               <div className="space-y-2">
                 {adoption.map((m, i) => (
                   <motion.div key={m.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-                    className="bg-[#0A0A0B] border border-border-DEFAULT p-3">
+                    className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3">
                     <div className="flex items-center justify-between mb-1">
-                      <div className="text-sm font-bold text-zinc-100">{m.module_name}</div>
-                      <div className="text-xs text-zinc-500">{m.active_user_count}/{m.total_user_count} users · {m.category}</div>
+                      <div className="text-sm font-bold text-[var(--color-text-primary)]">{m.module_name}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">{m.active_user_count}/{m.total_user_count} users · {m.category}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-zinc-900/60  overflow-hidden">
+                      <div className="flex-1 h-2 bg-[var(--color-bg-panel)]/60  overflow-hidden">
                         <div className={`h-full ${adoptionBarColor(m.metric_value)} transition-all`} style={{ width: `${m.metric_value}%` }} />
                       </div>
                       <span className={`text-sm font-bold ${healthScoreColor(m.metric_value)}`}>{m.metric_value.toFixed(0)}%</span>
@@ -189,22 +189,22 @@ export default function AdoptionHealthPage() {
 
           {/* Workflow Adoption */}
           <div>
-            <div className="text-micro font-bold text-[#FF4D00]/70 mb-2">WORKFLOW COMPLETION RATES</div>
+            <div className="text-micro font-bold text-[var(--q-orange)]/70 mb-2">WORKFLOW COMPLETION RATES</div>
             {workflows.length === 0 ? (
-              <div className="bg-[#0A0A0B] border border-border-DEFAULT p-6 text-center text-zinc-500 text-sm">No workflow metrics recorded yet.</div>
+              <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-6 text-center text-[var(--color-text-muted)] text-sm">No workflow metrics recorded yet.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {workflows.map((w) => {
                   const completionRate = w.total_invocations > 0 ? (w.successful_completions / w.total_invocations) * 100 : 0;
                   return (
-                  <div key={w.id} className="bg-[#0A0A0B] border border-border-DEFAULT p-3">
-                    <div className="text-sm font-bold text-zinc-100">{w.workflow_name}</div>
-                    <div className="text-xs text-zinc-500">{w.domain}</div>
+                  <div key={w.id} className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3">
+                    <div className="text-sm font-bold text-[var(--color-text-primary)]">{w.workflow_name}</div>
+                    <div className="text-xs text-[var(--color-text-muted)]">{w.domain}</div>
                     <div className="flex items-center justify-between mt-1 text-xs">
                       <span className={`font-bold ${healthScoreColor(completionRate)}`}>{completionRate.toFixed(0)}% completion</span>
-                      {w.average_completion_seconds != null && <span className="text-zinc-500">Avg: {(w.average_completion_seconds / 60).toFixed(1)} min</span>}
+                      {w.average_completion_seconds != null && <span className="text-[var(--color-text-muted)]">Avg: {(w.average_completion_seconds / 60).toFixed(1)} min</span>}
                     </div>
-                    {w.abandonment_count > 0 && <div className="text-micro text-red-400 mt-1">Abandonments: {w.abandonment_count}</div>}
+                    {w.abandonment_count > 0 && <div className="text-micro text-[var(--color-brand-red)] mt-1">Abandonments: {w.abandonment_count}</div>}
                   </div>
                   );
                 })}
@@ -214,7 +214,7 @@ export default function AdoptionHealthPage() {
         </>
       )}
 
-      <Link href="/founder/success-command" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Success Command Center</Link>
+      <Link href="/founder/success-command" className="text-xs text-[var(--q-orange)]/70 hover:text-[var(--q-orange)]">← Back to Success Command Center</Link>
     </div>
   );
 }

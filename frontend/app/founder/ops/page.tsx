@@ -9,7 +9,7 @@ import { getOpsDeploymentRuns, getOpsDeploymentRunSteps, getOpsCommand } from '@
 
 const HEALTH_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = {
   RED:    { bg: 'rgba(229,57,53,0.12)',   border: 'rgba(229,57,53,0.5)',   text: '#ef5350', label: 'BLOCKING' },
-  ORANGE: { bg: 'rgba(255,107,26,0.12)',  border: 'rgba(255,107,26,0.5)',  text: '#ff6b1a', label: 'HIGH RISK' },
+  ORANGE: { bg: 'rgba(255,106,0,0.12)',  border: 'rgba(255,106,0,0.5)',  text: '#ff6b1a', label: 'HIGH RISK' },
   YELLOW: { bg: 'rgba(255,193,7,0.10)',   border: 'rgba(255,193,7,0.4)',   text: '#ffc107', label: 'ATTENTION' },
   BLUE:   { bg: 'rgba(41,182,246,0.10)',  border: 'rgba(41,182,246,0.4)',  text: '#29b6f6', label: 'IN REVIEW' },
   GREEN:  { bg: 'rgba(76,175,80,0.10)',   border: 'rgba(76,175,80,0.4)',   text: '#4caf50', label: 'READY' },
@@ -23,7 +23,7 @@ const SEV_COLOR: Record<string, string> = {
 
 function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-zinc-950/[0.03] border border-white/[0.08] chamfer-8 p-4 ${className}`}>
+    <div className={`bg-[var(--color-bg-base)]/[0.03] border border-white/[0.08] chamfer-8 p-4 ${className}`}>
       {children}
     </div>
   );
@@ -32,9 +32,9 @@ function Panel({ children, className = '' }: { children: React.ReactNode; classN
 function StatCard({ label, value, sub, color, link }: { label: string; value: string | number; sub?: string; color?: string; link?: string }) {
   const content = (
     <Panel>
-      <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
+      <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{label}</div>
       <div className="text-3xl font-black" style={{ color: color ?? 'white' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[var(--color-text-muted)] mt-0.5">{sub}</div>}
     </Panel>
   );
   if (link) return <Link href={link}>{content}</Link>;
@@ -120,10 +120,10 @@ function DeploymentRunsPanel() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <div className="text-micro uppercase tracking-widest text-zinc-500">Agency Deployment Runs</div>
+        <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Agency Deployment Runs</div>
         <div className="flex gap-2">
-          <span className="text-micro text-green-400">{live} live</span>
-          {failed > 0 && <span className="text-micro text-red-400">{failed} failed</span>}
+          <span className="text-micro text-[var(--color-status-active)]">{live} live</span>
+          {failed > 0 && <span className="text-micro text-[var(--color-brand-red)]">{failed} failed</span>}
         </div>
       </div>
       <div className="space-y-1.5">
@@ -135,27 +135,27 @@ function DeploymentRunsPanel() {
           return (
             <div key={id} className="chamfer-4-xl border border-white/[0.07] overflow-hidden">
               <button onClick={() => loadSteps(id)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-zinc-950/[0.03] transition-colors">
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-[var(--color-bg-base)]/[0.03] transition-colors">
                 <div className="w-2 h-2  flex-shrink-0" style={{ background: color }} />
                 <div className="flex-1 min-w-0">
                   <div className="text-body text-white">{String(meta.agency_name ?? run.external_event_id ?? id).slice(0, 40)}</div>
-                  <div className="text-micro text-zinc-500">{String(meta.application_id ?? '').slice(0, 20)}</div>
+                  <div className="text-micro text-[var(--color-text-muted)]">{String(meta.application_id ?? '').slice(0, 20)}</div>
                 </div>
                 <div className="text-micro font-bold" style={{ color }}>{state.replace(/_/g, ' ')}</div>
-                  {run.retry_count as number > 0 && <div className="text-[9px] text-[#FF4D00]">retry {String(run.retry_count)}</div>}
-                <span className="text-zinc-500 text-xs">{expanded === id ? '▲' : '▼'}</span>
+                  {run.retry_count as number > 0 && <div className="text-[9px] text-[var(--q-orange)]">retry {String(run.retry_count)}</div>}
+                <span className="text-[var(--color-text-muted)] text-xs">{expanded === id ? '▲' : '▼'}</span>
               </button>
               {expanded === id && steps.length > 0 && (
                 <div className="px-4 pb-3 border-t border-white/5 space-y-1 pt-2">
                   {run.failure_reason ? (
-                    <div className="text-body text-red-400 mb-2">⚠ {String(run.failure_reason)}</div>
+                    <div className="text-body text-[var(--color-brand-red)] mb-2">⚠ {String(run.failure_reason)}</div>
                   ) : null}
                   {steps.map((step, i) => (
                     <div key={i} className="flex items-center gap-2 text-micro">
                       <span style={{ color: step.status === 'SUCCESS' ? '#4caf50' : step.status === 'FAILED' ? '#ef5350' : '#ffc107' }}>
                         {step.status === 'SUCCESS' ? '✓' : step.status === 'FAILED' ? '✗' : '●'}
                       </span>
-                      <span className="text-zinc-100">{String(step.step_name).replace(/_/g, ' ')}</span>
+                      <span className="text-[var(--color-text-primary)]">{String(step.step_name).replace(/_/g, ' ')}</span>
                     </div>
                   ))}
                 </div>
@@ -200,15 +200,15 @@ export default function OpsCommandPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-micro uppercase tracking-widest text-zinc-500 mb-1">Founder Operations Command</div>
+          <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Founder Operations Command</div>
           <h1 className="text-2xl font-black text-white">Operations Command Center</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
             Real-time dispatch · CrewLink · Fleet · Staffing · AI Ops Advisor
           </p>
         </div>
         <div className="flex items-center gap-4">
-          {lastRefresh && <span className="text-micro text-zinc-500">Updated {lastRefresh}</span>}
-          <button onClick={load} className="px-4 py-2 bg-zinc-950/[0.06] border border-white/[0.12] text-body font-semibold chamfer-8 hover:bg-zinc-950/10 transition-colors">
+          {lastRefresh && <span className="text-micro text-[var(--color-text-muted)]">Updated {lastRefresh}</span>}
+          <button onClick={load} className="px-4 py-2 bg-[var(--color-bg-base)]/[0.06] border border-white/[0.12] text-body font-semibold chamfer-8 hover:bg-[var(--color-bg-base)]/10 transition-colors">
             ↻ Refresh
           </button>
           {data && <HealthBadge health={health} />}
@@ -218,7 +218,7 @@ export default function OpsCommandPage() {
       {loading && (
         <div className="flex items-center gap-3 p-6 chamfer-8 border border-white/[0.08]">
           <div className="w-4 h-4 border-2 border-t-transparent border-orange-400  animate-spin" />
-          <span className="text-sm text-zinc-400">Loading operations data…</span>
+          <span className="text-sm text-[var(--color-text-secondary)]">Loading operations data…</span>
         </div>
       )}
 
@@ -227,7 +227,7 @@ export default function OpsCommandPage() {
           {/* ── Top 3 Next Actions ── */}
           {(data.top_3_actions ?? []).length > 0 && (
             <div>
-              <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">
+              <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">
                 ⚡ Top 3 Next Actions — Do These Now
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -241,7 +241,7 @@ export default function OpsCommandPage() {
                         </span>
                       </div>
                       <div className="text-sm font-bold text-white mb-1">{action.title}</div>
-                      <div className="text-body text-zinc-400 mb-3">{action.what}</div>
+                      <div className="text-body text-[var(--color-text-secondary)] mb-3">{action.what}</div>
                       <div className="text-body font-semibold" style={{ color: ac.text }}>→ {action.do_this}</div>
                     </div>
                   );
@@ -299,8 +299,8 @@ export default function OpsCommandPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Panel>
               <div className="flex items-center justify-between mb-4">
-                <div className="text-micro uppercase tracking-widest text-zinc-500">Fleet Status</div>
-                  <Link href="/founder/ops/fleet" className="text-body text-[#FF4D00] hover:text-[#FF4D00]">View Fleet →</Link>
+                <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Fleet Status</div>
+                  <Link href="/founder/ops/fleet" className="text-body text-[var(--q-orange)] hover:text-[var(--q-orange)]">View Fleet →</Link>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -308,23 +308,23 @@ export default function OpsCommandPage() {
                   { label: 'Limited', val: data.fleet.units_limited, color: '#ffc107' },
                   { label: 'No-Go', val: data.fleet.units_no_go, color: '#ef5350' },
                 ].map(item => (
-                  <div key={item.label} className="text-center p-3 chamfer-8 bg-zinc-950/[0.04]">
+                  <div key={item.label} className="text-center p-3 chamfer-8 bg-[var(--color-bg-base)]/[0.04]">
                     <div className="text-2xl font-black" style={{ color: item.color }}>{item.val}</div>
-                    <div className="text-micro uppercase tracking-wider text-zinc-500 mt-0.5">{item.label}</div>
+                    <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5">{item.label}</div>
                   </div>
                 ))}
               </div>
               {data.fleet.active_fleet_alerts > 0 && (
                 <div className="mt-3 px-3 py-2 chamfer-8 bg-red-600/[0.1] border border-red-600/[0.3]">
-                  <span className="text-body text-red-400">⚠ {data.fleet.active_fleet_alerts} unresolved fleet alert(s)</span>
+                  <span className="text-body text-[var(--color-brand-red)]">⚠ {data.fleet.active_fleet_alerts} unresolved fleet alert(s)</span>
                 </div>
               )}
             </Panel>
 
             <Panel>
               <div className="flex items-center justify-between mb-4">
-                <div className="text-micro uppercase tracking-widest text-zinc-500">Staffing Readiness</div>
-                  <Link href="/founder/ops/staffing" className="text-body text-[#FF4D00] hover:text-[#FF4D00]">View Staffing →</Link>
+                <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Staffing Readiness</div>
+                  <Link href="/founder/ops/staffing" className="text-body text-[var(--q-orange)] hover:text-[var(--q-orange)]">View Staffing →</Link>
               </div>
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {[
@@ -332,20 +332,20 @@ export default function OpsCommandPage() {
                   { label: 'Assigned', val: data.staffing.assigned, color: '#29b6f6' },
                   { label: 'Unavailable', val: data.staffing.unavailable, color: '#78909c' },
                 ].map(item => (
-                  <div key={item.label} className="text-center p-3 chamfer-8 bg-zinc-950/[0.04]">
+                  <div key={item.label} className="text-center p-3 chamfer-8 bg-[var(--color-bg-base)]/[0.04]">
                     <div className="text-2xl font-black" style={{ color: item.color }}>{(item as Record<string, unknown>).val as number}</div>
-                    <div className="text-micro uppercase tracking-wider text-zinc-500 mt-0.5">{item.label}</div>
+                    <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5">{item.label}</div>
                   </div>
                 ))}
               </div>
               {data.staffing.fatigue_flags > 0 && (
                 <div className="px-3 py-2 chamfer-8 bg-brand-orange/[0.1] border border-brand-orange/[0.3] mb-2">
-                    <span className="text-body text-[#FF4D00]">⚠ {data.staffing.fatigue_flags} fatigue flag(s) active</span>
+                    <span className="text-body text-[var(--q-orange)]">⚠ {data.staffing.fatigue_flags} fatigue flag(s) active</span>
                 </div>
               )}
               {data.staffing.active_conflicts > 0 && (
                 <div className="px-3 py-2 chamfer-8 bg-amber-400/[0.1] border border-amber-400/[0.3]">
-                  <span className="text-body text-yellow-400">⚠ {data.staffing.active_conflicts} assignment conflict(s)</span>
+                  <span className="text-body text-[var(--q-yellow)]">⚠ {data.staffing.active_conflicts} assignment conflict(s)</span>
                 </div>
               )}
             </Panel>
@@ -354,7 +354,7 @@ export default function OpsCommandPage() {
           {/* ── AI Issues ── */}
           {(data.ai_issues ?? []).length > 0 && (
             <div>
-              <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">
+              <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">
                 🤖 AI Operations Advisor — {data.ai_issues.length} Issue(s) Detected
               </div>
               <div className="space-y-2">
@@ -363,20 +363,20 @@ export default function OpsCommandPage() {
                     style={{ borderColor: SEV_COLOR[issue.severity] + '44', background: SEV_COLOR[issue.severity] + '0a' }}>
                     <button
                       onClick={() => setExpandedIssue(expandedIssue === i ? null : i)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-zinc-950/[0.03] transition-colors"
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--color-bg-base)]/[0.03] transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <SeverityBadge severity={issue.severity} />
                         <span className="text-sm font-semibold text-white">{issue.issue}</span>
-                        <span className="text-micro text-zinc-500 uppercase tracking-wider">{issue.source}</span>
+                        <span className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">{issue.source}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`text-micro uppercase tracking-wider ${
-                          issue.human_review === 'REQUIRED' ? 'text-red-400' : 'text-zinc-500'
+                          issue.human_review === 'REQUIRED' ? 'text-[var(--color-brand-red)]' : 'text-[var(--color-text-muted)]'
                         }`}>
                           {issue.human_review === 'REQUIRED' ? '👤 HUMAN REQUIRED' : ''}
                         </span>
-                        <span className="text-zinc-500 text-sm">{expandedIssue === i ? '▲' : '▼'}</span>
+                        <span className="text-[var(--color-text-muted)] text-sm">{expandedIssue === i ? '▲' : '▼'}</span>
                       </div>
                     </button>
 
@@ -384,25 +384,25 @@ export default function OpsCommandPage() {
                       <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06]">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                           <div>
-                            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">WHAT IS WRONG</div>
-                            <div className="text-sm text-zinc-100">{issue.what_is_wrong}</div>
+                            <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1">WHAT IS WRONG</div>
+                            <div className="text-sm text-[var(--color-text-primary)]">{issue.what_is_wrong}</div>
                           </div>
                           <div>
-                            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">WHY IT MATTERS</div>
-                            <div className="text-sm text-zinc-100">{issue.why_it_matters}</div>
+                            <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1">WHY IT MATTERS</div>
+                            <div className="text-sm text-[var(--color-text-primary)]">{issue.why_it_matters}</div>
                           </div>
                           <div>
                             <div className="text-micro uppercase tracking-wider mb-1" style={{ color: SEV_COLOR[issue.severity] + 'cc' }}>DO THIS NEXT</div>
                             <div className="text-sm font-medium text-white whitespace-pre-line">{issue.what_you_should_do}</div>
                           </div>
                         </div>
-                        <div className="p-3 chamfer-8 bg-zinc-950/[0.04] border border-white/[0.06]">
-                          <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Operations Context</div>
-                          <div className="text-body text-zinc-400">{issue.operations_context}</div>
+                        <div className="p-3 chamfer-8 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.06]">
+                          <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Operations Context</div>
+                          <div className="text-body text-[var(--color-text-secondary)]">{issue.operations_context}</div>
                         </div>
-                        <div className="flex items-center gap-4 text-micro uppercase tracking-wider text-zinc-500">
+                        <div className="flex items-center gap-4 text-micro uppercase tracking-wider text-[var(--color-text-muted)]">
                           <span>Confidence: <span className="text-white">{issue.confidence}</span></span>
-                          <span>Human Review: <span className={issue.human_review === 'REQUIRED' ? 'text-red-400' : 'text-white'}>{issue.human_review}</span></span>
+                          <span>Human Review: <span className={issue.human_review === 'REQUIRED' ? 'text-[var(--color-brand-red)]' : 'text-white'}>{issue.human_review}</span></span>
                         </div>
                       </div>
                     )}
@@ -414,16 +414,16 @@ export default function OpsCommandPage() {
 
           {/* ── No Issues State ── */}
           {(data.ai_issues ?? []).length === 0 && !loading && (
-            <div className="text-center py-10 chamfer-4-xl border border-green-500/30 bg-green-500/5">
+            <div className="text-center py-10 chamfer-4-xl border border-[var(--color-status-active)]/30 bg-[var(--color-status-active)]/5">
               <div className="text-4xl mb-3">✅</div>
-              <div className="text-lg font-bold text-green-400">All Systems Operational</div>
-              <div className="text-sm text-zinc-500 mt-1">No critical issues detected. Monitor active missions above.</div>
+              <div className="text-lg font-bold text-[var(--color-status-active)]">All Systems Operational</div>
+              <div className="text-sm text-[var(--color-text-muted)] mt-1">No critical issues detected. Monitor active missions above.</div>
             </div>
           )}
 
           {/* ── Quick Navigation ── */}
           <div>
-            <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Operations Domains</div>
+            <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Operations Domains</div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {[
                 { href: '/founder/ops/cad', label: 'CAD / Dispatch', icon: '📡', color: '#ff6b1a', sub: 'Mission state machine' },
@@ -433,10 +433,10 @@ export default function OpsCommandPage() {
                 { href: '/founder/ops/transportlink', label: 'TransportLink', icon: '🏥', color: '#9c27b0', sub: 'Interfacility intake' },
               ].map(item => (
                 <Link key={item.href} href={item.href}
-                  className="p-4 chamfer-4-xl border border-white/[0.08] bg-zinc-950/[0.03] hover:bg-zinc-950/[0.07] transition-colors group">
+                  className="p-4 chamfer-4-xl border border-white/[0.08] bg-[var(--color-bg-base)]/[0.03] hover:bg-[var(--color-bg-base)]/[0.07] transition-colors group">
                   <div className="text-2xl mb-2">{item.icon}</div>
-                    <div className="text-sm font-bold text-white group-hover:text-[#FF4D00] transition-colors">{item.label}</div>
-                  <div className="text-micro text-zinc-500 mt-0.5">{item.sub}</div>
+                    <div className="text-sm font-bold text-white group-hover:text-[var(--q-orange)] transition-colors">{item.label}</div>
+                  <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{item.sub}</div>
                 </Link>
               ))}
             </div>

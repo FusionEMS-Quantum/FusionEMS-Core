@@ -17,6 +17,10 @@ frontend/.next/
 frontend/out/
 frontend/node_modules/
 
+# TypeScript incremental build artifacts
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+
 # Terraform
 **/.terraform/
 *.tfstate

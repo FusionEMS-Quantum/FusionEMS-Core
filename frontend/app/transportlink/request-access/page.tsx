@@ -65,7 +65,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] flex items-center gap-1">
         {label}
         {required && <span className="text-red text-[9px]">*</span>}
       </label>
@@ -75,7 +75,7 @@ function Field({
 }
 
 const INPUT_CLASS =
-  'w-full h-10 px-3 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors';
+  'w-full h-10 px-3 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors';
 const CLIP = { clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' };
 
 export default function RequestAccessPage() {
@@ -126,9 +126,9 @@ export default function RequestAccessPage() {
           className="w-full max-w-lg border border-status-active/25 bg-status-active/[0.03] p-8 text-center"
           style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))' }}
         >
-          <CheckCircle2 className="w-12 h-12 text-status-active mx-auto mb-4" />
+          <CheckCircle2 className="w-12 h-12 text-[var(--color-status-active)] mx-auto mb-4" />
           <h1 className="text-h2 font-black text-white mb-2">Access Request Received</h1>
-          <p className="text-body text-zinc-500 mb-6">
+          <p className="text-body text-[var(--color-text-muted)] mb-6">
             Your facility access request has been submitted for review. You will receive an email at{' '}
             <strong className="text-white">{form.work_email}</strong> when your request has been reviewed.
             Typical review time is 1–2 business days.
@@ -136,7 +136,7 @@ export default function RequestAccessPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/transportlink/login"
-              className="h-10 px-5 text-[11px] font-black uppercase tracking-widest text-white bg-[#FF4D00] hover:bg-[#FF6A1A] transition-colors flex items-center justify-center gap-2"
+              className="h-10 px-5 text-[11px] font-black uppercase tracking-widest text-white bg-[var(--q-orange)] hover:bg-[#FF6A1A] transition-colors flex items-center justify-center gap-2"
               style={CLIP}
             >
               Back to Login <ChevronRight className="w-3.5 h-3.5" />
@@ -170,7 +170,7 @@ export default function RequestAccessPage() {
             <Truck className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
           <div className="text-[12px] font-black tracking-[0.22em] text-white uppercase">TransportLink</div>
-          <div className="text-[9px] tracking-[0.35em] text-[#FF4D00] uppercase font-medium mt-0.5">Facility Access Request</div>
+          <div className="text-[9px] tracking-[0.35em] text-[var(--q-orange)] uppercase font-medium mt-0.5">Facility Access Request</div>
         </div>
 
         <div
@@ -178,9 +178,9 @@ export default function RequestAccessPage() {
           style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))' }}
         >
           <div className="relative p-6 border-b border-white/[0.05] bg-gradient-to-r from-orange/[0.05]">
-            <div className="text-[9px] font-bold tracking-[0.25em] text-[#FF4D00] uppercase mb-1">Facility Onboarding</div>
+            <div className="text-[9px] font-bold tracking-[0.25em] text-[var(--q-orange)] uppercase mb-1">Facility Onboarding</div>
             <h1 className="text-h2 font-black text-white">Request Portal Access</h1>
-            <p className="text-[11px] text-zinc-500 mt-1 max-w-lg">
+            <p className="text-[11px] text-[var(--color-text-muted)] mt-1 max-w-lg">
               Complete this form to request access to the TransportLink facility portal.
               Your request will be reviewed and you will be notified once approved.
             </p>
@@ -200,8 +200,8 @@ export default function RequestAccessPage() {
             {/* Facility Info */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Building2 className="w-3.5 h-3.5 text-[#FF4D00]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#FF4D00]">Facility Information</span>
+                <Building2 className="w-3.5 h-3.5 text-[var(--q-orange)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--q-orange)]">Facility Information</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Facility Name" required>
@@ -214,7 +214,7 @@ export default function RequestAccessPage() {
                 </Field>
                 <Field label="Facility Address">
                   <div className="relative">
-                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
+                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
                     <input type="text" value={form.facility_address} onChange={(e) => set('facility_address', e.target.value)}
                       placeholder="1000 Main St, Milwaukee, WI" className={`${INPUT_CLASS} pl-8`} style={CLIP} />
                   </div>
@@ -232,8 +232,8 @@ export default function RequestAccessPage() {
             {/* Requestor Info */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <User className="w-3.5 h-3.5 text-[#FF4D00]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#FF4D00]">Requestor Information</span>
+                <User className="w-3.5 h-3.5 text-[var(--q-orange)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--q-orange)]">Requestor Information</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Full Name" required>
@@ -246,14 +246,14 @@ export default function RequestAccessPage() {
                 </Field>
                 <Field label="Work Email" required>
                   <div className="relative">
-                    <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
+                    <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
                     <input type="email" value={form.work_email} onChange={(e) => set('work_email', e.target.value)}
                       placeholder="jane.smith@facility.org" className={`${INPUT_CLASS} pl-8`} style={CLIP} />
                   </div>
                 </Field>
                 <Field label="Callback Number">
                   <div className="relative">
-                    <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
+                    <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
                     <input type="tel" value={form.callback_number} onChange={(e) => set('callback_number', e.target.value)}
                       placeholder="414-555-0100" className={`${INPUT_CLASS} pl-8`} style={CLIP} />
                   </div>
@@ -264,8 +264,8 @@ export default function RequestAccessPage() {
             {/* Use Case */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Layers className="w-3.5 h-3.5 text-[#FF4D00]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#FF4D00]">Volume &amp; Use Case</span>
+                <Layers className="w-3.5 h-3.5 text-[var(--q-orange)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--q-orange)]">Volume &amp; Use Case</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Expected Monthly Transport Volume">
@@ -293,16 +293,16 @@ export default function RequestAccessPage() {
               <textarea value={form.notes} onChange={(e) => set('notes', e.target.value)}
                 placeholder="Anything that will help us review your request quickly…"
                 rows={3}
-                className="w-full px-3 py-2 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors resize-none"
+                className="w-full px-3 py-2 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors resize-none"
                 style={CLIP}
               />
             </Field>
 
             {/* Consent notice */}
-            <div className="flex items-start gap-2 p-3 bg-zinc-950/[0.02] border border-white/[0.05]"
+            <div className="flex items-start gap-2 p-3 bg-[var(--color-bg-base)]/[0.02] border border-white/[0.05]"
               style={CLIP}>
-              <Shield className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0 mt-0.5" />
-              <p className="text-[10px] text-zinc-500 leading-relaxed">
+              <Shield className="w-3.5 h-3.5 text-[var(--color-text-muted)] flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-[var(--color-text-muted)] leading-relaxed">
                 Information provided in this form is used solely to evaluate and process your portal access request.
                 Approved users will receive role-based access consistent with their stated use case and facility.
               </p>
@@ -310,12 +310,12 @@ export default function RequestAccessPage() {
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Link href="/transportlink/login"
-                className="h-10 px-5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 border border-white/[0.08] hover:text-zinc-100 hover:border-white/[0.14] transition-colors flex items-center justify-center"
+                className="h-10 px-5 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)] border border-white/[0.08] hover:text-[var(--color-text-primary)] hover:border-white/[0.14] transition-colors flex items-center justify-center"
                 style={CLIP}>
                 Back to Login
               </Link>
               <button type="submit" disabled={loading}
-                className="flex-1 h-10 bg-[#FF4D00] hover:bg-[#FF6A1A] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                className="flex-1 h-10 bg-[var(--q-orange)] hover:bg-[#FF6A1A] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                 style={CLIP}>
                 {loading ? (
                   <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting…</>

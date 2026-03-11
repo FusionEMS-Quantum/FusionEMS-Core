@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from datetime import UTC
+from functools import lru_cache
 from typing import Any
 
 import boto3
@@ -36,20 +37,15 @@ def _rank(s: str) -> int:
 
 # ── DynamoDB helpers ──────────────────────────────────────────────────────────
 
-_ddb: Any = None
-
-
+@lru_cache(maxsize=1)
 def _get_ddb():
-    global _ddb
-    if _ddb is None:
-        region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
-        if not region:
-            raise RuntimeError(
-                "AWS_REGION environment variable is not set. "
-                "Set it to the region where your DynamoDB tables are deployed."
-            )
-        _ddb = boto3.resource("dynamodb", region_name=region)
-    return _ddb
+    region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
+    if not region:
+        raise RuntimeError(
+            "AWS_REGION environment variable is not set. "
+            "Set it to the region where your DynamoDB tables are deployed."
+        )
+    return boto3.resource("dynamodb", region_name=region)
 
 
 def _table(name: str):

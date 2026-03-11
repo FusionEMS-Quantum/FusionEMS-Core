@@ -227,30 +227,30 @@ function parseItems<T>(payload: unknown): T[] {
 function severityStyle(severity: string): string {
   switch (severity) {
     case 'BLOCKING':
-      return 'bg-red-900/40 border-red-500/50 text-red-300';
+      return 'bg-red-900/40 border-[var(--color-brand-red)]/50 text-[var(--color-brand-red)]';
     case 'HIGH':
-      return 'bg-[rgba(255,77,0,0.3)] border-orange-500/40 text-[#FF9A66]';
+      return 'bg-[rgba(255,106,0,0.3)] border-orange-500/40 text-[#FF9A66]';
     case 'MEDIUM':
       return 'bg-yellow-900/30 border-yellow-500/40 text-yellow-300';
     case 'LOW':
-      return 'bg-blue-900/30 border-blue-500/40 text-blue-300';
+      return 'bg-blue-900/30 border-[var(--color-status-info)]/40 text-[var(--color-status-info)]';
     default:
-      return 'bg-zinc-900/50 border-gray-600 text-gray-300';
+      return 'bg-[var(--color-bg-panel)]/50 border-gray-600 text-gray-300';
   }
 }
 
 function relationshipStyle(state: string): string {
   switch (state) {
     case 'ACTIVE':
-      return 'bg-green-900/20 border-green-500/30 text-green-400';
+      return 'bg-green-900/20 border-[var(--color-status-active)]/30 text-[var(--color-status-active)]';
     case 'LIMITED_RELATIONSHIP':
       return 'bg-yellow-900/20 border-yellow-500/30 text-yellow-400';
     case 'HIGH_FRICTION':
-      return 'bg-red-900/20 border-red-500/30 text-red-400';
+      return 'bg-red-900/20 border-[var(--color-brand-red)]/30 text-[var(--color-brand-red)]';
     case 'REVIEW_REQUIRED':
-      return 'bg-[rgba(255,77,0,0.2)] border-orange-500/30 text-[#FF9A66]';
+      return 'bg-[rgba(255,106,0,0.2)] border-orange-500/30 text-[#FF9A66]';
     default:
-      return 'bg-zinc-900/50 border-gray-600 text-zinc-500';
+      return 'bg-[var(--color-bg-panel)]/50 border-gray-600 text-[var(--color-text-muted)]';
   }
 }
 
@@ -762,14 +762,20 @@ export default function FacilitiesPage() {
 
   const facilityHealth = summary?.facility_health;
   const topActions = summary?.top_actions || [];
+  const networkHealthPct = typeof facilityHealth?.health_pct === 'number' && Number.isFinite(facilityHealth.health_pct)
+    ? facilityHealth.health_pct
+    : null;
+  const facilityContactGaps = typeof summary?.facility_contact_gaps === 'number' && Number.isFinite(summary.facility_contact_gaps)
+    ? summary.facility_contact_gaps
+    : null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-black">
-      <div className="border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
+    <div className="flex flex-col min-h-screen bg-[var(--color-bg-base)]">
+      <div className="border-b border-border-subtle bg-[var(--color-bg-panel)]/50 px-5 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs font-black text-zinc-100 uppercase tracking-widest">Facility Command Center</div>
-            <div className="text-micro text-zinc-500">
+            <div className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-widest">Facility Command Center</div>
+            <div className="text-micro text-[var(--color-text-muted)]">
               Receiving network intelligence · APOT-style offload KPIs · friction governance · relationship AI
             </div>
           </div>
@@ -787,17 +793,17 @@ export default function FacilitiesPage() {
             {
               label: 'Facilities',
               value: (facilityHealth?.total_facilities ?? facilities.length).toString(),
-              color: 'text-zinc-100',
+              color: 'text-[var(--color-text-primary)]',
             },
             {
               label: 'Network Health',
-              value: facilityHealth?.health_pct != null ? `${Math.round(facilityHealth.health_pct)}%` : '—',
-              color: (facilityHealth?.health_pct ?? 0) >= 85 ? 'text-green-400' : 'text-yellow-400',
+              value: networkHealthPct != null ? `${Math.round(networkHealthPct)}%` : '—',
+              color: networkHealthPct == null ? 'text-[var(--color-text-muted)]' : networkHealthPct >= 85 ? 'text-[var(--color-status-active)]' : 'text-yellow-400',
             },
             {
               label: 'High Friction',
               value: (facilityHealth?.high_friction_count ?? facilities.filter((f) => f.relationship_state === 'HIGH_FRICTION').length).toString(),
-              color: 'text-red-400',
+              color: 'text-[var(--color-brand-red)]',
             },
             {
               label: 'Review Required',
@@ -805,9 +811,9 @@ export default function FacilitiesPage() {
               color: 'text-[#FF9A66]',
             },
           ].map((metric) => (
-            <div key={metric.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
+            <div key={metric.label} className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 px-4 py-3">
               <div className={`text-2xl font-black ${metric.color}`}>{metric.value}</div>
-              <div className="text-micro text-zinc-500 mt-0.5">{metric.label}</div>
+              <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{metric.label}</div>
             </div>
           ))}
         </div>
@@ -816,28 +822,28 @@ export default function FacilitiesPage() {
           {[
             {
               label: 'Facility Contact Gaps',
-              value: (summary?.facility_contact_gaps ?? 0).toString(),
-              color: (summary?.facility_contact_gaps ?? 0) > 0 ? 'text-yellow-400' : 'text-green-400',
+              value: facilityContactGaps != null ? facilityContactGaps.toString() : '—',
+              color: facilityContactGaps == null ? 'text-[var(--color-text-muted)]' : facilityContactGaps > 0 ? 'text-yellow-400' : 'text-[var(--color-status-active)]',
             },
             {
               label: 'Median Turnaround',
               value: medianTurnaround != null ? `${Math.round(medianTurnaround)}m` : '—',
-              color: medianTurnaround != null && medianTurnaround <= 45 ? 'text-green-400' : 'text-yellow-400',
+              color: medianTurnaround != null && medianTurnaround <= 45 ? 'text-[var(--color-status-active)]' : 'text-yellow-400',
             },
             {
               label: 'APOT >60m Signals',
               value: apotThresholdBreaches.toString(),
-              color: apotThresholdBreaches > 0 ? 'text-red-400' : 'text-green-400',
+              color: apotThresholdBreaches > 0 ? 'text-[var(--color-brand-red)]' : 'text-[var(--color-status-active)]',
             },
             {
               label: 'EMS Acceptance Rate',
               value: flattenedServices.length > 0 ? `${Math.round(acceptanceRate)}%` : '—',
-              color: acceptanceRate >= 85 ? 'text-green-400' : 'text-yellow-400',
+              color: acceptanceRate >= 85 ? 'text-[var(--color-status-active)]' : 'text-yellow-400',
             },
           ].map((metric) => (
-            <div key={metric.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
+            <div key={metric.label} className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 px-4 py-3">
               <div className={`text-2xl font-black ${metric.color}`}>{metric.value}</div>
-              <div className="text-micro text-zinc-500 mt-0.5">{metric.label}</div>
+              <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{metric.label}</div>
             </div>
           ))}
         </div>
@@ -846,12 +852,12 @@ export default function FacilitiesPage() {
       {(message || error || networkError) && (
         <div className="px-5 pt-4">
           {message && (
-            <div className="mb-2 bg-green-900/20 border border-green-500/30 text-green-300 text-sm px-4 py-2 chamfer-8">
+            <div className="mb-2 bg-green-900/20 border border-[var(--color-status-active)]/30 text-[var(--color-status-active)] text-sm px-4 py-2 chamfer-8">
               {message}
             </div>
           )}
           {(error || networkError) && (
-            <div className="mb-2 bg-red-900/20 border border-red-500/30 text-red-300 text-sm px-4 py-2 chamfer-8">
+            <div className="mb-2 bg-red-900/20 border border-[var(--color-brand-red)]/30 text-[var(--color-brand-red)] text-sm px-4 py-2 chamfer-8">
               {error || networkError}
             </div>
           )}
@@ -860,20 +866,20 @@ export default function FacilitiesPage() {
 
       <div className="flex-1 p-5 grid grid-cols-12 gap-4">
         <div className="col-span-4 space-y-4">
-          <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-            <div className="text-micro uppercase tracking-widest text-zinc-500">Facility Network Directory</div>
+          <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+            <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Facility Network Directory</div>
 
             <div className="grid grid-cols-2 gap-2">
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="col-span-2 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+                className="col-span-2 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
                 placeholder="Search facility, city, type, NPI"
               />
               <select
                 value={stateFilter}
                 onChange={(event) => setStateFilter(event.target.value)}
-                className="col-span-2 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+                className="col-span-2 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
               >
                 <option value="ALL">All relationship states</option>
                 {RELATIONSHIP_STATES.map((state) => (
@@ -906,16 +912,16 @@ export default function FacilitiesPage() {
                       className={`w-full text-left border chamfer-8 px-3 py-2 transition-colors ${
                         selected
                           ? 'border-brand-orange/50 bg-brand-orange/10'
-                          : 'border-border-subtle bg-black hover:border-brand-orange/30'
+                          : 'border-border-subtle bg-[var(--color-bg-base)] hover:border-brand-orange/30'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-zinc-100 truncate">{facility.name}</span>
+                        <span className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{facility.name}</span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 chamfer-4 border ${relationshipStyle(facility.relationship_state)}`}>
                           {facility.relationship_state}
                         </span>
                       </div>
-                      <div className="mt-1 text-micro text-zinc-500 flex items-center gap-2 flex-wrap">
+                      <div className="mt-1 text-micro text-[var(--color-text-muted)] flex items-center gap-2 flex-wrap">
                         <span>{facility.facility_type}</span>
                         {(facility.city || facility.state) && <span>• {facility.city}{facility.city && facility.state ? ', ' : ''}{facility.state}</span>}
                         {facility.phone && <span>• {facility.phone}</span>}
@@ -927,51 +933,51 @@ export default function FacilitiesPage() {
             )}
           </div>
 
-          <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-            <div className="text-micro uppercase tracking-widest text-zinc-500">Add Facility</div>
+          <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+            <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Add Facility</div>
             <div className="grid grid-cols-2 gap-2">
               <input
                 value={newFacility.name}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, name: event.target.value }))}
-                className="col-span-2 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="col-span-2 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 placeholder="Facility name"
               />
               <select
                 value={newFacility.facility_type}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, facility_type: event.target.value }))}
-                className="bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
               >
                 {FACILITY_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
               </select>
               <input
                 value={newFacility.state}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, state: event.target.value.toUpperCase() }))}
-                className="bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 placeholder="State"
                 maxLength={2}
               />
               <input
                 value={newFacility.city}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, city: event.target.value }))}
-                className="bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 placeholder="City"
               />
               <input
                 value={newFacility.phone}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, phone: event.target.value }))}
-                className="bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 placeholder="Phone"
               />
               <input
                 value={newFacility.npi}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, npi: event.target.value }))}
-                className="bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 placeholder="NPI"
               />
               <input
                 value={newFacility.email}
                 onChange={(event) => setNewFacility((prev) => ({ ...prev, email: event.target.value }))}
-                className="col-span-2 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                className="col-span-2 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 placeholder="Email"
               />
             </div>
@@ -987,7 +993,7 @@ export default function FacilitiesPage() {
 
         <div className="col-span-8 space-y-4">
           {!selectedFacility ? (
-            <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8">
+            <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8">
               <QuantumEmptyState
                 title="No facility selected"
                 description="Select a facility from the directory to manage contacts, service lines, friction flags, warnings, and relationship intelligence."
@@ -995,11 +1001,11 @@ export default function FacilitiesPage() {
             </div>
           ) : (
             <>
-              <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
+              <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-lg font-bold text-zinc-100">{selectedFacility.name}</div>
-                    <div className="text-micro text-zinc-500 mt-1 flex items-center gap-2 flex-wrap">
+                    <div className="text-lg font-bold text-[var(--color-text-primary)]">{selectedFacility.name}</div>
+                    <div className="text-micro text-[var(--color-text-muted)] mt-1 flex items-center gap-2 flex-wrap">
                       <span>{selectedFacility.facility_type}</span>
                       {(selectedFacility.city || selectedFacility.state) && <span>• {selectedFacility.city}{selectedFacility.city && selectedFacility.state ? ', ' : ''}{selectedFacility.state}</span>}
                       {selectedFacility.phone && <span>• {selectedFacility.phone}</span>}
@@ -1037,7 +1043,7 @@ export default function FacilitiesPage() {
                       className={`px-3 py-2 text-micro font-semibold border-b-2 transition-colors ${
                         activeTab === tab.id
                           ? 'border-brand-orange text-brand-orange'
-                          : 'border-transparent text-zinc-500 hover:text-zinc-400'
+                          : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                       }`}
                     >
                       {tab.label}
@@ -1050,29 +1056,29 @@ export default function FacilitiesPage() {
                 <QuantumTableSkeleton rows={6} />
               ) : activeTab === 'overview' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500">Relationship State</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Relationship State</div>
                     <select
                       value={facilityEdit?.relationship_state || selectedFacility.relationship_state}
                       onChange={(event) => setFacilityEdit((prev) => prev ? { ...prev, relationship_state: event.target.value } : prev)}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                     >
                       {RELATIONSHIP_STATES.map((state) => <option key={state} value={state}>{state}</option>)}
                     </select>
 
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 pt-2">Destination Preference Notes</div>
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] pt-2">Destination Preference Notes</div>
                     <textarea
                       value={facilityEdit?.destination_preference_notes || ''}
                       onChange={(event) => setFacilityEdit((prev) => prev ? { ...prev, destination_preference_notes: event.target.value } : prev)}
-                      className="w-full h-28 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-28 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Document destination workflow, handoff constraints, and transport preferences."
                     />
 
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 pt-2">Service Notes</div>
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] pt-2">Service Notes</div>
                     <textarea
                       value={facilityEdit?.service_notes || ''}
                       onChange={(event) => setFacilityEdit((prev) => prev ? { ...prev, service_notes: event.target.value } : prev)}
-                      className="w-full h-24 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-24 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Operational notes impacting acceptance and throughput."
                     />
 
@@ -1085,69 +1091,69 @@ export default function FacilitiesPage() {
                     </button>
                   </div>
 
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Operational Snapshot</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Operational Snapshot</div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: 'Active Friction Flags', value: selectedFriction.filter((flag) => flag.is_active).length, color: 'text-red-400' },
+                        { label: 'Active Friction Flags', value: selectedFriction.filter((flag) => flag.is_active).length, color: 'text-[var(--color-brand-red)]' },
                         { label: 'Active Warnings', value: selectedWarnings.filter((warning) => warning.is_active).length, color: 'text-[#FF9A66]' },
-                        { label: 'Service Profiles', value: selectedServices.length, color: 'text-blue-400' },
-                        { label: 'Contacts', value: selectedContacts.filter((contact) => contact.is_active).length, color: 'text-green-400' },
+                        { label: 'Service Profiles', value: selectedServices.length, color: 'text-[var(--color-status-info)]' },
+                        { label: 'Contacts', value: selectedContacts.filter((contact) => contact.is_active).length, color: 'text-[var(--color-status-active)]' },
                       ].map((item) => (
-                        <div key={item.label} className="bg-black border border-border-subtle chamfer-8 px-3 py-3">
+                        <div key={item.label} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-3">
                           <div className={`text-2xl font-black ${item.color}`}>{item.value}</div>
-                          <div className="text-micro text-zinc-500 mt-0.5">{item.label}</div>
+                          <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{item.label}</div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 text-sm text-zinc-500 leading-relaxed">
+                    <div className="mt-4 text-sm text-[var(--color-text-muted)] leading-relaxed">
                       This facility profile contributes to network APOT and handoff intelligence. Keep relationship status, service lines, and contact routing current to reduce transfer delays.
                     </div>
                   </div>
                 </div>
               ) : activeTab === 'services' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Service Profiles</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Service Profiles</div>
                     {selectedServices.length === 0 ? (
                       <QuantumEmptyState title="No service profiles" description="Add ER/ICU/stroke and other destination capabilities for routing intelligence." />
                     ) : (
                       <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                         {selectedServices.map((service) => (
-                          <div key={service.id} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={service.id} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold text-zinc-100">{service.service_line}</div>
+                              <div className="text-sm font-semibold text-[var(--color-text-primary)]">{service.service_line}</div>
                               <span className={`text-[10px] font-bold px-2 py-0.5 chamfer-4 border ${
                                 service.accepts_ems_transport
-                                  ? 'bg-green-900/20 border-green-500/30 text-green-400'
-                                  : 'bg-red-900/20 border-red-500/30 text-red-400'
+                                  ? 'bg-green-900/20 border-[var(--color-status-active)]/30 text-[var(--color-status-active)]'
+                                  : 'bg-red-900/20 border-[var(--color-brand-red)]/30 text-[var(--color-brand-red)]'
                               }`}>
                                 {service.accepts_ems_transport ? 'ACCEPTS EMS' : 'NO EMS ACCEPT'}
                               </span>
                             </div>
-                            <div className="text-micro text-zinc-500 mt-1">
+                            <div className="text-micro text-[var(--color-text-muted)] mt-1">
                               Avg turnaround: {service.average_turnaround_minutes != null ? `${service.average_turnaround_minutes}m` : 'Not set'}
                             </div>
                             {service.capability_notes && (
-                              <div className="text-micro text-zinc-500 mt-1">{service.capability_notes}</div>
+                              <div className="text-micro text-[var(--color-text-muted)] mt-1">{service.capability_notes}</div>
                             )}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500">Add Service Profile</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Add Service Profile</div>
                     <input
                       value={serviceForm.service_line}
                       onChange={(event) => setServiceForm((prev) => ({ ...prev, service_line: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Service line (e.g., ER, ICU, Stroke Center)"
                     />
                     <input
                       value={serviceForm.average_turnaround_minutes}
                       onChange={(event) => setServiceForm((prev) => ({ ...prev, average_turnaround_minutes: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Average turnaround minutes"
                       type="number"
                       min={0}
@@ -1155,10 +1161,10 @@ export default function FacilitiesPage() {
                     <textarea
                       value={serviceForm.capability_notes}
                       onChange={(event) => setServiceForm((prev) => ({ ...prev, capability_notes: event.target.value }))}
-                      className="w-full h-24 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-24 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Capability and constraints"
                     />
-                    <label className="flex items-center gap-2 text-sm text-zinc-400">
+                    <label className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
                       <input
                         type="checkbox"
                         checked={serviceForm.accepts_ems_transport}
@@ -1178,60 +1184,60 @@ export default function FacilitiesPage() {
                 </div>
               ) : activeTab === 'contacts' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Facility Contacts</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Facility Contacts</div>
                     {selectedContacts.length === 0 ? (
                       <QuantumEmptyState title="No contacts" description="Add intake, nursing, and escalation contacts for transfer reliability." />
                     ) : (
                       <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                         {selectedContacts.map((contact) => (
-                          <div key={contact.id} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={contact.id} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold text-zinc-100">{contact.name}</div>
-                              <span className="text-[10px] font-bold px-2 py-0.5 chamfer-4 border bg-blue-900/20 border-blue-500/30 text-blue-300">
+                              <div className="text-sm font-semibold text-[var(--color-text-primary)]">{contact.name}</div>
+                              <span className="text-[10px] font-bold px-2 py-0.5 chamfer-4 border bg-blue-900/20 border-[var(--color-status-info)]/30 text-[var(--color-status-info)]">
                                 {contact.role}
                               </span>
                             </div>
-                            <div className="text-micro text-zinc-500 mt-1">
+                            <div className="text-micro text-[var(--color-text-muted)] mt-1">
                               {[contact.phone, contact.email].filter(Boolean).join(' · ') || 'No contact channels'}
                             </div>
-                            {contact.notes && <div className="text-micro text-zinc-500 mt-1">{contact.notes}</div>}
+                            {contact.notes && <div className="text-micro text-[var(--color-text-muted)] mt-1">{contact.notes}</div>}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500">Add Contact</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Add Contact</div>
                     <input
                       value={contactForm.name}
                       onChange={(event) => setContactForm((prev) => ({ ...prev, name: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Full name"
                     />
                     <select
                       value={contactForm.role}
                       onChange={(event) => setContactForm((prev) => ({ ...prev, role: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                     >
                       {CONTACT_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                     </select>
                     <input
                       value={contactForm.phone}
                       onChange={(event) => setContactForm((prev) => ({ ...prev, phone: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Phone"
                     />
                     <input
                       value={contactForm.email}
                       onChange={(event) => setContactForm((prev) => ({ ...prev, email: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Email"
                     />
                     <textarea
                       value={contactForm.notes}
                       onChange={(event) => setContactForm((prev) => ({ ...prev, notes: event.target.value }))}
-                      className="w-full h-20 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-20 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Routing notes"
                     />
                     <button
@@ -1245,28 +1251,28 @@ export default function FacilitiesPage() {
                 </div>
               ) : activeTab === 'friction' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Friction Board</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Friction Board</div>
                     {selectedFriction.length === 0 ? (
                       <QuantumEmptyState title="No friction flags" description="Raise operational friction events (wait times, communication, documentation) for governance and resolution." />
                     ) : (
                       <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                         {selectedFriction.map((flag) => (
-                          <div key={flag.id} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={flag.id} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="text-sm font-semibold text-zinc-100">{flag.title}</div>
+                              <div className="text-sm font-semibold text-[var(--color-text-primary)]">{flag.title}</div>
                               <span className={`text-[10px] font-bold px-2 py-0.5 chamfer-4 border ${
                                 flag.is_active
-                                  ? 'bg-red-900/20 border-red-500/30 text-red-300'
-                                  : 'bg-green-900/20 border-green-500/30 text-green-300'
+                                  ? 'bg-red-900/20 border-[var(--color-brand-red)]/30 text-[var(--color-brand-red)]'
+                                  : 'bg-green-900/20 border-[var(--color-status-active)]/30 text-[var(--color-status-active)]'
                               }`}>
                                 {flag.is_active ? 'ACTIVE' : 'RESOLVED'}
                               </span>
                             </div>
-                            <div className="text-micro text-zinc-500 mt-1">{flag.category} • {new Date(flag.created_at).toLocaleString()}</div>
-                            <div className="text-sm text-zinc-400 mt-1">{flag.description}</div>
+                            <div className="text-micro text-[var(--color-text-muted)] mt-1">{flag.category} • {new Date(flag.created_at).toLocaleString()}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)] mt-1">{flag.description}</div>
                             {flag.resolution_notes && (
-                              <div className="text-micro text-green-300 mt-1">Resolution: {flag.resolution_notes}</div>
+                              <div className="text-micro text-[var(--color-status-active)] mt-1">Resolution: {flag.resolution_notes}</div>
                             )}
                             {flag.is_active && (
                               <button
@@ -1282,25 +1288,25 @@ export default function FacilitiesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500">Raise Friction Flag</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Raise Friction Flag</div>
                     <select
                       value={frictionForm.category}
                       onChange={(event) => setFrictionForm((prev) => ({ ...prev, category: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                     >
                       {FRICTION_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
                     </select>
                     <input
                       value={frictionForm.title}
                       onChange={(event) => setFrictionForm((prev) => ({ ...prev, title: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Short title"
                     />
                     <textarea
                       value={frictionForm.description}
                       onChange={(event) => setFrictionForm((prev) => ({ ...prev, description: event.target.value }))}
-                      className="w-full h-28 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-28 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Describe operational impact and required mitigation."
                     />
                     <button
@@ -1314,24 +1320,24 @@ export default function FacilitiesPage() {
                 </div>
               ) : activeTab === 'warnings' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Warning Flags</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Warning Flags</div>
                     {selectedWarnings.length === 0 ? (
                       <QuantumEmptyState title="No warning flags" description="Create warning flags for safety and compliance-sensitive facility issues." />
                     ) : (
                       <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                         {selectedWarnings.map((warning) => (
-                          <div key={warning.id} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={warning.id} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold text-zinc-100">{warning.title}</div>
+                              <div className="text-sm font-semibold text-[var(--color-text-primary)]">{warning.title}</div>
                               <span className={`text-[10px] font-bold px-2 py-0.5 chamfer-4 border ${severityStyle(warning.severity)}`}>
                                 {warning.severity}
                               </span>
                             </div>
-                            <div className="text-micro text-zinc-500 mt-1">{warning.flag_type} • {new Date(warning.created_at).toLocaleString()}</div>
-                            <div className="text-sm text-zinc-400 mt-1">{warning.description}</div>
+                            <div className="text-micro text-[var(--color-text-muted)] mt-1">{warning.flag_type} • {new Date(warning.created_at).toLocaleString()}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)] mt-1">{warning.description}</div>
                             {warning.resolution_notes && (
-                              <div className="text-micro text-green-300 mt-1">Resolution: {warning.resolution_notes}</div>
+                              <div className="text-micro text-[var(--color-status-active)] mt-1">Resolution: {warning.resolution_notes}</div>
                             )}
                             {warning.is_active && (
                               <button
@@ -1347,31 +1353,31 @@ export default function FacilitiesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500">Create Warning</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Create Warning</div>
                     <select
                       value={warningForm.severity}
                       onChange={(event) => setWarningForm((prev) => ({ ...prev, severity: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                     >
                       {WARNING_SEVERITIES.map((severity) => <option key={severity} value={severity}>{severity}</option>)}
                     </select>
                     <input
                       value={warningForm.flag_type}
                       onChange={(event) => setWarningForm((prev) => ({ ...prev, flag_type: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Flag type (e.g., safety, communication_gap)"
                     />
                     <input
                       value={warningForm.title}
                       onChange={(event) => setWarningForm((prev) => ({ ...prev, title: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Warning title"
                     />
                     <textarea
                       value={warningForm.description}
                       onChange={(event) => setWarningForm((prev) => ({ ...prev, description: event.target.value }))}
-                      className="w-full h-28 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-28 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Why this warning matters and how responders should adapt."
                     />
                     <button
@@ -1384,20 +1390,20 @@ export default function FacilitiesPage() {
                   </div>
                 </div>
               ) : activeTab === 'timeline' ? (
-                <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                  <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Relationship Timeline</div>
+                <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                  <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Relationship Timeline</div>
                   {selectedTimeline.length === 0 ? (
                     <QuantumEmptyState title="No timeline events" description="Timeline events will appear as handoffs, notes, and flags are recorded." />
                   ) : (
                     <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
                       {selectedTimeline.map((event) => (
-                        <div key={event.id} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                        <div key={event.id} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-semibold text-zinc-100">{event.title}</span>
-                            <span className="text-[10px] text-zinc-500 font-mono">{new Date(event.created_at).toLocaleString()}</span>
+                            <span className="text-sm font-semibold text-[var(--color-text-primary)]">{event.title}</span>
+                            <span className="text-[10px] text-[var(--color-text-muted)] font-mono">{new Date(event.created_at).toLocaleString()}</span>
                           </div>
                           <div className="text-micro text-brand-orange mt-0.5">{event.event_type} • {event.source}</div>
-                          <div className="text-sm text-zinc-400 mt-1">{event.description}</div>
+                          <div className="text-sm text-[var(--color-text-secondary)] mt-1">{event.description}</div>
                         </div>
                       ))}
                     </div>
@@ -1405,39 +1411,39 @@ export default function FacilitiesPage() {
                 </div>
               ) : activeTab === 'notes' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Relationship Notes</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Relationship Notes</div>
                     {selectedNotes.length === 0 ? (
                       <QuantumEmptyState title="No notes" description="Capture handoff, operational, and billing relationship context." />
                     ) : (
                       <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                         {selectedNotes.map((note) => (
-                          <div key={note.id} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={note.id} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-bold text-brand-orange uppercase tracking-widest">{note.note_type}</span>
-                              <span className="text-[10px] text-zinc-500 font-mono">{new Date(note.created_at).toLocaleString()}</span>
+                              <span className="text-[10px] text-[var(--color-text-muted)] font-mono">{new Date(note.created_at).toLocaleString()}</span>
                             </div>
-                            <div className="text-sm text-zinc-400 mt-1 whitespace-pre-wrap">{note.content}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)] mt-1 whitespace-pre-wrap">{note.content}</div>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4 space-y-3">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500">Add Note</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4 space-y-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Add Note</div>
                     <input
                       value={noteForm.note_type}
                       onChange={(event) => setNoteForm((prev) => ({ ...prev, note_type: event.target.value }))}
-                      className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Note type (operational, billing, handoff)"
                     />
                     <textarea
                       value={noteForm.content}
                       onChange={(event) => setNoteForm((prev) => ({ ...prev, content: event.target.value }))}
-                      className="w-full h-32 bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100"
+                      className="w-full h-32 bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)]"
                       placeholder="Capture context, constraints, and follow-up actions."
                     />
-                    <label className="flex items-center gap-2 text-sm text-zinc-400">
+                    <label className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
                       <input
                         type="checkbox"
                         checked={noteForm.is_internal}
@@ -1457,46 +1463,46 @@ export default function FacilitiesPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">AI Relationship Issues</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">AI Relationship Issues</div>
                     {facilityIssues.length === 0 ? (
                       <QuantumEmptyState title="No AI issues for this facility" description="No blocking/high recommendation currently targeted to this facility profile." />
                     ) : (
                       <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
                         {facilityIssues.map((issue, index) => (
-                          <div key={`${issue.issue}-${index}`} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={`${issue.issue}-${index}`} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm font-semibold text-zinc-100">{issue.issue}</span>
+                              <span className="text-sm font-semibold text-[var(--color-text-primary)]">{issue.issue}</span>
                               <span className={`text-[10px] font-bold px-2 py-0.5 chamfer-4 border ${severityStyle(issue.severity)}`}>
                                 {issue.severity}
                               </span>
                             </div>
-                            <div className="text-micro text-zinc-500 mt-1">{issue.source} • confidence: {issue.confidence} • review: {issue.human_review}</div>
-                            <div className="text-sm text-red-300 mt-2">{issue.what_is_wrong}</div>
+                            <div className="text-micro text-[var(--color-text-muted)] mt-1">{issue.source} • confidence: {issue.confidence} • review: {issue.human_review}</div>
+                            <div className="text-sm text-[var(--color-brand-red)] mt-2">{issue.what_is_wrong}</div>
                             <div className="text-sm text-yellow-300 mt-1">{issue.why_it_matters}</div>
-                            <div className="text-sm text-green-300 mt-1">{issue.what_you_should_do}</div>
+                            <div className="text-sm text-[var(--color-status-active)] mt-1">{issue.what_you_should_do}</div>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-                    <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Command Top Actions</div>
+                  <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+                    <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Command Top Actions</div>
                     {topActions.length === 0 ? (
                       <QuantumEmptyState title="No top actions" description="Relationship command actions will appear when system thresholds are crossed." />
                     ) : (
                       <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
                         {topActions.map((action, index) => (
-                          <div key={`${action.title}-${index}`} className="bg-black border border-border-subtle chamfer-8 px-3 py-2">
+                          <div key={`${action.title}-${index}`} className="bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 px-3 py-2">
                             <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold text-zinc-100">#{action.priority} {action.title}</div>
+                              <div className="text-sm font-semibold text-[var(--color-text-primary)]">#{action.priority} {action.title}</div>
                               <span className={`text-[10px] font-bold px-2 py-0.5 chamfer-4 border ${severityStyle(action.severity)}`}>
                                 {action.severity}
                               </span>
                             </div>
                             <div className="text-micro text-brand-orange mt-1 uppercase tracking-widest">{action.category}</div>
-                            <div className="text-sm text-zinc-400 mt-1">{action.description}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)] mt-1">{action.description}</div>
                           </div>
                         ))}
                       </div>

@@ -25,6 +25,10 @@ from sqlalchemy.orm import Session
 
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import EventPublisher
+from core_app.services.realtime_events import (
+    emit_dispatch_mission_created,
+    emit_mission_state_transitioned,
+)
 
 
 class DispatchState(StrEnum):
@@ -182,6 +186,17 @@ class DispatchEngine:
             record_id=mission_id,
             expected_version=(mission.get("version") or 1),
             patch={"state": target_state, "state_updated_at": now},
+        )
+
+        await emit_mission_state_transitioned(
+            publisher=self.svc.publisher,
+            tenant_id=self.tenant_id,
+            mission_id=mission_id,
+            from_state=current_state,
+            to_state=target_state,
+            actor_user_id=effective_actor,
+            override=override,
+            correlation_id=correlation_id,
         )
 
         return {
@@ -485,6 +500,19 @@ class DispatchEngine:
                 "actor": str(self.actor_user_id) if self.actor_user_id else "SYSTEM",
                 "data": mission_data,
                 "ts": now,
+            },
+            correlation_id=correlation_id,
+        )
+
+        await emit_dispatch_mission_created(
+            publisher=self.svc.publisher,
+            tenant_id=self.tenant_id,
+            mission_id=uuid.UUID(str(mission["id"])),
+            payload={
+                "dispatch_request_id": str(dispatch_request_id),
+                "service_level": service_level,
+                "priority": priority,
+                "origin_address": origin_address,
             },
             correlation_id=correlation_id,
         )

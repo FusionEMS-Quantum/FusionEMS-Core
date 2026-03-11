@@ -80,6 +80,8 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: python scripts/ci_gate_route_matrix.py
+      - name: Gate — prohibit crash-on-fallback injections
+        run: python scripts/ci_gate_no_frontend_crash_fallbacks.py
 
   compliance-program:
     name: Compliance Program Gate
@@ -125,7 +127,7 @@ jobs:
         run: npx tsc --noEmit
       - name: Lint
         working-directory: frontend
-        run: npx next lint
+        run: npm run lint
 
   frontend-build:
     name: Frontend Build

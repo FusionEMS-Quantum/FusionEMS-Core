@@ -1,0 +1,11 @@
+82	backend/core_app/api/export_status_router.py
+21	backend/core_app/api/patient_portal_router.py
+19	backend/core_app/api/nemsis_manager_router.py
+13	backend/core_app/api/visibility_router.py
+9	backend/core_app/api/scheduling_router.py
+5	backend/core_app/services/patient_portal_service.py
+3	backend/core_app/api/compliance_command_router.py
+2	backend/core_app/services/auth_rep_service.py
+1	backend/core_app/models/communications.py
+1	backend/core_app/crewlink/paging_engine.py
+1	backend/core_app/api/fire_ops_router.py

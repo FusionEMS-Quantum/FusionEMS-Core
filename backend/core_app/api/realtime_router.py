@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import time
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
@@ -17,6 +18,7 @@ from core_app.core.config import get_settings
 from core_app.schemas.auth import CurrentUser
 
 router = APIRouter(prefix="/realtime", tags=["realtime"])
+logger = logging.getLogger(__name__)
 
 
 def _sse(data: dict[str, Any]) -> str:
@@ -59,7 +61,9 @@ async def realtime_sse(
     async def event_stream() -> AsyncIterator[str]:
         yield _sse(
             {
+                "event_type": "connected",
                 "eventType": "connected",
+                "tenant_id": tenant_id,
                 "tenantId": tenant_id,
                 "ts": datetime.now(UTC).isoformat(),
             }
@@ -77,7 +81,11 @@ async def realtime_sse(
                     last_heartbeat = now
                     await _presence_ping(r, tenant_id, "user", str(current.user_id))
                     yield _sse(
-                        {"eventType": "heartbeat", "ts": datetime.now(UTC).isoformat()}
+                        {
+                            "event_type": "heartbeat",
+                            "eventType": "heartbeat",
+                            "ts": datetime.now(UTC).isoformat(),
+                        }
                     )
 
                 message = await pubsub.get_message(
@@ -142,7 +150,11 @@ async def realtime_ws(websocket: WebSocket) -> None:
                 await _presence_ping(r, tenant_id_str, "user", str(user_id))
                 await websocket.send_text(
                     json.dumps(
-                        {"eventType": "heartbeat", "ts": datetime.now(UTC).isoformat()}
+                        {
+                            "event_type": "heartbeat",
+                            "eventType": "heartbeat",
+                            "ts": datetime.now(UTC).isoformat(),
+                        }
                     )
                 )
 
@@ -176,9 +188,7 @@ async def realtime_ws(websocket: WebSocket) -> None:
     try:
         await asyncio.gather(send_task, recv_task)
     except (WebSocketDisconnect, asyncio.CancelledError) as e:
-        import logging
-
-        logging.error(f"Error: {e}")
+        logger.warning("realtime websocket terminated", exc_info=e)
     finally:
         send_task.cancel()
         recv_task.cancel()

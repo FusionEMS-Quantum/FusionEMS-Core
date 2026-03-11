@@ -256,8 +256,8 @@ export default function PublicLegalRequestIntakePage() {
       subtitle="Submit HIPAA ROI, subpoena, or court-order record requests with AI-assisted triage and deterministic document checks."
     >
       <div className="space-y-4">
-        {error && <div className="border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
-        {notice && <div className="border border-green-500/40 bg-green-500/10 p-3 text-sm text-green-300">{notice}</div>}
+        {error && <div className="border border-[var(--color-brand-red)]/40 bg-[var(--color-brand-red)]/10 p-3 text-sm text-[var(--color-brand-red)]">{error}</div>}
+        {notice && <div className="border border-[var(--color-status-active)]/40 bg-[var(--color-status-active)]/10 p-3 text-sm text-[var(--color-status-active)]">{notice}</div>}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
@@ -265,7 +265,7 @@ export default function PublicLegalRequestIntakePage() {
             <select
               value={form.request_type}
               onChange={(event) => setForm((prev) => ({ ...prev, request_type: event.target.value as RequestTypeOption }))}
-              className="mt-1 w-full border border-border-default bg-[#050505] px-3 py-2 text-sm text-zinc-100"
+              className="mt-1 w-full border border-border-default bg-[var(--color-bg-base)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
             >
               {Object.entries(REQUEST_TYPE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -300,7 +300,7 @@ export default function PublicLegalRequestIntakePage() {
                   requester_category: event.target.value as LegalIntakePayload['requester_category'],
                 }))
               }
-              className="mt-1 w-full border border-border-default bg-[#050505] px-3 py-2 text-sm text-zinc-100"
+              className="mt-1 w-full border border-border-default bg-[var(--color-bg-base)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
             >
               {REQUESTER_CATEGORY_OPTIONS.map((value) => (
                 <option key={value} value={value}>{value}</option>
@@ -354,7 +354,7 @@ export default function PublicLegalRequestIntakePage() {
           <Input
             label="Estimated Page Count"
             type="number"
-            value={String(form.requested_page_count ?? 0)}
+            value={form.requested_page_count != null ? String(form.requested_page_count) : ''}
             onChange={(event) => setForm((prev) => ({ ...prev, requested_page_count: Number(event.target.value || 0) }))}
           />
           <Input
@@ -373,14 +373,14 @@ export default function PublicLegalRequestIntakePage() {
                   delivery_preference: event.target.value as 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup',
                 }))
               }
-              className="mt-1 w-full border border-border-default bg-[#050505] px-3 py-2 text-sm text-zinc-100"
+              className="mt-1 w-full border border-border-default bg-[var(--color-bg-base)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
             >
               <option value="secure_one_time_link">Secure one-time link</option>
               <option value="encrypted_email">Encrypted email</option>
               <option value="manual_pickup">Manual pickup</option>
             </select>
           </div>
-          <label className="mt-6 inline-flex items-center gap-2 text-sm text-zinc-300">
+          <label className="mt-6 inline-flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
             <input
               type="checkbox"
               checked={Boolean(form.print_mail_requested)}
@@ -388,7 +388,7 @@ export default function PublicLegalRequestIntakePage() {
             />
             Print + mail request
           </label>
-          <label className="mt-6 inline-flex items-center gap-2 text-sm text-zinc-300">
+          <label className="mt-6 inline-flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
             <input
               type="checkbox"
               checked={Boolean(form.rush_requested)}
@@ -426,7 +426,7 @@ export default function PublicLegalRequestIntakePage() {
         </div>
 
         {intake && (
-          <div className="space-y-3 border border-border-default bg-[#050505] p-4">
+          <div className="space-y-3 border border-border-default bg-[var(--color-bg-base)] p-4">
             <div className="flex flex-wrap items-center gap-2">
               <StatusChip status="info">Request {intake.request_id.slice(0, 8)}</StatusChip>
               <StatusChip status={intake.status === 'missing_docs' ? 'warning' : 'active'}>{intake.status}</StatusChip>
@@ -450,14 +450,14 @@ export default function PublicLegalRequestIntakePage() {
             </div>
 
             {quote && (
-              <div className="border border-border-subtle bg-black/20 p-3 text-sm text-zinc-200">
+              <div className="border border-border-subtle bg-[var(--color-bg-base)]/20 p-3 text-sm text-[var(--color-text-primary)]">
                 <div className="font-semibold">Fee quote (Wisconsin-first)</div>
                 <div>Total due: ${(quote.total_due_cents / 100).toFixed(2)}</div>
                 <div>Agency payout: ${(quote.agency_payout_cents / 100).toFixed(2)}</div>
                 <div>Platform fee: ${(quote.platform_fee_cents / 100).toFixed(2)}</div>
                 <div>Margin status: {quote.margin_status}</div>
                 {quote.hold_reasons.length > 0 && (
-                  <ul className="mt-2 list-disc pl-5 text-xs text-amber-300">
+                  <ul className="mt-2 list-disc pl-5 text-xs text-[var(--q-yellow)]">
                     {quote.hold_reasons.map((reason) => (
                       <li key={reason}>{reason}</li>
                     ))}
@@ -466,18 +466,18 @@ export default function PublicLegalRequestIntakePage() {
               </div>
             )}
 
-            <div className="text-sm text-zinc-300">
+            <div className="text-sm text-[var(--color-text-secondary)]">
               AI triage: <strong>{intake.triage_summary.classification}</strong> · urgency{' '}
               <strong>{intake.triage_summary.urgency_level}</strong>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="border border-border-subtle bg-black/20 p-3">
-                <div className="mb-2 text-xs uppercase tracking-widest text-zinc-500">Required-document checklist</div>
+              <div className="border border-border-subtle bg-[var(--color-bg-base)]/20 p-3">
+                <div className="mb-2 text-xs uppercase tracking-widest text-[var(--color-text-muted)]">Required-document checklist</div>
                 <div className="space-y-1">
                   {intake.required_document_checklist.map((item) => (
                     <div key={item.code} className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-300">{checklistLabel(item)}</span>
+                      <span className="text-[var(--color-text-secondary)]">{checklistLabel(item)}</span>
                       <StatusChip status={item.satisfied ? 'active' : 'warning'} size="sm">
                         {item.satisfied ? 'received' : 'missing'}
                       </StatusChip>
@@ -486,16 +486,16 @@ export default function PublicLegalRequestIntakePage() {
                 </div>
               </div>
 
-              <div className="border border-border-subtle bg-black/20 p-3">
-                <div className="mb-2 text-xs uppercase tracking-widest text-zinc-500">Missing item cards</div>
+              <div className="border border-border-subtle bg-[var(--color-bg-base)]/20 p-3">
+                <div className="mb-2 text-xs uppercase tracking-widest text-[var(--color-text-muted)]">Missing item cards</div>
                 {intake.missing_items.length === 0 ? (
-                  <div className="text-sm text-green-300">No blocking missing items.</div>
+                  <div className="text-sm text-[var(--color-status-active)]">No blocking missing items.</div>
                 ) : (
                   <div className="space-y-2">
                     {intake.missing_items.map((item) => (
-                      <div key={item.code} className="border border-red-500/30 bg-red-500/10 p-2 text-sm">
-                        <div className="font-semibold text-red-300">{item.title}</div>
-                        <div className="text-red-200/90">{item.detail}</div>
+                      <div key={item.code} className="border border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/10 p-2 text-sm">
+                        <div className="font-semibold text-[var(--color-brand-red)]">{item.title}</div>
+                        <div className="text-[var(--color-brand-red)]/90">{item.detail}</div>
                       </div>
                     ))}
                   </div>
@@ -509,7 +509,7 @@ export default function PublicLegalRequestIntakePage() {
                 <select
                   value={uploadKind}
                   onChange={(event) => setUploadKind(event.target.value)}
-                  className="mt-1 w-full border border-border-default bg-[#050505] px-3 py-2 text-sm text-zinc-100"
+                  className="mt-1 w-full border border-border-default bg-[var(--color-bg-base)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 >
                   {DOCUMENT_KIND_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>{opt}</option>
@@ -521,7 +521,7 @@ export default function PublicLegalRequestIntakePage() {
                 <input
                   type="file"
                   onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
-                  className="mt-1 w-full border border-border-default bg-[#050505] px-3 py-2 text-sm text-zinc-100"
+                  className="mt-1 w-full border border-border-default bg-[var(--color-bg-base)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
                 />
               </div>
               <div className="flex items-end">

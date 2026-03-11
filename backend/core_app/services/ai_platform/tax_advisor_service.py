@@ -145,17 +145,114 @@ class AIReceiptTaxAdvisor:
         }
 
     async def analyze_android_receipt_upload(self, image_metadata: str, image_bytes: bytes) -> dict[str, Any]:
-        """
-        Receives an image payload from the Android PWA/Mobile app.
-        Calls the underlying Vision LLM.
-        """
-        from core_app.core.errors import AppError
+        """Analyze a receipt image via AI vision and return structured tax data.
 
-        raise AppError(
-            code="TAX_VISION_NOT_CONFIGURED",
-            message="Receipt vision pipeline requires OpenAI Vision API configuration",
-            status_code=503,
+        The image is passed inline (base64) to the vision model.
+        Response is structured JSON with IRS categorization, confidence, and
+        forward-looking strategy flags — ready for direct persistence into
+        FounderExpense + TaxDocumentVault.
+
+        Falls back gracefully: if AI is not configured, returns a structured
+        partial result with `ai_available: false` so the caller can still
+        persist a manual entry.
+        """
+        import json as _json
+
+        from core_app.ai.service import AiService
+
+        vision_system = self.system_prompt
+        vision_user = (
+            f"Analyze this receipt image. Additional metadata provided by the mobile app: {image_metadata}\n\n"
+            "Return a single JSON object with exactly these fields:\n"
+            "{\n"
+            '  "merchant_name": "string",\n'
+            '  "transaction_date": "YYYY-MM-DD or null",\n'
+            '  "total_amount": number,\n'
+            '  "currency": "USD",\n'
+            '  "irs_category": "exact IRS Schedule C line description",\n'
+            '  "business_purpose": "one sentence",\n'
+            '  "is_home_office_related": boolean,\n'
+            '  "is_potential_startup_sec195": boolean,\n'
+            '  "tax_entity_bucket": "BUSINESS_LLC | PERSONAL_FAMILY | CAPITAL_CONTRIBUTION",\n'
+            '  "forward_strategy": "one actionable tax strategy tip or null",\n'
+            '  "audit_risk": "low | medium | high",\n'
+            '  "confidence": 0.0 to 1.0,\n'
+            '  "raw_line_items": [{"description": "string", "amount": number}]\n'
+            "}"
         )
+
+        if not AiService.is_configured():
+            return {
+                "ai_available": False,
+                "message": (
+                    "AI vision not configured (OPENAI_API_KEY or Bedrock credentials). "
+                    "Please complete the fields manually."
+                ),
+                "merchant_name": None,
+                "transaction_date": None,
+                "total_amount": None,
+                "irs_category": None,
+                "business_purpose": None,
+                "is_home_office_related": False,
+                "is_potential_startup_sec195": False,
+                "tax_entity_bucket": "BUSINESS_LLC",
+                "forward_strategy": None,
+                "audit_risk": "unknown",
+                "confidence": 0.0,
+                "raw_line_items": [],
+            }
+
+        ai = AiService()
+        try:
+            response = ai.chat_with_image(
+                system=vision_system,
+                user_text=vision_user,
+                image_bytes=image_bytes,
+                image_media_type="image/jpeg",
+                max_tokens=1024,
+                model="gpt-4o",
+                temperature=0.1,
+            )
+        except Exception as exc:
+            # AI failure must not break the upload workflow — return graceful partial
+            import logging as _logging
+            _logging.getLogger(__name__).error(
+                "receipt_ocr_ai_failure error=%s", str(exc)
+            )
+            return {
+                "ai_available": True,
+                "ai_error": "Vision analysis failed — please complete fields manually",
+                "merchant_name": None,
+                "transaction_date": None,
+                "total_amount": None,
+                "irs_category": None,
+                "business_purpose": None,
+                "is_home_office_related": False,
+                "is_potential_startup_sec195": False,
+                "tax_entity_bucket": "BUSINESS_LLC",
+                "forward_strategy": None,
+                "audit_risk": "unknown",
+                "confidence": 0.0,
+                "raw_line_items": [],
+            }
+
+        raw = response.content.strip()
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+
+        try:
+            parsed: dict[str, Any] = _json.loads(raw)
+        except _json.JSONDecodeError:
+            parsed = {}
+
+        # Normalise confidence from response envelope (more reliable than model-declared)
+        parsed["confidence"] = float(response.confidence)
+        parsed["ai_available"] = True
+        parsed["ai_provider"] = response.provider
+        parsed["ai_model"] = response.model
+        parsed["latency_ms"] = response.latency_ms
+
+        return parsed
 
     async def generate_tax_forecast(self, expenses_ytd: list[FounderExpense]) -> dict[str, Any]:
         """

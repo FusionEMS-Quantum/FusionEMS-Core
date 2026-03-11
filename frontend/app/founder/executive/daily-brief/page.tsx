@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AlertTriangle, ArrowLeft, BarChart3, Clock, DollarSign, FileText, RefreshCw, Shield, TrendingUp } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { AlertTriangle, ArrowLeft, RefreshCw, Shield, TrendingUp, TrendingDown, Clock, Activity, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { QuantumCardSkeleton } from '@/components/ui';
 import {
   getBillingExecutiveSummary,
   getBillingHealth,
@@ -40,6 +42,78 @@ interface AlertItem {
   threshold?: number;
 }
 
+function formatCents(cents: number | undefined): string {
+  return cents != null
+    ? `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+    : '$0.00';
+}
+
+function HealthGauge({ score, grade }: { score: number; grade?: string }) {
+  const pct = Math.max(0, Math.min(100, score));
+  const color = pct >= 80 ? 'var(--color-status-active)' : pct >= 60 ? 'var(--q-yellow)' : 'var(--color-brand-red)';
+  const circumference = 2 * Math.PI * 52;
+  const offset = circumference - (pct / 100) * circumference;
+  return (
+    <div className="relative w-32 h-32 flex-shrink-0">
+      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-border-subtle)" strokeWidth="8" />
+        <circle
+          cx="60" cy="60" r="52" fill="none" stroke={color} strokeWidth="8"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          strokeLinecap="butt" className="transition-all duration-slow"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-h1 font-bold" style={{ color }}>{pct}</span>
+        {grade && <span className="text-micro font-label uppercase tracking-wider text-[var(--color-text-muted)]">{grade}</span>}
+      </div>
+    </div>
+  );
+}
+
+function MetricPlate({ label, value, accent, trend }: { label: string; value: string; accent: string; trend?: 'up' | 'down' | 'flat' }) {
+  return (
+    <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4 relative overflow-hidden group hover:border-[var(--color-border-strong)] transition-colors duration-fast">
+      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: accent }} />
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-micro font-label uppercase tracking-wider text-[var(--color-text-muted)]">{label}</span>
+        {trend && (
+          <span className={trend === 'up' ? 'text-[var(--color-status-active)]' : trend === 'down' ? 'text-[var(--color-brand-red)]' : 'text-[var(--color-text-disabled)]'}>
+            {trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : trend === 'down' ? <TrendingDown className="w-3.5 h-3.5" /> : '—'}
+          </span>
+        )}
+      </div>
+      <div className="text-h2 font-bold text-[var(--color-text-primary)]">{value}</div>
+    </div>
+  );
+}
+
+function AlertRow({ alert, index }: { alert: AlertItem; index: number }) {
+  const sev = alert.severity ?? 'info';
+  const sevColor = sev === 'critical' ? 'var(--color-brand-red)' : sev === 'high' ? 'var(--q-orange)' : sev === 'medium' ? 'var(--q-yellow)' : 'var(--color-status-info)';
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.2 }}
+      className="flex items-center gap-3 p-3 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-4 hover:bg-[var(--color-bg-overlay)] transition-colors duration-fast"
+    >
+      <div className="w-1 h-8 chamfer-4 flex-shrink-0" style={{ backgroundColor: sevColor }} />
+      <span
+        className="text-micro font-label uppercase tracking-wider px-2 py-0.5 chamfer-4 flex-shrink-0"
+        style={{ color: sevColor, backgroundColor: `color-mix(in srgb, ${sevColor} 12%, transparent)` }}
+      >
+        {sev}
+      </span>
+      <span className="text-body text-[var(--color-text-primary)] flex-1 truncate">{alert.message ?? alert.metric ?? 'Alert'}</span>
+      {alert.value != null && (
+        <span className="text-micro font-mono text-[var(--color-text-muted)] flex-shrink-0">
+          {alert.value}{alert.threshold != null ? ` / ${alert.threshold}` : ''}
+        </span>
+      )}
+    </motion.div>
+  );
+}
+
 export default function DailyBriefPage() {
   const [summary, setSummary] = useState<ExecSummary | null>(null);
   const [health, setHealth] = useState<HealthData | null>(null);
@@ -74,153 +148,208 @@ export default function DailyBriefPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const formatCents = (cents: number | undefined) =>
-    cents != null ? `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$0.00';
+  const briefDate = summary?.as_of ?? health?.as_of ?? new Date().toISOString().split('T')[0];
 
-  const severityColor = (sev?: string) => {
-    if (sev === 'critical') return 'text-red-400 bg-red-900/20';
-    if (sev === 'high') return 'text-orange-400 bg-orange-900/20';
-    if (sev === 'medium') return 'text-amber-400 bg-amber-900/20';
-    return 'text-blue-400 bg-blue-900/20';
-  };
+  const criticalAlerts = useMemo(() => alerts.filter(a => a.severity === 'critical' || a.severity === 'high'), [alerts]);
+  const otherAlerts = useMemo(() => alerts.filter(a => a.severity !== 'critical' && a.severity !== 'high'), [alerts]);
+
+  /* AI-generated narrative summary from available data */
+  const narrative = useMemo(() => {
+    const parts: string[] = [];
+    if (health?.score != null) {
+      const grade = health.score >= 80 ? 'strong' : health.score >= 60 ? 'moderate' : 'critical attention';
+      parts.push(`Billing health is at ${health.score}/100 (${grade}).`);
+    }
+    if (summary?.revenue_cents != null) parts.push(`Revenue this period: ${formatCents(summary.revenue_cents)}.`);
+    if (summary?.denial_rate_pct != null && summary.denial_rate_pct > 5)
+      parts.push(`Denial rate at ${summary.denial_rate_pct}% — above acceptable threshold.`);
+    if (summary?.clean_claim_rate_pct != null && summary.clean_claim_rate_pct < 95)
+      parts.push(`Clean claim rate at ${summary.clean_claim_rate_pct}% — needs improvement.`);
+    if (criticalAlerts.length > 0) parts.push(`${criticalAlerts.length} critical/high alert${criticalAlerts.length > 1 ? 's' : ''} require immediate action.`);
+    if (parts.length === 0) parts.push('All systems nominal. No anomalies detected in latest telemetry cycle.');
+    return parts.join(' ');
+  }, [health, summary, criticalAlerts]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+      <div className="flex flex-col gap-4 p-6">
+        <QuantumCardSkeleton />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => <QuantumCardSkeleton key={i} />)}
+        </div>
+        <QuantumCardSkeleton />
+        <QuantumCardSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <Link href="/founder/executive" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2">
-              <ArrowLeft className="w-4 h-4" /> Back to Executive
+    <div className="flex flex-col h-full min-h-0">
+      {/* Header */}
+      <header className="flex-shrink-0 px-4 pt-4 pb-2 xl:px-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <Link href="/founder/executive" className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] flex items-center gap-1 text-micro font-label uppercase tracking-wider mb-3 transition-colors duration-fast">
+              <ArrowLeft className="w-3.5 h-3.5" /> Executive Command
             </Link>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <FileText className="w-8 h-8 text-blue-400" />
-              Executive Daily Brief
-            </h1>
-            <p className="text-gray-400 mt-1">Automated operational intelligence — {summary?.as_of ?? new Date().toISOString().split('T')[0]}</p>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 chamfer-4 flex-shrink-0 bg-[var(--q-orange)]" />
+              <h1 className="text-h1 font-sans font-bold text-[var(--color-text-primary)]">Daily AI Brief</h1>
+            </div>
+            <p className="text-body text-[var(--color-text-muted)] mt-1 ml-4">
+              Automated operational intelligence — {briefDate}
+            </p>
           </div>
-          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
-            <RefreshCw className="w-4 h-4" /> Refresh
+          <button onClick={loadData} className="quantum-btn flex items-center gap-2">
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
         </div>
+      </header>
 
-        {error && (
-          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-            <span className="text-red-300">{error}</span>
-          </div>
-        )}
+      {/* Content */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 xl:px-6 space-y-5">
+        {/* Error banner */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+              className="flex items-center gap-3 p-4 bg-[var(--color-brand-red-ghost)] border border-[var(--color-brand-red)] chamfer-8"
+            >
+              <AlertTriangle className="w-5 h-5 text-[var(--color-brand-red)] flex-shrink-0" />
+              <span className="text-body text-[var(--color-text-primary)]">{error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Billing Health Score */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-400" /> Billing Health Score
-          </h2>
-          {health ? (
-            <div className="flex items-center gap-8">
-              <div className="text-center">
-                <div className={`text-5xl font-bold ${(health.score ?? 0) >= 80 ? 'text-emerald-400' : (health.score ?? 0) >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
-                  {health.score ?? 0}
-                </div>
-                <div className="text-gray-400 text-sm mt-1">Score</div>
+        {/* AI Narrative + Health Gauge */}
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-12 p-5 hud-rail">
+          <div className="flex items-start gap-6">
+            {/* Health Gauge */}
+            {health?.score != null && <HealthGauge score={health.score} grade={health.grade} />}
+
+            {/* Narrative */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="w-4 h-4 text-[var(--q-orange)]" />
+                <span className="label-caps">AI Intelligence Summary</span>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-400">{health.grade ?? 'N/A'}</div>
-                <div className="text-gray-400 text-sm mt-1">Grade</div>
-              </div>
-              {health.factors && health.factors.length > 0 && (
-                <div className="flex-1 grid grid-cols-2 gap-2">
+              <p className="text-body-lg text-[var(--color-text-primary)] leading-relaxed">{narrative}</p>
+
+              {/* Health Factors */}
+              {health?.factors && health.factors.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-2">
                   {health.factors.slice(0, 6).map((f, i) => (
-                    <div key={i} className="text-sm flex items-center gap-2">
-                      <span className={f.status === 'healthy' ? 'text-emerald-400' : 'text-amber-400'}>●</span>
-                      <span className="text-gray-300">{f.name}</span>
+                    <div key={i} className="flex items-center gap-2 text-body">
+                      <span className="w-1.5 h-1.5" style={{
+                        backgroundColor: f.status === 'healthy' ? 'var(--color-status-active)' : f.status === 'warning' ? 'var(--q-yellow)' : 'var(--color-brand-red)',
+                      }} />
+                      <span className="text-[var(--color-text-secondary)] truncate">{f.name}</span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          ) : (
-            <div className="text-gray-500">Health score unavailable</div>
-          )}
-        </div>
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><DollarSign className="w-3.5 h-3.5" /> Revenue</div>
-            <div className="text-xl font-bold text-emerald-400">{formatCents(summary?.revenue_cents)}</div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><BarChart3 className="w-3.5 h-3.5" /> Total Claims</div>
-            <div className="text-xl font-bold text-blue-400">{summary?.total_claims ?? 0}</div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><TrendingUp className="w-3.5 h-3.5" /> Clean Rate</div>
-            <div className="text-xl font-bold text-cyan-400">{summary?.clean_claim_rate_pct ?? 0}%</div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><AlertTriangle className="w-3.5 h-3.5" /> Denial Rate</div>
-            <div className="text-xl font-bold text-amber-400">{summary?.denial_rate_pct ?? 0}%</div>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><Clock className="w-3.5 h-3.5" /> Avg Days to Pay</div>
-            <div className="text-xl font-bold text-violet-400">{summary?.avg_days_to_payment ?? '—'}</div>
           </div>
         </div>
 
-        {/* Active Alerts */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400" /> Active Alerts
-          </h2>
-          {alerts.length > 0 ? (
-            <div className="space-y-2">
-              {alerts.map((a, i) => (
-                <div key={i} className={`rounded-lg px-4 py-3 flex items-center justify-between ${severityColor(a.severity)}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono uppercase">{a.severity ?? 'info'}</span>
-                    <span className="text-sm">{a.message ?? a.metric ?? 'Alert'}</span>
-                  </div>
-                  {a.value != null && (
-                    <span className="text-xs font-mono">
-                      {a.value}{a.threshold != null ? ` / ${a.threshold}` : ''}
-                    </span>
-                  )}
-                </div>
-              ))}
+        {/* KPI Metric Plates */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <MetricPlate
+            label="Revenue" value={formatCents(summary?.revenue_cents)}
+            accent="var(--color-status-active)"
+            trend={summary?.revenue_cents != null && summary.revenue_cents > 0 ? 'up' : 'flat'}
+          />
+          <MetricPlate
+            label="Total Claims" value={String(summary?.total_claims ?? '—')}
+            accent="var(--color-system-billing)"
+          />
+          <MetricPlate
+            label="Clean Claim Rate"
+            value={summary?.clean_claim_rate_pct != null ? `${summary.clean_claim_rate_pct}%` : '—'}
+            accent="var(--color-status-info)"
+            trend={summary?.clean_claim_rate_pct != null && summary.clean_claim_rate_pct >= 95 ? 'up' : summary?.clean_claim_rate_pct != null ? 'down' : undefined}
+          />
+          <MetricPlate
+            label="Denial Rate"
+            value={summary?.denial_rate_pct != null ? `${summary.denial_rate_pct}%` : '—'}
+            accent="var(--q-yellow)"
+            trend={summary?.denial_rate_pct != null && summary.denial_rate_pct > 5 ? 'down' : summary?.denial_rate_pct != null ? 'up' : undefined}
+          />
+          <MetricPlate
+            label="Days to Payment"
+            value={summary?.avg_days_to_payment != null ? `${summary.avg_days_to_payment}d` : '—'}
+            accent="var(--color-system-compliance)"
+          />
+        </div>
+
+        {/* Alert Panels — split critical from non-critical */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {/* Critical/High Alerts */}
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-4 h-4 text-[var(--color-brand-red)]" />
+              <span className="label-caps">Priority Alerts</span>
+              {criticalAlerts.length > 0 && (
+                <span className="text-micro font-label px-1.5 py-0.5 chamfer-4 bg-[var(--color-brand-red-ghost)] text-[var(--color-brand-red)]">
+                  {criticalAlerts.length}
+                </span>
+              )}
             </div>
-          ) : (
-            <div className="text-emerald-400 text-sm">No active alerts — all systems nominal</div>
-          )}
+            {criticalAlerts.length > 0 ? (
+              <div className="space-y-2">
+                {criticalAlerts.map((a, i) => <AlertRow key={i} alert={a} index={i} />)}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 py-4 text-body text-[var(--color-status-active)]">
+                <Shield className="w-4 h-4" /> No critical alerts — systems nominal
+              </div>
+            )}
+          </div>
+
+          {/* Standard Alerts */}
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="w-4 h-4 text-[var(--color-status-info)]" />
+              <span className="label-caps">Operational Notices</span>
+              {otherAlerts.length > 0 && (
+                <span className="text-micro font-label px-1.5 py-0.5 chamfer-4 bg-[var(--color-bg-overlay)] text-[var(--color-text-muted)]">
+                  {otherAlerts.length}
+                </span>
+              )}
+            </div>
+            {otherAlerts.length > 0 ? (
+              <div className="space-y-2">
+                {otherAlerts.map((a, i) => <AlertRow key={i} alert={a} index={i} />)}
+              </div>
+            ) : (
+              <div className="py-4 text-body text-[var(--color-text-muted)]">No additional notices</div>
+            )}
+          </div>
         </div>
 
-        {/* KPI Snapshot */}
+        {/* KPI Deep Dive */}
         {kpis && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-cyan-400" /> Billing KPIs
-            </h2>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-[var(--color-system-billing)]" />
+              <span className="label-caps">Billing KPI Telemetry</span>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(kpis).filter(([k]) => k !== 'as_of').slice(0, 8).map(([key, val]) => (
-                <div key={key}>
-                  <div className="text-gray-400 text-xs">{key.replace(/_/g, ' ')}</div>
-                  <div className="text-sm font-semibold text-gray-200">{typeof val === 'number' ? val.toLocaleString() : String(val ?? '—')}</div>
+                <div key={key} className="border-l-2 border-[var(--color-border-subtle)] pl-3 py-1">
+                  <div className="text-micro font-label uppercase tracking-wider text-[var(--color-text-muted)]">{key.replace(/_/g, ' ')}</div>
+                  <div className="text-body font-semibold text-[var(--color-text-primary)]">
+                    {typeof val === 'number' ? val.toLocaleString() : String(val ?? '—')}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="text-center text-gray-600 text-xs">
-          Brief generated: {summary?.as_of ?? health?.as_of ?? 'N/A'}
+        {/* Footer */}
+        <div className="text-center text-micro text-[var(--color-text-disabled)] pb-4">
+          Brief generated: {briefDate} · AI intelligence cycle complete
         </div>
       </div>
     </div>

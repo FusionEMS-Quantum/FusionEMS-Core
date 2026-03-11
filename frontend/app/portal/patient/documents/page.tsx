@@ -18,9 +18,9 @@ interface PatientDoc {
 
 const DOC_TYPES: Record<string, { label: string; icon: string; color: string }> = {
   statement:     { label: 'Statement',        icon: 'file-text', color: '#818CF8' },
-  invoice:       { label: 'Invoice',          icon: 'file-text', color: '#FF4D00' },
-  receipt:       { label: 'Receipt',          icon: 'receipt',   color: '#10B981' },
-  payment_plan:  { label: 'Payment Plan',     icon: 'plan',      color: '#F59E0B' },
+  invoice:       { label: 'Invoice',          icon: 'file-text', color: 'var(--q-orange)' },
+  receipt:       { label: 'Receipt',          icon: 'receipt',   color: 'var(--color-status-active)' },
+  payment_plan:  { label: 'Payment Plan',     icon: 'plan',      color: 'var(--q-yellow)' },
   signed_form:   { label: 'Signed Form',      icon: 'pen',       color: '#A78BFA' },
   upload:        { label: 'Your Upload',      icon: 'upload',    color: '#60A5FA' },
   correspondence:{ label: 'Correspondence',   icon: 'mail',      color: '#94A3B8' },
@@ -109,23 +109,23 @@ export default function DocumentsPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-[3px] h-6 bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)]" />
+            <div className="w-[3px] h-6 bg-[var(--q-orange)] shadow-[0_0_8px_rgba(255,106,0,0.6)]" />
             <h1 className="text-xl font-black tracking-[0.12em] text-white uppercase">Document Center</h1>
           </div>
-          <p className="text-sm text-zinc-500 ml-5">All statements, invoices, receipts, and your uploaded documents.</p>
+          <p className="text-sm text-[var(--color-text-muted)] ml-5">All statements, invoices, receipts, and your uploaded documents.</p>
         </div>
 
         {/* Upload trigger */}
         <label
           className={`flex items-center gap-2 h-9 px-4 cursor-pointer text-[10px] font-bold tracking-widest uppercase transition-colors ${
             uploading
-              ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
-              : 'bg-[#FF4D00]/10 border border-[#FF4D00]/30 text-[#FF4D00] hover:bg-[#FF4D00]/20'
+              ? 'bg-[var(--color-bg-raised)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-border-strong)]'
+              : 'bg-[var(--q-orange)]/10 border border-[var(--q-orange)]/30 text-[var(--q-orange)] hover:bg-[var(--q-orange)]/20'
           }`}
           style={{ clipPath: clip6 }}
         >
           {uploading ? (
-            <div className="w-3 h-3 border-2 border-[#FF4D00] border-t-transparent rounded-full animate-spin" />
+            <div className="w-3 h-3 border-2 border-[var(--q-orange)] border-t-transparent rounded-full animate-spin" />
           ) : (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
@@ -137,7 +137,7 @@ export default function DocumentsPage() {
       </div>
 
       {fetchError && (
-        <div className="mb-4 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+        <div className="mb-4 px-4 py-3 bg-[var(--color-brand-red)]/8 border border-[var(--color-brand-red)]/20 text-sm text-[var(--color-brand-red)]" style={{ clipPath: clip6 }}>
           Unable to load documents. Please refresh the page or contact billing support.
         </div>
       )}
@@ -150,8 +150,8 @@ export default function DocumentsPage() {
             onClick={() => setCategory(cat)}
             className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase border transition-colors ${
               category === cat
-                ? 'bg-[#FF4D00]/10 border-[#FF4D00]/40 text-[#FF4D00]'
-                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                ? 'bg-[var(--q-orange)]/10 border-[var(--q-orange)]/40 text-[var(--q-orange)]'
+                : 'border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-secondary)]'
             }`}
             style={{ clipPath: clip6 }}
           >
@@ -164,14 +164,14 @@ export default function DocumentsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-[#0A0A0B] border border-zinc-900 h-24 animate-pulse" style={{ clipPath: clip10 }} />
+            <div key={i} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-subtle)] h-24 animate-pulse" style={{ clipPath: clip10 }} />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0A0A0B] border border-zinc-800 py-16 text-center" style={{ clipPath: clip10 }}>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] py-16 text-center" style={{ clipPath: clip10 }}>
           <div className="text-2xl mb-3 opacity-20">📂</div>
-          <p className="text-sm text-zinc-500 mb-3">No documents found in this category.</p>
-          <label className="inline-block text-[10px] font-bold tracking-widest uppercase text-[#FF4D00] hover:underline cursor-pointer">
+          <p className="text-sm text-[var(--color-text-muted)] mb-3">No documents found in this category.</p>
+          <label className="inline-block text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)] hover:underline cursor-pointer">
             Upload a Document
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleUpload} />
           </label>
@@ -184,7 +184,7 @@ export default function DocumentsPage() {
             return (
               <div
                 key={doc.id}
-                className="bg-[#0A0A0B] border border-zinc-800 p-4 flex items-start gap-4 hover:border-zinc-700 transition-colors group"
+                className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] p-4 flex items-start gap-4 hover:border-[var(--color-border-strong)] transition-colors group"
                 style={{ clipPath: clip10 }}
               >
                 {/* Icon */}
@@ -199,8 +199,8 @@ export default function DocumentsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-zinc-200 truncate">{fd.name ?? `${typeInfo.label} ${doc.id.slice(-6).toUpperCase()}`}</div>
-                      <div className="text-[10px] text-zinc-600 mt-0.5">
+                      <div className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{fd.name ?? `${typeInfo.label} ${doc.id.slice(-6).toUpperCase()}`}</div>
+                      <div className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
                         {fmtDate(fd.created_at)}
                         {fd.size_bytes ? ` · ${fmtSize(fd.size_bytes)}` : ''}
                       </div>
@@ -213,7 +213,7 @@ export default function DocumentsPage() {
                     </span>
                   </div>
                   {fd.description && (
-                    <p className="text-xs text-zinc-500 mt-1.5 line-clamp-1">{fd.description}</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1.5 line-clamp-1">{fd.description}</p>
                   )}
                 </div>
 
@@ -221,7 +221,7 @@ export default function DocumentsPage() {
                 <a
                   href={fd.file_url ?? '#'}
                   download
-                  className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-zinc-800 text-zinc-600 group-hover:border-zinc-600 group-hover:text-zinc-300 transition-colors"
+                  className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-[var(--color-border-default)] text-[var(--color-text-muted)] group-hover:border-[var(--color-border-strong)] group-hover:text-[var(--color-text-secondary)] transition-colors"
                   style={{ clipPath: clip6 }}
                   title="Download"
                 >
@@ -236,12 +236,12 @@ export default function DocumentsPage() {
       )}
 
       {/* Upload instructions */}
-      <div className="mt-8 bg-zinc-900/30 border border-zinc-800 p-4" style={{ clipPath: clip10 }}>
-        <div className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase mb-2">Need to upload insurance information?</div>
-        <p className="text-xs text-zinc-600 mb-3">
+      <div className="mt-8 bg-[var(--color-bg-panel)]/30 border border-[var(--color-border-default)] p-4" style={{ clipPath: clip10 }}>
+        <div className="text-[10px] font-bold tracking-widest text-[var(--color-text-muted)] uppercase mb-2">Need to upload insurance information?</div>
+        <p className="text-xs text-[var(--color-text-muted)] mb-3">
           You can upload insurance cards, EOBs, or supporting documentation here. Your billing team will be notified upon upload.
         </p>
-        <label className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[#FF4D00] hover:underline cursor-pointer">
+        <label className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)] hover:underline cursor-pointer">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
           </svg>

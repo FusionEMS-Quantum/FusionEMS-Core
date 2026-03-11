@@ -199,7 +199,13 @@ class ChatService:
 
         try:
             ai = AiService()
-            response_text, meta = ai.chat(system=system, user=user_prompt)
+            response = ai.chat(system=system, user=user_prompt)
+            response_text = response.content
+            meta = {
+                "model": response.model,
+                "provider": response.provider,
+                "usage": response.usage,
+            }
         except Exception:
             return
 
@@ -302,7 +308,7 @@ class ChatService:
         )
         try:
             ai = AiService()
-            summary, _ = ai.chat(system=system, user=user_prompt)
+            summary = ai.chat(system=system, user=user_prompt).content
         except Exception as exc:
             summary = f"Summary unavailable: {exc}"
         return summary

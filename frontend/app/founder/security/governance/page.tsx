@@ -8,7 +8,7 @@ import { getGovernanceSummary, getGovernanceInteropReadiness } from '@/services/
 /* ── color system per directive ── */
 const STATUS_COLOR = {
   RED: 'var(--color-brand-red)',
-  ORANGE: '#FF4D00',
+  ORANGE: 'var(--q-orange)',
   YELLOW: 'var(--color-status-warning)',
   BLUE: 'var(--color-status-info)',
   GREEN: 'var(--color-status-active)',
@@ -26,11 +26,11 @@ function severity(val: string): keyof typeof STATUS_COLOR {
 }
 
 /* ── Score Ring ── */
-function ScoreRing({ score, label, color }: { score: number; label: string; color: string }) {
-  const pct = Math.min(Math.max(score, 0), 100);
+function ScoreRing({ score, label, color }: { score: number | null; label: string; color: string }) {
+  const pct = score == null ? null : Math.min(Math.max(score, 0), 100);
   const rad = 36;
   const circ = 2 * Math.PI * rad;
-  const offset = circ - (pct / 100) * circ;
+  const offset = pct == null ? circ : circ - (pct / 100) * circ;
   return (
     <div className="flex flex-col items-center">
       <svg width="88" height="88" viewBox="0 0 88 88">
@@ -42,9 +42,9 @@ function ScoreRing({ score, label, color }: { score: number; label: string; colo
           transition={{ duration: 1, ease: 'easeOut' }}
           transform="rotate(-90 44 44)"
         />
-        <text x="44" y="48" textAnchor="middle" fontSize="18" fontWeight="700" fill="white">{pct}</text>
+        <text x="44" y="48" textAnchor="middle" fontSize="18" fontWeight="700" fill="white">{pct == null ? '—' : pct}</text>
       </svg>
-      <span className="text-micro uppercase tracking-widest text-zinc-500 mt-1">{label}</span>
+      <span className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mt-1">{label}</span>
     </div>
   );
 }
@@ -53,9 +53,9 @@ function ScoreRing({ score, label, color }: { score: number; label: string; colo
 function TrustBadge({ label, status, count }: { label: string; status: string; count?: number }) {
   const c = STATUS_COLOR[severity(status)];
   return (
-    <div className="flex items-center gap-2 bg-[#0A0A0B] border border-border-DEFAULT px-3 py-2" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+    <div className="flex items-center gap-2 bg-[var(--color-bg-panel)] border border-border-DEFAULT px-3 py-2" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
       <span className="w-2 h-2  flex-shrink-0" style={{ background: c }} />
-      <span className="text-micro font-semibold uppercase tracking-widest text-zinc-500 flex-1">{label}</span>
+      <span className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] flex-1">{label}</span>
       {count != null && <span className="text-sm font-bold" style={{ color: c }}>{count}</span>}
     </div>
   );
@@ -67,8 +67,8 @@ function TimelineRow({ time, actor, action, level }: { time: string; actor: stri
   return (
     <div className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
       <span className="w-1.5 h-1.5  flex-shrink-0" style={{ background: c }} />
-      <span className="text-micro text-zinc-500 font-mono w-16 flex-shrink-0">{time}</span>
-      <span className="text-xs text-zinc-400 flex-1">{actor} — {action}</span>
+      <span className="text-micro text-[var(--color-text-muted)] font-mono w-16 flex-shrink-0">{time}</span>
+      <span className="text-xs text-[var(--color-text-secondary)] flex-1">{actor} — {action}</span>
     </div>
   );
 }
@@ -78,28 +78,28 @@ function NextActionCard({ rank, title, why, action, severity: sev }: { rank: num
   const c = STATUS_COLOR[severity(sev)];
   return (
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: rank * 0.08 }}
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">#{rank}</span>
+        <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">#{rank}</span>
         <span className="w-1.5 h-1.5 " style={{ background: c }} />
-        <span className="text-xs font-bold text-zinc-100">{title}</span>
+        <span className="text-xs font-bold text-[var(--color-text-primary)]">{title}</span>
       </div>
-      <p className="text-body text-zinc-400 mb-2">{why}</p>
+      <p className="text-body text-[var(--color-text-secondary)] mb-2">{why}</p>
       <p className="text-body font-semibold" style={{ color: c }}>→ {action}</p>
     </motion.div>
   );
 }
 
 /* ── Meter Bar ── */
-function MeterBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+function MeterBar({ label, value, max, color }: { label: string; value: number | null; max: number; color: string }) {
+  const pct = value != null && max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-micro text-zinc-500 w-24 flex-shrink-0">{label}</span>
-      <div className="flex-1 h-2 bg-zinc-950/[0.06]  overflow-hidden">
+      <span className="text-micro text-[var(--color-text-muted)] w-24 flex-shrink-0">{label}</span>
+      <div className="flex-1 h-2 bg-[var(--color-bg-base)]/[0.06]  overflow-hidden">
         <motion.div className="h-full " style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} />
       </div>
-      <span className="text-xs font-semibold text-zinc-100 w-10 text-right">{value}</span>
+      <span className="text-xs font-semibold text-[var(--color-text-primary)] w-10 text-right">{value != null ? value : '—'}</span>
     </div>
   );
 }
@@ -175,24 +175,33 @@ export default function GovernanceCommandPage() {
     });
   }, []);
 
-  const healthColor = !summary ? STATUS_COLOR.GRAY
-    : summary.health_score >= 80 ? STATUS_COLOR.GREEN
-    : summary.health_score >= 50 ? STATUS_COLOR.YELLOW
+  const healthScoreCandidate = summary?.health_score;
+  const healthScore = typeof healthScoreCandidate === 'number' && Number.isFinite(healthScoreCandidate) ? healthScoreCandidate : null;
+
+  const healthColor = healthScore == null ? STATUS_COLOR.GRAY
+    : healthScore >= 80 ? STATUS_COLOR.GREEN
+    : healthScore >= 50 ? STATUS_COLOR.YELLOW
     : STATUS_COLOR.RED;
 
-  const policyCompleteness = summary ? Math.min(summary.health_score + 10, 100) : 0;
+  const policyCompleteness = healthScore != null ? Math.min(healthScore + 10, 100) : 0;
+
+  const hasSummary = summary != null;
+  const failedLogins24h = hasSummary ? summary.failed_logins_24h : null;
+  const phiAccess24h = hasSummary ? summary.phi_access_count_24h : null;
+  const pendingApprovals = hasSummary ? summary.pending_approvals_count : null;
+  const exports7d = hasSummary ? summary.recent_exports_7d : null;
 
   return (
     <div className="p-5 space-y-8 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">TRUST & GOVERNANCE</div>
-          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Compliance Command Center</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Security · Audit · PHI · Interoperability · Policy — Real-Time</p>
+          <div className="text-micro font-bold uppercase tracking-[0.2em] text-[var(--q-orange)]/70 mb-1">TRUST & GOVERNANCE</div>
+          <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Compliance Command Center</h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Security · Audit · PHI · Interoperability · Policy — Real-Time</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/founder/security/access-logs" className="h-8 px-3 bg-red-600/[0.12] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-red-600/[0.2] transition-colors flex items-center gap-1.5">
+          <Link href="/founder/security/access-logs" className="h-8 px-3 bg-red-600/[0.12] border border-[var(--color-brand-red)]/20 text-red text-xs font-semibold chamfer-4 hover:bg-red-600/[0.2] transition-colors flex items-center gap-1.5">
             <span className="w-1.5 h-1.5  bg-red animate-pulse" />
             Access Logs
           </Link>
@@ -204,7 +213,7 @@ export default function GovernanceCommandPage() {
 
       {loading ? (
         <div className="grid grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <div key={i} className="h-28 bg-[#0A0A0B] border border-border-DEFAULT animate-pulse" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-28 bg-[var(--color-bg-panel)] border border-border-DEFAULT animate-pulse" />)}
         </div>
       ) : (
         <>
@@ -212,12 +221,12 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE 01</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">Trust Scores</h2>
+                <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE 01</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">Trust Scores</h2>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
-              <ScoreRing score={summary?.health_score ?? 0} label="Security Health" color={healthColor} />
+              <ScoreRing score={healthScore} label="Security Health" color={healthColor} />
               <ScoreRing score={policyCompleteness} label="Policy Complete" color={policyCompleteness >= 80 ? STATUS_COLOR.GREEN : STATUS_COLOR.YELLOW} />
               <ScoreRing score={interopScore} label="Interop Ready" color={STATUS_COLOR.BLUE} />
               <ScoreRing score={summary ? Math.max(100 - summary.failed_logins_24h * 10, 0) : 100} label="Auth Health" color={summary && summary.failed_logins_24h > 3 ? STATUS_COLOR.RED : STATUS_COLOR.GREEN} />
@@ -228,15 +237,15 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE 02</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">Status Badges</h2>
+                <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE 02</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">Status Badges</h2>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <TrustBadge label="Failed Logins (24h)" status={summary && summary.failed_logins_24h > 3 ? 'RED' : 'GREEN'} count={summary?.failed_logins_24h ?? 0} />
-              <TrustBadge label="PHI Access (24h)" status={summary && summary.phi_access_count_24h > 50 ? 'ORANGE' : 'GREEN'} count={summary?.phi_access_count_24h ?? 0} />
-              <TrustBadge label="Pending Approvals" status={summary && summary.pending_approvals_count > 0 ? 'YELLOW' : 'GREEN'} count={summary?.pending_approvals_count ?? 0} />
-              <TrustBadge label="Exports (7d)" status={summary && summary.recent_exports_7d > 10 ? 'YELLOW' : 'GREEN'} count={summary?.recent_exports_7d ?? 0} />
+              <TrustBadge label="Failed Logins (24h)" status={hasSummary ? (summary.failed_logins_24h > 3 ? 'RED' : 'GREEN') : 'GRAY'} count={failedLogins24h ?? undefined} />
+              <TrustBadge label="PHI Access (24h)" status={hasSummary ? (summary.phi_access_count_24h > 50 ? 'ORANGE' : 'GREEN') : 'GRAY'} count={phiAccess24h ?? undefined} />
+              <TrustBadge label="Pending Approvals" status={hasSummary ? (summary.pending_approvals_count > 0 ? 'YELLOW' : 'GREEN') : 'GRAY'} count={pendingApprovals ?? undefined} />
+              <TrustBadge label="Exports (7d)" status={hasSummary ? (summary.recent_exports_7d > 10 ? 'YELLOW' : 'GREEN') : 'GRAY'} count={exports7d ?? undefined} />
             </div>
           </section>
 
@@ -244,15 +253,15 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE 03</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">Activity Meters</h2>
+                <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE 03</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">Activity Meters</h2>
               </div>
             </div>
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <MeterBar label="Failed Logins" value={summary?.failed_logins_24h ?? 0} max={20} color={STATUS_COLOR.RED} />
-              <MeterBar label="PHI Access" value={summary?.phi_access_count_24h ?? 0} max={200} color={STATUS_COLOR.ORANGE} />
-              <MeterBar label="Pending Actions" value={summary?.pending_approvals_count ?? 0} max={20} color={STATUS_COLOR.YELLOW} />
-              <MeterBar label="Data Exports" value={summary?.recent_exports_7d ?? 0} max={50} color={STATUS_COLOR.BLUE} />
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 space-y-3" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+              <MeterBar label="Failed Logins" value={failedLogins24h} max={20} color={STATUS_COLOR.RED} />
+              <MeterBar label="PHI Access" value={phiAccess24h} max={200} color={STATUS_COLOR.ORANGE} />
+              <MeterBar label="Pending Actions" value={pendingApprovals} max={20} color={STATUS_COLOR.YELLOW} />
+              <MeterBar label="Data Exports" value={exports7d} max={50} color={STATUS_COLOR.BLUE} />
             </div>
           </section>
 
@@ -260,13 +269,13 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE 04</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">Sensitive Access Timeline</h2>
+                <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE 04</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">Sensitive Access Timeline</h2>
               </div>
             </div>
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               {timeline.length === 0 ? (
-                <div className="text-xs text-zinc-500">No recent sensitive access events.</div>
+                <div className="text-xs text-[var(--color-text-muted)]">No recent sensitive access events.</div>
               ) : (
                 timeline.map((e, i) => <TimelineRow key={i} {...e} />)
               )}
@@ -277,9 +286,9 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE 05</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">Next Best Actions</h2>
-                <span className="text-xs text-zinc-500">Top 3 priorities</span>
+                <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE 05</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">Next Best Actions</h2>
+                <span className="text-xs text-[var(--color-text-muted)]">Top 3 priorities</span>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -291,30 +300,30 @@ export default function GovernanceCommandPage() {
           <section>
             <div className="hud-rail pb-2 mb-4">
               <div className="flex items-baseline gap-3">
-                <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE 06</span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">Simple Mode</h2>
+                <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE 06</span>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">Simple Mode</h2>
               </div>
             </div>
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5 space-y-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5 space-y-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               <div>
-                <div className="text-micro font-bold uppercase tracking-widest text-[#FF4D00]/70 mb-1">WHAT HAPPENED</div>
-                <div className="text-sm text-zinc-100">
+                <div className="text-micro font-bold uppercase tracking-widest text-[var(--q-orange)]/70 mb-1">WHAT HAPPENED</div>
+                <div className="text-sm text-[var(--color-text-primary)]">
                   {summary?.failed_logins_24h ? `${summary.failed_logins_24h} failed login attempts detected.` : 'No anomalies detected.'}
                   {summary?.phi_access_count_24h ? ` ${summary.phi_access_count_24h} PHI access events logged.` : ''}
                   {summary?.pending_approvals_count ? ` ${summary.pending_approvals_count} actions awaiting approval.` : ''}
                 </div>
               </div>
               <div>
-                <div className="text-micro font-bold uppercase tracking-widest text-[#FF4D00]/70 mb-1">WHY IT MATTERS</div>
-                <div className="text-sm text-zinc-100">
+                <div className="text-micro font-bold uppercase tracking-widest text-[var(--q-orange)]/70 mb-1">WHY IT MATTERS</div>
+                <div className="text-sm text-[var(--color-text-primary)]">
                   {summary && summary.health_score < 80
                     ? 'Your trust score is below optimal. This means there are open security or compliance gaps that could put your agency at risk during audits or incidents.'
                     : 'Your agency is operating within healthy security and compliance boundaries. Good posture.'}
                 </div>
               </div>
               <div>
-                <div className="text-micro font-bold uppercase tracking-widest text-[#FF4D00]/70 mb-1">DO THIS NEXT</div>
-                <div className="text-sm font-semibold text-zinc-100">
+                <div className="text-micro font-bold uppercase tracking-widest text-[var(--q-orange)]/70 mb-1">DO THIS NEXT</div>
+                <div className="text-sm font-semibold text-[var(--color-text-primary)]">
                   {actions[0]?.action ?? 'Continue monitoring. All clear.'}
                 </div>
               </div>
@@ -329,7 +338,7 @@ export default function GovernanceCommandPage() {
               { href: '/founder/security/field-masking', label: 'Field Masking', color: 'var(--q-red)' },
               { href: '/founder/security/policy-sandbox', label: 'Policy Sandbox', color: 'var(--q-red)' },
             ].map((l) => (
-              <Link key={l.href} href={l.href} className="block bg-[#0A0A0B] border border-border-DEFAULT p-4 hover:border-white/[0.18] transition-colors text-center" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+              <Link key={l.href} href={l.href} className="block bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 hover:border-white/[0.18] transition-colors text-center" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
                 <div className="text-xs font-bold" style={{ color: l.color }}>{l.label}</div>
               </Link>
             ))}
@@ -337,7 +346,7 @@ export default function GovernanceCommandPage() {
         </>
       )}
 
-      <Link href="/founder" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+      <Link href="/founder" className="text-xs text-[var(--q-orange)]/70 hover:text-[var(--q-orange)]">← Back to Founder Command OS</Link>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import json as _json
 import os
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from sqlalchemy import text
@@ -33,6 +34,7 @@ async def emit_platform_event(
     entity_id: str,
     payload: dict,
     idempotency_key: str = None,
+    correlation_id: str | None = None,
 ) -> dict:
     if idempotency_key:
         existing = (
@@ -73,6 +75,32 @@ async def emit_platform_event(
         .one()
     )
     db.commit()
+
+    # Best-effort realtime hint so control planes can update without polling.
+    # Keep payload minimal to avoid leaking sensitive contents to realtime clients.
+    try:
+        publisher = get_event_publisher()
+        try:
+            entity_uuid = UUID(str(row["id"]))
+        except Exception:
+            entity_uuid = uuid4()
+        await publisher.publish(
+            "platform_events.created",
+            tenant_id=UUID(str(tenant_id)),
+            entity_id=entity_uuid,
+            entity_type="platform_event",
+            payload={
+                "event_id": str(row["id"]),
+                "event_type": event_type,
+                "entity_type": entity_type,
+                "entity_id": entity_id,
+                "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
+            },
+            correlation_id=correlation_id,
+        )
+    except Exception:
+        # Never fail the request path due to realtime fanout issues.
+        pass
     return {"event_id": str(row["id"]), "created": True}
 
 
@@ -146,6 +174,7 @@ async def publish_event(
         entity_type=payload.get("entity_type", ""),
         entity_id=payload.get("entity_id", ""),
         payload=payload.get("payload", {}),
+        correlation_id=getattr(request.state, "correlation_id", None),
     )
     return result
 
@@ -223,5 +252,6 @@ async def internal_emit(
         entity_id=payload.get("entity_id", ""),
         payload=payload.get("payload", {}),
         idempotency_key=payload.get("idempotency_key"),
+        correlation_id=payload.get("correlation_id"),
     )
     return result

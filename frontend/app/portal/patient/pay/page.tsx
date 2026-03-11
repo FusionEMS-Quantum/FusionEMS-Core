@@ -41,6 +41,10 @@ type PatientStatement = {
   };
 };
 
+function asNumberOrZero(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
 function PatientPayPageContent() {
   const searchParams = useSearchParams();
   const statementIdFromUrl = searchParams.get('statement_id');
@@ -57,15 +61,15 @@ function PatientPayPageContent() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const balanceDue = useMemo(() => {
-    const due = statement?.data?.amount_due_cents ?? 0;
+    const due = asNumberOrZero(statement?.data?.amount_due_cents);
     return due / 100;
   }, [statement]);
 
   const totalBilled = useMemo(() => {
     const billed = statement?.data?.amount_billed_cents;
     if (typeof billed === 'number') return billed / 100;
-    const paid = statement?.data?.amount_paid_cents ?? 0;
-    const due = statement?.data?.amount_due_cents ?? 0;
+    const paid = asNumberOrZero(statement?.data?.amount_paid_cents);
+    const due = asNumberOrZero(statement?.data?.amount_due_cents);
     return (paid + due) / 100;
   }, [statement]);
 
@@ -96,7 +100,7 @@ function PatientPayPageContent() {
 
         if (!cancelled) {
           setStatement(picked);
-          const due = (picked.data?.amount_due_cents ?? 0) / 100;
+          const due = asNumberOrZero(picked.data?.amount_due_cents) / 100;
           setAmount(due > 0 ? due.toFixed(2) : '0.00');
         }
       } catch (err) {
@@ -160,7 +164,7 @@ function PatientPayPageContent() {
     <div
       style={{
         minHeight: '100vh',
-        background: '#050505',
+        background: 'var(--color-bg-base)',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -177,7 +181,7 @@ function PatientPayPageContent() {
               fontWeight: 600,
               letterSpacing: 'var(--tracking-micro)',
               textTransform: 'uppercase',
-              color: '#FF4D00',
+              color: 'var(--q-orange)',
               marginBottom: 6,
             }}
           >
@@ -204,7 +208,7 @@ function PatientPayPageContent() {
         {/* Bill Summary */}
         <div
           style={{
-            background: '#0A0A0B',
+            background: 'var(--color-bg-panel)',
             border: '1px solid var(--color-border-default)',
             borderLeft: '3px solid var(--color-system-billing)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -308,7 +312,7 @@ function PatientPayPageContent() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: 'var(--text-h3)',
                   fontWeight: 700,
-                  color: '#FF4D00',
+                  color: 'var(--q-orange)',
                 }}
               >
                 ${balanceDue.toFixed(2)}
@@ -320,7 +324,7 @@ function PatientPayPageContent() {
         {/* Payment Form */}
         <div
           style={{
-            background: '#0A0A0B',
+            background: 'var(--color-bg-panel)',
             border: '1px solid var(--color-border-default)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
             padding: 24,
@@ -422,7 +426,7 @@ function PatientPayPageContent() {
               disabled={submitting || loadingStatement || !statement || balanceDue <= 0}
               style={{
                 marginTop: 4,
-                background: submitting ? 'var(--color-brand-orange-dim)' : '#FF4D00',
+                background: submitting ? 'var(--color-brand-orange-dim)' : 'var(--q-orange)',
                 color: '#000',
                 fontFamily: 'var(--font-label)',
                 fontSize: 'var(--text-label)',

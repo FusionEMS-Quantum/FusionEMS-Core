@@ -51,27 +51,27 @@ export default function PatientMessagesPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold text-zinc-100 mb-1">Messages</h1>
-      <p className="text-sm text-zinc-500 mb-6">
+      <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">Messages</h1>
+      <p className="text-sm text-[var(--color-text-muted)] mb-6">
         Communicate with your provider about billing questions, records requests, or general inquiries.
       </p>
 
       {/* Compose */}
-      <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-5 mb-6">
-        <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">New Message</div>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5 mb-6">
+        <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">New Message</div>
         <input
           type="text"
           placeholder="Subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="w-full bg-black border border-[var(--color-border-default)] text-sm text-zinc-100 px-3 py-2 mb-3  focus:border-brand-orange/50 outline-none"
+          className="w-full bg-[var(--color-bg-base)] border border-[var(--color-border-default)] text-sm text-[var(--color-text-primary)] px-3 py-2 mb-3  focus:border-brand-orange/50 outline-none"
         />
         <textarea
           placeholder="Type your message..."
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
-          className="w-full bg-black border border-[var(--color-border-default)] text-sm text-zinc-100 px-3 py-2 mb-3  resize-none focus:border-brand-orange/50 outline-none"
+          className="w-full bg-[var(--color-bg-base)] border border-[var(--color-border-default)] text-sm text-[var(--color-text-primary)] px-3 py-2 mb-3  resize-none focus:border-brand-orange/50 outline-none"
         />
         <button
           onClick={handleSend}
@@ -99,24 +99,24 @@ export default function PatientMessagesPage() {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4"
+              className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span
                     className={`text-micro font-bold uppercase ${
-                      msg.direction === 'outbound' ? 'text-brand-orange' : 'text-zinc-500'
+                      msg.direction === 'outbound' ? 'text-brand-orange' : 'text-[var(--color-text-muted)]'
                     }`}
                   >
                     {msg.direction === 'outbound' ? 'You' : 'Provider'}
                   </span>
-                  <span className="text-sm font-semibold text-zinc-100">{msg.subject}</span>
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">{msg.subject}</span>
                 </div>
-                <span className="text-micro text-zinc-500">
+                <span className="text-micro text-[var(--color-text-muted)]">
                   {new Date(msg.created_at).toLocaleDateString()}
                 </span>
               </div>
-              <div className="text-sm text-zinc-400 whitespace-pre-wrap">{msg.body}</div>
+              <div className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap">{msg.body}</div>
             </div>
           ))}
         </div>

@@ -177,7 +177,7 @@ def _run_deployment(
     app_row = db.execute(
         sa_text(
             "SELECT id, agency_name, contact_email, agency_type, "
-            "annual_call_volume, selected_modules, status, tenant_id "
+            "annual_call_volume, selected_modules, status, tenant_id, legal_status "
             "FROM onboarding_applications WHERE id = :app_id"
         ),
         {"app_id": application_id},
@@ -195,6 +195,31 @@ def _run_deployment(
         "agency_type": app_dict.get("agency_type"),
         "status": app_dict.get("status"),
     })
+
+    # Compliance gate: do not provision without signed legal documents.
+    if str(app_dict.get("legal_status") or "").lower() != "signed":
+        _fail(
+            db,
+            run_id,
+            "LEGAL_NOT_SIGNED",
+            f"legal_status={app_dict.get('legal_status')!r} — cannot provision without executed legal packet",
+        )
+        try:
+            db.execute(
+                sa_text(
+                    "UPDATE onboarding_applications "
+                    "SET provisioning_status = 'failed', provisioning_error = :err "
+                    "WHERE id = :app_id AND provisioned_at IS NULL"
+                ),
+                {"app_id": application_id, "err": "legal_not_signed"},
+            )
+        except Exception as exc:
+            logger.warning(
+                "onboarding_worker_legal_gate_update_failed application_id=%s error=%s",
+                application_id,
+                exc,
+            )
+        return
 
     # ── Step 5: Check if already provisioned ─────────────────────────────────
     if app_dict.get("status") in ("provisioned", "active") and app_dict.get("tenant_id"):
@@ -281,13 +306,24 @@ def _run_deployment(
             sa_text(
                 "UPDATE onboarding_applications "
                 "SET status = 'provisioned', tenant_id = :tenant_id, "
-                "provisioned_at = :now "
+                "provisioned_at = :now, provisioning_status = 'complete', "
+                "provisioning_steps = COALESCE(provisioning_steps, '[]'::jsonb) || :step::jsonb "
                 "WHERE id = :app_id AND status NOT IN ('provisioned', 'active')"
             ),
             {
                 "tenant_id": tenant_id,
                 "now": datetime.now(UTC),
                 "app_id": application_id,
+                "step": json.dumps(
+                    [
+                        {
+                            "step": "application_marked_provisioned",
+                            "status": "success",
+                            "stripe_event_id": stripe_event_id,
+                            "at": datetime.now(UTC).isoformat(),
+                        }
+                    ]
+                ),
             },
         )
         _step(db, run_id, "APPLICATION_MARKED_PROVISIONED", "SUCCESS",

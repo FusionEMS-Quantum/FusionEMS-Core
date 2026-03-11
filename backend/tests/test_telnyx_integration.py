@@ -978,3 +978,90 @@ class TestFaxWebhook:
 
         assert resp.status_code == 200
         mock_dl.assert_not_called()
+
+    def test_fax_delivered_updates_fax_job(self, private_key, public_key_b64):
+        db = MagicMock()
+
+        event_result = MagicMock()
+        event_result.rowcount = 1
+
+        job_row = MagicMock()
+        job_row.id = str(uuid.uuid4())
+        job_row.tenant_id = "tid-002"
+        job_row.version = 3
+        job_row.data = {"status": "sent", "telnyx_fax_id": "fax-123"}
+
+        update_result = MagicMock()
+        update_result.rowcount = 1
+
+        def execute_side_effect(stmt, params=None):
+            sql = str(stmt)
+            if "telnyx_events" in sql and "INSERT INTO" in sql:
+                return event_result
+            if "set_config('app.tenant_id'" in sql:
+                return MagicMock()
+            if "FROM fax_jobs" in sql and "SELECT id" in sql:
+                r = MagicMock()
+                r.fetchone.return_value = job_row
+                return r
+            if "UPDATE fax_jobs" in sql:
+                return update_result
+            if "INSERT INTO fax_events" in sql:
+                r = MagicMock()
+                r.rowcount = 1
+                return r
+            if "INSERT INTO audit_logs" in sql:
+                r = MagicMock()
+                r.rowcount = 1
+                return r
+            if "UPDATE telnyx_events SET processed_at" in sql:
+                r = MagicMock()
+                r.rowcount = 1
+                return r
+            if "SELECT processed_at FROM telnyx_events" in sql:
+                r = MagicMock()
+                r.fetchone.return_value = None
+                return r
+            if "tenant_phone_numbers" in sql:
+                tenant_row = MagicMock()
+                tenant_row.tenant_id = "tid-002"
+                r = MagicMock()
+                r.fetchone.return_value = tenant_row
+                return r
+            r = MagicMock()
+            r.fetchone.return_value = None
+            r.rowcount = 0
+            return r
+
+        db.execute.side_effect = execute_side_effect
+
+        client = self._make_client(private_key, public_key_b64, db)
+
+        client_state = json.dumps(
+            {"tenant_id": "tid-002", "fax_job_id": job_row.id, "correlation_id": "corr-1"}
+        )
+        event = {
+            "data": {
+                "event_type": "fax.delivered",
+                "id": str(uuid.uuid4()),
+                "payload": {
+                    "fax_id": "fax-123",
+                    "client_state": client_state,
+                    "from": "+12025550200",
+                    "to": "+18005550002",
+                },
+            }
+        }
+        body_bytes = json.dumps(event).encode()
+        headers = _fax_headers(private_key, body_bytes)
+
+        with patch("core_app.api.fax_webhook_router.get_settings") as ms:
+            s = MagicMock()
+            s.telnyx_public_key = public_key_b64
+            s.telnyx_webhook_tolerance_seconds = 300
+            ms.return_value = s
+
+            resp = client.post("/webhooks/telnyx/fax", content=body_bytes, headers=headers)
+
+        assert resp.status_code == 200
+        assert resp.json().get("status") == "ok"

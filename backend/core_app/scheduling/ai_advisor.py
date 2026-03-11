@@ -94,7 +94,9 @@ class AISchedulingAdvisor:
             f"Context:\n{json.dumps(context, indent=2, default=str)}"
         )
         try:
-            raw, usage = self.ai.chat(system=SYSTEM_PROMPT, user=user_msg, max_tokens=2048)
+            _resp = self.ai.chat(system=SYSTEM_PROMPT, user=user_msg, max_tokens=2048)
+            raw = _resp.content
+            usage = _resp.usage
             try:
                 draft = json.loads(raw)
             except json.JSONDecodeError:

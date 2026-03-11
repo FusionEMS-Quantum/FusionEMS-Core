@@ -50,9 +50,9 @@ export default function ROIPage() {
       <FounderStatusBar isLive activeIncidents={0} />
 
       <div>
-        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">DOMAIN 8 · ROI & SALES</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">ROI & Sales</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">Pipeline · simulator · proposals · analytics</p>
+        <div className="text-micro font-bold uppercase tracking-[0.2em] text-[var(--q-orange)]/70 mb-1">DOMAIN 8 · ROI & SALES</div>
+        <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">ROI & Sales</h1>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Pipeline · simulator · proposals · analytics</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <SeverityBadge severity="HIGH" size="sm" />
           <SeverityBadge severity="MEDIUM" size="sm" label="Assumption Sensitive" />
@@ -82,14 +82,14 @@ export default function ROIPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {LINKS.map((l) => (
           <motion.div key={l.href} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-            <Link href={l.href} className="block bg-[#0A0A0B] border border-border-DEFAULT p-5 hover:border-white/[0.18] transition-colors" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+            <Link href={l.href} className="block bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5 hover:border-white/[0.18] transition-colors" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               <div className="text-sm font-bold mb-1" style={{ color: l.color }}>{l.label}</div>
-              <div className="text-xs text-zinc-500">{l.desc}</div>
+              <div className="text-xs text-[var(--color-text-muted)]">{l.desc}</div>
             </Link>
           </motion.div>
         ))}
       </div>
-      <Link href="/founder" className="text-xs text-[#FF4D00]/70 hover:text-[#FF4D00]">← Back to Founder Command OS</Link>
+      <Link href="/founder" className="text-xs text-[var(--q-orange)]/70 hover:text-[var(--q-orange)]">← Back to Founder Command OS</Link>
     </div>
   );
 }

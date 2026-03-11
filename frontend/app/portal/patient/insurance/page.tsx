@@ -39,6 +39,20 @@ interface EligibilityResult {
   checked_at?: string;
 }
 
+function asNumberOrUndefined(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+}
+
+function fmtDollarsOrDash(v: unknown): string {
+  const n = asNumberOrUndefined(v);
+  return n === undefined ? '—' : `$${n.toLocaleString()}`;
+}
+
+function fmtDollars2OrDash(v: unknown): string {
+  const n = asNumberOrUndefined(v);
+  return n === undefined ? '—' : `$${n.toFixed(2)}`;
+}
+
 export default function PatientInsurancePage() {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
@@ -100,7 +114,7 @@ export default function PatientInsurancePage() {
   if (error) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+        <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 text-[var(--color-brand-red)]">{error}</div>
       </div>
     );
   }
@@ -109,36 +123,36 @@ export default function PatientInsurancePage() {
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/portal/patient" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
-          <Shield className="h-6 w-6 text-teal-400" />
+          <Link href="/portal/patient" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"><ArrowLeft className="h-5 w-5" /></Link>
+          <Shield className="h-6 w-6 text-[var(--color-status-info)]" />
           <h1 className="text-2xl font-bold text-white">Insurance Verification</h1>
         </div>
-        <button onClick={handleCheckEligibility} disabled={checking} className="px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 rounded-lg text-white text-sm font-medium">
+        <button onClick={handleCheckEligibility} disabled={checking} className="px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 chamfer-8 text-white text-sm font-medium">
           {checking ? 'Checking...' : 'Check Eligibility'}
         </button>
       </div>
 
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+      <div className="bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-8 p-4">
         <h2 className="text-sm font-semibold text-white mb-3">Insurance Information</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-400">Provider:</span>
+            <span className="text-[var(--color-text-secondary)]">Provider:</span>
             <span className="ml-2 text-white">{profile?.insurance_provider ?? '—'}</span>
           </div>
           <div>
-            <span className="text-gray-400">Plan:</span>
+            <span className="text-[var(--color-text-secondary)]">Plan:</span>
             <span className="ml-2 text-white">{profile?.insurance_plan ?? '—'}</span>
           </div>
           <div>
-            <span className="text-gray-400">Group #:</span>
+            <span className="text-[var(--color-text-secondary)]">Group #:</span>
             <span className="ml-2 text-white font-mono">{profile?.group_number ?? '—'}</span>
           </div>
           <div>
-            <span className="text-gray-400">Policy #:</span>
+            <span className="text-[var(--color-text-secondary)]">Policy #:</span>
             <span className="ml-2 text-white font-mono">{profile?.policy_number ?? '—'}</span>
           </div>
           <div>
-            <span className="text-gray-400">Member ID:</span>
+            <span className="text-[var(--color-text-secondary)]">Member ID:</span>
             <span className="ml-2 text-white font-mono">{profile?.member_id ?? '—'}</span>
           </div>
         </div>
@@ -147,13 +161,13 @@ export default function PatientInsurancePage() {
       {billing && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Billed', value: `$${(billing.total_billed ?? 0).toLocaleString()}`, icon: Shield, color: 'blue' },
-            { label: 'Insurance Covered', value: `$${(billing.insurance_covered ?? 0).toLocaleString()}`, icon: CheckCircle, color: 'green' },
-            { label: 'Patient Responsibility', value: `$${(billing.patient_responsibility ?? 0).toLocaleString()}`, icon: Clock, color: 'yellow' },
-            { label: 'Outstanding', value: `$${(billing.outstanding_balance ?? 0).toLocaleString()}`, icon: XCircle, color: 'red' },
+            { label: 'Total Billed', value: fmtDollarsOrDash(billing.total_billed), icon: Shield, color: 'blue' },
+            { label: 'Insurance Covered', value: fmtDollarsOrDash(billing.insurance_covered), icon: CheckCircle, color: 'green' },
+            { label: 'Patient Responsibility', value: fmtDollarsOrDash(billing.patient_responsibility), icon: Clock, color: 'yellow' },
+            { label: 'Outstanding', value: fmtDollarsOrDash(billing.outstanding_balance), icon: XCircle, color: 'red' },
           ].map((kpi) => (
-            <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
-              <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+            <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-[var(--color-bg-raised)] border border-${kpi.color}-500/30 chamfer-8 p-4`}>
+              <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
               <div className="text-2xl font-bold text-white">{kpi.value}</div>
             </motion.div>
           ))}
@@ -161,37 +175,37 @@ export default function PatientInsurancePage() {
       )}
 
       {eligibility && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border ${eligibility.eligible ? 'border-green-500/30' : 'border-red-500/30'} rounded-lg p-4`}>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`bg-[var(--color-bg-raised)] border ${eligibility.eligible ? 'border-[var(--color-status-active)]/30' : 'border-[var(--color-brand-red)]/30'} chamfer-8 p-4`}>
           <div className="flex items-center gap-2 mb-3">
-            {eligibility.eligible ? <CheckCircle className="h-5 w-5 text-green-400" /> : <XCircle className="h-5 w-5 text-red-400" />}
+            {eligibility.eligible ? <CheckCircle className="h-5 w-5 text-[var(--color-status-active)]" /> : <XCircle className="h-5 w-5 text-[var(--color-brand-red)]" />}
             <h2 className="text-sm font-semibold text-white">
               {eligibility.eligible ? 'Eligible — Coverage Active' : 'Not Eligible — Coverage Inactive'}
             </h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="text-gray-400">Plan:</span>
+              <span className="text-[var(--color-text-secondary)]">Plan:</span>
               <span className="ml-2 text-white">{eligibility.plan_name ?? '—'}</span>
             </div>
             <div>
-              <span className="text-gray-400">Coverage:</span>
+              <span className="text-[var(--color-text-secondary)]">Coverage:</span>
               <span className="ml-2 text-white">{eligibility.coverage_start ?? '—'} to {eligibility.coverage_end ?? '—'}</span>
             </div>
             <div>
-              <span className="text-gray-400">Copay:</span>
-              <span className="ml-2 text-white">${eligibility.copay ?? 0}</span>
+              <span className="text-[var(--color-text-secondary)]">Copay:</span>
+              <span className="ml-2 text-white">{fmtDollars2OrDash(eligibility.copay)}</span>
             </div>
             <div>
-              <span className="text-gray-400">Deductible Remaining:</span>
-              <span className="ml-2 text-white">${eligibility.deductible_remaining ?? 0}</span>
+              <span className="text-[var(--color-text-secondary)]">Deductible Remaining:</span>
+              <span className="ml-2 text-white">{fmtDollars2OrDash(eligibility.deductible_remaining)}</span>
             </div>
             <div>
-              <span className="text-gray-400">OOP Remaining:</span>
-              <span className="ml-2 text-white">${eligibility.out_of_pocket_remaining ?? 0}</span>
+              <span className="text-[var(--color-text-secondary)]">OOP Remaining:</span>
+              <span className="ml-2 text-white">{fmtDollars2OrDash(eligibility.out_of_pocket_remaining)}</span>
             </div>
             {eligibility.checked_at && (
               <div>
-                <span className="text-gray-400">Checked:</span>
+                <span className="text-[var(--color-text-secondary)]">Checked:</span>
                 <span className="ml-2 text-white">{new Date(eligibility.checked_at).toLocaleString()}</span>
               </div>
             )}

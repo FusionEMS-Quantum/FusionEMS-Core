@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getAICommandMetrics, updateAITenantSettings } from '@/services/api';
 import { SeverityBadge, SimpleModeToggle } from '@/components/ui';
+import { ModuleDashboardShell } from '@/components/shells/PageShells';
 import type { SeverityLevel } from '@/lib/design-system/tokens';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ function actionSeverity(s: string): SeverityLevel {
 function riskColor(r: string): string {
   switch (r) {
     case 'RESTRICTED': return 'var(--color-brand-red)';
-    case 'HIGH_RISK': return '#FF4D00';
+    case 'HIGH_RISK': return 'var(--q-orange)';
     case 'MODERATE_RISK': return 'var(--color-status-warning)';
     default: return 'var(--color-status-active)';
   }
@@ -132,7 +133,7 @@ function HealthGauge({ score }: { score: number }) {
       </svg>
       <div className="absolute text-center">
         <div className="text-3xl font-black" style={{ color }}>{score}</div>
-        <div className="text-micro uppercase tracking-widest text-zinc-500">AI Health</div>
+        <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">AI Health</div>
       </div>
     </div>
   );
@@ -141,14 +142,14 @@ function HealthGauge({ score }: { score: number }) {
 function KpiCard({ label, value, color, badge }: { label: string; value: string | number; color?: string; badge?: string }) {
   return (
     <div
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4 flex flex-col justify-between relative"
+      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 flex flex-col justify-between relative"
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-2">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color || 'var(--color-text-primary)' }}>{value}</div>
       {badge && (
         <span className="absolute top-2 right-3 text-micro uppercase tracking-widest font-bold px-1.5 py-0.5 "
-          style={{ background: 'rgba(255,107,26,0.15)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.3)' }}>
+          style={{ background: 'rgba(255,106,0,0.15)', color: 'var(--q-orange)', border: '1px solid rgba(255,106,0,0.3)' }}>
           {badge}
         </span>
       )}
@@ -160,11 +161,11 @@ function RiskBar({ label, count, total, color }: { label: string; count: number;
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="text-micro uppercase tracking-widest text-zinc-500 w-24 shrink-0">{label}</div>
-      <div className="flex-1 h-2 bg-zinc-950/[0.04]  overflow-hidden">
+      <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] w-24 shrink-0">{label}</div>
+      <div className="flex-1 h-2 bg-[var(--color-bg-base)]/[0.04]  overflow-hidden">
         <div className="h-full  transition-all" style={{ width: `${pct}%`, background: color }} />
       </div>
-      <div className="text-xs font-bold text-zinc-400 w-8 text-right">{count}</div>
+      <div className="text-xs font-bold text-[var(--color-text-secondary)] w-8 text-right">{count}</div>
     </div>
   );
 }
@@ -172,14 +173,14 @@ function RiskBar({ label, count, total, color }: { label: string; count: number;
 function SimpleModeCard({ title, items }: { title: string; items: { what: string; why: string; next: string }[] }) {
   if (items.length === 0) return null;
   return (
-    <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-4">{title}</div>
+    <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">{title}</div>
       <div className="space-y-3">
         {items.map((item, i) => (
           <div key={i} className="border-b border-white/5 last:border-0 pb-3 last:pb-0 space-y-1">
-            <div className="text-xs"><span className="font-bold text-zinc-100">WHAT HAPPENED:</span> <span className="text-zinc-400">{item.what}</span></div>
-            <div className="text-xs"><span className="font-bold text-zinc-100">WHY IT MATTERS:</span> <span className="text-zinc-400">{item.why}</span></div>
-            <div className="text-xs"><span className="font-bold" style={{ color: '#FF4D00' }}>DO THIS NEXT:</span> <span className="text-zinc-400">{item.next}</span></div>
+            <div className="text-xs"><span className="font-bold text-[var(--color-text-primary)]">WHAT HAPPENED:</span> <span className="text-[var(--color-text-secondary)]">{item.what}</span></div>
+            <div className="text-xs"><span className="font-bold text-[var(--color-text-primary)]">WHY IT MATTERS:</span> <span className="text-[var(--color-text-secondary)]">{item.why}</span></div>
+            <div className="text-xs"><span className="font-bold" style={{ color: 'var(--q-orange)' }}>DO THIS NEXT:</span> <span className="text-[var(--color-text-secondary)]">{item.next}</span></div>
           </div>
         ))}
       </div>
@@ -222,10 +223,10 @@ export default function AICommandCenterPage() {
   if (loading) {
     return (
       <div className="p-5 space-y-4">
-        <div className="animate-pulse bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 h-10 w-64" />
+        <div className="animate-pulse bg-[var(--color-bg-panel)] border border-border-DEFAULT chamfer-8 h-10 w-64" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-[#0A0A0B] border border-border-DEFAULT h-24" />
+            <div key={i} className="animate-pulse bg-[var(--color-bg-panel)] border border-border-DEFAULT h-24" />
           ))}
         </div>
       </div>
@@ -235,9 +236,9 @@ export default function AICommandCenterPage() {
   if (error || !metrics) {
     return (
       <div className="p-5">
-        <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-8 p-8 text-center">
-          <div className="text-sm text-zinc-500">{error || 'No data available'}</div>
-            <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[#FF4D00] mt-4 inline-block">&larr; Back to AI Governance</Link>
+        <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT chamfer-8 p-8 text-center">
+          <div className="text-sm text-[var(--color-text-muted)]">{error || 'No data available'}</div>
+            <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[var(--q-orange)] mt-4 inline-block">&larr; Back to AI Governance</Link>
         </div>
       </div>
     );
@@ -256,18 +257,12 @@ export default function AICommandCenterPage() {
   }));
 
   return (
-    <div className="p-5 space-y-6 min-h-screen">
-      {/* Header + Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
-            <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FOUNDER &middot; AI PLATFORM</div>
-          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">AI Command Center</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Real-time health &middot; governance &middot; review queue &middot; risk posture</p>
-        </div>
+    <ModuleDashboardShell
+      title="AI Command Center"
+      subtitle="Real-time health · governance · review queue · risk posture"
+      headerActions={
         <div className="flex items-center gap-3 shrink-0">
-          {/* Simple Mode Toggle */}
           <SimpleModeToggle isSimple={simpleMode} onToggle={setSimpleMode} />
-          {/* AI Master Toggle */}
           <button
             onClick={handleToggleAI}
             disabled={toggling}
@@ -281,8 +276,9 @@ export default function AICommandCenterPage() {
             {metrics.tenant_ai_enabled ? 'AI ENABLED' : 'AI DISABLED'}
           </button>
         </div>
-      </div>
-
+      }
+    >
+      <div className="space-y-6">
       {/* Simple Mode View */}
       {simpleMode ? (
         <SimpleModeCard title="Top Priorities — Simple Mode" items={simpleModeItems} />
@@ -292,7 +288,7 @@ export default function AICommandCenterPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-stretch">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              className="md:col-span-1 bg-[#0A0A0B] border border-border-DEFAULT p-5 flex items-center justify-center relative"
+              className="md:col-span-1 bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5 flex items-center justify-center relative"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
             >
               <HealthGauge score={metrics.health_score} />
@@ -315,18 +311,18 @@ export default function AICommandCenterPage() {
               <KpiCard
                 label="Pending Reviews"
                 value={metrics.review_queue_count}
-                color={metrics.review_queue_count > 0 ? '#FF4D00' : undefined}
+                color={metrics.review_queue_count > 0 ? 'var(--q-orange)' : undefined}
                 badge={metrics.review_queue_count > 0 ? `${metrics.review_queue_count}` : undefined}
               />
             </div>
           </div>
 
           {/* Risk Breakdown */}
-          <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-            <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-4">Risk Tier Distribution</div>
+          <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+            <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">Risk Tier Distribution</div>
             <div className="space-y-2.5">
               <RiskBar label="Restricted" count={metrics.risk_tier_breakdown.RESTRICTED ?? 0} total={totalUseCases} color="var(--color-brand-red)" />
-              <RiskBar label="High Risk" count={metrics.risk_tier_breakdown.HIGH_RISK ?? 0} total={totalUseCases} color="#FF4D00" />
+              <RiskBar label="High Risk" count={metrics.risk_tier_breakdown.HIGH_RISK ?? 0} total={totalUseCases} color="var(--q-orange)" />
               <RiskBar label="Moderate" count={metrics.risk_tier_breakdown.MODERATE_RISK ?? 0} total={totalUseCases} color="var(--color-status-warning)" />
               <RiskBar label="Low Risk" count={metrics.risk_tier_breakdown.LOW_RISK ?? 0} total={totalUseCases} color="var(--color-status-active)" />
             </div>
@@ -334,8 +330,8 @@ export default function AICommandCenterPage() {
 
           {/* High-Risk Recommendations Awaiting Approval */}
           {metrics.high_risk_recommendations.length > 0 && (
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)', borderColor: 'rgba(255,107,26,0.3)' }}>
-              <div className="text-micro font-semibold uppercase tracking-widest mb-4" style={{ color: '#FF4D00' }}>
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)', borderColor: 'rgba(255,106,0,0.3)' }}>
+              <div className="text-micro font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--q-orange)' }}>
                 High-Risk Recommendations Awaiting Approval
               </div>
               <div className="space-y-2">
@@ -344,11 +340,11 @@ export default function AICommandCenterPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="w-1.5 h-1.5  shrink-0" style={{ background: riskColor(rec.risk_tier) }} />
-                        <span className="text-xs font-bold text-zinc-100 truncate">{rec.use_case_name}</span>
-                        <span className="text-micro text-zinc-500">{rec.domain}</span>
+                        <span className="text-xs font-bold text-[var(--color-text-primary)] truncate">{rec.use_case_name}</span>
+                        <span className="text-micro text-[var(--color-text-muted)]">{rec.domain}</span>
                       </div>
                       {rec.explanation_summary && (
-                        <div className="text-micro text-zinc-500 truncate ml-3.5">{rec.explanation_summary}</div>
+                        <div className="text-micro text-[var(--color-text-muted)] truncate ml-3.5">{rec.explanation_summary}</div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -371,21 +367,21 @@ export default function AICommandCenterPage() {
           {/* Three-column: Review Queue + Governance Actions + Next Best Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Review Queue */}
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               <div className="flex items-center justify-between mb-4">
-                <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500">Review Queue</div>
-                  <Link href="/founder/ai/review-queue" className="text-micro text-orange-dim hover:text-[#FF4D00] uppercase tracking-widest">
+                <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Review Queue</div>
+                  <Link href="/founder/ai/review-queue" className="text-micro text-orange-dim hover:text-[var(--q-orange)] uppercase tracking-widest">
                   View All &rarr;
                 </Link>
               </div>
               {metrics.recent_reviews.length === 0 ? (
-                <div className="text-xs text-zinc-500 py-6 text-center">No pending reviews</div>
+                <div className="text-xs text-[var(--color-text-muted)] py-6 text-center">No pending reviews</div>
               ) : (
                 <div className="space-y-2">
                   {metrics.recent_reviews.map((item: ReviewEntry) => (
                     <div key={item.review_id} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs text-zinc-400 truncate">{item.use_case_name} &mdash; {item.domain}</span>
+                        <span className="text-xs text-[var(--color-text-secondary)] truncate">{item.use_case_name} &mdash; {item.domain}</span>
                       </div>
                       <SeverityBadge
                         severity={prioritySeverity(item.priority)}
@@ -399,17 +395,17 @@ export default function AICommandCenterPage() {
             </div>
 
             {/* Governance Actions + Next Best Action */}
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-4">Top Governance Actions</div>
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">Top Governance Actions</div>
               {metrics.top_actions.length === 0 ? (
-                <div className="text-xs text-zinc-500 py-6 text-center">No governance actions</div>
+                <div className="text-xs text-[var(--color-text-muted)] py-6 text-center">No governance actions</div>
               ) : (
                 <div className="space-y-2">
                   {metrics.top_actions.map((ga: GovernanceAction, i: number) => (
                     <div key={i} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-zinc-100 truncate">{ga.title}</div>
-                        <div className="text-micro text-zinc-500 truncate">{ga.description}</div>
+                        <div className="text-xs font-bold text-[var(--color-text-primary)] truncate">{ga.title}</div>
+                        <div className="text-micro text-[var(--color-text-muted)] truncate">{ga.description}</div>
                       </div>
                       <SeverityBadge
                         severity={actionSeverity(ga.severity)}
@@ -425,7 +421,8 @@ export default function AICommandCenterPage() {
         </>
       )}
 
-        <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[#FF4D00]">&larr; Back to AI Governance</Link>
-    </div>
+        <Link href="/founder/ai" className="text-xs text-orange-dim hover:text-[var(--q-orange)]">&larr; Back to AI Governance</Link>
+      </div>
+    </ModuleDashboardShell>
   );
 }

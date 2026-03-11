@@ -47,7 +47,7 @@ class NERISCopilot:
 Explain each issue in plain English for a fire department administrator and provide specific UI actions to fix them."""
 
         try:
-            content, _ = self.ai.chat(system=SYSTEM_PROMPT, user=user_prompt, max_tokens=2048)
+            content = self.ai.chat(system=SYSTEM_PROMPT, user=user_prompt, max_tokens=2048).content
             result = json.loads(content)
             if not isinstance(result, dict):
                 raise ValueError("not a dict")

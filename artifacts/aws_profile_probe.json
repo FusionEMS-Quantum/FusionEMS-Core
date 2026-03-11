@@ -1,0 +1,19 @@
+{
+  "profiles": [
+    {
+      "profile": "default",
+      "ok": false,
+      "error": "ExpiredToken",
+      "arn": null,
+      "account": null
+    },
+    {
+      "profile": "fusion",
+      "ok": true,
+      "error": null,
+      "arn": "arn:aws:iam::793439286972:user/joshua",
+      "account": "793439286972"
+    }
+  ],
+  "first_valid_profile": "fusion"
+}

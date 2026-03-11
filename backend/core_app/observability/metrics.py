@@ -71,3 +71,16 @@ AI_REQUEST_DURATION = Histogram(
     ["model"],
     buckets=(0.5, 1.0, 2.0, 5.0, 10.0, 30.0),
 )
+
+# --- Fax Pipeline ---
+FAX_TELNYX_WEBHOOK_EVENTS_TOTAL = Counter(
+    "fusionems_fax_telnyx_webhook_events_total",
+    "Total Telnyx fax webhook events by type and outcome",
+    ["event_type", "outcome"],
+)
+
+FAX_JOB_STATUS_TRANSITIONS_TOTAL = Counter(
+    "fusionems_fax_job_status_transitions_total",
+    "Fax job status transitions",
+    ["source", "from_status", "to_status"],
+)

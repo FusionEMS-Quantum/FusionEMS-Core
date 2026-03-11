@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 
 export const API = axios.create({
   baseURL:
@@ -6,6 +6,27 @@ export const API = axios.create({
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     "",
+  withCredentials: true,
+});
+
+API.interceptors.request.use((config) => {
+  if (typeof window === 'undefined') {
+    return config;
+  }
+
+  const token = localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
+  const headers = config.headers instanceof AxiosHeaders
+    ? config.headers
+    : new AxiosHeaders(config.headers);
+  const hasAuthHeader = Boolean(headers.get('Authorization'));
+
+  if (token && !hasAuthHeader) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  config.headers = headers;
+
+  return config;
 });
 
 export async function getExecutiveSummary() {
@@ -61,6 +82,14 @@ export interface CADUnitApi {
   lng: number | null;
   readiness_score: number | null;
   active_call_id: string | null;
+}
+
+export interface CADLatestUnitLocationApi {
+  unit_id: string;
+  lat: number | null;
+  lng: number | null;
+  recorded_at: string;
+  record_id: string;
 }
 
 export interface EPCRChartApi {
@@ -463,7 +492,7 @@ function normalizeEPCRStatus(value: unknown): EPCRChartStatus {
 
 // ── AI Platform ─────────────────────────────────────────────────────────────
 
-function aiHeaders() {
+export function aiHeaders() {
   return {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
   };
@@ -615,6 +644,17 @@ export interface FounderDashboardApi {
   mrr_cents: number;
   tenant_count: number;
   error_count_1h: number;
+  clinical_datasets?: {
+    icd10?: { version?: string; term_count?: number };
+    rxnorm?: { status?: string; source?: string };
+    snomed?: { status?: string; source?: string };
+    nemsis?: { version?: string; element_count?: number };
+    npi?: { verification_supported?: boolean; source?: string };
+  };
+  integration_readiness?: {
+    required_missing?: string[];
+    required_missing_count?: number;
+  };
   as_of: string;
 }
 
@@ -1118,6 +1158,64 @@ export function getQuantumEfileRealtimeStatusStreamUrl(): string {
 
 export function getQuantumVaultRenderUrl(documentId: string): string {
   return `${getAbsoluteApiBaseUrl()}/api/quantum-founder/vault/render/${encodeURIComponent(documentId)}`;
+}
+
+// ── Founder Accounting: Bank Connections ─────────────────────────────────────
+
+export async function getBankConnectionStatus() {
+  const res = await API.get('/api/quantum-founder/accounting/bank/status');
+  return res.data;
+}
+
+export async function connectSimpleFIN(setupToken: string) {
+  const res = await API.post('/api/quantum-founder/accounting/bank/simplefin/connect', {
+    setup_token: setupToken,
+  });
+  return res.data;
+}
+
+export async function getSimpleFINAccounts(daysBack = 90) {
+  const res = await API.get('/api/quantum-founder/accounting/bank/simplefin/accounts', {
+    params: { days_back: daysBack },
+  });
+  return res.data;
+}
+
+export async function importBankCSV(file: File, institution = 'generic', accountId = 'imported') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('institution', institution);
+  formData.append('account_id', accountId);
+  const res = await API.post('/api/quantum-founder/accounting/bank/import/csv', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+export async function importBankOFX(file: File, institution = 'Imported') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('institution', institution);
+  const res = await API.post('/api/quantum-founder/accounting/bank/import/ofx', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+// ── Founder Accounting: E-file ────────────────────────────────────────────────
+
+export async function getEfileStatus() {
+  const res = await API.get('/api/quantum-founder/efile/realtime-status');
+  return res.data;
+}
+
+export async function scanReceipt(imageFile: File) {
+  const formData = new FormData();
+  formData.append('receipt_image', imageFile);
+  const res = await API.post('/api/quantum-founder/receipts/scan', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
 }
 
 function roiHeaders(): Record<string, string> {
@@ -2058,6 +2156,45 @@ export async function listCADUnits(): Promise<CADUnitApi[]> {
       active_call_id: asString(unit.active_call_id || unit.call_id) || null,
     };
   }) as CADUnitApi[];
+}
+
+export async function getLatestCADUnitLocations(limit: number = 500): Promise<CADLatestUnitLocationApi[]> {
+  const res = await API.get('/api/v1/cad/units/locations/latest', {
+    headers: aiHeaders(),
+    params: { limit },
+  });
+  const items = Array.isArray(res.data?.items) ? (res.data.items as unknown[]) : [];
+  return items
+    .map((raw) => {
+      const obj = (raw ?? {}) as Record<string, unknown>;
+      return {
+        unit_id: asString(obj.unit_id),
+        lat: asNumber(obj.lat),
+        lng: asNumber(obj.lng),
+        recorded_at: asIsoDateString(obj.recorded_at),
+        record_id: asString(obj.record_id),
+      };
+    })
+    .filter((loc) => Boolean(loc.unit_id) && Boolean(loc.record_id) && loc.lat != null && loc.lng != null);
+}
+
+export async function listCADUnitsWithLatestLocations(): Promise<CADUnitApi[]> {
+  const [units, locations] = await Promise.all([
+    listCADUnits(),
+    getLatestCADUnitLocations().catch(() => [] as CADLatestUnitLocationApi[]),
+  ]);
+  const byUnitId = new Map<string, CADLatestUnitLocationApi>();
+  locations.forEach((loc) => byUnitId.set(loc.unit_id, loc));
+
+  return units.map((unit) => {
+    const loc = byUnitId.get(unit.id);
+    if (!loc) return unit;
+    return {
+      ...unit,
+      lat: loc.lat != null && Number.isFinite(loc.lat) ? loc.lat : unit.lat,
+      lng: loc.lng != null && Number.isFinite(loc.lng) ? loc.lng : unit.lng,
+    };
+  });
 }
 
 export async function registerCADUnit(payload: Record<string, unknown>) {
@@ -6056,12 +6193,20 @@ export interface FaxItemApi {
   page_count?: number;
   document_match_status?: string;
   status?: string;
+  telnyx_fax_id?: string;
+  status_updated_at?: string;
+  error?: string;
   data?: {
+    direction?: 'inbound' | 'outbound' | string;
+    s3_key?: string;
     match_suggestions?: FaxMatchSuggestionApi[];
     claim_id?: string;
     patient_name?: string;
     match_type?: string;
     confidence?: number;
+    telnyx_fax_id?: string;
+    status_updated_at?: string;
+    error?: string;
   };
 }
 
@@ -6077,7 +6222,12 @@ function normalizeFaxItem(value: unknown): FaxItemApi {
     page_count: asNumber(row.page_count) ?? undefined,
     document_match_status: asString(row.document_match_status) || undefined,
     status: asString(row.status) || undefined,
+    telnyx_fax_id: asString(row.telnyx_fax_id) || asString(data.telnyx_fax_id) || undefined,
+    status_updated_at: asString(row.status_updated_at) || asString(data.status_updated_at) || undefined,
+    error: asString(row.error) || asString(data.error) || undefined,
     data: {
+      direction: (asString(data.direction) || undefined) as NonNullable<FaxItemApi['data']>['direction'],
+      s3_key: asString(data.s3_key) || undefined,
       match_suggestions: suggestionsRaw.map((suggestion) => {
         const item = asJsonObject(suggestion);
         return {
@@ -6090,11 +6240,39 @@ function normalizeFaxItem(value: unknown): FaxItemApi {
       patient_name: asString(data.patient_name) || undefined,
       match_type: asString(data.match_type) || undefined,
       confidence: asNumber(data.confidence) ?? undefined,
+      telnyx_fax_id: asString(data.telnyx_fax_id) || undefined,
+      status_updated_at: asString(data.status_updated_at) || undefined,
+      error: asString(data.error) || undefined,
     },
   };
 }
 
+export interface FaxEventApi {
+  id: string;
+  created_at?: string;
+  data?: JsonObject;
+}
+
+function normalizeFaxEvent(value: unknown): FaxEventApi {
+  const row = asJsonObject(value);
+  return {
+    id: asString(row.id),
+    created_at: asString(row.created_at) || undefined,
+    data: asJsonObject(row.data),
+  };
+}
+
+export async function listFaxEvents(faxId: string, params?: { limit?: number }): Promise<FaxEventApi[]> {
+  const { data } = await API.get(`/api/v1/fax/${faxId}/events`, {
+    headers: transportLinkHeaders(),
+    params,
+  });
+  const rows = Array.isArray(data) ? data : [];
+  return rows.map((row: unknown) => normalizeFaxEvent(row));
+}
+
 export async function listFaxInbox(params?: {
+  folder?: 'inbox' | 'outbox' | string;
   status?: string;
   limit?: number;
 }): Promise<FaxItemApi[]> {
@@ -6147,6 +6325,17 @@ export async function detachFaxMatch(faxId: string): Promise<Record<string, unkn
 
 export function getFaxDownloadUrl(faxId: string): string {
   return `${API.defaults.baseURL ?? ''}/api/v1/fax/${faxId}/download`;
+}
+
+export async function getFaxPreviewUrl(faxId: string): Promise<{ url: string; expires_seconds: number }> {
+  const { data } = await API.get(`/api/v1/fax/${faxId}/preview-url`, {
+    headers: transportLinkHeaders(),
+  });
+  const row = asJsonObject(data);
+  return {
+    url: asString(row.url),
+    expires_seconds: asNumber(row.expires_seconds) ?? 0,
+  };
 }
 
 // ── EDI (Portal) ───────────────────────────────────────────────────────────

@@ -124,6 +124,10 @@ resource "aws_s3_bucket" "this" {
   tags = merge(var.tags, {
     Description = each.value.description
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_s3_bucket_versioning" "this" {

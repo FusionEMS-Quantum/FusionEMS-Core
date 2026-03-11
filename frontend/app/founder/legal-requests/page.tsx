@@ -28,7 +28,7 @@ const LANES = [
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+    <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
       <div className="text-xs uppercase tracking-wider text-white/50">{label}</div>
       <div className="mt-2 text-3xl font-black text-white">{value}</div>
     </div>
@@ -170,9 +170,9 @@ export default function FounderLegalRequestsCommandPage() {
       />
 
       <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,77,0,0.80)]">Founder Command</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,106,0,0.80)]">Founder Command</div>
         <h1 className="text-2xl font-black text-white">Legal Requests Command Center</h1>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
           Intake-to-delivery command board for HIPAA ROI, subpoena, and court-order workflows.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -195,7 +195,7 @@ export default function FounderLegalRequestsCommandPage() {
         <Stat label="Delivered/Closed" value={summary.lane_counts.completed ?? 0} />
       </div>
 
-      <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+      <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
         <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Visual Command Board</div>
         <div className="flex flex-wrap gap-2">
           {LANES.map((entry) => (
@@ -205,17 +205,17 @@ export default function FounderLegalRequestsCommandPage() {
               onClick={() => setLane(entry.key)}
               className={`border px-3 py-1.5 text-xs uppercase tracking-wider transition-colors ${
                 lane === entry.key
-                  ? 'border-orange-400/60 bg-[rgba(255,77,0,0.16)] text-[#FF4D00]'
-                  : 'border-white/15 bg-black/20 text-white/70 hover:text-white'
+                  ? 'border-orange-400/60 bg-[rgba(255,106,0,0.16)] text-[var(--q-orange)]'
+                  : 'border-white/15 bg-[var(--color-bg-base)]/20 text-white/70 hover:text-white'
               }`}
             >
-              {entry.label} ({summary.lane_counts[entry.key] ?? 0})
+              {entry.label} ({summary.lane_counts?.[entry.key] ?? 0})
             </button>
           ))}
         </div>
       </div>
 
-      <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+      <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="text-xs uppercase tracking-wider text-white/50">{LANES.find((x) => x.key === lane)?.label}</div>
@@ -236,14 +236,14 @@ export default function FounderLegalRequestsCommandPage() {
               <Link
                 key={item.id}
                 href={`/founder/legal-requests/${item.id}`}
-                className="block border border-white/10 bg-black/20 p-3 hover:border-orange-400/50"
+                className="block border border-white/10 bg-[var(--color-bg-base)]/20 p-3 hover:border-orange-400/50"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold text-white">
                       {item.request_type.replace('_', ' ').toUpperCase()} · {item.requester_name}
                     </div>
-                    <div className="text-xs text-zinc-400">
+                    <div className="text-xs text-[var(--color-text-secondary)]">
                       party: {item.requesting_party} · missing: {item.missing_count}
                       {item.deadline_at ? ` · deadline: ${new Date(item.deadline_at).toLocaleString()}` : ''}
                     </div>

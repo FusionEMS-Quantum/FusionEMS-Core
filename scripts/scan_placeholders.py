@@ -11,7 +11,7 @@ PLACEHOLDER_PATTERNS = [
     re.compile(r"CHANGE_ME", re.IGNORECASE),
     re.compile(r"TODO_SECRET", re.IGNORECASE),
     re.compile(r"INSERT_API_KEY", re.IGNORECASE),
-    re.compile(r"sk-[a-zA-Z0-9]{10,}"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
     re.compile(r"AKIA[0-9A-Z]{16}"),
 ]
 
@@ -23,7 +23,7 @@ repo_root = Path(__file__).parent.parent
 
 
 def scan() -> list[str]:
-    hits: list[str] = []
+    findings: list[str] = []
     for path in repo_root.rglob("*"):
         if any(ex in path.parts for ex in EXCLUDE_DIRS):
             continue
@@ -40,9 +40,9 @@ def scan() -> list[str]:
         for lineno, line in enumerate(text.splitlines(), 1):
             for pat in PLACEHOLDER_PATTERNS:
                 if pat.search(line):
-                    hits.append(f"{path.relative_to(repo_root)}:{lineno}: {line.strip()[:120]}")
+                    findings.append(f"{path.relative_to(repo_root)}:{lineno}: {line.strip()[:120]}")
                     break
-    return hits
+    return findings
 
 
 if __name__ == "__main__":

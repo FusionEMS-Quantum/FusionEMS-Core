@@ -34,7 +34,7 @@ type RecordExport = {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
+    <div className=" border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
       <div className="text-xs uppercase tracking-wider text-white/50">{label}</div>
       <div className="mt-2 text-3xl font-black text-white">{value}</div>
     </div>
@@ -68,8 +68,8 @@ export default function FounderRecordsCommandPage() {
         <div
           className={`border p-4 text-sm ${
             loadError
-              ? 'border-red-500/30 bg-red-500/[0.08] text-red-300'
-              : 'border-white/10 bg-zinc-950/[0.03] text-white/70'
+              ? 'border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/[0.08] text-[var(--color-brand-red)]'
+              : 'border-white/10 bg-[var(--color-bg-base)]/[0.03] text-white/70'
           }`}
         >
           {loadError ?? 'Loading records command center…'}
@@ -81,7 +81,7 @@ export default function FounderRecordsCommandPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,77,0,0.80)]">Founder Command</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,106,0,0.80)]">Founder Command</div>
         <h1 className="text-2xl font-black text-white">Records & Media Command Center</h1>
       </div>
 
@@ -96,13 +96,13 @@ export default function FounderRecordsCommandPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className=" border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Top Actions</div>
           <div className="space-y-2">
             {summary.top_actions.length === 0 && <div className="text-sm text-white/60">No blocking records actions.</div>}
             {summary.top_actions.map((action, idx) => (
-              <div key={`${action.summary}-${idx}`} className=" border border-white/10 bg-black/20 p-3">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#FF4D00]">{action.severity}</div>
+              <div key={`${action.summary}-${idx}`} className=" border border-white/10 bg-[var(--color-bg-base)]/20 p-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[var(--q-orange)]">{action.severity}</div>
                 <div className="mt-1 text-sm font-semibold text-white">{action.summary}</div>
                 <div className="mt-1 text-sm text-white/70">{action.recommended_action}</div>
               </div>
@@ -110,15 +110,15 @@ export default function FounderRecordsCommandPage() {
           </div>
         </div>
 
-        <div className=" border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className=" border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-3 text-xs uppercase tracking-wider text-white/50">Failed Record Exports</div>
           <div className="space-y-2">
             {failedExports.length === 0 && <div className="text-sm text-white/60">No failed exports.</div>}
             {failedExports.map((record) => (
-              <div key={record.id} className=" border border-white/10 bg-black/20 p-3">
+              <div key={record.id} className=" border border-white/10 bg-[var(--color-bg-base)]/20 p-3">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-white">{record.destination_system}</div>
-                  <div className="text-xs uppercase tracking-wider text-red-300">{record.state}</div>
+                  <div className="text-xs uppercase tracking-wider text-[var(--color-brand-red)]">{record.state}</div>
                 </div>
                 {record.failure_reason && <div className="mt-1 text-xs text-white/60">{record.failure_reason}</div>}
               </div>

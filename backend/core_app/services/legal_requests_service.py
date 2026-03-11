@@ -1532,11 +1532,11 @@ class LegalRequestsService:
             "required_checklist": [item.model_dump() for item in required_checklist],
         }
         try:
-            content, _meta = service.chat(
+            content = service.chat(
                 system=system_prompt,
                 user=json.dumps(user_payload, separators=(",", ":")),
                 max_tokens=450,
-            )
+            ).content
             parsed = json.loads(content)
             confidence = float(parsed.get("classification_confidence", 0.75))
             urgency_level = str(parsed.get("urgency_level", "normal")).lower()

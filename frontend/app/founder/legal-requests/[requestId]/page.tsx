@@ -168,7 +168,7 @@ export default function FounderLegalRequestDetailPage() {
       />
 
       <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,77,0,0.80)]">Legal Request Detail</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-[rgba(255,106,0,0.80)]">Legal Request Detail</div>
         <h1 className="text-2xl font-black text-white">
           {detail.request_type.replace('_', ' ').toUpperCase()} · {detail.requester_name}
         </h1>
@@ -185,26 +185,26 @@ export default function FounderLegalRequestDetailPage() {
 
       <NextBestActionCard actions={requestActions} title="Request-Level Next Best Actions" maxVisible={4} />
 
-      {error && <div className="border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
-      {notice && <div className="border border-green-500/40 bg-green-500/10 p-3 text-sm text-green-300">{notice}</div>}
+      {error && <div className="border border-[var(--color-brand-red)]/40 bg-[var(--color-brand-red)]/10 p-3 text-sm text-[var(--color-brand-red)]">{error}</div>}
+      {notice && <div className="border border-[var(--color-status-active)]/40 bg-[var(--color-status-active)]/10 p-3 text-sm text-[var(--color-status-active)]">{notice}</div>}
       {deliveryUrl && (
-        <div className="border border-blue-500/40 bg-blue-500/10 p-3 text-sm text-blue-200 break-all">
+        <div className="border border-[var(--color-status-info)]/40 bg-[var(--color-status-info)]/10 p-3 text-sm text-[var(--color-status-info)] break-all">
           Secure one-time delivery URL: {deliveryUrl}
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-2 text-xs uppercase tracking-wider text-white/50">Requester</div>
-          <div className="text-sm text-zinc-200">{detail.requester_name}</div>
-          <div className="text-xs text-zinc-500">{detail.requesting_party} · {detail.requesting_entity || 'n/a'}</div>
-          <div className="mt-3 text-xs text-zinc-500">
+          <div className="text-sm text-[var(--color-text-primary)]">{detail.requester_name}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">{detail.requesting_party} · {detail.requesting_entity || 'n/a'}</div>
+          <div className="mt-3 text-xs text-[var(--color-text-muted)]">
             Patient: {detail.patient_first_name || '—'} {detail.patient_last_name || '—'} · DOB {detail.patient_dob || '—'}
           </div>
-          <div className="text-xs text-zinc-500">MRN {detail.mrn || '—'} · CSN {detail.csn || '—'}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">MRN {detail.mrn || '—'} · CSN {detail.csn || '—'}</div>
         </div>
 
-        <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-2 text-xs uppercase tracking-wider text-white/50">Status & Risk</div>
           <div className="flex flex-wrap gap-2">
             <SeverityBadge severity={detailSeverity} size="sm" />
@@ -218,12 +218,12 @@ export default function FounderLegalRequestDetailPage() {
               urgency {detail.triage_summary.urgency_level}
             </StatusChip>
           </div>
-          <div className="mt-3 text-sm text-zinc-400">{detail.triage_summary.rationale}</div>
+          <div className="mt-3 text-sm text-[var(--color-text-secondary)]">{detail.triage_summary.rationale}</div>
         </div>
 
-        <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-2 text-xs uppercase tracking-wider text-white/50">Review Gate</div>
-          <div className="text-xs text-zinc-500">Redaction mode: {detail.redaction_mode}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">Redaction mode: {detail.redaction_mode}</div>
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
@@ -280,7 +280,7 @@ export default function FounderLegalRequestDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-2 text-xs uppercase tracking-wider text-white/50">Missing Item Cards</div>
           {detail.missing_items.length === 0 ? (
             <QuantumEmptyState
@@ -291,21 +291,21 @@ export default function FounderLegalRequestDetailPage() {
           ) : (
             <div className="space-y-2">
               {detail.missing_items.map((item) => (
-                <div key={item.code} className="border border-red-500/30 bg-red-500/10 p-2 text-sm">
-                  <div className="font-semibold text-red-300">{item.title}</div>
-                  <div className="text-red-200/90">{item.detail}</div>
+                <div key={item.code} className="border border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/10 p-2 text-sm">
+                  <div className="font-semibold text-[var(--color-brand-red)]">{item.title}</div>
+                  <div className="text-[var(--color-brand-red)]/90">{item.detail}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+        <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
           <div className="mb-2 text-xs uppercase tracking-wider text-white/50">Required-Document Checklist</div>
           <div className="space-y-1">
             {detail.required_document_checklist.map((item) => (
               <div key={item.code} className="flex items-center justify-between text-sm">
-                <span className="text-zinc-300">{item.label}</span>
+                <span className="text-[var(--color-text-secondary)]">{item.label}</span>
                 <StatusChip status={item.satisfied ? 'active' : 'warning'} size="sm">
                   {item.satisfied ? 'received' : 'missing'}
                 </StatusChip>
@@ -315,7 +315,7 @@ export default function FounderLegalRequestDetailPage() {
         </div>
       </div>
 
-      <div className="border border-white/10 bg-zinc-950/[0.03] p-4">
+      <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
         <div className="mb-2 text-xs uppercase tracking-wider text-white/50">Packet & Delivery Controls</div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -352,7 +352,7 @@ export default function FounderLegalRequestDetailPage() {
           </button>
         </div>
 
-        <pre className="mt-3 max-h-60 overflow-auto border border-white/10 bg-black/30 p-3 text-xs text-zinc-300">
+        <pre className="mt-3 max-h-60 overflow-auto border border-white/10 bg-[var(--color-bg-base)]/30 p-3 text-xs text-[var(--color-text-secondary)]">
           {JSON.stringify(detail.packet_manifest || {}, null, 2)}
         </pre>
       </div>

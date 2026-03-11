@@ -127,7 +127,7 @@ function StatCard({
   sub?: string;
   accent?: "green" | "red" | "yellow";
 }) {
-  const accents = { green: "text-green-400", red: "text-red-400", yellow: "text-yellow-400" };
+  const accents = { green: "text-[var(--color-status-active)]", red: "text-[var(--color-brand-red)]", yellow: "text-[var(--q-yellow)]" };
   return (
     <div className=" border border-border bg-panel p-4">
       <div className="text-xs text-muted">{label}</div>
@@ -145,11 +145,11 @@ function SectionTitle({ title }: { title: string }) {
 
 function Badge({ color, label }: { color: string; label: string }) {
   const colors: Record<string, string> = {
-    green: "bg-green-900/40 text-green-300 border-green-700",
-    red: "bg-red-900/40 text-red-300 border-red-700",
+    green: "bg-green-900/40 text-[var(--color-status-active)] border-green-700",
+    red: "bg-red-900/40 text-[var(--color-brand-red)] border-red-700",
     yellow: "bg-yellow-900/40 text-yellow-300 border-yellow-700",
-    blue: "bg-blue-900/40 text-blue-300 border-blue-700",
-    gray: "bg-bg-raised text-zinc-400 border-border-strong",
+    blue: "bg-blue-900/40 text-[var(--color-status-info)] border-blue-700",
+    gray: "bg-bg-raised text-[var(--color-text-secondary)] border-border-strong",
   };
   return (
     <span
@@ -170,19 +170,19 @@ function ValidationResultDisplay({ result }: { result: ValidationResult }) {
       }`}
     >
       <div
-        className={`font-semibold text-sm ${result.valid ? "text-green-300" : "text-red-300"}`}
+        className={`font-semibold text-sm ${result.valid ? "text-[var(--color-status-active)]" : "text-[var(--color-brand-red)]"}`}
       >
         {result.valid ? "VALID" : "INVALID"}{" "}
         {result.completeness_pct !== undefined && `(${result.completeness_pct}% complete)`}
       </div>
       {result.errors.length > 0 && (
         <div className="mt-2">
-          <div className="text-xs font-semibold text-red-300 mb-1">
+          <div className="text-xs font-semibold text-[var(--color-brand-red)] mb-1">
             Errors ({result.errors.length})
           </div>
           <div className="space-y-1 max-h-32 overflow-y-auto">
             {result.errors.map((e, i) => (
-              <div key={i} className="text-xs text-red-200">
+              <div key={i} className="text-xs text-[var(--color-brand-red)]">
                 {e}
               </div>
             ))}
@@ -400,9 +400,9 @@ export default function NEMSISManagerPage() {
               <div
                 className={` border px-3 py-1 text-xs font-bold ${
                   integrityScore.grade === "A"
-                    ? "border-green-700 bg-green-900/40 text-green-300"
+                    ? "border-green-700 bg-green-900/40 text-[var(--color-status-active)]"
                     : integrityScore.grade === "B"
-                    ? "border-blue-700 bg-blue-900/40 text-blue-300"
+                    ? "border-blue-700 bg-blue-900/40 text-[var(--color-status-info)]"
                     : "border-yellow-700 bg-yellow-900/40 text-yellow-300"
                 }`}
               >
@@ -444,10 +444,10 @@ export default function NEMSISManagerPage() {
                   <div
                     className={`text-5xl font-bold ${
                       integrityScore.grade === "A"
-                        ? "text-green-400"
+                        ? "text-[var(--color-status-active)]"
                         : integrityScore.grade === "B"
-                        ? "text-blue-400"
-                        : "text-yellow-400"
+                        ? "text-[var(--color-status-info)]"
+                        : "text-[var(--q-yellow)]"
                     }`}
                   >
                     {integrityScore.integrity_score}%
@@ -455,7 +455,7 @@ export default function NEMSISManagerPage() {
                   <div>
                     <div
                       className={`text-2xl font-bold ${
-                        integrityScore.grade === "A" ? "text-green-400" : "text-yellow-400"
+                        integrityScore.grade === "A" ? "text-[var(--color-status-active)]" : "text-[var(--q-yellow)]"
                       }`}
                     >
                       Grade {integrityScore.grade}
@@ -469,9 +469,9 @@ export default function NEMSISManagerPage() {
                   <div
                     className={`h-full  transition-all ${
                       integrityScore.grade === "A"
-                        ? "bg-green-500"
+                        ? "bg-[var(--color-status-active)]"
                         : integrityScore.grade === "B"
-                        ? "bg-blue-500"
+                        ? "bg-[var(--color-status-info)]"
                         : "bg-yellow-500"
                     }`}
                     style={{ width: `${integrityScore.integrity_score}%` }}
@@ -497,7 +497,7 @@ export default function NEMSISManagerPage() {
                     <div key={i} className="flex items-center gap-2 text-sm">
                       <span
                         className={`h-4 w-4  flex items-center justify-center text-xs font-bold shrink-0 ${
-                          check.passed ? "bg-green-500 text-zinc-100" : "bg-red-500 text-zinc-100"
+                          check.passed ? "bg-[var(--color-status-active)] text-[var(--color-text-primary)]" : "bg-[var(--color-brand-red)] text-[var(--color-text-primary)]"
                         }`}
                       >
                         {check.passed ? "✓" : "✗"}
@@ -716,10 +716,10 @@ export default function NEMSISManagerPage() {
                     <div
                       className={`text-4xl font-bold ${
                         readinessResult.completeness_pct === 100
-                          ? "text-green-400"
+                          ? "text-[var(--color-status-active)]"
                           : readinessResult.completeness_pct >= 80
-                          ? "text-yellow-400"
-                          : "text-red-400"
+                          ? "text-[var(--q-yellow)]"
+                          : "text-[var(--color-brand-red)]"
                       }`}
                     >
                       {readinessResult.completeness_pct}%
@@ -732,7 +732,7 @@ export default function NEMSISManagerPage() {
                   <div className="grid grid-cols-3 gap-2 text-xs text-muted">
                     <span>Required: {readinessResult.required_count}</span>
                     <span>Provided: {readinessResult.provided_required}</span>
-                    <span className="text-red-300">Missing: {readinessResult.missing_required}</span>
+                    <span className="text-[var(--color-brand-red)]">Missing: {readinessResult.missing_required}</span>
                   </div>
                 </div>
               )}
@@ -747,8 +747,8 @@ export default function NEMSISManagerPage() {
                   <div
                     className={`font-semibold text-sm ${
                       (simResult as Record<string, boolean>).can_export
-                        ? "text-green-300"
-                        : "text-red-300"
+                        ? "text-[var(--color-status-active)]"
+                        : "text-[var(--color-brand-red)]"
                     }`}
                   >
                     Export{" "}
@@ -791,8 +791,8 @@ export default function NEMSISManagerPage() {
                 <div
                   className={`mt-3  border p-3 text-sm ${
                     (fieldResult as Record<string, boolean>).valid
-                      ? "border-green-700 bg-green-900/20 text-green-300"
-                      : "border-red-700 bg-red-900/20 text-red-300"
+                      ? "border-green-700 bg-green-900/20 text-[var(--color-status-active)]"
+                      : "border-red-700 bg-red-900/20 text-[var(--color-brand-red)]"
                   }`}
                 >
                   <div className="font-semibold">
@@ -825,7 +825,7 @@ export default function NEMSISManagerPage() {
                       />
                       <span className="text-muted">{v.data.validation_type}</span>
                       {(v.data.errors || []).length > 0 && (
-                        <span className="text-red-300">
+                        <span className="text-[var(--color-brand-red)]">
                           {(v.data.errors || []).length} error(s)
                         </span>
                       )}
@@ -888,8 +888,8 @@ export default function NEMSISManagerPage() {
                   <div
                     className={`font-semibold text-sm ${
                       (narrativeResult as Record<string, boolean>).valid
-                        ? "text-green-300"
-                        : "text-red-300"
+                        ? "text-[var(--color-status-active)]"
+                        : "text-[var(--color-brand-red)]"
                     }`}
                   >
                     Narrative:{" "}
@@ -914,7 +914,7 @@ export default function NEMSISManagerPage() {
                   <div
                     className={`font-semibold text-sm ${
                       (medNecessityResult as Record<string, boolean>).has_medical_necessity
-                        ? "text-green-300"
+                        ? "text-[var(--color-status-active)]"
                         : "text-yellow-300"
                     }`}
                   >
@@ -934,7 +934,7 @@ export default function NEMSISManagerPage() {
                       ).map((kw) => (
                         <span
                           key={kw}
-                          className=" bg-green-900/40 px-1.5 py-0.5 text-xs text-green-300"
+                          className=" bg-green-900/40 px-1.5 py-0.5 text-xs text-[var(--color-status-active)]"
                         >
                           {kw}
                         </span>
@@ -972,7 +972,7 @@ export default function NEMSISManagerPage() {
                       <span className="font-mono text-muted">{s.element}: </span>
                       <span className="font-semibold">{s.suggested_code}</span>
                       <span className="text-muted"> ({s.label})</span>
-                      <span className="ml-2 text-blue-300">← &quot;{s.trigger}&quot;</span>
+                      <span className="ml-2 text-[var(--color-status-info)]">← &quot;{s.trigger}&quot;</span>
                     </div>
                   ))}
                   {(codingSuggestResult.count as number) === 0 && (
@@ -992,7 +992,7 @@ export default function NEMSISManagerPage() {
                   <div
                     className={`font-semibold text-sm ${
                       (reportableFlagResult as Record<string, boolean>).reportable
-                        ? "text-red-300"
+                        ? "text-[var(--color-brand-red)]"
                         : "text-muted"
                     }`}
                   >
@@ -1009,7 +1009,7 @@ export default function NEMSISManagerPage() {
                       >
                     ).flags || []
                   ).map((f, i) => (
-                    <div key={i} className="mt-1 text-xs text-red-200">
+                    <div key={i} className="mt-1 text-xs text-[var(--color-brand-red)]">
                       {f.flag}: {f.reason}
                     </div>
                   ))}
@@ -1112,7 +1112,7 @@ export default function NEMSISManagerPage() {
                     >
                       <span
                         className={`h-6 w-6  flex items-center justify-center text-xs font-bold shrink-0 ${
-                          check.passed ? "bg-green-500 text-zinc-100" : "bg-red-500 text-zinc-100"
+                          check.passed ? "bg-[var(--color-status-active)] text-[var(--color-text-primary)]" : "bg-[var(--color-brand-red)] text-[var(--color-text-primary)]"
                         }`}
                       >
                         {check.passed ? "✓" : "✗"}
@@ -1180,7 +1180,7 @@ export default function NEMSISManagerPage() {
                     ).map(([k, v]) => (
                       <div key={k} className="text-xs  border border-border px-2 py-1">
                         <span className="font-mono text-muted">{k}: </span>
-                        <span className="text-green-300">{v}</span>
+                        <span className="text-[var(--color-status-active)]">{v}</span>
                       </div>
                     ))}
                   </div>
@@ -1213,9 +1213,9 @@ export default function NEMSISManagerPage() {
                     ).map(([k, v]) => (
                       <div key={k} className="text-xs  border border-border px-2 py-1 mb-1">
                         <span className="font-mono">{k}: </span>
-                        <span className="text-red-300 line-through">{String(v.from)}</span>
+                        <span className="text-[var(--color-brand-red)] line-through">{String(v.from)}</span>
                         <span className="text-muted"> → </span>
-                        <span className="text-green-300">{String(v.to)}</span>
+                        <span className="text-[var(--color-status-active)]">{String(v.to)}</span>
                       </div>
                     ))}
                   </div>

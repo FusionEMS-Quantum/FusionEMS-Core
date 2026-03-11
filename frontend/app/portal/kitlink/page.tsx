@@ -43,8 +43,27 @@ const TAB_ITEMS = TABS.map((t) => ({ id: t, label: t }));
 
 function KitLinkPageInner() {
   const params = useSearchParams();
-  const tenantId = params.get("tenant_id") ?? "";
+  const tenantId = params.get("tenant_id") ?? '';
   const [activeTab, setActiveTab] = useState<Tab>("Dashboard");
+
+  if (!tenantId) {
+    return (
+      <ModuleDashboardShell
+        title="KitLink AR"
+        subtitle="Inventory · Narcotics · AR Markers · Compliance"
+        accentColor="var(--color-emerald-500, #10b981)"
+      >
+        <div className="max-w-2xl mx-auto p-6">
+          <div className="chamfer-8 border border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/5 p-4">
+            <div className="text-sm font-semibold text-[var(--color-brand-red)]">Missing tenant_id</div>
+            <div className="text-xs text-[var(--color-text-secondary)] mt-1">
+              This module requires a tenant context. Please open KitLink from the admin portal or include <span className="font-mono">tenant_id</span> in the URL.
+            </div>
+          </div>
+        </div>
+      </ModuleDashboardShell>
+    );
+  }
 
   return (
     <ModuleDashboardShell
@@ -54,7 +73,7 @@ function KitLinkPageInner() {
       headerActions={
         <a
           href={`/portal/kitlink/wizard?tenant_id=${tenantId}`}
-          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 chamfer-4 text-xs font-medium transition-colors"
+          className="px-3 py-1.5 bg-emerald-600 hover:bg-[var(--color-status-active)] chamfer-4 text-xs font-medium transition-colors"
         >
           1-Day Go-Live Wizard
         </a>
@@ -87,8 +106,8 @@ function DashboardTab({ tenantId }: { tenantId: string }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">Quick Actions</h3>
+        <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Quick Actions</h3>
           <div className="space-y-2">
             {[
               { label: "Clone Starter Kit", href: "#", action: "kits" },
@@ -99,25 +118,25 @@ function DashboardTab({ tenantId }: { tenantId: string }) {
               <a
                 key={a.label}
                 href={a.href !== "#" ? a.href : undefined}
-                className="flex items-center justify-between px-3 py-2 chamfer-4 bg-bg-raised hover:bg-bg-overlay text-sm text-zinc-100 cursor-pointer transition-colors"
+                className="flex items-center justify-between px-3 py-2 chamfer-4 bg-bg-raised hover:bg-bg-overlay text-sm text-[var(--color-text-primary)] cursor-pointer transition-colors"
               >
                 <span>{a.label}</span>
-                <span className="text-zinc-500">→</span>
+                <span className="text-[var(--color-text-muted)]">→</span>
               </a>
             ))}
           </div>
         </div>
 
-        <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">Open Narcotics Discrepancies</h3>
+        <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Open Narcotics Discrepancies</h3>
           {discData?.items?.length ? (
             <div className="space-y-2">
               {discData.items.slice(0, 5).map((item: any) => (
                 <div key={item.id} className="flex items-start gap-2 text-xs">
-                  <span className="mt-0.5 w-2 h-2  bg-red-500 flex-shrink-0" />
+                  <span className="mt-0.5 w-2 h-2  bg-[var(--color-brand-red)] flex-shrink-0" />
                   <div>
-                    <p className="text-zinc-100">{item.data?.item_name ?? "Unknown item"}</p>
-                    <p className="text-zinc-500">
+                    <p className="text-[var(--color-text-primary)]">{item.data?.item_name ?? "Unknown item"}</p>
+                    <p className="text-[var(--color-text-muted)]">
                       Expected {item.data?.expected_qty} · Found {item.data?.actual_qty} · Delta {item.data?.delta}
                     </p>
                   </div>
@@ -125,7 +144,7 @@ function DashboardTab({ tenantId }: { tenantId: string }) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">No open discrepancies</p>
+            <p className="text-sm text-[var(--color-text-muted)]">No open discrepancies</p>
           )}
         </div>
       </div>
@@ -148,23 +167,23 @@ function ItemsTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-        <h3 className="text-sm font-semibold text-zinc-100 mb-3">Add Inventory Item</h3>
+      <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Add Inventory Item</h3>
         <div className="grid grid-cols-3 gap-3">
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500"
             placeholder="Item name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500"
             placeholder="Unit (each, vial, bag)"
             value={form.unit}
             onChange={(e) => setForm({ ...form, unit: e.target.value })}
           />
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500"
             placeholder="Category"
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -173,7 +192,7 @@ function ItemsTab({ tenantId }: { tenantId: string }) {
         <button
           onClick={submit}
           disabled={saving || !form.name}
-          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
+          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-[var(--color-status-active)] disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
         >
           {saving ? "Saving…" : "Add Item"}
         </button>
@@ -181,7 +200,7 @@ function ItemsTab({ tenantId }: { tenantId: string }) {
 
       <div className="chamfer-8 border border-border-subtle overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-bg-raised text-zinc-500 text-xs">
+          <thead className="bg-bg-raised text-[var(--color-text-muted)] text-xs">
             <tr>
               <th className="px-4 py-2 text-left">Name</th>
               <th className="px-4 py-2 text-left">Unit</th>
@@ -191,14 +210,14 @@ function ItemsTab({ tenantId }: { tenantId: string }) {
           <tbody className="divide-y divide-border-subtle">
             {loading && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-zinc-500">Loading…</td>
+                <td colSpan={3} className="px-4 py-6 text-center text-[var(--color-text-muted)]">Loading…</td>
               </tr>
             )}
             {items?.map((item: any) => (
               <tr key={item.id} className="hover:bg-bg-raised/50">
-                <td className="px-4 py-2 text-zinc-100">{item.data?.name}</td>
-                <td className="px-4 py-2 text-zinc-500">{item.data?.unit}</td>
-                <td className="px-4 py-2 text-zinc-500">{item.data?.category ?? "—"}</td>
+                <td className="px-4 py-2 text-[var(--color-text-primary)]">{item.data?.name}</td>
+                <td className="px-4 py-2 text-[var(--color-text-muted)]">{item.data?.unit}</td>
+                <td className="px-4 py-2 text-[var(--color-text-muted)]">{item.data?.category ?? "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -224,9 +243,9 @@ function KitsTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-        <h3 className="text-sm font-semibold text-zinc-100 mb-1">Load Starter Templates</h3>
-        <p className="text-xs text-zinc-500 mb-3">Clone a preconfigured kit template into your account.</p>
+      <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">Load Starter Templates</h3>
+        <p className="text-xs text-[var(--color-text-muted)] mb-3">Clone a preconfigured kit template into your account.</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {starters.map((key) => (
             <button
@@ -235,8 +254,8 @@ function KitsTab({ tenantId }: { tenantId: string }) {
               disabled={!!cloning || cloned.includes(key)}
               className={`px-3 py-2 chamfer-4 text-xs font-medium border transition-colors ${
                 cloned.includes(key)
-                  ? "border-emerald-700 bg-emerald-900/30 text-emerald-400 cursor-default"
-                  : "border-border-DEFAULT bg-bg-raised hover:bg-bg-overlay text-zinc-100"
+                  ? "border-emerald-700 bg-emerald-900/30 text-[var(--color-status-active)] cursor-default"
+                  : "border-border-DEFAULT bg-bg-raised hover:bg-bg-overlay text-[var(--color-text-primary)]"
               }`}
             >
               {cloning === key ? "Cloning…" : cloned.includes(key) ? `${key} (loaded)` : key}
@@ -247,7 +266,7 @@ function KitsTab({ tenantId }: { tenantId: string }) {
 
       <div className="chamfer-8 border border-border-subtle overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-bg-raised text-zinc-500 text-xs">
+          <thead className="bg-bg-raised text-[var(--color-text-muted)] text-xs">
             <tr>
               <th className="px-4 py-2 text-left">Kit Name</th>
               <th className="px-4 py-2 text-left">Type</th>
@@ -258,19 +277,19 @@ function KitsTab({ tenantId }: { tenantId: string }) {
           <tbody className="divide-y divide-border-subtle">
             {loading && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-zinc-500">Loading…</td>
+                <td colSpan={4} className="px-4 py-6 text-center text-[var(--color-text-muted)]">Loading…</td>
               </tr>
             )}
             {kits?.map((kit: any) => (
               <tr key={kit.id} className="hover:bg-bg-raised/50">
-                <td className="px-4 py-2 text-zinc-100">{kit.data?.name}</td>
-                <td className="px-4 py-2 text-zinc-500">{kit.data?.kit_type}</td>
+                <td className="px-4 py-2 text-[var(--color-text-primary)]">{kit.data?.name}</td>
+                <td className="px-4 py-2 text-[var(--color-text-muted)]">{kit.data?.kit_type}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-0.5 chamfer-4 text-xs ${kit.data?.requires_seal ? "bg-amber-900/40 text-amber-400" : "bg-bg-overlay text-zinc-500"}`}>
+                  <span className={`px-2 py-0.5 chamfer-4 text-xs ${kit.data?.requires_seal ? "bg-amber-900/40 text-[var(--q-yellow)]" : "bg-bg-overlay text-[var(--color-text-muted)]"}`}>
                     {kit.data?.requires_seal ? "Yes" : "No"}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-zinc-500 text-xs">{kit.data?.source_key ?? "custom"}</td>
+                <td className="px-4 py-2 text-[var(--color-text-muted)] text-xs">{kit.data?.source_key ?? "custom"}</td>
               </tr>
             ))}
           </tbody>
@@ -303,17 +322,17 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-        <h3 className="text-sm font-semibold text-zinc-100 mb-3">Create Unit Layout</h3>
+      <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Create Unit Layout</h3>
         <div className="grid grid-cols-2 gap-3">
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500"
             placeholder="Unit ID (e.g. M12)"
             value={form.unit_id}
             onChange={(e) => setForm({ ...form, unit_id: e.target.value })}
           />
           <input
-            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500"
+            className="px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500"
             placeholder="Unit name"
             value={form.unit_name}
             onChange={(e) => setForm({ ...form, unit_name: e.target.value })}
@@ -322,7 +341,7 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
         <button
           onClick={createLayout}
           disabled={saving || !form.unit_id}
-          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
+          className="mt-3 px-4 py-2 bg-emerald-600 hover:bg-[var(--color-status-active)] disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
         >
           {saving ? "Creating…" : "Create Layout"}
         </button>
@@ -330,7 +349,7 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
 
       <div className="chamfer-8 border border-border-subtle overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-bg-raised text-zinc-500 text-xs">
+          <thead className="bg-bg-raised text-[var(--color-text-muted)] text-xs">
             <tr>
               <th className="px-4 py-2 text-left">Unit</th>
               <th className="px-4 py-2 text-left">Status</th>
@@ -340,14 +359,14 @@ function LayoutsTab({ tenantId }: { tenantId: string }) {
           <tbody className="divide-y divide-border-subtle">
             {loading && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-zinc-500">Loading…</td>
+                <td colSpan={3} className="px-4 py-6 text-center text-[var(--color-text-muted)]">Loading…</td>
               </tr>
             )}
             {layouts?.map((layout: any) => (
               <tr key={layout.id} className="hover:bg-bg-raised/50">
-                <td className="px-4 py-2 text-zinc-100">{layout.data?.unit_name ?? layout.data?.unit_id}</td>
+                <td className="px-4 py-2 text-[var(--color-text-primary)]">{layout.data?.unit_name ?? layout.data?.unit_id}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-0.5 chamfer-4 text-xs ${layout.data?.status === "active" ? "bg-emerald-900/40 text-emerald-400" : "bg-bg-overlay text-zinc-500"}`}>
+                  <span className={`px-2 py-0.5 chamfer-4 text-xs ${layout.data?.status === "active" ? "bg-emerald-900/40 text-[var(--color-status-active)]" : "bg-bg-overlay text-[var(--color-text-muted)]"}`}>
                     {layout.data?.status ?? "draft"}
                   </span>
                 </td>
@@ -397,11 +416,11 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">AR Marker Builder</h3>
+        <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">AR Marker Builder</h3>
           <div className="space-y-3">
             <select
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)]"
               value={form.entity_type}
               onChange={(e) => setForm({ ...form, entity_type: e.target.value })}
             >
@@ -410,13 +429,13 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
               <option value="stock_location">Stock Location</option>
             </select>
             <input
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500"
               placeholder="Entity ID"
               value={form.entity_id}
               onChange={(e) => setForm({ ...form, entity_id: e.target.value })}
             />
             <select
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)]"
               value={form.format}
               onChange={(e) => setForm({ ...form, format: e.target.value })}
             >
@@ -426,24 +445,24 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
             <button
               onClick={generateMarker}
               disabled={generating || !form.entity_id}
-              className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
+              className="w-full px-4 py-2 bg-emerald-600 hover:bg-[var(--color-status-active)] disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
             >
               {generating ? "Generating…" : "Generate Marker"}
             </button>
           </div>
           {result && (
             <div className="mt-3 p-3 bg-bg-raised chamfer-4 text-xs">
-              <p className="text-emerald-400 font-mono">{result.marker_code}</p>
-              <p className="text-zinc-500 mt-1">Status: {result.status}</p>
+              <p className="text-[var(--color-status-active)] font-mono">{result.marker_code}</p>
+              <p className="text-[var(--color-text-muted)] mt-1">Status: {result.status}</p>
             </div>
           )}
         </div>
 
-        <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">Test Marker Resolve</h3>
+        <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Test Marker Resolve</h3>
           <div className="space-y-3">
             <input
-              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500 font-mono"
+              className="w-full px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500 font-mono"
               placeholder="KL-XXXXXXXX"
               value={resolveCode}
               onChange={(e) => setResolveCode(e.target.value)}
@@ -451,19 +470,19 @@ function MarkersTab({ tenantId }: { tenantId: string }) {
             <button
               onClick={resolveMarker}
               disabled={!resolveCode}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 hover:bg-[var(--color-status-info)] disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
             >
               Resolve
             </button>
           </div>
           {resolveResult && (
             <div className="mt-3 p-3 bg-bg-raised chamfer-4 text-xs space-y-1">
-              <p className="text-zinc-400">Entity: <span className="text-blue-400">{resolveResult.entity_type}</span></p>
-              <p className="text-zinc-400">Status: <span className="text-emerald-400">{resolveResult.status}</span></p>
-              <p className="text-zinc-400">Next steps:</p>
+              <p className="text-[var(--color-text-secondary)]">Entity: <span className="text-[var(--color-status-info)]">{resolveResult.entity_type}</span></p>
+              <p className="text-[var(--color-text-secondary)]">Status: <span className="text-[var(--color-status-active)]">{resolveResult.status}</span></p>
+              <p className="text-[var(--color-text-secondary)]">Next steps:</p>
               <ul className="pl-3 space-y-0.5">
                 {resolveResult.next_steps?.map((s: string) => (
-                  <li key={s} className="text-zinc-500">• {s}</li>
+                  <li key={s} className="text-[var(--color-text-muted)]">• {s}</li>
                 ))}
               </ul>
             </div>
@@ -489,8 +508,8 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
           items={expiring?.items?.slice(0, 8)}
           renderItem={(i: any) => (
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-400">{i.data?.item_id ?? "Item"}</span>
-              <span className="text-amber-400">{i.data?.expiration_date}</span>
+              <span className="text-[var(--color-text-secondary)]">{i.data?.item_id ?? "Item"}</span>
+              <span className="text-[var(--q-yellow)]">{i.data?.expiration_date}</span>
             </div>
           )}
         />
@@ -500,8 +519,8 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
           items={disc?.items?.slice(0, 8)}
           renderItem={(i: any) => (
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-400">{i.data?.item_name}</span>
-              <span className="text-red-400">Δ {i.data?.delta}</span>
+              <span className="text-[var(--color-text-secondary)]">{i.data?.item_name}</span>
+              <span className="text-[var(--color-brand-red)]">Δ {i.data?.delta}</span>
             </div>
           )}
         />
@@ -511,8 +530,8 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
           items={parMisses?.items?.slice(0, 8)}
           renderItem={(i: any) => (
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-400">{i.data?.item_id ?? "Item"}</span>
-              <span className="text-amber-400">{i.data?.current_qty} / {i.data?.par_qty} PAR</span>
+              <span className="text-[var(--color-text-secondary)]">{i.data?.item_id ?? "Item"}</span>
+              <span className="text-[var(--q-yellow)]">{i.data?.current_qty} / {i.data?.par_qty} PAR</span>
             </div>
           )}
         />
@@ -522,8 +541,8 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
           items={narcLog?.waste_events?.slice(0, 8)}
           renderItem={(i: any) => (
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-400">{i.data?.item_name ?? "Waste event"}</span>
-              <span className="text-zinc-500">{i.data?.wasted_at?.slice(0, 10)}</span>
+              <span className="text-[var(--color-text-secondary)]">{i.data?.item_name ?? "Waste event"}</span>
+              <span className="text-[var(--color-text-muted)]">{i.data?.wasted_at?.slice(0, 10)}</span>
             </div>
           )}
         />
@@ -534,17 +553,17 @@ function ReportsTab({ tenantId }: { tenantId: string }) {
 
 function ReportPanel({ title, count, items, renderItem }: { title: string; count: number | undefined; items: any[] | undefined; renderItem: (_i: any) => React.ReactNode }) {
   return (
-    <div className="chamfer-8 border border-border-subtle bg-[#0A0A0B] p-4">
+    <div className="chamfer-8 border border-border-subtle bg-[var(--color-bg-panel)] p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{title}</h3>
         {count !== undefined && (
-          <span className="px-2 py-0.5 bg-bg-overlay chamfer-4 text-xs text-zinc-400">{count}</span>
+          <span className="px-2 py-0.5 bg-bg-overlay chamfer-4 text-xs text-[var(--color-text-secondary)]">{count}</span>
         )}
       </div>
       {items?.length ? (
         <div className="space-y-2">{items.map((i, idx) => <div key={idx}>{renderItem(i)}</div>)}</div>
       ) : (
-        <p className="text-xs text-zinc-500">No data</p>
+        <p className="text-xs text-[var(--color-text-muted)]">No data</p>
       )}
     </div>
   );
@@ -552,7 +571,7 @@ function ReportPanel({ title, count, items, renderItem }: { title: string; count
 
 export default function KitLinkPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#050505] flex items-center justify-center text-zinc-500">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center text-[var(--color-text-muted)]">Loading...</div>}>
       <KitLinkPageInner />
     </Suspense>
   );

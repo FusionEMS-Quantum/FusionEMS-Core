@@ -21,12 +21,12 @@ class SmartTextEngine:
             "Output only the narrative text, no headings."
         )
         user = f"Tone: {tone}\n\nCall data:\n{summary}\n\nGenerate narrative:"
-        text, meta = self._ai.chat(system=system, user=user)
+        _resp = self._ai.chat(system=system, user=user)
         return {
-            "narrative": text,
+            "narrative": _resp.content,
             "tone": tone,
             "cache_key": cache_key,
-            "token_usage": meta.get("usage", {}),
+            "token_usage": _resp.usage,
             "generated_at": datetime.now(UTC).isoformat(),
         }
 
@@ -38,12 +38,12 @@ class SmartTextEngine:
             "Use ONLY the provided chart data."
         )
         user = f"Generate a concise SBAR handoff:\n{summary}"
-        text, meta = self._ai.chat(system=system, user=user)
+        _resp = self._ai.chat(system=system, user=user)
         return {
-            "summary": text,
+            "summary": _resp.content,
             "format": "SBAR",
             "cache_key": cache_key,
-            "token_usage": meta.get("usage", {}),
+            "token_usage": _resp.usage,
             "generated_at": datetime.now(UTC).isoformat(),
         }
 
@@ -55,11 +55,11 @@ class SmartTextEngine:
             "Use ONLY the provided data."
         )
         user = f"Generate billing synopsis:\n{summary}"
-        text, meta = self._ai.chat(system=system, user=user)
+        _resp = self._ai.chat(system=system, user=user)
         return {
-            "synopsis": text,
+            "synopsis": _resp.content,
             "cache_key": cache_key,
-            "token_usage": meta.get("usage", {}),
+            "token_usage": _resp.usage,
             "generated_at": datetime.now(UTC).isoformat(),
         }
 

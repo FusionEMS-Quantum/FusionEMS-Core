@@ -7,7 +7,9 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from starlette.responses import StreamingResponse
 
-from .dependencies import get_current_user
+from core_app.schemas.auth import CurrentUser
+
+from .dependencies import require_founder_only_audited
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +29,13 @@ class CommandPayload(BaseModel):
 @router.post("/command")
 async def execute_agent_command(
     payload: CommandPayload,
-    current_user: dict = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_founder_only_audited()),
 ):
     if not AGENTS:
         logger.warning("Agent command received but no live agents are registered")
         return {"status": "error", "code": "NO_AGENTS_REGISTERED", "message": "No live infrastructure agents are registered. Agent telemetry is sourced from live probes."}
     command = payload.command
-    logger.info("Agent command queued", extra={"command": command, "user_id": str(current_user.user_id) if hasattr(current_user, 'user_id') else "unknown"})
+    logger.info("Agent command queued", extra={"command": command, "user_id": str(current_user.user_id)})
     COMMAND_QUEUE.append(command)
     return {"status": "enqueued", "command": command}
 
@@ -96,7 +98,7 @@ async def multi_agent_generator():
 
 
 @router.get("/stream")
-async def agents_stream(current_user: dict = Depends(get_current_user)):
+async def agents_stream(current_user: CurrentUser = Depends(require_founder_only_audited())):
     """
     Streams subagent live execution telemetry back to the Domination UI.
     Requires CustomOAuth2PasswordBearer fetching token from Query params.

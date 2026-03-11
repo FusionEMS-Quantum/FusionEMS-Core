@@ -122,13 +122,13 @@ async def signup(
         }
     ]
 
-    base_url = str(settings.api_base_url).rstrip("/")
+    frontend_base = str(settings.resolved_frontend_base_url()).rstrip("/")
     session = stripe_lib.checkout.Session.create(
         mode="subscription",
         line_items=line_items,
         metadata={"application_id": str(application_id), "source": "public_signup"},
-        success_url=f"{base_url}/onboarding/success?application_id={application_id}",
-        cancel_url=f"{base_url}/onboarding/cancel?application_id={application_id}",
+        success_url=f"{frontend_base}/signup/success?application_id={application_id}",
+        cancel_url=f"{frontend_base}/signup?canceled=1&application_id={application_id}",
     )
 
     return {
@@ -266,7 +266,8 @@ async def _handle_onboarding_payment(
         text(
             "UPDATE onboarding_applications SET status = 'provisioned', "
             "stripe_customer_id = :cust, stripe_subscription_id = :sub, "
-            "provisioned_at = :now, tenant_id = :tid WHERE id = :app_id"
+            "provisioned_at = :now, tenant_id = :tid, provisioning_status = 'complete' "
+            "WHERE id = :app_id"
         ),
         {
             "cust": stripe_customer_id,

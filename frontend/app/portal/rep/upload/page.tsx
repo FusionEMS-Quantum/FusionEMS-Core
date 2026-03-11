@@ -12,7 +12,7 @@ const PANEL_STYLE = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-  background: '#FF4D00',
+  background: 'var(--q-orange)',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
   fontSize: '0.9375rem',
@@ -137,7 +137,7 @@ export default function RepUploadPage() {
 
   return (
     <div
-      style={{ background: 'var(--color-bg-base, #050505)', minHeight: '100vh' }}
+      style={{ background: 'var(--color-bg-base, var(--color-bg-base))', minHeight: '100vh' }}
       className="flex items-center justify-center px-4 py-12"
     >
       <div style={{ width: '100%', maxWidth: '560px' }}>
@@ -150,13 +150,13 @@ export default function RepUploadPage() {
               justifyContent: 'center',
               width: '48px',
               height: '48px',
-              background: 'rgba(255,107,26,0.12)',
-              border: '1px solid rgba(255,107,26,0.3)',
+              background: 'rgba(255,106,0,0.12)',
+              border: '1px solid rgba(255,106,0,0.3)',
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
               marginBottom: '18px',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--q-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
@@ -207,9 +207,9 @@ export default function RepUploadPage() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             style={{
-              border: `2px dashed ${dragging ? 'rgba(255,107,26,0.6)' : 'rgba(255,255,255,0.12)'}`,
+              border: `2px dashed ${dragging ? 'rgba(255,106,0,0.6)' : 'rgba(255,255,255,0.12)'}`,
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-              background: dragging ? 'rgba(255,107,26,0.05)' : 'rgba(255,255,255,0.02)',
+              background: dragging ? 'rgba(255,106,0,0.05)' : 'rgba(255,255,255,0.02)',
               padding: '40px 24px',
               textAlign: 'center',
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -246,13 +246,13 @@ export default function RepUploadPage() {
                 alignItems: 'center',
                 gap: '12px',
                 padding: '12px 14px',
-                background: 'rgba(255,107,26,0.07)',
-                border: '1px solid rgba(255,107,26,0.2)',
+                background: 'rgba(255,106,0,0.07)',
+                border: '1px solid rgba(255,106,0,0.2)',
                 clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
                 marginBottom: '20px',
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--q-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
               </svg>
@@ -327,7 +327,7 @@ export default function RepUploadPage() {
                   style={{
                     width: '6px',
                     height: '6px',
-                    background: '#FF4D00',
+                    background: 'var(--q-orange)',
                     borderRadius: '50%',
                     marginTop: '6px',
                     flexShrink: 0,

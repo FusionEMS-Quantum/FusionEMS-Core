@@ -118,4 +118,8 @@ resource "aws_elasticache_replication_group" "this" {
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-redis"
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }

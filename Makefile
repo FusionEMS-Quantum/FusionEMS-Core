@@ -171,6 +171,10 @@ health: ## Run health check diagnostics
 doctor: ## Run developer environment doctor (checks everything)
 	bash scripts/dev-doctor.sh
 
+.PHONY: aws-probe
+aws-probe: ## Verify AWS profile auth + Terraform state bucket read access
+	AWS_PROFILE=$${AWS_PROFILE:-fusion} $(PYTHON) scripts/aws_access_probe.py --profile $${AWS_PROFILE:-fusion}
+
 .PHONY: seed
 seed: ## Seed the development database with test data
 	$(PYTHON) backend/scripts/seed_dev_db.py
@@ -183,6 +187,18 @@ ci: lint test typecheck frontend-build ## Simulate full CI pipeline locally
 	@echo "╔══════════════════════════════════════════════════════════════╗"
 	@echo "║                  ✓ All CI gates passed                      ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
+
+.PHONY: multi-agent-validate
+multi-agent-validate: ## Run the Codex multi-agent validation factory lanes
+	$(PYTHON) scripts/multi_agent_execution.py --mode validate --aws-profile $${AWS_PROFILE:-fusion}
+
+.PHONY: multi-agent-deploy
+multi-agent-deploy: ## Run multi-agent deploy lane (set APPLY=1 to allow terraform apply)
+	@if [ "$(APPLY)" = "1" ]; then \
+		$(PYTHON) scripts/multi_agent_execution.py --mode deploy --allow-apply --aws-profile $${AWS_PROFILE:-fusion}; \
+	else \
+		$(PYTHON) scripts/multi_agent_execution.py --mode deploy --aws-profile $${AWS_PROFILE:-fusion}; \
+	fi
 
 # ── Cleanup ───────────────────────────────────────────────────────────
 

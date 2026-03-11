@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
 
 export default function GlobalError({
   error,
@@ -16,19 +15,18 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-950">
-      <div className="max-w-md w-full bg-gray-900 border border-red-700/50 rounded-xl p-8 text-center space-y-4">
-        <AlertTriangle className="h-10 w-10 text-red-400 mx-auto" />
-        <h2 className="text-xl font-bold text-white">Something went wrong</h2>
-        <p className="text-sm text-gray-400">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-6 py-12">
+      <div className="w-full max-w-md chamfer-12 border border-[var(--color-brand-red-dim)] bg-[var(--color-bg-panel)] p-8 text-center shadow-[var(--elevation-critical)] space-y-4">
+        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Unhandled Platform Error</h2>
+        <p className="text-sm text-[var(--color-text-muted)]">
           An unexpected error occurred. Our team has been notified.
         </p>
         {error.digest && (
-          <p className="text-xs text-gray-500 font-mono">Ref: {error.digest}</p>
+          <p className="text-xs text-[var(--color-text-disabled)] font-mono">Ref: {error.digest}</p>
         )}
         <button
           onClick={reset}
-          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-medium transition-colors"
+          className="quantum-btn-primary px-5 py-2 text-sm"
         >
           Try again
         </button>

@@ -52,34 +52,36 @@ export default function BillingReportsPage() {
   useEffect(() => { loadData(); }, []);
 
   const formatCents = (c: unknown) =>
-    typeof c === 'number' ? `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$0.00';
+    typeof c === 'number' ? `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—';
+  const fmtN = (v: unknown) => (typeof v === 'number' ? v.toLocaleString('en-US') : v != null ? String(v) : '—');
+  const fmtPct = (v: unknown) => (typeof v === 'number' ? `${v}%` : v != null ? `${String(v)}%` : '—');
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-[var(--color-status-active)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-white p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/billing" className="text-gray-400 hover:text-white text-sm mb-2 block">← Billing Hub</Link>
+            <Link href="/billing" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-sm mb-2 block">← Billing Hub</Link>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <BarChart3 className="w-8 h-8 text-blue-400" /> Billing Reports & Analytics
+              <BarChart3 className="w-8 h-8 text-[var(--color-status-info)]" /> Billing Reports & Analytics
             </h1>
           </div>
-          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+          <button onClick={loadData} className="px-4 py-2 bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-overlay)] chamfer-8 flex items-center gap-2 text-sm">
             <RefreshCw className="w-4 h-4" /> Refresh
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" /><span className="text-red-300">{error}</span>
+          <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-[var(--color-brand-red)]" /><span className="text-[var(--color-brand-red)]">{error}</span>
           </div>
         )}
 
@@ -87,15 +89,15 @@ export default function BillingReportsPage() {
         {dashboard && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { label: 'Total Claims', val: dashboard.total_claims, icon: BarChart3, color: 'text-blue-400' },
-              { label: 'Revenue', val: formatCents(dashboard.revenue_cents), icon: DollarSign, color: 'text-emerald-400', raw: true },
-              { label: 'Paid Claims', val: dashboard.paid_claims, icon: TrendingUp, color: 'text-cyan-400' },
-              { label: 'Denial Rate', val: `${dashboard.denial_rate_pct ?? 0}%`, icon: AlertTriangle, color: 'text-amber-400', raw: true },
-              { label: 'Clean Rate', val: `${dashboard.clean_claim_rate_pct ?? 0}%`, icon: TrendingUp, color: 'text-emerald-400', raw: true },
+              { label: 'Total Claims', val: fmtN(dashboard.total_claims), icon: BarChart3, color: 'text-[var(--color-status-info)]', raw: true },
+              { label: 'Revenue', val: formatCents(dashboard.revenue_cents), icon: DollarSign, color: 'text-[var(--color-status-active)]', raw: true },
+              { label: 'Paid Claims', val: fmtN(dashboard.paid_claims), icon: TrendingUp, color: 'text-[var(--color-status-info)]', raw: true },
+              { label: 'Denial Rate', val: fmtPct(dashboard.denial_rate_pct), icon: AlertTriangle, color: 'text-[var(--q-yellow)]', raw: true },
+              { label: 'Clean Rate', val: fmtPct(dashboard.clean_claim_rate_pct), icon: TrendingUp, color: 'text-[var(--color-status-active)]', raw: true },
             ].map((c, i) => (
-              <div key={i} className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-                <div className="text-gray-400 text-xs flex items-center gap-1"><c.icon className="w-3.5 h-3.5" />{c.label}</div>
-                <div className={`text-xl font-bold ${c.color}`}>{c.raw ? c.val : String(c.val ?? 0)}</div>
+              <div key={i} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+                <div className="text-[var(--color-text-secondary)] text-xs flex items-center gap-1"><c.icon className="w-3.5 h-3.5" />{c.label}</div>
+                <div className={`text-xl font-bold ${c.color}`}>{String(c.val ?? '—')}</div>
               </div>
             ))}
           </div>
@@ -103,13 +105,13 @@ export default function BillingReportsPage() {
 
         {/* Revenue Leakage */}
         {leakage && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4">Revenue Leakage Analysis</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(leakage).filter(([k]) => k !== 'as_of').slice(0, 8).map(([k, v]) => (
                 <div key={k}>
-                  <div className="text-gray-400 text-xs">{k.replace(/_/g, ' ')}</div>
-                  <div className="text-sm font-semibold text-gray-200">{typeof v === 'number' ? (k.includes('cents') ? formatCents(v) : v.toLocaleString()) : String(v ?? '—')}</div>
+                  <div className="text-[var(--color-text-secondary)] text-xs">{k.replace(/_/g, ' ')}</div>
+                  <div className="text-sm font-semibold text-[var(--color-text-primary)]">{typeof v === 'number' ? (k.includes('cents') ? formatCents(v) : v.toLocaleString()) : String(v ?? '—')}</div>
                 </div>
               ))}
             </div>
@@ -118,11 +120,11 @@ export default function BillingReportsPage() {
 
         {/* Payer Performance Table */}
         {payers.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4">Payer Performance</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="text-gray-400 border-b border-gray-800">
+                <thead><tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border-default)]">
                   <th className="text-left py-2">Payer</th>
                   <th className="text-right py-2">Claims</th>
                   <th className="text-right py-2">Revenue</th>
@@ -131,12 +133,12 @@ export default function BillingReportsPage() {
                 </tr></thead>
                 <tbody>
                   {payers.slice(0, 10).map((p, i) => (
-                    <tr key={i} className="border-b border-gray-800/50">
+                    <tr key={i} className="border-b border-[var(--color-border-subtle)]">
                       <td className="py-2">{String(p.payer_name ?? p.name ?? `Payer ${i + 1}`)}</td>
-                      <td className="py-2 text-right">{String(p.total_claims ?? 0)}</td>
-                      <td className="py-2 text-right text-emerald-400">{formatCents(p.revenue_cents)}</td>
-                      <td className="py-2 text-right text-blue-400">{String(p.paid ?? 0)}</td>
-                      <td className="py-2 text-right text-red-400">{String(p.denied ?? 0)}</td>
+                      <td className="py-2 text-right">{fmtN(p.total_claims)}</td>
+                      <td className="py-2 text-right text-[var(--color-status-active)]">{formatCents(p.revenue_cents)}</td>
+                      <td className="py-2 text-right text-[var(--color-status-info)]">{fmtN(p.paid)}</td>
+                      <td className="py-2 text-right text-[var(--color-brand-red)]">{fmtN(p.denied)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -147,13 +149,13 @@ export default function BillingReportsPage() {
 
         {/* Billing KPIs */}
         {kpis && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4">Billing KPIs</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(kpis).filter(([k]) => k !== 'as_of').slice(0, 12).map(([k, v]) => (
                 <div key={k}>
-                  <div className="text-gray-400 text-xs">{k.replace(/_/g, ' ')}</div>
-                  <div className="text-sm font-semibold text-gray-200">{typeof v === 'number' ? v.toLocaleString() : String(v ?? '—')}</div>
+                  <div className="text-[var(--color-text-secondary)] text-xs">{k.replace(/_/g, ' ')}</div>
+                  <div className="text-sm font-semibold text-[var(--color-text-primary)]">{typeof v === 'number' ? v.toLocaleString() : String(v ?? '—')}</div>
                 </div>
               ))}
             </div>

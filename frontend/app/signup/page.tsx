@@ -68,9 +68,9 @@ const BILLING_MODES = [
   { code: 'THIRD_PARTY_EXPORT', label: 'Internal / Third-Party Billing' },
 ];
 
-const inputCls = "bg-[#050505] border border-zinc-800 px-4 py-3 text-[12px] font-mono text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00]/20 transition-all tracking-widest w-full uppercase";
-const selectCls = "bg-[#050505] border border-zinc-800 px-4 py-3 text-[12px] font-mono text-zinc-100 focus:outline-none focus:border-[#FF4D00] transition-all tracking-widest appearance-none w-full uppercase";
-const labelCls = "block text-[10px] font-bold mb-2 tracking-[0.2em] text-zinc-500 uppercase";
+const inputCls = "bg-[var(--color-bg-base)] border border-[var(--color-border-default)] px-4 py-3 text-[12px] font-mono text-[var(--color-text-primary)] placeholder-zinc-700 focus:outline-none focus:border-[var(--q-orange)] focus:ring-1 focus:ring-[var(--q-orange)]/20 transition-all tracking-widest w-full uppercase";
+const selectCls = "bg-[var(--color-bg-base)] border border-[var(--color-border-default)] px-4 py-3 text-[12px] font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--q-orange)] transition-all tracking-widest appearance-none w-full uppercase";
+const labelCls = "block text-[10px] font-bold mb-2 tracking-[0.2em] text-[var(--color-text-muted)] uppercase";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -200,18 +200,18 @@ export default function SignupPage() {
 
   if (catalogLoading) {
     return (
-      <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
-        <div className="text-sm text-zinc-500">Loading...</div>
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex items-center justify-center">
+        <div className="text-sm text-[var(--color-text-muted)]">Loading...</div>
       </div>
     );
   }
 
   if (catalogError || !catalog) {
     return (
-      <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="text-sm text-red-400">{catalogError || 'Unable to load pricing'}</div>
-          <button onClick={fetchCatalog} className="px-4 py-2 bg-[#FF4D00] text-black text-sm font-bold chamfer-4">
+          <div className="text-sm text-[var(--color-brand-red)]">{catalogError || 'Unable to load pricing'}</div>
+          <button onClick={fetchCatalog} className="px-4 py-2 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4">
             Retry
           </button>
         </div>
@@ -220,21 +220,21 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex flex-col items-center py-12 px-4">
       <div className="w-full max-w-3xl">
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-9 h-9 bg-[#FF4D00] flex items-center justify-center text-sm font-black text-black" style={{ clipPath: 'polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%)' }}>FQ</div>
+          <div className="w-9 h-9 bg-[var(--q-orange)] flex items-center justify-center text-sm font-black text-black" style={{ clipPath: 'polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%)' }}>FQ</div>
           <div>
             <div className="text-lg font-bold tracking-wide">QuantumEMS</div>
-            <div className="text-xs text-zinc-500">Agency Signup</div>
+            <div className="text-xs text-[var(--color-text-muted)]">Agency Signup</div>
           </div>
         </div>
 
         <div className="flex gap-2 mb-10">
           {(['Plan','Addons','Collections','Agency Info','Review'] as const).map((label, i) => (
             <div key={label} className="flex items-center gap-2">
-              <div className={`w-6 h-6  flex items-center justify-center text-xs font-bold ${step === i+1 ? 'bg-[#FF4D00] text-black' : step > i+1 ? 'bg-status-active text-black' : 'bg-[rgba(255,255,255,0.1)] text-zinc-500'}`}>{i+1}</div>
-              <span className={`text-xs hidden sm:block ${step === i+1 ? 'text-zinc-100 font-semibold' : 'text-zinc-500'}`}>{label}</span>
+              <div className={`w-6 h-6  flex items-center justify-center text-xs font-bold ${step === i+1 ? 'bg-[var(--q-orange)] text-black' : step > i+1 ? 'bg-status-active text-black' : 'bg-[rgba(255,255,255,0.1)] text-[var(--color-text-muted)]'}`}>{i+1}</div>
+              <span className={`text-xs hidden sm:block ${step === i+1 ? 'text-[var(--color-text-primary)] font-semibold' : 'text-[var(--color-text-muted)]'}`}>{label}</span>
               {i < 4 && <span className="text-[rgba(255,255,255,0.15)] text-xs">›</span>}
             </div>
           ))}
@@ -243,16 +243,16 @@ export default function SignupPage() {
         {step === 1 && (
           <div>
             <h2 className="text-xl font-bold mb-1">Choose your plan</h2>
-            <p className="text-sm text-zinc-500 mb-6">One plan. Add what you need.</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">One plan. Add what you need.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               {catalog.plans.map(p => (
                 <button key={p.code} onClick={() => { setPlan(p.code); setTier(''); }}
-                  className={`text-left p-4 chamfer-4 border transition-all ${plan === p.code ? 'border-[#FF4D00] bg-[rgba(255,77,0,0.12)]' : 'border-border-DEFAULT hover:border-[rgba(255,255,255,0.2)]'}`}>
+                  className={`text-left p-4 chamfer-4 border transition-all ${plan === p.code ? 'border-[var(--q-orange)] bg-[rgba(255,106,0,0.12)]' : 'border-border-DEFAULT hover:border-[rgba(255,255,255,0.2)]'}`}>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2 h-2 " style={{ background: p.color }} />
                     <span className="font-semibold text-sm">{p.label}</span>
                   </div>
-                  <div className="text-xs text-zinc-500 mb-2">{p.desc}</div>
+                  <div className="text-xs text-[var(--color-text-muted)] mb-2">{p.desc}</div>
                   <div className="text-xs font-bold" style={{ color: p.color }}>{p.price_display}</div>
                 </button>
               ))}
@@ -263,9 +263,9 @@ export default function SignupPage() {
                 <div className="grid grid-cols-3 gap-2">
                   {catalog.scheduling_tiers.map(t => (
                     <button key={t.code} onClick={() => setTier(t.code)}
-                      className={`p-3 chamfer-4 border text-left transition-all ${tier === t.code ? 'border-[#FF4D00] bg-[rgba(255,77,0,0.12)]' : 'border-border-DEFAULT hover:border-[rgba(255,255,255,0.2)]'}`}>
+                      className={`p-3 chamfer-4 border text-left transition-all ${tier === t.code ? 'border-[var(--q-orange)] bg-[rgba(255,106,0,0.12)]' : 'border-border-DEFAULT hover:border-[rgba(255,255,255,0.2)]'}`}>
                       <div className="text-xs font-semibold">{t.label}</div>
-                      <div className="text-xs text-[#FF4D00] font-bold mt-1">{t.price_display}</div>
+                      <div className="text-xs text-[var(--q-orange)] font-bold mt-1">{t.price_display}</div>
                     </button>
                   ))}
                 </div>
@@ -278,7 +278,7 @@ export default function SignupPage() {
               </label>
             </div>
             <button disabled={!canProceed1} onClick={() => setStep(2)}
-              className="w-full py-3 bg-[#FF4D00] text-black text-sm font-bold chamfer-4 disabled:opacity-40 hover:bg-[#FF6A1A] transition-colors">
+              className="w-full py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 disabled:opacity-40 hover:bg-[#FF6A1A] transition-colors">
               Continue to Add-ons
             </button>
           </div>
@@ -287,10 +287,10 @@ export default function SignupPage() {
         {step === 2 && (
           <div>
             <h2 className="text-xl font-bold mb-1">Add-ons</h2>
-            <p className="text-sm text-zinc-500 mb-6">Add capabilities to your plan.</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">Add capabilities to your plan.</p>
             <div className="space-y-2 mb-6">
               {catalog.addons.filter(a => !a.gov_only || isGovEntity).map(a => (
-                <label key={a.code} className={`flex items-center justify-between p-4 chamfer-4 border cursor-pointer transition-all ${addons.includes(a.code) ? 'border-[#FF4D00] bg-[rgba(255,77,0,0.12)]' : 'border-border-DEFAULT hover:border-border-strong'}`}>
+                <label key={a.code} className={`flex items-center justify-between p-4 chamfer-4 border cursor-pointer transition-all ${addons.includes(a.code) ? 'border-[var(--q-orange)] bg-[rgba(255,106,0,0.12)]' : 'border-border-DEFAULT hover:border-border-strong'}`}>
                   <div className="flex items-center gap-3">
                     <input type="checkbox" checked={addons.includes(a.code)} onChange={() => toggleAddon(a.code)} className="w-4 h-4 accent-orange" />
                     <div>
@@ -298,7 +298,7 @@ export default function SignupPage() {
                       {a.gov_only && <div className="text-xs text-status-warning">Government agencies only</div>}
                     </div>
                   </div>
-                  <div className="text-xs text-[#FF4D00] font-bold">{a.price_display}</div>
+                  <div className="text-xs text-[var(--q-orange)] font-bold">{a.price_display}</div>
                 </label>
               ))}
             </div>
@@ -307,12 +307,12 @@ export default function SignupPage() {
                 <div className={labelCls}>Billing Automation tier</div>
                 <div className="space-y-2">
                   {catalog.billing_tiers.map(t => (
-                    <label key={t.code} className={`flex items-center justify-between p-3 chamfer-4 border cursor-pointer ${billingTier === t.code ? 'border-[#FF4D00]' : 'border-border-subtle'}`}>
+                    <label key={t.code} className={`flex items-center justify-between p-3 chamfer-4 border cursor-pointer ${billingTier === t.code ? 'border-[var(--q-orange)]' : 'border-border-subtle'}`}>
                       <div className="flex items-center gap-2">
                         <input type="radio" checked={billingTier === t.code} onChange={() => setBillingTier(t.code)} className="accent-orange" />
                         <span className="text-xs">{t.label}</span>
                       </div>
-                      <span className="text-xs text-[#FF4D00] font-bold">{t.base_display} {t.per_claim_display}</span>
+                      <span className="text-xs text-[var(--q-orange)] font-bold">{t.base_display} {t.per_claim_display}</span>
                     </label>
                   ))}
                 </div>
@@ -320,7 +320,7 @@ export default function SignupPage() {
             )}
             <div className="flex gap-3">
               <button onClick={() => setStep(1)} className="flex-1 py-3 border border-border-strong text-sm font-bold chamfer-4 hover:bg-[rgba(255,255,255,0.05)]">Back</button>
-              <button onClick={() => setStep(3)} className="flex-1 py-3 bg-[#FF4D00] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A]">Continue</button>
+              <button onClick={() => setStep(3)} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A]">Continue</button>
             </div>
           </div>
         )}
@@ -328,10 +328,10 @@ export default function SignupPage() {
         {step === 3 && (
           <div>
             <h2 className="text-xl font-bold mb-1">Collections setup</h2>
-            <p className="text-sm text-zinc-500 mb-6">How do you want to handle patient responsibility balances?</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">How do you want to handle patient responsibility balances?</p>
             <div className="space-y-2 mb-6">
               {COLLECTIONS_MODES.map(m => (
-                <label key={m.code} className={`flex items-center gap-3 p-4 chamfer-4 border cursor-pointer transition-all ${collectionsMode === m.code ? 'border-[#FF4D00] bg-[rgba(255,77,0,0.12)]' : 'border-border-DEFAULT'}`}>
+                <label key={m.code} className={`flex items-center gap-3 p-4 chamfer-4 border cursor-pointer transition-all ${collectionsMode === m.code ? 'border-[var(--q-orange)] bg-[rgba(255,106,0,0.12)]' : 'border-border-DEFAULT'}`}>
                   <input type="radio" checked={collectionsMode === m.code} onChange={() => setCollectionsMode(m.code)} className="accent-orange" />
                   <span className="text-sm">{m.label}</span>
                 </label>
@@ -370,7 +370,7 @@ export default function SignupPage() {
             )}
             <div className="flex gap-3">
               <button onClick={() => setStep(2)} className="flex-1 py-3 border border-border-strong text-sm font-bold chamfer-4 hover:bg-[rgba(255,255,255,0.05)]">Back</button>
-              <button onClick={() => setStep(4)} className="flex-1 py-3 bg-[#FF4D00] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A]">Continue</button>
+              <button onClick={() => setStep(4)} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A]">Continue</button>
             </div>
           </div>
         )}
@@ -378,7 +378,7 @@ export default function SignupPage() {
         {step === 4 && (
           <div>
             <h2 className="text-xl font-bold mb-1">Agency information</h2>
-            <p className="text-sm text-zinc-500 mb-6">Tell us about your organization.</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">Tell us about your organization.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="sm:col-span-2">
                 <label className={labelCls}>Agency Name *</label>
@@ -415,7 +415,7 @@ export default function SignupPage() {
                     {npiLookupLoading ? 'Looking…' : 'Lookup'}
                   </button>
                 </div>
-                {npiLookupError && <div className="text-[11px] text-red-400 mt-1">{npiLookupError}</div>}
+                {npiLookupError && <div className="text-[11px] text-[var(--color-brand-red)] mt-1">{npiLookupError}</div>}
               </div>
               <div>
                 <label className={labelCls}>Operational Mode *</label>
@@ -474,7 +474,7 @@ export default function SignupPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setStep(3)} className="flex-1 py-3 border border-border-strong text-sm font-bold chamfer-4 hover:bg-[rgba(255,255,255,0.05)]">Back</button>
-              <button disabled={!canProceed4} onClick={() => setStep(5)} className="flex-1 py-3 bg-[#FF4D00] text-black text-sm font-bold chamfer-4 disabled:opacity-40 hover:bg-[#FF6A1A]">Review & Continue</button>
+              <button disabled={!canProceed4} onClick={() => setStep(5)} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 disabled:opacity-40 hover:bg-[#FF6A1A]">Review & Continue</button>
             </div>
           </div>
         )}
@@ -482,7 +482,7 @@ export default function SignupPage() {
         {step === 5 && (
           <div>
             <h2 className="text-xl font-bold mb-1">Review your order</h2>
-            <p className="text-sm text-zinc-500 mb-6">Confirm your selections before proceeding to legal signing and payment.</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">Confirm your selections before proceeding to legal signing and payment.</p>
             <div className="space-y-3 mb-6">
               {[
                 { label: 'Plan', value: selectedPlan?.label || plan },
@@ -496,7 +496,7 @@ export default function SignupPage() {
                 { label: 'Contact', value: `${firstName} ${lastName} · ${email}` },
               ].map(row => (
                 <div key={row.label} className="flex justify-between py-2 border-b border-border-subtle text-sm">
-                  <span className="text-zinc-400">{row.label}</span>
+                  <span className="text-[var(--color-text-secondary)]">{row.label}</span>
                   <span className="font-semibold">{row.value}</span>
                 </div>
               ))}
@@ -504,7 +504,7 @@ export default function SignupPage() {
             {error && <div className="mb-4 p-3 bg-[rgba(229,57,53,0.12)] border border-red/25 text-red text-sm chamfer-4">{error}</div>}
             <div className="flex gap-3">
               <button onClick={() => setStep(4)} className="flex-1 py-3 border border-border-strong text-sm font-bold chamfer-4 hover:bg-[rgba(255,255,255,0.05)]">Back</button>
-              <button disabled={loading} onClick={submit} className="flex-1 py-3 bg-[#FF4D00] text-black text-sm font-bold chamfer-4 disabled:opacity-50 hover:bg-[#FF6A1A]">
+              <button disabled={loading} onClick={submit} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 disabled:opacity-50 hover:bg-[#FF6A1A]">
                 {loading ? 'Submitting...' : 'Continue to Legal Signing'}
               </button>
             </div>

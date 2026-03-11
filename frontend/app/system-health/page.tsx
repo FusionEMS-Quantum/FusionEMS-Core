@@ -19,10 +19,10 @@ import {
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-      <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-2">{label}</div>
+      className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+      <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-2">{label}</div>
       <div className="text-2xl font-bold" style={{ color: color ?? "var(--color-text-primary)" }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-1">{sub}</div>}
+      {sub && <div className="text-body text-[var(--color-text-muted)] mt-1">{sub}</div>}
     </motion.div>
   );
 }
@@ -32,8 +32,8 @@ function ServiceRow({ service, status, metric, value }: { service: string; statu
   return (
     <div className="flex items-center gap-3 py-2 border-b border-[var(--color-border-default)] last:border-0">
       <span className="w-2 h-2  flex-shrink-0" style={{ background: statusColor }} />
-      <span className="text-body font-label text-zinc-100 w-28 uppercase tracking-wider">{service}</span>
-      <span className="text-micro text-zinc-500 flex-1">{metric}</span>
+      <span className="text-body font-label text-[var(--color-text-primary)] w-28 uppercase tracking-wider">{service}</span>
+      <span className="text-micro text-[var(--color-text-muted)] flex-1">{metric}</span>
       <span className="text-body font-bold" style={{ color: statusColor }}>{value}</span>
     </div>
   );
@@ -121,7 +121,7 @@ export default function SystemHealthPage() {
   }, []);
 
   const fmtN = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
-  const overallStatus = String(dash.overall_status ?? "");
+  const overallStatus = dash.overall_status != null ? String(dash.overall_status) : "";
   const overallColor = overallStatus === "healthy" ? "var(--color-status-active)" : overallStatus === "warning" ? "var(--color-status-warning)" : overallStatus === "degraded" ? "var(--color-brand-red)" : "var(--color-text-muted)";
   const resScore = typeof resilience.resilience_score === "number" ? resilience.resilience_score : 0;
   const resGrade = String(resilience.grade ?? "—");
@@ -168,8 +168,8 @@ export default function SystemHealthPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Service Health */}
-        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Service Health Status</div>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Service Health Status</div>
           {services.map((svc, i) => (
             <ServiceRow key={i} service={String(svc.service)} status={String(svc.status)} metric={String(svc.metric)} value={String(svc.value)} />
           ))}
@@ -177,24 +177,24 @@ export default function SystemHealthPage() {
 
         {/* SSL & Backups */}
         <div className="space-y-4">
-          <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-            <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">SSL Certificate Status</div>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">SSL Certificate Status</div>
             {ssl.domains?.map(d => (
               <div key={d.domain} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
-                <span className="text-body text-zinc-400 truncate">{d.domain}</span>
+                <span className="text-body text-[var(--color-text-secondary)] truncate">{d.domain}</span>
                 <span className="text-body font-label" style={{ color: d.expires_in_days < 30 ? "var(--color-brand-red)" : d.expires_in_days < 60 ? "var(--color-status-warning)" : "var(--color-status-active)" }}>
                   {d.expires_in_days}d
                 </span>
               </div>
             ))}
           </div>
-          <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-            <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Backup Status</div>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Backup Status</div>
             {["rds_backup", "s3_backup"].map(key => {
               const b = (backups as Record<string, Record<string, unknown>>)[key];
               return b ? (
                 <div key={key} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
-                  <span className="text-body text-zinc-400 uppercase">{key.replace("_", " ")}</span>
+                  <span className="text-body text-[var(--color-text-secondary)] uppercase">{key.replace("_", " ")}</span>
                   <span className="text-body font-bold" style={{ color: String(b.status) === "healthy" ? "var(--color-status-active)" : "var(--color-brand-red)" }}>{String(b.status)}</span>
                 </div>
               ) : null;
@@ -203,21 +203,21 @@ export default function SystemHealthPage() {
         </div>
 
         {/* Active Alerts */}
-        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Active Alerts · {alerts.total ?? 0}</div>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Active Alerts · {fmtN(alerts.total)}</div>
           {alerts.alerts?.slice(0, 8).map((alert, i) => {
             const d = alert.data as Record<string, unknown>;
-            const alertSeverity = normalizeSeverity(String(d.severity ?? ""));
+            const alertSeverity = normalizeSeverity(String(d.severity ?? "LOW"));
             const sevColor = alertSeverityColor(alertSeverity);
             return (
               <div key={i} className="flex items-start gap-2 py-2 border-b border-[var(--color-border-default)] last:border-0">
                 <span className="w-1.5 h-1.5  mt-1 flex-shrink-0" style={{ background: sevColor }} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-body text-zinc-400 truncate">{String(d.message ?? d.service ?? "Alert")}</div>
-                  <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "")}</div>
+                  <div className="text-body text-[var(--color-text-secondary)] truncate">{String(d.message ?? d.service ?? "Alert")}</div>
+                  <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "unknown")}</div>
                 </div>
                 {String(d.status) === "active" && (
-                  <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-green-500/30 text-status-active chamfer-4 hover:bg-green-500/10 transition-colors flex-shrink-0">
+                  <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-[var(--color-status-active)]/30 text-[var(--color-status-active)] chamfer-4 hover:bg-[var(--color-status-active)]/10 transition-colors flex-shrink-0">
                     Resolve
                   </button>
                 )}
@@ -227,7 +227,7 @@ export default function SystemHealthPage() {
           {!alerts.alerts?.length && (
             <div className="flex items-center gap-2 py-3">
               <span className="w-2 h-2  bg-status-active" />
-              <span className="text-body text-status-active font-label">All Systems Operational</span>
+              <span className="text-body text-[var(--color-status-active)] font-label">All Systems Operational</span>
             </div>
           )}
         </div>
@@ -235,8 +235,8 @@ export default function SystemHealthPage() {
 
       {/* Resilience Score Meter */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-5">
-          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-4">Enterprise Resilience Score</div>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5">
+          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-4">Enterprise Resilience Score</div>
           <div className="flex items-center gap-6">
             <div className="relative w-24 h-24 flex-shrink-0">
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
@@ -262,8 +262,8 @@ export default function SystemHealthPage() {
               ].map(item => (
                 <div key={item.label}>
                   <div className="flex justify-between text-micro mb-0.5">
-                    <span className="text-zinc-500">{item.label}</span>
-                    <span className="text-zinc-100 font-label">{item.pct}%</span>
+                    <span className="text-[var(--color-text-muted)]">{item.label}</span>
+                    <span className="text-[var(--color-text-primary)] font-label">{item.pct}%</span>
                   </div>
                   <div className="h-1 bg-[rgba(255,255,255,0.06)]  overflow-hidden">
                     <motion.div className="h-full " style={{ background: item.pct >= 90 ? "var(--color-status-active)" : item.pct >= 70 ? "var(--color-status-warning)" : "var(--color-brand-red)" }}
@@ -275,8 +275,8 @@ export default function SystemHealthPage() {
           </div>
         </div>
 
-        <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">Self-Healing Engine Status</div>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Self-Healing Engine Status</div>
           <div className="space-y-2">
             {[
               { label: "Auto-restart on crash", status: "active" },
@@ -291,7 +291,7 @@ export default function SystemHealthPage() {
               { label: "Emergency lock mode", status: "standby" },
             ].map(item => (
               <div key={item.label} className="flex items-center justify-between py-1">
-                <span className="text-body text-zinc-400">{item.label}</span>
+                <span className="text-body text-[var(--color-text-secondary)]">{item.label}</span>
                 <span className="text-micro px-2 py-0.5 chamfer-4 font-bold uppercase"
                   style={{
                     background: item.status === "active" ? "rgba(76,175,80,0.1)" : "rgba(255,152,0,0.1)",
@@ -306,11 +306,11 @@ export default function SystemHealthPage() {
         </div>
       </div>
 
-      <div className="bg-[#0A0A0B] border border-[var(--color-border-default)] chamfer-8 p-4">
-        <div className="text-micro font-label uppercase tracking-widest text-zinc-500 mb-3">100 Active System Health Features</div>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+        <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">100 Active System Health Features</div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
           {FEATURES.map(f => (
-            <div key={f} className="flex items-center gap-1.5 text-micro text-zinc-500">
+            <div key={f} className="flex items-center gap-1.5 text-micro text-[var(--color-text-muted)]">
               <span className="w-1 h-1  bg-status-active flex-shrink-0" />
               <span className="truncate">{f}</span>
             </div>

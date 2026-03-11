@@ -1,0 +1,9 @@
+{
+  "db_tables_checked": 585,
+  "db_tables_without_any_migration_mention_count": 3,
+  "db_tables_without_any_migration_mention": [
+    "geography_columns",
+    "geometry_columns",
+    "spatial_ref_sys"
+  ]
+}

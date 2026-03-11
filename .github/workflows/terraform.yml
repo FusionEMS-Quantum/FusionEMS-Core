@@ -14,6 +14,11 @@ on:
       - ".github/workflows/terraform.yml"
 
   workflow_dispatch:
+    inputs:
+      allow_apply:
+        description: "Allow terraform apply (manual go-live safety gate)"
+        required: true
+        default: "false"
 
 permissions:
   id-token: write
@@ -159,7 +164,9 @@ jobs:
     needs: plan_prod
     runs-on: ubuntu-latest
 
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # First production launches should be manual from a trusted operator environment.
+    # Enable apply only via explicit manual dispatch.
+    if: github.event_name == 'workflow_dispatch' && inputs.allow_apply == 'true'
 
     defaults:
       run:

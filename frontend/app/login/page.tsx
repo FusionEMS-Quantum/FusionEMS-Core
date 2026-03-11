@@ -86,7 +86,7 @@ function LoginPageInner() {
       <div
         className="w-full max-w-md chamfer-12 border shadow-[var(--elevation-3)]"
         style={{
-          backgroundColor: '#0A0A0B',
+          backgroundColor: 'var(--color-bg-panel)',
           borderColor:     'var(--color-border-default)',
         }}
       >
@@ -99,7 +99,7 @@ function LoginPageInner() {
             <div
               className="chamfer-4 flex h-8 w-8 items-center justify-center"
               style={{
-                backgroundColor: '#FF4D00',
+                backgroundColor: 'var(--q-orange)',
                 color:           'var(--color-text-inverse)',
                 fontFamily:      'var(--font-label)',
                 fontSize:        'var(--text-label)',
@@ -168,7 +168,7 @@ function LoginPageInner() {
                       className="absolute bottom-0 left-0 right-0"
                       style={{
                         height:          2,
-                        backgroundColor: '#FF4D00',
+                        backgroundColor: 'var(--q-orange)',
                       }}
                     />
                   )}
@@ -271,7 +271,7 @@ function LoginPageInner() {
 
           <a
             href="/api/v1/auth/microsoft/login"
-            className="chamfer-8 flex w-full items-center justify-center gap-2 py-2.5 transition-colors duration-[150ms]"
+            className="chamfer-8 flex w-full items-center justify-center py-2.5 transition-colors duration-[150ms]"
             style={{
               fontFamily:      'var(--font-label)',
               fontSize:        'var(--text-label)',
@@ -284,18 +284,6 @@ function LoginPageInner() {
               textDecoration:  'none',
             }}
           >
-            <svg
-              aria-hidden="true"
-              width="16"
-              height="16"
-              viewBox="0 0 21 21"
-              fill="none"
-            >
-              <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-              <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-              <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-              <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-            </svg>
             Sign in with Microsoft
           </a>
 
@@ -306,21 +294,6 @@ function LoginPageInner() {
           className="flex items-center justify-center gap-2 px-6 py-4"
           style={{ borderTop: '1px solid var(--color-border-subtle)' }}
         >
-          <svg
-            aria-hidden="true"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ color: 'var(--color-text-muted)', flexShrink: 0 }}
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
           <span
             className="micro-caps"
             style={{ color: 'var(--color-text-muted)' }}

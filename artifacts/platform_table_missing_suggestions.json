@@ -1,0 +1,1118 @@
+[
+  {
+    "missing": "audit_events",
+    "close_matches": [
+      "auth_events",
+      "fleet_audit_events",
+      "export_audit_events",
+      "release_audit_events",
+      "records_audit_events"
+    ],
+    "prefix_examples": [
+      "audit_correlations",
+      "audit_logs",
+      "audit_retention_policies",
+      "audit_snapshots"
+    ]
+  },
+  {
+    "missing": "audit_log",
+    "close_matches": [
+      "audit_logs",
+      "access_audit_logs",
+      "visibility_audit_log"
+    ],
+    "prefix_examples": [
+      "audit_correlations",
+      "audit_logs",
+      "audit_retention_policies",
+      "audit_snapshots"
+    ]
+  },
+  {
+    "missing": "auth_rep_consent_events",
+    "close_matches": [
+      "ai_resume_events",
+      "ai_rejection_events",
+      "auth_events",
+      "authorization_audit_events",
+      "records_audit_events"
+    ],
+    "prefix_examples": [
+      "auth_events",
+      "auth_rep_sessions"
+    ]
+  },
+  {
+    "missing": "billing_statements",
+    "close_matches": [
+      "billing_call_intents",
+      "fire_statements",
+      "patient_statements",
+      "ar_statements",
+      "billing_state_transitions"
+    ],
+    "prefix_examples": [
+      "billing_alert_thresholds",
+      "billing_call_escalations",
+      "billing_call_intents",
+      "billing_call_summaries",
+      "billing_call_transcripts",
+      "billing_callback_audit_events",
+      "billing_callback_tasks",
+      "billing_calls"
+    ]
+  },
+  {
+    "missing": "communication_messages",
+    "close_matches": [
+      "communications",
+      "founder_chat_messages",
+      "communication_opt_out_events",
+      "founder_communication_templates"
+    ],
+    "prefix_examples": [
+      "communication_opt_out_events"
+    ]
+  },
+  {
+    "missing": "coverage_rules",
+    "close_matches": [
+      "coverage_rulesets",
+      "scheduling_coverage_rules",
+      "compliance_rules",
+      "governance_scores"
+    ],
+    "prefix_examples": [
+      "coverage_rulesets"
+    ]
+  },
+  {
+    "missing": "crew_paging_audit_log",
+    "close_matches": [
+      "crew_paging_audit_events",
+      "crew_paging_alerts",
+      "crew_paging_recipients",
+      "crew_paging_responses",
+      "crew_paging_escalation_rules"
+    ],
+    "prefix_examples": [
+      "crew_assignment_conflicts",
+      "crew_assignments",
+      "crew_availability",
+      "crew_fatigue_flags",
+      "crew_members",
+      "crew_mission_assignments",
+      "crew_paging_alerts",
+      "crew_paging_audit_events"
+    ]
+  },
+  {
+    "missing": "dea_audit_reports",
+    "close_matches": [
+      "release_audit_events",
+      "document_audit_events",
+      "fleet_audit_events",
+      "audit_snapshots",
+      "fire_reports"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "epcr_records",
+    "close_matches": [
+      "usage_records",
+      "epcr_charts",
+      "deployment_records",
+      "founder_fax_records",
+      "rollback_records"
+    ],
+    "prefix_examples": [
+      "epcr_agency_branding",
+      "epcr_ai_outputs",
+      "epcr_amendments",
+      "epcr_capture_sessions",
+      "epcr_chart_signatures",
+      "epcr_chart_workflow_blocks",
+      "epcr_charts",
+      "epcr_completeness_snapshots"
+    ]
+  },
+  {
+    "missing": "export_anomalies",
+    "close_matches": [
+      "export_jobs",
+      "export_audit_events",
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_approval_workflows",
+    "close_matches": [],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_approvals",
+    "close_matches": [
+      "policy_approvals",
+      "export_artifacts",
+      "go_live_approvals",
+      "export_jobs",
+      "protected_action_approvals"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_archives",
+    "close_matches": [
+      "export_artifacts",
+      "export_audit_events",
+      "import_batches",
+      "nemsis_export_batches",
+      "export_jobs"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_audit_freezes",
+    "close_matches": [
+      "export_audit_events",
+      "records_audit_events",
+      "fleet_audit_events"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_audit_log",
+    "close_matches": [
+      "export_audit_events",
+      "audit_logs",
+      "access_audit_logs",
+      "visibility_audit_log",
+      "epcr_event_log"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_auto_repairs",
+    "close_matches": [
+      "export_artifacts",
+      "export_jobs"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_bundles",
+    "close_matches": [
+      "export_jobs",
+      "export_audit_events"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_certificates",
+    "close_matches": [
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_cost_records",
+    "close_matches": [
+      "interop_export_records",
+      "deployment_records",
+      "interop_import_records",
+      "ai_explanation_records",
+      "founder_call_records"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_crosswalks",
+    "close_matches": [
+      "export_jobs"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_dependencies",
+    "close_matches": [
+      "export_audit_events"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_epcr_links",
+    "close_matches": [
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_escalations",
+    "close_matches": [
+      "support_escalations",
+      "record_sections",
+      "deployment_validations",
+      "support_sessions",
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_exceptions",
+    "close_matches": [
+      "qa_exceptions",
+      "record_sections",
+      "support_escalations",
+      "export_jobs",
+      "support_sessions"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_fire_mappings",
+    "close_matches": [
+      "import_mappings"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_fire_normalizations",
+    "close_matches": [
+      "support_escalations",
+      "connector_secret_materializations"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_freezes",
+    "close_matches": [
+      "data_export_requests",
+      "export_jobs",
+      "export_audit_events",
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_health_checks",
+    "close_matches": [
+      "import_batches",
+      "nemsis_export_batches",
+      "export_audit_events",
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_integrity_hashes",
+    "close_matches": [],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_locks",
+    "close_matches": [
+      "export_jobs",
+      "export_artifacts",
+      "neris_export_jobs",
+      "vault_export_packages",
+      "nemsis_export_jobs"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_notifications",
+    "close_matches": [
+      "push_notifications",
+      "export_artifacts",
+      "support_escalations",
+      "crew_qualifications"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_overrides",
+    "close_matches": [
+      "dispatch_overrides",
+      "export_jobs",
+      "export_artifacts",
+      "import_errors"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_permissions",
+    "close_matches": [
+      "role_permissions",
+      "permissions",
+      "support_sessions",
+      "export_jobs",
+      "epcr_capture_sessions"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_priority_rules",
+    "close_matches": [
+      "export_audit_events"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_proofs",
+    "close_matches": [
+      "export_jobs",
+      "export_artifacts",
+      "import_errors",
+      "neris_export_jobs"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_reconciliation_log",
+    "close_matches": [],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_rejection_alerts",
+    "close_matches": [
+      "ai_rejection_events"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_retention_policies",
+    "close_matches": [
+      "vault_retention_policies",
+      "audit_retention_policies",
+      "tenant_policies",
+      "escalation_policies"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_review_queue",
+    "close_matches": [
+      "voice_human_review_queue",
+      "data_export_requests"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_rule_violations",
+    "close_matches": [
+      "support_escalations"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_schedules",
+    "close_matches": [
+      "data_export_requests",
+      "import_batches"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_schema_alerts",
+    "close_matches": [
+      "weather_alerts",
+      "epcr_charts",
+      "export_audit_events",
+      "export_artifacts",
+      "system_alerts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_schema_versions",
+    "close_matches": [
+      "template_versions",
+      "policy_versions",
+      "export_audit_events",
+      "support_sessions",
+      "release_versions"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_sla",
+    "close_matches": [
+      "export_jobs",
+      "trip_exports",
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_state_api_status",
+    "close_matches": [
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_state_confirmations",
+    "close_matches": [
+      "system_configurations",
+      "tenant_configurations"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_state_outages",
+    "close_matches": [
+      "export_audit_events",
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_state_rules",
+    "close_matches": [
+      "epcr_customization_rules",
+      "tenant_scope_rules"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_state_sla",
+    "close_matches": [
+      "export_audit_events",
+      "export_artifacts",
+      "import_batches"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_submission_blockers",
+    "close_matches": [
+      "submission_batches"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_throttle_config",
+    "close_matches": [],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_transfers",
+    "close_matches": [
+      "export_artifacts"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "export_validation_results",
+    "close_matches": [
+      "neris_validation_results",
+      "nemsis_validation_results",
+      "epcr_validation_snapshots",
+      "deployment_validations",
+      "configuration_validation_issues"
+    ],
+    "prefix_examples": [
+      "export_artifacts",
+      "export_audit_events",
+      "export_jobs"
+    ]
+  },
+  {
+    "missing": "fatigue_assessments",
+    "close_matches": [
+      "scheduling_fatigue_assessments",
+      "patient_statements",
+      "fire_statements",
+      "air_assets"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "fire_apparatus_records",
+    "close_matches": [
+      "fire_apparatus",
+      "fire_neris_apparatus",
+      "founder_alert_records"
+    ],
+    "prefix_examples": [
+      "fire_actions_taken",
+      "fire_apparatus",
+      "fire_departments",
+      "fire_hydrants",
+      "fire_hydrants_v2",
+      "fire_incident_actions",
+      "fire_incident_documents",
+      "fire_incident_outcomes"
+    ]
+  },
+  {
+    "missing": "nemsis_backups",
+    "close_matches": [
+      "neris_packs",
+      "nemsis_pack_files",
+      "nemsis_resource_packs",
+      "nemsis_export_batches",
+      "neris_pack_files"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_data_lineage",
+    "close_matches": [
+      "nemsis_pack_files"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_export_freezes",
+    "close_matches": [
+      "nemsis_export_jobs",
+      "nemsis_export_batches",
+      "neris_export_jobs",
+      "nemsis_pack_files",
+      "nemsis_extensions"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_export_schedules",
+    "close_matches": [
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "neris_export_jobs",
+      "nemsis_audit_bundles",
+      "nemsis_pack_files"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_state_mappings",
+    "close_matches": [
+      "nemsis_state_rejections",
+      "nemsis_patch_tasks",
+      "import_mappings"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_submission_audit",
+    "close_matches": [
+      "nemsis_submission_results",
+      "nemsis_submission_status_history",
+      "submission_batches",
+      "hems_mission_events",
+      "mission_audit_events"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_version_locks",
+    "close_matches": [
+      "nemsis_extensions",
+      "nemsis_resource_packs",
+      "nemsis_export_jobs",
+      "mission_packets",
+      "emergency_locks"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "nemsis_vocabularies",
+    "close_matches": [
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_pack_files"
+    ],
+    "prefix_examples": [
+      "nemsis_ai_explanations",
+      "nemsis_audit_bundles",
+      "nemsis_cs_scenarios",
+      "nemsis_export_batches",
+      "nemsis_export_jobs",
+      "nemsis_extensions",
+      "nemsis_pack_files",
+      "nemsis_patch_tasks"
+    ]
+  },
+  {
+    "missing": "patient_documents",
+    "close_matches": [
+      "vault_documents",
+      "claim_documents",
+      "patient_statements",
+      "rep_documents",
+      "fax_documents"
+    ],
+    "prefix_examples": [
+      "patient_aliases",
+      "patient_duplicate_candidates",
+      "patient_identifiers",
+      "patient_merge_audit_events",
+      "patient_merge_requests",
+      "patient_payment_links",
+      "patient_relationship_flags",
+      "patient_responsible_party_links"
+    ]
+  },
+  {
+    "missing": "patient_notification_actions",
+    "close_matches": [
+      "push_notifications",
+      "ai_protected_actions",
+      "patient_statements"
+    ],
+    "prefix_examples": [
+      "patient_aliases",
+      "patient_duplicate_candidates",
+      "patient_identifiers",
+      "patient_merge_audit_events",
+      "patient_merge_requests",
+      "patient_payment_links",
+      "patient_relationship_flags",
+      "patient_responsible_party_links"
+    ]
+  },
+  {
+    "missing": "patient_notifications",
+    "close_matches": [
+      "push_notifications",
+      "patient_identifiers",
+      "tenant_configurations",
+      "patient_statements",
+      "unit_locations"
+    ],
+    "prefix_examples": [
+      "patient_aliases",
+      "patient_duplicate_candidates",
+      "patient_identifiers",
+      "patient_merge_audit_events",
+      "patient_merge_requests",
+      "patient_payment_links",
+      "patient_relationship_flags",
+      "patient_responsible_party_links"
+    ]
+  },
+  {
+    "missing": "payment_events",
+    "close_matches": [
+      "document_events",
+      "camera_events",
+      "payments",
+      "auth_events",
+      "usage_events"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "payment_plan_requests",
+    "close_matches": [
+      "ar_payment_plans",
+      "patient_merge_requests",
+      "time_off_requests",
+      "dispatch_requests",
+      "agency_payment_plan_policies"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "payment_plans",
+    "close_matches": [
+      "ar_payment_plans",
+      "payments",
+      "ar_payments",
+      "patient_payment_links",
+      "deployment_runs"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "portal_accounts",
+    "close_matches": [
+      "ar_accounts",
+      "internal_account_notes",
+      "narc_counts",
+      "facility_portal_contacts",
+      "support_access_grants"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "portal_profile_updates",
+    "close_matches": [
+      "pwa_manifest_updates"
+    ],
+    "prefix_examples": []
+  },
+  {
+    "missing": "shift_swap_requests",
+    "close_matches": [
+      "scheduling_swap_requests",
+      "shift_swaps",
+      "dispatch_requests",
+      "signature_requests",
+      "time_off_requests"
+    ],
+    "prefix_examples": [
+      "shift_bids",
+      "shift_instances",
+      "shift_swaps"
+    ]
+  },
+  {
+    "missing": "support_requests",
+    "close_matches": [
+      "dispatch_requests",
+      "data_export_requests",
+      "support_tickets",
+      "support_threads",
+      "support_sessions"
+    ],
+    "prefix_examples": [
+      "support_access_grants",
+      "support_escalations",
+      "support_messages",
+      "support_sessions",
+      "support_threads",
+      "support_tickets"
+    ]
+  },
+  {
+    "missing": "visibility_elevated_access",
+    "close_matches": [
+      "visibility_access_alerts",
+      "visibility_rules",
+      "visibility_approval_requests",
+      "visibility_anomaly_events",
+      "visibility_audit_log"
+    ],
+    "prefix_examples": [
+      "visibility_access_alerts",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "visibility_audit_log",
+      "visibility_compliance_locks",
+      "visibility_rules"
+    ]
+  },
+  {
+    "missing": "visibility_emergency_access",
+    "close_matches": [
+      "visibility_access_alerts",
+      "visibility_rules",
+      "visibility_anomaly_events"
+    ],
+    "prefix_examples": [
+      "visibility_access_alerts",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "visibility_audit_log",
+      "visibility_compliance_locks",
+      "visibility_rules"
+    ]
+  },
+  {
+    "missing": "visibility_kill_switch",
+    "close_matches": [
+      "visibility_rules",
+      "visibility_audit_log",
+      "visibility_approval_requests"
+    ],
+    "prefix_examples": [
+      "visibility_access_alerts",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "visibility_audit_log",
+      "visibility_compliance_locks",
+      "visibility_rules"
+    ]
+  },
+  {
+    "missing": "visibility_policies",
+    "close_matches": [
+      "visibility_rules",
+      "visibility_compliance_locks",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "voice_alert_policies"
+    ],
+    "prefix_examples": [
+      "visibility_access_alerts",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "visibility_audit_log",
+      "visibility_compliance_locks",
+      "visibility_rules"
+    ]
+  },
+  {
+    "missing": "visibility_secure_links",
+    "close_matches": [
+      "visibility_rules",
+      "visibility_compliance_locks",
+      "visibility_audit_log",
+      "template_secure_links"
+    ],
+    "prefix_examples": [
+      "visibility_access_alerts",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "visibility_audit_log",
+      "visibility_compliance_locks",
+      "visibility_rules"
+    ]
+  },
+  {
+    "missing": "visibility_time_windows",
+    "close_matches": [
+      "visibility_rules",
+      "visibility_compliance_locks",
+      "visibility_audit_log"
+    ],
+    "prefix_examples": [
+      "visibility_access_alerts",
+      "visibility_anomaly_events",
+      "visibility_approval_requests",
+      "visibility_audit_log",
+      "visibility_compliance_locks",
+      "visibility_rules"
+    ]
+  }
+]

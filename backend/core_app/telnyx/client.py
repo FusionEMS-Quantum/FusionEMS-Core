@@ -302,6 +302,49 @@ def initiate_outbound_call(
     return r.json()
 
 
+# ── Fax ──────────────────────────────────────────────────────────────────────
+
+
+def send_fax(
+    *,
+    api_key: str,
+    connection_id: str,
+    to: str,
+    from_: str,
+    media_url: str,
+    client_state: str = "",
+) -> dict[str, Any]:
+    """Send an outbound fax via Telnyx.
+
+    Telnyx expects a `media_url` that it can fetch (HTTPS), so callers typically
+    provide a short-lived presigned URL.
+    """
+    if not connection_id:
+        raise TelnyxApiError("send_fax requires connection_id", status_code=422)
+    if not media_url:
+        raise TelnyxApiError("send_fax requires media_url", status_code=422)
+
+    payload: dict[str, Any] = {
+        "connection_id": connection_id,
+        "to": to,
+        "from": from_,
+        "media_url": media_url,
+    }
+    if client_state:
+        import base64
+
+        payload["client_state"] = base64.b64encode(client_state.encode()).decode()
+
+    r = requests.post(
+        f"{TELNYX_API}/faxes",
+        headers=_headers(api_key),
+        json=payload,
+        timeout=20,
+    )
+    _raise_for(r, "send_fax")
+    return r.json()
+
+
 # ── CNAM Management ───────────────────────────────────────────────────────────
 
 

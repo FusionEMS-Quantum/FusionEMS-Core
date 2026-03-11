@@ -116,7 +116,7 @@ export default function AgentsIntelligenceMatrix() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#00ffcc] p-6 font-mono overflow-hidden relative flex flex-col">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[#00ffcc] p-6 font-mono overflow-hidden relative flex flex-col">
       {/* Heavy CRT / Scanline background */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.03] z-50 mix-blend-overlay"
@@ -137,7 +137,7 @@ export default function AgentsIntelligenceMatrix() {
           </motion.h1>
           <div className="text-sm mt-2 font-bold tracking-wider text-[#00ffcc]/60 uppercase flex items-center space-x-3">
             <span>UPLINK:</span>
-            <span className={connectionStatus === "LINK ESTABLISHED" ? "text-green-400 drop-shadow-[0_0_5px_#4ade80]" : "text-red-500 animate-pulse"}>
+            <span className={connectionStatus === "LINK ESTABLISHED" ? "text-[var(--color-status-active)] drop-shadow-[0_0_5px_#4ade80]" : "text-[var(--color-brand-red)] animate-pulse"}>
               {connectionStatus}
             </span>
           </div>
@@ -159,7 +159,7 @@ export default function AgentsIntelligenceMatrix() {
                 initial={{ opacity: 0, scale: 0.95, x: -50 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="relative group border border-[#00ffcc]/30 bg-black/60 backdrop-blur-md p-6"
+                className="relative group border border-[#00ffcc]/30 bg-[var(--color-bg-base)]/60 backdrop-blur-md p-6"
                 style={{
                   clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)",
                   boxShadow: "inset 0 0 20px rgba(0, 255, 204, 0.05)"
@@ -218,7 +218,7 @@ export default function AgentsIntelligenceMatrix() {
         <div className="w-full xl:w-[450px] flex flex-col gap-4">
             
             {/* Live Feed */}
-            <div className="flex-1 flex flex-col border border-[#00ffcc]/30 bg-black/60 relative overflow-hidden min-h-[300px]" style={{
+            <div className="flex-1 flex flex-col border border-[#00ffcc]/30 bg-[var(--color-bg-base)]/60 relative overflow-hidden min-h-[300px]" style={{
                 clipPath: "polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px)",
             }}>
               <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#00ffcc]"></div>
@@ -248,13 +248,13 @@ export default function AgentsIntelligenceMatrix() {
             </div>
 
             {/* Command Input Matrix */}
-            <div className="flex-none border border-[#00ffcc]/30 bg-black/80 relative p-4" style={{
+            <div className="flex-none border border-[#00ffcc]/30 bg-[var(--color-bg-base)]/80 relative p-4" style={{
                  clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)",
                  boxShadow: "0 0 15px rgba(0, 255, 204, 0.1)"
             }}>
                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ffcc]"></div>
                <div className="text-micro text-[#00ffcc]/60 uppercase tracking-[0.2em] mb-2 flex items-center space-x-2">
-                 <div className="w-2 h-2 bg-red-500  animate-pulse shadow-[0_0_8px_red]"></div>
+                 <div className="w-2 h-2 bg-[var(--color-brand-red)]  animate-pulse shadow-[0_0_8px_red]"></div>
                  <span>Direct Override Command</span>
                </div>
                

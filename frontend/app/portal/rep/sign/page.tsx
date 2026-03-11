@@ -12,7 +12,7 @@ const PANEL_STYLE = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-  background: '#FF4D00',
+  background: 'var(--q-orange)',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
   fontSize: '0.9375rem',
@@ -137,7 +137,7 @@ export default function RepSignPage() {
 
   return (
     <div
-      style={{ background: 'var(--color-bg-base, #050505)', minHeight: '100vh' }}
+      style={{ background: 'var(--color-bg-base, var(--color-bg-base))', minHeight: '100vh' }}
       className="flex items-center justify-center px-4 py-12"
     >
       <div style={{ width: '100%', maxWidth: '600px' }}>
@@ -150,13 +150,13 @@ export default function RepSignPage() {
               justifyContent: 'center',
               width: '48px',
               height: '48px',
-              background: 'rgba(255,107,26,0.12)',
-              border: '1px solid rgba(255,107,26,0.3)',
+              background: 'rgba(255,106,0,0.12)',
+              border: '1px solid rgba(255,106,0,0.3)',
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
               marginBottom: '18px',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--q-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
@@ -249,7 +249,7 @@ export default function RepSignPage() {
           <div
             style={{
               position: 'relative',
-              border: `2px dashed ${hasSig ? 'rgba(255,107,26,0.4)' : 'rgba(255,255,255,0.1)'}`,
+              border: `2px dashed ${hasSig ? 'rgba(255,106,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
               overflow: 'hidden',
             }}
@@ -302,8 +302,8 @@ export default function RepSignPage() {
               style={{
                 width: '18px',
                 height: '18px',
-                border: `1px solid ${agreed ? '#FF4D00' : 'rgba(255,255,255,0.2)'}`,
-                background: agreed ? '#FF4D00' : 'transparent',
+                border: `1px solid ${agreed ? 'var(--q-orange)' : 'rgba(255,255,255,0.2)'}`,
+                background: agreed ? 'var(--q-orange)' : 'transparent',
                 clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)',
                 flexShrink: 0,
                 display: 'flex',

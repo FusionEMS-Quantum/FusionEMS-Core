@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, get_current_user
+from core_app.api.dependencies import db_session_dependency, require_founder_only_audited
 from core_app.schemas.auth import CurrentUser
 
 router = APIRouter(prefix="/api/v1/clinical/command", tags=["Founder Clinical Command"])
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1/clinical/command", tags=["Founder Clinical Co
 
 @router.get("/dashboard")
 async def clinical_dashboard(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     """
@@ -115,7 +115,7 @@ async def clinical_dashboard(
 @router.get("/charts/at-risk")
 async def charts_at_risk(
     limit: int = 25,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     """
@@ -201,7 +201,7 @@ async def charts_at_risk(
 @router.get("/sync/failures")
 async def sync_failures(
     limit: int = 50,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     """
@@ -233,7 +233,7 @@ async def sync_failures(
 @router.get("/nemsis/failures")
 async def nemsis_failures(
     limit: int = 50,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     """
@@ -263,7 +263,7 @@ async def nemsis_failures(
 @router.get("/charts/billing-blocked")
 async def charts_billing_blocked(
     limit: int = 50,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     """

@@ -347,6 +347,29 @@ data "aws_iam_policy_document" "ecs_task_kms" {
   }
 }
 
+# Bedrock runtime invoke – scoped to specific model ARNs (optional)
+
+resource "aws_iam_role_policy" "ecs_task_bedrock" {
+  count  = length(var.bedrock_model_arns) > 0 ? 1 : 0
+  name   = "${local.name_prefix}-ecs-task-bedrock"
+  role   = aws_iam_role.ecs_task.id
+  policy = data.aws_iam_policy_document.ecs_task_bedrock[0].json
+}
+
+data "aws_iam_policy_document" "ecs_task_bedrock" {
+  count = length(var.bedrock_model_arns) > 0 ? 1 : 0
+
+  statement {
+    sid    = "BedrockInvoke"
+    effect = "Allow"
+    actions = [
+      "bedrock:InvokeModel",
+      "bedrock:InvokeModelWithResponseStream",
+    ]
+    resources = var.bedrock_model_arns
+  }
+}
+
 ###########################################################
 # 3. GitHub Actions OIDC Provider (conditional)
 ###########################################################

@@ -54,29 +54,29 @@ export default function ScriptBuilderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-white p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         <div>
-          <Link href="/founder/comms" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Communications</Link>
-          <h1 className="text-3xl font-bold flex items-center gap-3"><MessageSquare className="w-8 h-8 text-cyan-400" /> Script Builder</h1>
-          <p className="text-gray-400 mt-1">AI-powered communication script generation with tone control</p>
+          <Link href="/founder/comms" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Communications</Link>
+          <h1 className="text-3xl font-bold flex items-center gap-3"><MessageSquare className="w-8 h-8 text-[var(--color-status-info)]" /> Script Builder</h1>
+          <p className="text-[var(--color-text-secondary)] mt-1">AI-powered communication script generation with tone control</p>
         </div>
 
-        {error && <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-red-400" /><span className="text-red-300">{error}</span></div>}
+        {error && <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-[var(--color-brand-red)]" /><span className="text-[var(--color-brand-red)]">{error}</span></div>}
 
         {/* Input */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-cyan-400" /> Generate Script</h2>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-[var(--color-status-info)]" /> Generate Script</h2>
           <textarea
             placeholder="Describe the communication you need (e.g., 'Patient notification about billing statement', 'Crew reminder about training deadline')..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-3 text-sm text-white placeholder-gray-500 resize-none"
+            className="w-full bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-4 px-4 py-3 text-sm text-white placeholder-[var(--color-text-muted)] resize-none"
           />
           <div className="mt-4 flex items-center gap-4">
             <select value={tone} onChange={(e) => setTone(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white">
+              className="bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-4 px-3 py-2 text-sm text-white">
               <option value="professional">Professional</option>
               <option value="empathetic">Empathetic</option>
               <option value="urgent">Urgent</option>
@@ -84,7 +84,7 @@ export default function ScriptBuilderPage() {
               <option value="friendly">Friendly</option>
             </select>
             <button onClick={generateScript} disabled={loading || !prompt.trim()}
-              className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 rounded-lg flex items-center gap-2 text-sm font-semibold">
+              className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 chamfer-8 flex items-center gap-2 text-sm font-semibold">
               {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               {loading ? 'Generating...' : 'Generate'}
             </button>
@@ -93,16 +93,16 @@ export default function ScriptBuilderPage() {
 
         {/* Result */}
         {result && (
-          <div className="bg-gray-900 border border-cyan-700 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-cyan-700 chamfer-8 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2"><MessageSquare className="w-5 h-5 text-cyan-400" /> Generated Script</h2>
-              <button onClick={copyScript} className="flex items-center gap-1 text-sm text-gray-400 hover:text-white">
-                {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              <h2 className="text-lg font-semibold flex items-center gap-2"><MessageSquare className="w-5 h-5 text-[var(--color-status-info)]" /> Generated Script</h2>
+              <button onClick={copyScript} className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                {copied ? <CheckCircle className="w-4 h-4 text-[var(--color-status-active)]" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
-            <div className="bg-gray-800 rounded-lg p-4 text-sm text-gray-200 whitespace-pre-wrap">{result.script}</div>
-            <div className="mt-3 flex gap-4 text-xs text-gray-500">
+            <div className="bg-[var(--color-bg-raised)] chamfer-8 p-4 text-sm text-[var(--color-text-primary)] whitespace-pre-wrap">{result.script}</div>
+            <div className="mt-3 flex gap-4 text-xs text-[var(--color-text-muted)]">
               <span>Tone: {result.tone}</span>
               <span>~{result.word_count} words</span>
               <span>{result.generated_at ? new Date(result.generated_at).toLocaleTimeString() : ''}</span>
@@ -112,12 +112,12 @@ export default function ScriptBuilderPage() {
 
         {/* History */}
         {history.length > 1 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4">Recent Scripts</h2>
             <div className="space-y-3">
               {history.slice(1).map((h, i) => (
-                <div key={i} className="bg-gray-800 rounded p-3 text-sm text-gray-300 truncate">
-                  <span className="text-gray-500 mr-2">[{h.tone}]</span>
+                <div key={i} className="bg-[var(--color-bg-raised)] chamfer-4 p-3 text-sm text-[var(--color-text-secondary)] truncate">
+                  <span className="text-[var(--color-text-muted)] mr-2">[{h.tone}]</span>
                   {h.script?.slice(0, 150)}...
                 </div>
               ))}

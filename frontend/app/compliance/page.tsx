@@ -93,27 +93,27 @@ interface ActionQueueItem {
 interface DomainMeta { label: string; accent: string; icon: React.ElementType }
 
 const DOMAIN_CONFIG: Record<DomainKey, DomainMeta> = {
-  nemsis:        { label: 'NEMSIS',             accent: '#22C55E', icon: Database },
+  nemsis:        { label: 'NEMSIS',             accent: 'var(--color-status-active)', icon: Database },
   hipaa:         { label: 'HIPAA',              accent: '#38BDF8', icon: Lock },
-  pcr:           { label: 'PCR Completion',     accent: '#F59E0B', icon: Clipboard },
+  pcr:           { label: 'PCR Completion',     accent: 'var(--q-yellow)', icon: Clipboard },
   billing:       { label: 'Billing Compliance', accent: '#22d3ee', icon: CreditCard },
   accreditation: { label: 'Accreditation',      accent: '#a855f7', icon: Award },
-  dea:           { label: 'DEA',                accent: '#FF2D2D', icon: Pill },
-  cms:           { label: 'CMS',                accent: '#FF6A00', icon: Scale },
+  dea:           { label: 'DEA',                accent: 'var(--color-brand-red)', icon: Pill },
+  cms:           { label: 'CMS',                accent: 'var(--q-orange)', icon: Scale },
 };
 
 const TABS: DomainKey[] = ['nemsis', 'hipaa', 'pcr', 'billing', 'accreditation', 'dea', 'cms'];
 
 const IMPACT_LABELS: Record<ImpactArea, { label: string; color: string }> = {
   billing:         { label: 'Billing',         color: '#22d3ee' },
-  'patient-safety':{ label: 'Patient Safety',  color: '#FF2D2D' },
+  'patient-safety':{ label: 'Patient Safety',  color: 'var(--color-brand-red)' },
   licensing:       { label: 'Licensing',        color: '#a855f7' },
-  dea:             { label: 'DEA',              color: '#FF2D2D' },
+  dea:             { label: 'DEA',              color: 'var(--color-brand-red)' },
   hipaa:           { label: 'HIPAA',            color: '#38BDF8' },
-  'audit-risk':    { label: 'Audit Risk',       color: '#F59E0B' },
-  'nemsis-export': { label: 'NEMSIS Export',    color: '#22C55E' },
+  'audit-risk':    { label: 'Audit Risk',       color: 'var(--q-yellow)' },
+  'nemsis-export': { label: 'NEMSIS Export',    color: 'var(--color-status-active)' },
   accreditation:   { label: 'Accreditation',    color: '#a855f7' },
-  cms:             { label: 'CMS',              color: '#FF6A00' },
+  cms:             { label: 'CMS',              color: 'var(--q-orange)' },
   revenue:         { label: 'Revenue',          color: '#22d3ee' },
 };
 
@@ -145,7 +145,7 @@ const EMPTY_COMPLIANCE_DATA: Record<DomainKey, ComplianceItem[]> = {
 function TrendBadge({ trend, summary }: { trend?: TrendDir; summary?: string }) {
   if (!trend) return null;
   const Icon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const color = trend === 'up' ? '#22C55E' : trend === 'down' ? '#FF2D2D' : '#9CA3AF';
+  const color = trend === 'up' ? 'var(--color-status-active)' : trend === 'down' ? 'var(--color-brand-red)' : '#9CA3AF';
   return (
     <span className="inline-flex items-center gap-1" style={{ color }}>
       <Icon className="w-3 h-3" />
@@ -172,10 +172,10 @@ function ActionStateBadge({ state }: { state: ActionState }) {
 }
 
 function RiskLevel({ level, label }: { level: RiskTier; label: string }) {
-  const color = level === 'high' ? '#FF2D2D' : level === 'medium' ? '#F59E0B' : '#22C55E';
+  const color = level === 'high' ? 'var(--color-brand-red)' : level === 'medium' ? 'var(--q-yellow)' : 'var(--color-status-active)';
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[0.55rem] font-bold tracking-[0.15em] uppercase text-zinc-500">{label}</span>
+      <span className="text-[0.55rem] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{label}</span>
       <span className="text-[0.55rem] font-bold tracking-wider uppercase px-1.5 py-0.5" style={{ color, backgroundColor: `${color}15`, border: `1px solid ${color}30` }}>
         {level}
       </span>
@@ -184,7 +184,7 @@ function RiskLevel({ level, label }: { level: RiskTier; label: string }) {
 }
 
 function ScoreGauge({ score, size = 'lg' }: { score: number; size?: 'sm' | 'lg' }) {
-  const color = score >= 90 ? '#22C55E' : score >= 75 ? '#38BDF8' : score >= 60 ? '#F59E0B' : '#FF2D2D';
+  const color = score >= 90 ? 'var(--color-status-active)' : score >= 75 ? '#38BDF8' : score >= 60 ? 'var(--q-yellow)' : 'var(--color-brand-red)';
   const dim = size === 'lg' ? 72 : 44;
   const stroke = size === 'lg' ? 5 : 3;
   const r = (dim - stroke) / 2;
@@ -207,7 +207,7 @@ function SectionDivider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 my-6">
       <div className="h-px flex-1" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
-      <span className="text-[0.55rem] font-bold tracking-[0.25em] uppercase text-zinc-500">{label}</span>
+      <span className="text-[0.55rem] font-bold tracking-[0.25em] uppercase text-[var(--color-text-muted)]">{label}</span>
       <div className="h-px flex-1" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
     </div>
   );
@@ -232,7 +232,7 @@ function PriorityAlertCard({ alert, onNavigate }: { alert: PriorityAlert; onNavi
   const isCritical = alert.severity === 'critical';
   const borderColor = isCritical ? 'rgba(255,45,45,0.4)' : 'rgba(245,158,11,0.3)';
   const glowColor = isCritical ? 'rgba(255,45,45,0.08)' : 'rgba(245,158,11,0.05)';
-  const accentColor = isCritical ? '#FF2D2D' : '#F59E0B';
+  const accentColor = isCritical ? 'var(--color-brand-red)' : 'var(--q-yellow)';
   return (
     <div
       className="relative border p-4 group cursor-pointer hover:border-opacity-70 transition-all"
@@ -256,7 +256,7 @@ function PriorityAlertCard({ alert, onNavigate }: { alert: PriorityAlert; onNavi
             </span>
           </div>
           <p className="text-[0.8rem] font-semibold text-white leading-snug mb-1.5">{alert.title}</p>
-          <p className="text-[0.65rem] text-zinc-500 leading-relaxed mb-2">{alert.reason}</p>
+          <p className="text-[0.65rem] text-[var(--color-text-muted)] leading-relaxed mb-2">{alert.reason}</p>
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -264,7 +264,7 @@ function PriorityAlertCard({ alert, onNavigate }: { alert: PriorityAlert; onNavi
           <ArrowRight className="w-3 h-3" style={{ color: accentColor }} />
           <span className="text-[0.6rem] font-bold tracking-wider" style={{ color: accentColor }}>{alert.nextAction}</span>
         </div>
-        <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+        <ChevronRight className="w-3.5 h-3.5 text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors" />
       </div>
     </div>
   );
@@ -289,9 +289,9 @@ function DomainSummaryPanel({ domain: _domain, summary, config }: { domain: Doma
               <span className="text-[0.65rem] font-bold tracking-[0.15em] uppercase" style={{ color: config.accent }}>{config.label}</span>
             </div>
             <div className="flex items-center gap-4 mt-2">
-              <span className="text-[0.6rem] font-bold text-green-400">{summary.passing} passing</span>
-              <span className="text-[0.6rem] font-bold text-yellow-400">{summary.warning} warning</span>
-              <span className="text-[0.6rem] font-bold text-red-400">{summary.critical} critical</span>
+              <span className="text-[0.6rem] font-bold text-[var(--color-status-active)]">{summary.passing} passing</span>
+              <span className="text-[0.6rem] font-bold text-[var(--q-yellow)]">{summary.warning} warning</span>
+              <span className="text-[0.6rem] font-bold text-[var(--color-brand-red)]">{summary.critical} critical</span>
             </div>
             <div className="mt-2">
               <TrendBadge trend={summary.trend} summary={summary.trend === 'up' ? 'Improving' : summary.trend === 'down' ? 'Declining' : 'Stable'} />
@@ -301,23 +301,23 @@ function DomainSummaryPanel({ domain: _domain, summary, config }: { domain: Doma
 
         {/* Risk Assessment */}
         <div className="flex flex-col gap-2">
-          <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase text-zinc-600 mb-1">Risk Assessment</span>
+          <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-1">Risk Assessment</span>
           <RiskLevel level={summary.billingRisk} label="Billing" />
           <RiskLevel level={summary.licensureRisk} label="Licensure" />
           <RiskLevel level={summary.operationalRisk} label="Operations" />
-          <div className="mt-1 text-[0.55rem] text-zinc-600">
+          <div className="mt-1 text-[0.55rem] text-[var(--color-text-muted)]">
             Last reviewed: {summary.lastReviewed}
           </div>
         </div>
 
         {/* Suggested Actions */}
         <div>
-          <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase text-zinc-600 mb-2 block">Suggested Actions</span>
+          <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-2 block">Suggested Actions</span>
           <div className="space-y-1.5">
             {summary.suggestedActions.map((action, i) => (
               <div key={i} className="flex items-start gap-2">
                 <ChevronRight className="w-3 h-3 text-[#FF6A00] mt-0.5 shrink-0" />
-                <span className="text-[0.65rem] text-zinc-400 leading-snug">{action}</span>
+                <span className="text-[0.65rem] text-[var(--color-text-secondary)] leading-snug">{action}</span>
               </div>
             ))}
           </div>
@@ -352,13 +352,13 @@ function ComplianceRow({ item, isExpanded, onToggle, accent }: { item: Complianc
                 <ActionStateBadge state={item.actionState} />
               )}
             </div>
-            <p className="text-[0.65rem] text-zinc-500 leading-relaxed mb-1.5">{item.description}</p>
+            <p className="text-[0.65rem] text-[var(--color-text-muted)] leading-relaxed mb-1.5">{item.description}</p>
             <div className="flex flex-wrap items-center gap-1.5">
               {item.impactAreas.slice(0, 3).map(area => (
                 <ImpactTag key={area} area={area} />
               ))}
               {item.impactAreas.length > 3 && (
-                <span className="text-[0.55rem] text-zinc-600">+{item.impactAreas.length - 3} more</span>
+                <span className="text-[0.55rem] text-[var(--color-text-muted)]">+{item.impactAreas.length - 3} more</span>
               )}
             </div>
           </div>
@@ -370,14 +370,14 @@ function ComplianceRow({ item, isExpanded, onToggle, accent }: { item: Complianc
             <TrendBadge trend={item.trend} summary={item.trendSummary} />
           </div>
           <div className="flex flex-col items-end gap-1">
-            <span className="text-[0.55rem] text-zinc-600">{item.lastChecked}</span>
+            <span className="text-[0.55rem] text-[var(--color-text-muted)]">{item.lastChecked}</span>
             {item.evidenceCount > 0 && (
-              <span className="text-[0.55rem] text-zinc-600 flex items-center gap-1">
+              <span className="text-[0.55rem] text-[var(--color-text-muted)] flex items-center gap-1">
                 <FileText className="w-2.5 h-2.5" /> {item.evidenceCount}
               </span>
             )}
           </div>
-          <div className="text-zinc-600 group-hover:text-zinc-400 transition-colors">
+          <div className="text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors">
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
         </div>
@@ -391,24 +391,24 @@ function ComplianceRow({ item, isExpanded, onToggle, accent }: { item: Complianc
             {/* Column 1: Details */}
             <div className="space-y-3">
               <div>
-                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Policy / Standard Basis</span>
-                <span className="text-[0.65rem] text-zinc-400">{item.policyBasis ?? 'Internal standard'}</span>
+                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Policy / Standard Basis</span>
+                <span className="text-[0.65rem] text-[var(--color-text-secondary)]">{item.policyBasis ?? 'Internal standard'}</span>
               </div>
               {item.owner && (
                 <div>
-                  <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Owner / Reviewer</span>
-                  <span className="text-[0.65rem] text-zinc-400">{item.owner}</span>
+                  <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Owner / Reviewer</span>
+                  <span className="text-[0.65rem] text-[var(--color-text-secondary)]">{item.owner}</span>
                 </div>
               )}
               {item.nextDue && (
                 <div>
-                  <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Next Due</span>
-                  <span className="text-[0.65rem] text-zinc-400">{item.nextDue}</span>
+                  <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Next Due</span>
+                  <span className="text-[0.65rem] text-[var(--color-text-secondary)]">{item.nextDue}</span>
                 </div>
               )}
               <div>
-                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Action State</span>
-                <span className="text-[0.65rem] font-semibold" style={{ color: actionCfg.status === 'critical' ? '#FF2D2D' : actionCfg.status === 'warning' ? '#F59E0B' : '#22C55E' }}>
+                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Action State</span>
+                <span className="text-[0.65rem] font-semibold" style={{ color: actionCfg.status === 'critical' ? 'var(--color-brand-red)' : actionCfg.status === 'warning' ? 'var(--q-yellow)' : 'var(--color-status-active)' }}>
                   {actionCfg.label}
                 </span>
               </div>
@@ -417,36 +417,36 @@ function ComplianceRow({ item, isExpanded, onToggle, accent }: { item: Complianc
             {/* Column 2: Impact & Evidence */}
             <div className="space-y-3">
               <div>
-                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Impact Areas</span>
+                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Impact Areas</span>
                 <div className="flex flex-wrap gap-1">
                   {item.impactAreas.map(area => <ImpactTag key={area} area={area} />)}
                 </div>
               </div>
               <div>
-                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Evidence Documents</span>
-                <span className="text-[0.65rem] text-zinc-400">{item.evidenceCount} document{item.evidenceCount !== 1 ? 's' : ''} on file</span>
+                <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Evidence Documents</span>
+                <span className="text-[0.65rem] text-[var(--color-text-secondary)]">{item.evidenceCount} document{item.evidenceCount !== 1 ? 's' : ''} on file</span>
               </div>
               {item.linkedRecords !== undefined && item.linkedRecords > 0 && (
                 <div>
-                  <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Linked Records</span>
-                  <span className="text-[0.65rem] text-zinc-400">{item.linkedRecords} records</span>
+                  <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Linked Records</span>
+                  <span className="text-[0.65rem] text-[var(--color-text-secondary)]">{item.linkedRecords} records</span>
                 </div>
               )}
             </div>
 
             {/* Column 3: Actions */}
             <div className="space-y-2">
-              <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 block mb-1">Quick Actions</span>
-              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
+              <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Quick Actions</span>
+              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
                 <Eye className="w-3 h-3" /> View Evidence
               </button>
-              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
+              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
                 <Download className="w-3 h-3" /> Download Evidence
               </button>
-              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
+              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
                 <FileCheck className="w-3 h-3" /> Mark Reviewed
               </button>
-              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
+              <button className="flex items-center gap-2 text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white transition-colors w-full py-1.5 px-2 border border-white/6 hover:border-white/15">
                 <ExternalLink className="w-3 h-3" /> View Linked Records
               </button>
             </div>
@@ -472,7 +472,7 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-[#FF6A00]" />
           <span className="text-[0.65rem] font-bold tracking-[0.15em] uppercase text-white">Corrective Action Queue</span>
-          <span className="text-[0.55rem] font-bold text-zinc-500 ml-1">{items.length} items</span>
+          <span className="text-[0.55rem] font-bold text-[var(--color-text-muted)] ml-1">{items.length} items</span>
         </div>
         <div className="flex items-center gap-1">
           {(['all', 'critical', 'overdue'] as const).map(f => (
@@ -481,7 +481,7 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
               onClick={() => onFilterChange(f)}
               className="px-2.5 py-1 text-[0.55rem] font-bold tracking-wider uppercase transition-colors"
               style={{
-                color: filter === f ? '#FF6A00' : '#6B7280',
+                color: filter === f ? 'var(--q-orange)' : '#6B7280',
                 backgroundColor: filter === f ? 'rgba(255,106,0,0.1)' : 'transparent',
                 border: filter === f ? '1px solid rgba(255,106,0,0.3)' : '1px solid transparent',
               }}
@@ -494,7 +494,7 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
       <div className="border border-white/6 bg-[#0a0a0c] divide-y divide-white/4">
         {items.map(item => {
           const domainCfg = DOMAIN_CONFIG[item.domain];
-          const stateColor = item.reviewState === 'in-progress' ? '#38BDF8' : item.reviewState === 'pending-review' ? '#F59E0B' : '#9CA3AF';
+          const stateColor = item.reviewState === 'in-progress' ? '#38BDF8' : item.reviewState === 'pending-review' ? 'var(--q-yellow)' : '#9CA3AF';
           return (
             <div key={item.id} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -508,13 +508,13 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[0.55rem] font-bold tracking-wider uppercase" style={{ color: domainCfg.accent }}>{item.domainLabel}</span>
-                    <span className="text-[0.55rem] text-zinc-500">{item.owner}</span>
+                    <span className="text-[0.55rem] text-[var(--color-text-muted)]">{item.owner}</span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-4 shrink-0">
                 <div className="text-right">
-                  <span className="text-[0.6rem] text-zinc-400 block">Due: {item.dueDate}</span>
+                  <span className="text-[0.6rem] text-[var(--color-text-secondary)] block">Due: {item.dueDate}</span>
                   <span className="text-[0.55rem] font-bold tracking-wider uppercase" style={{ color: stateColor }}>
                     {item.reviewState.replace('-', ' ')}
                   </span>
@@ -528,8 +528,8 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
         })}
         {items.length === 0 && (
           <div className="px-4 py-8 text-center">
-            <CheckCircle2 className="w-5 h-5 text-green-500 mx-auto mb-2" />
-            <span className="text-[0.65rem] text-zinc-500">No items match the selected filter</span>
+            <CheckCircle2 className="w-5 h-5 text-[var(--color-status-active)] mx-auto mb-2" />
+            <span className="text-[0.65rem] text-[var(--color-text-muted)]">No items match the selected filter</span>
           </div>
         )}
       </div>
@@ -543,11 +543,11 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
 
 function CompactMetric({ label, value, accent, severity }: { label: string; value: string; accent?: string; severity?: 'ok' | 'warn' | 'crit' }) {
   const borderColor = severity === 'crit' ? 'rgba(255,45,45,0.3)' : severity === 'warn' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)';
-  const valueColor = severity === 'crit' ? '#FF2D2D' : severity === 'warn' ? '#F59E0B' : accent ?? '#E5E7EB';
+  const valueColor = severity === 'crit' ? 'var(--color-brand-red)' : severity === 'warn' ? 'var(--q-yellow)' : accent ?? '#E5E7EB';
   return (
     <div className="relative border bg-[#0a0a0c] p-3 group hover:border-white/15 transition-colors" style={{ borderColor }}>
       <TacticalCorners />
-      <p className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-zinc-600 mb-1.5">{label}</p>
+      <p className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-1.5">{label}</p>
       <p className="text-xl font-black leading-none" style={{ color: valueColor }}>{value}</p>
     </div>
   );
@@ -746,7 +746,7 @@ export default function ComplianceCommandPage() {
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">
               Compliance Command
             </h1>
-            <p className="text-sm text-zinc-500 max-w-2xl leading-relaxed">
+            <p className="text-sm text-[var(--color-text-muted)] max-w-2xl leading-relaxed">
               Real-time regulatory, clinical, billing, and operational compliance visibility across the FusionEMS platform.
             </p>
           </div>
@@ -759,12 +759,12 @@ export default function ComplianceCommandPage() {
               System Health: {overallScore}%
             </StatusChip>
             <div className="flex items-center gap-2 px-3 py-2 border border-white/8 bg-white/[0.02]">
-              <Clock className="w-3.5 h-3.5 text-zinc-500" />
-              <span className="text-[0.6rem] font-bold tracking-wider text-zinc-400 uppercase">Last Full Audit: {lastAuditLabel}</span>
+              <Clock className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+              <span className="text-[0.6rem] font-bold tracking-wider text-[var(--color-text-secondary)] uppercase">Last Full Audit: {lastAuditLabel}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 border border-white/8 bg-white/[0.02]">
-              <Clipboard className="w-3.5 h-3.5 text-zinc-500" />
-              <span className="text-[0.6rem] font-bold tracking-wider text-zinc-400 uppercase">{effectiveActionQueue.length} Reviews Pending</span>
+              <Clipboard className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
+              <span className="text-[0.6rem] font-bold tracking-wider text-[var(--color-text-secondary)] uppercase">{effectiveActionQueue.length} Reviews Pending</span>
             </div>
             <button
               onClick={fetchSummary}
@@ -796,7 +796,7 @@ export default function ComplianceCommandPage() {
       <SectionDivider label="Priority Actions — Requires Immediate Attention" />
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-8">
         {effectiveAlerts.length === 0 ? (
-          <div className="col-span-full flex items-center justify-center py-8 text-[0.6rem] font-bold tracking-[0.2em] uppercase text-zinc-600">
+          <div className="col-span-full flex items-center justify-center py-8 text-[0.6rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)]">
             {apiSummary ? 'No priority alerts' : 'Awaiting live compliance data'}
           </div>
         ) : effectiveAlerts.map(alert => (
@@ -832,10 +832,10 @@ export default function ComplianceCommandPage() {
               <DIcon className="w-3.5 h-3.5" />
               <span className="text-[0.6rem] font-bold tracking-[0.12em] uppercase">{cfg.label}</span>
               {counts && counts.critical > 0 && (
-                <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-red-500/20 text-red-400 border border-red-500/30">{counts.critical}</span>
+                <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-[var(--color-brand-red)]/20 text-[var(--color-brand-red)] border border-[var(--color-brand-red)]/30">{counts.critical}</span>
               )}
               {counts && counts.warning > 0 && counts.critical === 0 && (
-                <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">{counts.warning}</span>
+                <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-yellow-500/20 text-[var(--q-yellow)] border border-yellow-500/30">{counts.warning}</span>
               )}
               {isActive && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: cfg.accent }} />
@@ -865,7 +865,7 @@ export default function ComplianceCommandPage() {
           </div>
         }
         headerRight={
-          <span className="text-[0.55rem] font-bold tracking-wider uppercase text-zinc-500">
+          <span className="text-[0.55rem] font-bold tracking-wider uppercase text-[var(--color-text-muted)]">
             {domainItems.length} items
           </span>
         }
@@ -876,11 +876,11 @@ export default function ComplianceCommandPage() {
         <div className="flex flex-col">
           {domainItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <AlertCircle className="w-6 h-6 text-zinc-600 mb-3" />
-              <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-zinc-500">
+              <AlertCircle className="w-6 h-6 text-[var(--color-text-muted)] mb-3" />
+              <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)]">
                 Detailed compliance items sourced from live compliance engine
               </span>
-              <span className="text-[0.55rem] text-zinc-600 mt-1">
+              <span className="text-[0.55rem] text-[var(--color-text-muted)] mt-1">
                 {apiSummary ? `${domainSummary.passing} passing · ${domainSummary.warning} warning · ${domainSummary.critical} critical` : 'Connect to backend for real-time item status'}
               </span>
             </div>
@@ -919,16 +919,16 @@ export default function ComplianceCommandPage() {
               <Layers className="w-4 h-4 text-[#FF6A00]" />
               <span className="text-[0.65rem] font-bold tracking-[0.15em] uppercase text-white">Evidence & Documentation</span>
             </div>
-            <p className="text-[0.6rem] text-zinc-500">Export compliance reports, generate evidence packets, and download audit summaries.</p>
+            <p className="text-[0.6rem] text-[var(--color-text-muted)]">Export compliance reports, generate evidence packets, and download audit summaries.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button className="flex items-center gap-2 px-3 py-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white">
+            <button className="flex items-center gap-2 px-3 py-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white">
               <FileText className="w-3 h-3" /> Generate Packet
             </button>
-            <button className="flex items-center gap-2 px-3 py-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white">
+            <button className="flex items-center gap-2 px-3 py-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white">
               <Download className="w-3 h-3" /> Export Audit Summary
             </button>
-            <button className="flex items-center gap-2 px-3 py-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-zinc-400 hover:text-white">
+            <button className="flex items-center gap-2 px-3 py-2 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-text-secondary)] hover:text-white">
               <Activity className="w-3 h-3" /> Compliance Trend Report
             </button>
             <button
@@ -945,7 +945,7 @@ export default function ComplianceCommandPage() {
           FOOTER DISCLOSURE
       ═══════════════════════════════════════════════════════════════════════ */}
       <div className="text-center py-4">
-        <p className="text-[0.55rem] text-zinc-700 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-[0.55rem] text-[var(--color-text-disabled)] max-w-3xl mx-auto leading-relaxed">
           FusionEMS provides compliance workflow tooling to support agency-level readiness. All compliance determinations,
           regulatory interpretations, and enforcement responses remain the sole responsibility of the operating agency and
           its legal counsel. This platform does not provide legal, regulatory, or accreditation advice.

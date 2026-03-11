@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
@@ -11,13 +13,20 @@ from sqlalchemy.orm import Session
 from core_app.api.dependencies import (
     db_session_dependency,
     get_current_user,
+    require_founder_only_audited,
     require_role,
 )
+from core_app.core.config import get_settings
 from core_app.schemas.auth import CurrentUser
+from core_app.services.clinical_open_data_service import founder_clinical_snapshot
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher
 
-router = APIRouter(prefix="/api/v1/founder", tags=["Founder"])
+router = APIRouter(
+    prefix="/api/v1/founder",
+    tags=["Founder"],
+    dependencies=[Depends(require_founder_only_audited())],
+)
 
 
 class FounderExpenseCreateRequest(BaseModel):
@@ -61,6 +70,20 @@ def _parse_ts(value: str) -> float:
         return datetime.fromisoformat(value).timestamp()
     except (ValueError, TypeError):
         return 0.0
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _load_artifact_json(relative_path: str) -> dict[str, Any] | None:
+    artifact_path = _repo_root() / relative_path
+    if not artifact_path.exists() or not artifact_path.is_file():
+        return None
+    try:
+        return json.loads(artifact_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
 
 
 def _expense_entries_for_tenant(
@@ -109,7 +132,7 @@ async def business_expense_ledger(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
 
     safe_limit = min(max(limit, 1), 500)
@@ -182,7 +205,7 @@ async def create_business_expense_entry(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
 
     expense_date = payload.expense_date or datetime.now(UTC).date().isoformat()
@@ -215,7 +238,6 @@ async def business_invoices(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin", "billing"])
     svc = DominationService(db, get_event_publisher())
     safe_limit = min(max(limit, 1), 500)
 
@@ -285,7 +307,6 @@ async def create_business_invoice(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin", "billing"])
     svc = DominationService(db, get_event_publisher())
 
     total_cents = sum(int(item.amount_cents) for item in payload.line_items)
@@ -327,7 +348,6 @@ async def send_invoice_reminder(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin", "billing"])
     svc = DominationService(db, get_event_publisher())
     invoice = svc.repo("invoices").get(tenant_id=current.tenant_id, record_id=invoice_id)
     if not invoice:
@@ -368,7 +388,6 @@ async def mark_invoice_paid(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin", "billing"])
     svc = DominationService(db, get_event_publisher())
     invoice = svc.repo("invoices").get(tenant_id=current.tenant_id, record_id=invoice_id)
     if not invoice:
@@ -405,7 +424,6 @@ async def get_business_invoice_settings(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin", "billing"])
     svc = DominationService(db, get_event_publisher())
     existing = _find_invoice_settings_record(svc, current.tenant_id)
     if not existing:
@@ -424,7 +442,6 @@ async def put_business_invoice_settings(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin", "billing"])
     svc = DominationService(db, get_event_publisher())
     settings_payload = payload.model_dump(by_alias=True)
     existing = _find_invoice_settings_record(svc, current.tenant_id)
@@ -461,7 +478,7 @@ async def put_business_invoice_settings(
     return {"updated": True, "settings": settings_payload, "id": str(created["id"])}
 
 
-@router.get("/tenants", dependencies=[Depends(require_role("founder", "admin"))])
+@router.get("/tenants")
 async def tenants(
     request: Request,
     current: CurrentUser = Depends(get_current_user),
@@ -476,7 +493,6 @@ async def tenants(
 
 @router.get(
     "/tenants/{tenant_id}/billing",
-    dependencies=[Depends(require_role("founder", "admin", "billing"))],
 )
 async def tenant_billing(
     tenant_id: uuid.UUID,
@@ -497,7 +513,7 @@ async def tenant_billing(
 
 @router.get(
     "/tenants/{tenant_id}/compliance",
-    dependencies=[Depends(require_role("founder", "admin"))],
+    dependencies=[Depends(require_role("founder"))],
 )
 async def tenant_compliance(
     tenant_id: uuid.UUID,
@@ -555,7 +571,7 @@ async def support_session(
     )
 
 
-@router.post("/ai/chat", dependencies=[Depends(require_role("founder", "admin"))])
+@router.post("/ai/chat", dependencies=[Depends(require_role("founder"))])
 async def ai_chat(
     payload: dict[str, Any],
     request: Request,
@@ -577,7 +593,7 @@ async def ai_chat(
     )
 
 
-@router.post("/docs/generate", dependencies=[Depends(require_role("founder", "admin"))])
+@router.post("/docs/generate", dependencies=[Depends(require_role("founder"))])
 async def docs(
     payload: dict[str, Any],
     request: Request,
@@ -595,7 +611,7 @@ async def founder_dashboard(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
 
     tenants_list = svc.repo("tenants").list(tenant_id=current.tenant_id, limit=10000)
@@ -623,10 +639,24 @@ async def founder_dashboard(
         and _parse_ts(a.get("data", {}).get("created_at", "")) >= one_hour_ago
     )
 
+    settings = get_settings()
+    integration_state = settings.integration_state_table()
+    required_missing = [
+        key
+        for key, value in integration_state.items()
+        if bool(value.get("required")) and not bool(value.get("configured"))
+    ]
+
     return {
         "mrr_cents": mrr,
         "tenant_count": len(active_tenants),
         "error_count_1h": error_count_1h,
+        "clinical_datasets": founder_clinical_snapshot(db),
+        "integration_readiness": {
+            "required_missing": required_missing,
+            "required_missing_count": len(required_missing),
+            "state": integration_state,
+        },
         "as_of": datetime.now(UTC).isoformat(),
     }
 
@@ -636,7 +666,7 @@ async def webhook_health(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
 
     health: dict[str, str] = {}
@@ -664,7 +694,7 @@ async def get_feature_flags(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
     tenants_list = svc.repo("tenants").list(tenant_id=current.tenant_id, limit=1)
     flags: dict = {}
@@ -680,7 +710,7 @@ async def update_feature_flags(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
     tenants_list = svc.repo("tenants").list(tenant_id=current.tenant_id, limit=1)
     if not tenants_list:
@@ -707,8 +737,6 @@ async def aws_cost_summary(
     require_role(current, ["founder"])
     try:
         import boto3
-
-        from core_app.core.config import get_settings
 
         settings = get_settings()
         client = boto3.client("ce", region_name=settings.aws_region or "us-east-1")
@@ -742,12 +770,83 @@ async def aws_cost_summary(
         return {"error": str(e), "message": "AWS Cost Explorer not available"}
 
 
+@router.get("/operations/multi-agent/status")
+async def multi_agent_status(
+    current: CurrentUser = Depends(get_current_user),
+):
+    require_role(current, ["founder"])
+
+    execution_report = _load_artifact_json("artifacts/multi_agent_execution_report.json")
+    compliance_manifest = _load_artifact_json("artifacts/compliance-evidence-manifest.json")
+    nemsis_report = _load_artifact_json("artifacts/nemsis-ci-report.json")
+    neris_report = _load_artifact_json("artifacts/neris-ci-report.json")
+
+    lanes = execution_report.get("lanes", []) if execution_report else []
+    failed_lanes = [lane for lane in lanes if lane.get("status") == "failed"]
+    warning_lanes = [lane for lane in lanes if lane.get("status") == "warning"]
+
+    return {
+        "orchestration": {
+            "status": execution_report.get("status", "not_available")
+            if execution_report
+            else "not_available",
+            "mode": execution_report.get("meta", {}).get("mode")
+            if execution_report
+            else None,
+            "generated_at_utc": execution_report.get("meta", {}).get("generated_at_utc")
+            if execution_report
+            else None,
+            "lane_count": len(lanes),
+            "failed_lane_count": len(failed_lanes),
+            "warning_lane_count": len(warning_lanes),
+            "failed_lanes": [
+                {
+                    "lane_id": lane.get("lane_id"),
+                    "agent_label": lane.get("agent_label"),
+                    "log_file": lane.get("log_file"),
+                }
+                for lane in failed_lanes
+            ],
+        },
+        "compliance_program": {
+            "status": compliance_manifest.get("status", "not_available")
+            if compliance_manifest
+            else "not_available",
+            "generated_at_utc": compliance_manifest.get("generated_at_utc")
+            if compliance_manifest
+            else None,
+            "missing_count": compliance_manifest.get("missing_count", 0)
+            if compliance_manifest
+            else None,
+        },
+        "nemsis": {
+            "status": nemsis_report.get("status", "not_available")
+            if nemsis_report
+            else "not_available",
+            "evidence": nemsis_report.get("evidence") if nemsis_report else None,
+            "certification_status": nemsis_report.get("certification_status")
+            if nemsis_report
+            else None,
+        },
+        "neris": {
+            "status": neris_report.get("status", "not_available")
+            if neris_report
+            else "not_available",
+            "evidence": neris_report.get("evidence") if neris_report else None,
+            "certification_status": neris_report.get("certification_status")
+            if neris_report
+            else None,
+        },
+        "as_of": datetime.now(UTC).isoformat(),
+    }
+
+
 @router.get("/compliance/status")
 async def compliance_status(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(db_session_dependency),
 ):
-    require_role(current, ["founder", "admin"])
+    require_role(current, ["founder"])
     svc = DominationService(db, get_event_publisher())
 
     nemsis_jobs = svc.repo("nemsis_export_jobs").list(

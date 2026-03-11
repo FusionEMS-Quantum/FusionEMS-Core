@@ -8,8 +8,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
           <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -31,7 +31,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -93,33 +93,33 @@ export default function IncidentControlCenterPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
-        <div className="text-xs text-zinc-500 uppercase tracking-widest animate-pulse">Loading incident data…</div>
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex items-center justify-center">
+        <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest animate-pulse">Loading incident data…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-zinc-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex items-center justify-center">
         <div className="text-center space-y-2">
           <div className="text-xs text-red uppercase tracking-widest font-bold">Failed to load incident data</div>
-          <div className="text-body text-zinc-500">{error}</div>
+          <div className="text-body text-[var(--color-text-muted)]">{error}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-8">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-6 space-y-8">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
             <div className="text-micro font-bold font-mono text-orange-dim uppercase tracking-widest mb-1">
             MODULE 10 · INFRASTRUCTURE
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Incident Control Center</h1>
-          <p className="text-xs text-zinc-500 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Incident Control Center</h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">
             System status · incident history · response playbooks · on-call
           </p>
         </div>
@@ -130,21 +130,21 @@ export default function IncidentControlCenterPage() {
         <SectionHeader number="1" title="System Status Overview" />
         {data.services.length === 0 ? (
           <Panel>
-            <div className="text-body text-zinc-500 py-4 text-center">No service status data — connect infrastructure monitoring to populate.</div>
+            <div className="text-body text-[var(--color-text-muted)] py-4 text-center">No service status data — connect infrastructure monitoring to populate.</div>
           </Panel>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {data.services.map((svc) => (
               <div
                 key={svc.name}
-                className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+                className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4"
                 style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
               >
-                <div className="text-xs font-semibold text-zinc-100 mb-2">{svc.name}</div>
+                <div className="text-xs font-semibold text-[var(--color-text-primary)] mb-2">{svc.name}</div>
                 <div className="mb-2">
                   <Badge label="operational" status="ok" />
                 </div>
-                <div className="text-micro font-mono text-zinc-500">{svc.uptime} uptime</div>
+                <div className="text-micro font-mono text-[var(--color-text-muted)]">{svc.uptime} uptime</div>
               </div>
             ))}
           </div>
@@ -168,8 +168,8 @@ export default function IncidentControlCenterPage() {
               </svg>
             </div>
             <div>
-              <div className="text-sm font-bold text-status-active tracking-wide uppercase">ALL SYSTEMS OPERATIONAL</div>
-              <div className="text-body text-zinc-500 mt-0.5">No active incidents · Last checked moments ago</div>
+              <div className="text-sm font-bold text-[var(--color-status-active)] tracking-wide uppercase">ALL SYSTEMS OPERATIONAL</div>
+              <div className="text-body text-[var(--color-text-muted)] mt-0.5">No active incidents · Last checked moments ago</div>
             </div>
           </div>
         </Panel>
@@ -182,7 +182,7 @@ export default function IncidentControlCenterPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-zinc-500 uppercase tracking-widest text-micro">
+                <tr className="text-[var(--color-text-muted)] uppercase tracking-widest text-micro">
                   <th className="text-left pb-2 pr-4 font-semibold">Date</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Title</th>
                   <th className="text-left pb-2 pr-4 font-semibold">Severity</th>
@@ -194,18 +194,18 @@ export default function IncidentControlCenterPage() {
               <tbody>
                 {data.incidents.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-body text-zinc-500">
+                    <td colSpan={6} className="py-6 text-center text-body text-[var(--color-text-muted)]">
                       No incident history — incidents will appear here once reported.
                     </td>
                   </tr>
                 ) : data.incidents.map((inc, i) => (
                   <tr key={i} className="border-t border-border-subtle">
-                    <td className="py-2 pr-4 font-mono text-zinc-500">{inc.date}</td>
-                    <td className="py-2 pr-4 text-zinc-100">{inc.title}</td>
+                    <td className="py-2 pr-4 font-mono text-[var(--color-text-muted)]">{inc.date}</td>
+                    <td className="py-2 pr-4 text-[var(--color-text-primary)]">{inc.title}</td>
                     <td className="py-2 pr-4"><Badge label={inc.severity} status={severityBadge(inc.severity)} /></td>
-                    <td className="py-2 pr-4 font-mono text-zinc-400">{inc.duration}</td>
-                    <td className="py-2 pr-4 font-mono text-zinc-500">{inc.affected}</td>
-                    <td className="py-2 text-zinc-500">{inc.resolution}</td>
+                    <td className="py-2 pr-4 font-mono text-[var(--color-text-secondary)]">{inc.duration}</td>
+                    <td className="py-2 pr-4 font-mono text-[var(--color-text-muted)]">{inc.affected}</td>
+                    <td className="py-2 text-[var(--color-text-muted)]">{inc.resolution}</td>
                   </tr>
                 ))}
               </tbody>
@@ -219,7 +219,7 @@ export default function IncidentControlCenterPage() {
         <SectionHeader number="4" title="Response Playbooks" />
         <Panel>
           {data.playbooks.length === 0 ? (
-            <div className="text-body text-zinc-500 py-4 text-center">No playbooks configured — add response playbooks to enable rapid incident response.</div>
+            <div className="text-body text-[var(--color-text-muted)] py-4 text-center">No playbooks configured — add response playbooks to enable rapid incident response.</div>
           ) : (
             <div className="space-y-0">
               {data.playbooks.map((pb) => (
@@ -230,8 +230,8 @@ export default function IncidentControlCenterPage() {
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-micro font-mono text-brand-orange flex-shrink-0">{pb.id}</span>
                     <div className="min-w-0">
-                      <div className="text-xs font-semibold text-zinc-100">{pb.name}</div>
-                      <div className="text-body text-zinc-500 truncate">{pb.desc}</div>
+                      <div className="text-xs font-semibold text-[var(--color-text-primary)]">{pb.name}</div>
+                      <div className="text-body text-[var(--color-text-muted)] truncate">{pb.desc}</div>
                     </div>
                   </div>
                   <button
@@ -250,14 +250,14 @@ export default function IncidentControlCenterPage() {
       <section>
         <SectionHeader number="5" title="Incident Mode Controls" />
         <Panel>
-          <p className="text-body text-zinc-500 mb-4 leading-relaxed">
+          <p className="text-body text-[var(--color-text-muted)] mb-4 leading-relaxed">
             Activating incident mode suspends all non-critical automated communications, routes all alerts to the founder dashboard, and enables war-room protocols.
           </p>
 
           {!incidentMode ? (
             <button
               onClick={() => setIncidentMode(true)}
-              className="px-6 py-2.5 text-xs font-bold uppercase tracking-widest chamfer-4 border border-red-ghost text-red hover:bg-red-ghost transition-colors"
+              className="px-6 py-2.5 text-xs font-bold uppercase tracking-widest chamfer-4 border border-[var(--color-brand-red)]/20 text-red hover:bg-[var(--color-brand-red)]/10 transition-colors"
               style={{ background: 'color-mix(in srgb, var(--color-brand-red) 3%, transparent)' }}
             >
               ACTIVATE INCIDENT MODE
@@ -273,14 +273,14 @@ export default function IncidentControlCenterPage() {
                 <span className="w-2 h-2  flex-shrink-0" style={{ background: 'var(--color-brand-red)' }} />
                 <div>
                   <div className="text-xs font-bold text-red uppercase tracking-widest">INCIDENT MODE ACTIVE</div>
-                  <div className="text-body text-zinc-400 mt-0.5">
+                  <div className="text-body text-[var(--color-text-secondary)] mt-0.5">
                     Non-critical comms suspended · War room routing engaged · Founder alerted
                   </div>
                 </div>
               </motion.div>
               <button
                 onClick={() => setIncidentMode(false)}
-                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-wider chamfer-4 border border-white/[0.12] text-zinc-400 hover:bg-zinc-950/5 transition-colors"
+                className="px-4 py-1.5 text-micro font-semibold uppercase tracking-wider chamfer-4 border border-white/[0.12] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-base)]/5 transition-colors"
               >
                 Deactivate
               </button>
@@ -295,20 +295,20 @@ export default function IncidentControlCenterPage() {
         <Panel>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
             <div>
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">Status Page URL</div>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Status Page URL</div>
               <div className="text-body font-mono text-system-billing">status.fusionemsquantum.com</div>
             </div>
             <div>
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">Last Published</div>
-              <div className="text-body text-zinc-400">2 minutes ago</div>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Last Published</div>
+              <div className="text-body text-[var(--color-text-secondary)]">2 minutes ago</div>
             </div>
             <div>
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">Agency Subscribers</div>
-              <div className="text-body font-bold text-zinc-100">12</div>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Agency Subscribers</div>
+              <div className="text-body font-bold text-[var(--color-text-primary)]">12</div>
             </div>
             <div>
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">30d Uptime</div>
-              <div className="text-body font-bold text-status-active">99.97%</div>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">30d Uptime</div>
+              <div className="text-body font-bold text-[var(--color-status-active)]">99.97%</div>
             </div>
           </div>
           <button
@@ -326,15 +326,15 @@ export default function IncidentControlCenterPage() {
           {/* Primary */}
           <Panel>
             <div className="flex items-center justify-between mb-2">
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500">Primary On-Call</div>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Primary On-Call</div>
               <Badge label="active" status="ok" />
             </div>
-            <div className="text-sm font-bold text-zinc-100 mb-1">Founder</div>
+            <div className="text-sm font-bold text-[var(--color-text-primary)] mb-1">Founder</div>
             <div className="flex flex-wrap gap-1.5">
               {CONTACT_METHODS_FOUNDER.map((m) => (
                 <span
                   key={m}
-                  className="px-2 py-0.5 text-micro font-semibold chamfer-4 border border-border-DEFAULT text-zinc-400"
+                  className="px-2 py-0.5 text-micro font-semibold chamfer-4 border border-border-DEFAULT text-[var(--color-text-secondary)]"
                   style={{ background: 'rgba(255,255,255,0.04)' }}
                 >
                   {m}
@@ -346,15 +346,15 @@ export default function IncidentControlCenterPage() {
           {/* Secondary */}
           <Panel>
             <div className="flex items-center justify-between mb-2">
-              <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500">Secondary On-Call</div>
+              <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Secondary On-Call</div>
               <Badge label="standby" status="info" />
             </div>
-            <div className="text-sm font-bold text-zinc-100 mb-1">Tech Lead</div>
+            <div className="text-sm font-bold text-[var(--color-text-primary)] mb-1">Tech Lead</div>
             <div className="flex flex-wrap gap-1.5">
               {CONTACT_METHODS_TL.map((m) => (
                 <span
                   key={m}
-                  className="px-2 py-0.5 text-micro font-semibold chamfer-4 border border-border-DEFAULT text-zinc-400"
+                  className="px-2 py-0.5 text-micro font-semibold chamfer-4 border border-border-DEFAULT text-[var(--color-text-secondary)]"
                   style={{ background: 'rgba(255,255,255,0.04)' }}
                 >
                   {m}
@@ -364,14 +364,14 @@ export default function IncidentControlCenterPage() {
           </Panel>
         </div>
         <div className="mt-3 px-1">
-          <span className="text-body text-zinc-500">Next rotation: </span>
-          <span className="text-body text-zinc-400">in 5 days</span>
+          <span className="text-body text-[var(--color-text-muted)]">Next rotation: </span>
+          <span className="text-body text-[var(--color-text-secondary)]">in 5 days</span>
         </div>
       </section>
 
       {/* Back */}
       <div>
-        <Link href="/founder" className="text-xs text-system-cad hover:text-zinc-100 transition-colors">
+        <Link href="/founder" className="text-xs text-system-cad hover:text-[var(--color-text-primary)] transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

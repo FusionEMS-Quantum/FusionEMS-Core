@@ -1,0 +1,109 @@
+name: Multi-Agent Factory
+
+"on":
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Execution mode"
+        required: true
+        type: choice
+        options:
+          - validate
+          - deploy
+        default: validate
+      allow_apply:
+        description: "Allow terraform apply in deploy mode"
+        required: false
+        type: boolean
+        default: false
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  validate-lanes:
+    name: Validate Multi-Agent Lanes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Install backend + security dependencies
+        run: |
+          pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+          pip install checkov
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Execute orchestrator (validate)
+        run: python scripts/multi_agent_execution.py --mode validate
+
+      - name: Upload multi-agent artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: multi-agent-validate-artifacts
+          path: |
+            artifacts/multi_agent_execution_report.json
+            artifacts/multi-agent-logs/
+          if-no-files-found: error
+
+  deploy-lane:
+    name: Deploy Lane (Manual)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'deploy'
+    needs: validate-lanes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::793439286972:role/GitHubTerraformRole
+          aws-region: us-east-1
+
+      - name: Execute orchestrator (deploy)
+        run: |
+          ARGS="--mode deploy"
+          if [[ "${{ github.event.inputs.allow_apply }}" == "true" ]]; then
+            ARGS="$ARGS --allow-apply"
+          fi
+          python scripts/multi_agent_execution.py $ARGS
+
+      - name: Upload deploy artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: multi-agent-deploy-artifacts
+          path: |
+            artifacts/multi_agent_execution_report.json
+            artifacts/multi-agent-logs/
+          if-no-files-found: error

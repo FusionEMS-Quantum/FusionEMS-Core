@@ -155,13 +155,13 @@ export default function AiReviewQueuePage() {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.03 }}
-          className="bg-[#0A0A0B] border border-[var(--color-border-default)] p-4 chamfer-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+          className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] p-4 chamfer-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <SeverityBadge severity={prioritySeverity(item.priority)} size="sm" label={item.priority} />
             <div className="min-w-0">
-              <div className="text-sm font-bold text-zinc-100 truncate">{item.review_type}</div>
-              <div className="text-micro text-zinc-500">
+              <div className="text-sm font-bold text-[var(--color-text-primary)] truncate">{item.review_type}</div>
+              <div className="text-micro text-[var(--color-text-muted)]">
                 Workflow: <span className="font-mono">{item.workflow_id.slice(0, 8)}</span>
                 {' · '}
                 {new Date(item.created_at).toLocaleString()}
@@ -179,7 +179,7 @@ export default function AiReviewQueuePage() {
                 <button
                   onClick={() => handleApprove(item.id)}
                   disabled={actionLoading === item.id}
-                  className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-green-500/10 disabled:opacity-50"
+                  className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[var(--color-status-active)]/10 disabled:opacity-50"
                   style={{ color: 'var(--color-status-active)', borderColor: 'rgba(34,197,94,0.35)' }}
                 >
                   Approve
@@ -187,7 +187,7 @@ export default function AiReviewQueuePage() {
                 <button
                   onClick={() => openRejectModal(item.id)}
                   disabled={actionLoading === item.id}
-                  className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-red-500/10 disabled:opacity-50"
+                  className="text-micro uppercase tracking-widest font-bold px-3 py-1 chamfer-4 border transition-colors hover:bg-[var(--color-brand-red)]/10 disabled:opacity-50"
                   style={{ color: 'var(--color-brand-red)', borderColor: 'rgba(255,45,45,0.35)' }}
                 >
                   Reject
@@ -215,11 +215,11 @@ export default function AiReviewQueuePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={fetchQueue}
-                className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-[#FF4D00] border-orange/30 hover:bg-orange-ghost transition-colors"
+                className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-[var(--q-orange)] border-orange/30 hover:bg-orange-ghost transition-colors"
             >
               Refresh
             </button>
-            <Link href="/founder/ai" className="text-micro uppercase tracking-widest text-zinc-500 hover:text-[#FF4D00]">
+            <Link href="/founder/ai" className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--q-orange)]">
               Back to AI Governance
             </Link>
           </div>
@@ -237,7 +237,7 @@ export default function AiReviewQueuePage() {
             <button
               onClick={() => closeRejectModal()}
               disabled={Boolean(actionLoading)}
-              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-zinc-500 border-border-DEFAULT hover:bg-bg-overlay transition-colors disabled:opacity-50"
+              className="text-micro uppercase tracking-widest font-bold px-3 py-1.5 border chamfer-4 text-[var(--color-text-muted)] border-border-DEFAULT hover:bg-bg-overlay transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -253,7 +253,7 @@ export default function AiReviewQueuePage() {
         )}
       >
         <div className="space-y-2">
-          <label className="text-micro uppercase tracking-widest text-zinc-500 block" htmlFor="reject-reason">
+          <label className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] block" htmlFor="reject-reason">
             Rejection reason
           </label>
           <textarea
@@ -266,7 +266,7 @@ export default function AiReviewQueuePage() {
               }
             }}
             rows={4}
-            className="w-full bg-black border border-border-DEFAULT p-3 text-xs text-zinc-100 resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
+            className="w-full bg-[var(--color-bg-base)] border border-border-DEFAULT p-3 text-xs text-[var(--color-text-primary)] resize-y chamfer-4 focus:border-brand-orange/40 focus:outline-none"
             placeholder="Describe why this AI decision is being rejected..."
           />
           {rejectReasonError && (

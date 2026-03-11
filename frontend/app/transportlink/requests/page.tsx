@@ -60,20 +60,20 @@ const STATUS_CONFIG: Record<
   RequestStatus,
   { label: string; bg: string; text: string; border: string; icon: React.ElementType }
 > = {
-  draft:                 { label: 'Draft',              bg: 'bg-zinc-950/[0.04]',       text: 'text-zinc-500',        border: 'border-white/[0.08]', icon: Clock },
+  draft:                 { label: 'Draft',              bg: 'bg-[var(--color-bg-base)]/[0.04]',       text: 'text-[var(--color-text-muted)]',        border: 'border-white/[0.08]', icon: Clock },
   submitted:             { label: 'Submitted',          bg: 'bg-status-info/10',     text: 'text-status-info',       border: 'border-status-info/20', icon: Send },
   awaiting_signatures:   { label: 'Awaiting Signatures',bg: 'bg-status-warning/10', text: 'text-status-warning',    border: 'border-status-warning/20', icon: FileWarning },
   missing_documentation: { label: 'Missing Docs',       bg: 'bg-red/10',             text: 'text-red',               border: 'border-red/20', icon: AlertTriangle },
-  sent_to_cad:           { label: 'Sent to CAD',        bg: 'bg-[#FF4D00]/10',          text: 'text-[#FF4D00]',            border: 'border-orange/25', icon: Activity },
-  scheduled:             { label: 'Scheduled',          bg: 'bg-status-active/10',   text: 'text-status-active',     border: 'border-status-active/20', icon: CheckCircle2 },
-  accepted:              { label: 'Accepted',           bg: 'bg-status-active/10',   text: 'text-status-active',     border: 'border-status-active/20', icon: CheckCircle2 },
-  rejected:              { label: 'Rejected',           bg: 'bg-red/10',             text: 'text-red-300',           border: 'border-red/25', icon: XCircle },
-  cancelled:             { label: 'Cancelled',          bg: 'bg-zinc-950/[0.03]',       text: 'text-zinc-500',        border: 'border-white/[0.06]', icon: Ban },
+  sent_to_cad:           { label: 'Sent to CAD',        bg: 'bg-[var(--q-orange)]/10',          text: 'text-[var(--q-orange)]',            border: 'border-orange/25', icon: Activity },
+  scheduled:             { label: 'Scheduled',          bg: 'bg-status-active/10',   text: 'text-[var(--color-status-active)]',     border: 'border-status-active/20', icon: CheckCircle2 },
+  accepted:              { label: 'Accepted',           bg: 'bg-status-active/10',   text: 'text-[var(--color-status-active)]',     border: 'border-status-active/20', icon: CheckCircle2 },
+  rejected:              { label: 'Rejected',           bg: 'bg-red/10',             text: 'text-[var(--color-brand-red)]',           border: 'border-red/25', icon: XCircle },
+  cancelled:             { label: 'Cancelled',          bg: 'bg-[var(--color-bg-base)]/[0.03]',       text: 'text-[var(--color-text-muted)]',        border: 'border-white/[0.06]', icon: Ban },
 };
 
 const MN_COLORS: Record<string, string> = {
-  MEDICAL_NECESSITY_SUPPORTED:        'text-status-active',
-  WISCONSIN_MEDICAID_SUPPORT_PRESENT: 'text-status-active',
+  MEDICAL_NECESSITY_SUPPORTED:        'text-[var(--color-status-active)]',
+  WISCONSIN_MEDICAID_SUPPORT_PRESENT: 'text-[var(--color-status-active)]',
   MEDICAL_NECESSITY_INSUFFICIENT:     'text-status-warning',
   LIKELY_NOT_MEDICALLY_NECESSARY:     'text-red',
   LEVEL_OF_CARE_NOT_SUPPORTED:        'text-red',
@@ -151,16 +151,16 @@ function RequestCard({ req }: { req: TransportRequest }) {
   return (
     <Link
       href={`/transportlink/requests/${req.id}`}
-      className="flex items-start gap-4 px-4 py-4 border-b border-white/[0.04] hover:bg-zinc-950/[0.02] transition-colors group"
+      className="flex items-start gap-4 px-4 py-4 border-b border-white/[0.04] hover:bg-[var(--color-bg-base)]/[0.02] transition-colors group"
     >
       {/* Priority indicator */}
-      <div className={`flex-shrink-0 w-1 self-stretch ${d.priority === 'URGENT' ? 'bg-red' : 'bg-zinc-950/[0.08]'}`} />
+      <div className={`flex-shrink-0 w-1 self-stretch ${d.priority === 'URGENT' ? 'bg-red' : 'bg-[var(--color-bg-base)]/[0.08]'}`} />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[12px] font-black text-zinc-100">{patientName}</span>
-          {d.mrn && <span className="text-[9px] text-zinc-500 font-mono">MRN {d.mrn}</span>}
-          {d.csn && <span className="text-[9px] text-zinc-500 font-mono">CSN {d.csn}</span>}
+          <span className="text-[12px] font-black text-[var(--color-text-primary)]">{patientName}</span>
+          {d.mrn && <span className="text-[9px] text-[var(--color-text-muted)] font-mono">MRN {d.mrn}</span>}
+          {d.csn && <span className="text-[9px] text-[var(--color-text-muted)] font-mono">CSN {d.csn}</span>}
           <StatusBadge status={status} />
           {d.priority === 'URGENT' && (
             <span className="text-[8px] font-black uppercase tracking-widest text-red bg-red/10 border border-red/20 px-1.5 py-0.5"
@@ -170,17 +170,17 @@ function RequestCard({ req }: { req: TransportRequest }) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-1 text-[10px] text-zinc-500 flex-wrap">
+        <div className="flex items-center gap-2 mt-1 text-[10px] text-[var(--color-text-muted)] flex-wrap">
           <span className="font-medium">{d.origin_facility || '—'}</span>
-          <ChevronRight className="w-2.5 h-2.5 text-zinc-500/30 flex-shrink-0" />
+          <ChevronRight className="w-2.5 h-2.5 text-[var(--color-text-muted)]/30 flex-shrink-0" />
           <span className="font-medium">{d.destination_facility || '—'}</span>
           {d.requested_service_level && (
-            <span className="text-[#FF4D00] font-bold border border-orange/20 bg-[#FF4D00]/[0.06] px-1.5 py-0.5 text-[9px]"
+            <span className="text-[var(--q-orange)] font-bold border border-orange/20 bg-[var(--q-orange)]/[0.06] px-1.5 py-0.5 text-[9px]"
               style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}>
               {d.requested_service_level}
             </span>
           )}
-          {d.payer && <span className="text-zinc-500/60">{d.payer}</span>}
+          {d.payer && <span className="text-[var(--color-text-muted)]/60">{d.payer}</span>}
         </div>
 
         {d.medical_necessity_status && (
@@ -199,15 +199,15 @@ function RequestCard({ req }: { req: TransportRequest }) {
 
       <div className="flex-shrink-0 text-right">
         {pickupTime && (
-          <div className="text-[10px] text-zinc-400 font-medium">
+          <div className="text-[10px] text-[var(--color-text-secondary)] font-medium">
             {pickupTime.toLocaleDateString()}
           </div>
         )}
         {pickupTime && (
-          <div className="text-[9px] text-zinc-500">{pickupTime.toLocaleTimeString()}</div>
+          <div className="text-[9px] text-[var(--color-text-muted)]">{pickupTime.toLocaleTimeString()}</div>
         )}
-        <div className="text-[9px] text-zinc-500 mt-1">{d.requestor_name || ''}</div>
-        <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-[#FF4D00] transition-colors mt-2 ml-auto" />
+        <div className="text-[9px] text-[var(--color-text-muted)] mt-1">{d.requestor_name || ''}</div>
+        <ChevronRight className="w-3.5 h-3.5 text-[var(--color-text-muted)] group-hover:text-[var(--q-orange)] transition-colors mt-2 ml-auto" />
       </div>
     </Link>
   );
@@ -263,14 +263,14 @@ function RequestsListInner() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3 mb-5">
         <div>
-          <div className="text-[9px] font-bold tracking-[0.3em] text-[#FF4D00] uppercase mb-1">TransportLink · Requests</div>
+          <div className="text-[9px] font-bold tracking-[0.3em] text-[var(--q-orange)] uppercase mb-1">TransportLink · Requests</div>
           <h1 className="text-h1 font-black text-white">All Transport Requests</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={load}
             disabled={loading}
-            className="flex items-center gap-1.5 h-9 px-3 text-[10px] font-bold uppercase tracking-wider border border-white/[0.08] text-zinc-500 hover:text-zinc-100 transition-colors"
+            className="flex items-center gap-1.5 h-9 px-3 text-[10px] font-bold uppercase tracking-wider border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
@@ -278,7 +278,7 @@ function RequestsListInner() {
           </button>
           <Link
             href="/transportlink/requests/new"
-            className="flex items-center gap-1.5 h-9 px-4 text-[10px] font-black uppercase tracking-wider text-white bg-[#FF4D00] hover:bg-[#FF6A1A] transition-colors"
+            className="flex items-center gap-1.5 h-9 px-4 text-[10px] font-black uppercase tracking-wider text-white bg-[var(--q-orange)] hover:bg-[#FF6A1A] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
           >
             <PlusCircle className="w-3.5 h-3.5" />
@@ -290,19 +290,19 @@ function RequestsListInner() {
       {/* Search + filter tabs */}
       <div className="flex flex-col gap-3 mb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by patient name, MRN, CSN, facility…"
-            className="w-full h-10 pl-9 pr-4 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors"
+            className="w-full h-10 pl-9 pr-4 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
           />
         </div>
 
         <div className="flex items-center gap-1 overflow-x-auto pb-1">
-          <Filter className="w-3 h-3 text-zinc-500 flex-shrink-0 mr-1" />
+          <Filter className="w-3 h-3 text-[var(--color-text-muted)] flex-shrink-0 mr-1" />
           {FILTER_TABS.map(({ key, label }) => {
             const count = countByStatus(key);
             const active = activeFilter === key;
@@ -312,12 +312,12 @@ function RequestsListInner() {
                 type="button"
                 onClick={() => setActiveFilter(key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider flex-shrink-0 border transition-colors
-                  ${active ? 'text-white bg-[#FF4D00]/15 border-orange/30' : 'text-zinc-500 bg-zinc-950/[0.02] border-white/[0.06] hover:text-zinc-100 hover:bg-zinc-950/[0.04]'}`}
+                  ${active ? 'text-white bg-[var(--q-orange)]/15 border-orange/30' : 'text-[var(--color-text-muted)] bg-[var(--color-bg-base)]/[0.02] border-white/[0.06] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-base)]/[0.04]'}`}
                 style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
               >
                 {label}
                 {count > 0 && (
-                  <span className={`text-[8px] px-1 ${active ? 'bg-[#FF4D00]/30 text-[#FF4D00]' : 'bg-zinc-950/[0.06] text-zinc-500'}`}>
+                  <span className={`text-[8px] px-1 ${active ? 'bg-[var(--q-orange)]/30 text-[var(--q-orange)]' : 'bg-[var(--color-bg-base)]/[0.06] text-[var(--color-text-muted)]'}`}>
                     {count}
                   </span>
                 )}
@@ -341,8 +341,8 @@ function RequestsListInner() {
             <span className="text-[10px] text-red">{loadError}</span>
           </div>
         )}
-        <div className="px-4 py-3 border-b border-white/[0.04] flex items-center justify-between bg-zinc-950/[0.02]">
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">
+        <div className="px-4 py-3 border-b border-white/[0.04] flex items-center justify-between bg-[var(--color-bg-base)]/[0.02]">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)]">
             {filtered.length} request{filtered.length !== 1 ? 's' : ''}
             {activeFilter !== 'all' && ` · filtered: ${activeFilter.replace(/_/g, ' ')}`}
           </span>
@@ -350,15 +350,15 @@ function RequestsListInner() {
 
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="flex items-center gap-2 text-zinc-500 text-[11px]">
+            <div className="flex items-center gap-2 text-[var(--color-text-muted)] text-[11px]">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               Loading requests…
             </div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 gap-3">
-            <Truck className="w-10 h-10 text-zinc-500/20" />
-            <p className="text-[11px] text-zinc-500">
+            <Truck className="w-10 h-10 text-[var(--color-text-muted)]/20" />
+            <p className="text-[11px] text-[var(--color-text-muted)]">
               {loadError
                 ? 'Requests could not be loaded. Resolve the error and retry.'
                 : requests.length === 0
@@ -368,7 +368,7 @@ function RequestsListInner() {
             {requests.length === 0 && !loadError && (
               <Link
                 href="/transportlink/requests/new"
-                className="flex items-center gap-1.5 h-8 px-4 text-[10px] font-bold uppercase tracking-wider text-white bg-[#FF4D00]/20 border border-orange/30 hover:bg-[#FF4D00]/30 transition-colors"
+                className="flex items-center gap-1.5 h-8 px-4 text-[10px] font-bold uppercase tracking-wider text-white bg-[var(--q-orange)]/20 border border-orange/30 hover:bg-[var(--q-orange)]/30 transition-colors"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
               >
                 <PlusCircle className="w-3 h-3" />
