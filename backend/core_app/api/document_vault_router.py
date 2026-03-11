@@ -23,7 +23,7 @@ from core_app.services.document_vault_service import (
     HoldStateError,
 )
 
-router = APIRouter(prefix="/v1/founder/vault", tags=["Founder Document Vault"])
+router = APIRouter(prefix="/api/v1/founder/vault", tags=["Founder Document Vault"])
 
 _founder_guard = require_founder_only_audited()
 

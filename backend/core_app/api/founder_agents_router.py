@@ -13,7 +13,7 @@ from .dependencies import require_founder_only_audited
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/founder/agents", tags=["Founder Agents"])
+router = APIRouter(prefix="/api/v1/founder/agents", tags=["Founder Agents"])
 
 # Global Command Queue and Current Command State tracking
 COMMAND_QUEUE: list[str] = []

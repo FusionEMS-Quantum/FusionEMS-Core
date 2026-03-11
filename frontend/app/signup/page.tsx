@@ -462,7 +462,6 @@ export default function SignupPage() {
                 <select value={identitySsoPreference} onChange={e => setIdentitySsoPreference(e.target.value)} className={selectCls}>
                   <option value="OIDC">OIDC / SSO (recommended)</option>
                   <option value="SAML">SAML</option>
-                  <option value="LOCAL_TEMP">Local temporary login</option>
                 </select>
               </div>
               <div>

@@ -111,6 +111,7 @@ from core_app.api.governance_router import router as governance_router  # noqa: 
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
 from core_app.api.icd10_router import router as icd10_router  # noqa: E402
+from core_app.api.terminology_router import router as terminology_router  # noqa: E402
 from core_app.api.imports_router import router as imports_router  # noqa: E402
 from core_app.api.incident_router import router as incident_router  # noqa: E402
 from core_app.api.interop_router import router as interop_router  # noqa: E402
@@ -315,6 +316,7 @@ app.include_router(founder_integration_command_router)
 app.include_router(founder_ops_command_router)
 app.include_router(hems_router)
 app.include_router(icd10_router)
+app.include_router(terminology_router)
 app.include_router(imports_router)
 app.include_router(kitlink_compliance_router)
 app.include_router(kitlink_router)

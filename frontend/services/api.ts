@@ -30,7 +30,7 @@ API.interceptors.request.use((config) => {
 });
 
 export async function getExecutiveSummary() {
-  const res = await API.get('/api/founder/executive-summary', {
+  const res = await API.get('/api/v1/founder/executive-summary', {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
       'X-Tenant-ID': 'founder'
@@ -1559,10 +1559,10 @@ function nemsisManagerHeaders(): Record<string, string> {
   if (typeof window === 'undefined') {
     return { 'Content-Type': 'application/json' };
   }
-  const token = localStorage.getItem('access_token') || '';
+  const token = localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
@@ -4127,7 +4127,9 @@ async function visibilityRequest<T>(
   method: VisibilityMethod = 'GET',
   body?: Record<string, unknown>
 ): Promise<T | null> {
-  const token = typeof window !== 'undefined' ? (localStorage.getItem('access_token') || '') : '';
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem('token') || localStorage.getItem('qs_token') || '')
+    : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

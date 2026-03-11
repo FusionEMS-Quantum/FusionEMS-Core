@@ -24,7 +24,7 @@ export default function DemoEnginePage() {
 
   return (
     <div className="p-8 text-white">
-      <h1 className="text-3xl font-black mb-4">AI {/* HARDCODED DATA REMOVED */}</h1>
+      <h1 className="text-3xl font-black mb-4">AI Script Generator</h1>
       <p className="text-white/60 mb-8">Generate 30s/60s automated product walkthrough scripts and assets.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -48,7 +48,7 @@ export default function DemoEnginePage() {
             disabled={generating}
             className="w-full bg-blue-600 hover:bg-[var(--color-status-info)] text-white font-bold py-2 px-4 transition-colors"
           >
-            {generating ? 'Engine Running...' : 'Generate {/* HARDCODED DATA REMOVED */}'}
+            {generating ? 'Engine Running...' : 'Generate Script'}
           </button>
         </div>
 

@@ -255,6 +255,16 @@ from .integration_connectors import (
 )
 from .patient import Patient
 
+# ── Terminology Service Models ───────────────────────────────────────────────
+from .terminology import (
+    TerminologyCodeSystem,
+    TerminologyConcept,
+    TerminologyDatasetVersion,
+    TerminologyMapping,
+    TerminologyRefreshSchedule,
+    TerminologySynonym,
+)
+
 # Patient Identity + CRM Models
 from .patient_identity import (
     PatientAlias,

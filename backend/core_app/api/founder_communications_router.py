@@ -18,7 +18,7 @@ from core_app.db.session import get_db_session as db_session_dependency
 from core_app.schemas.auth import CurrentUser
 from core_app.services.founder_communications_service import FounderCommunicationsService
 
-router = APIRouter(prefix="/v1/founder/comms", tags=["Founder Communications"])
+router = APIRouter(prefix="/api/v1/founder/comms", tags=["Founder Communications"])
 
 _founder_guard = require_founder_only_audited()
 

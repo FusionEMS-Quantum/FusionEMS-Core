@@ -1095,3 +1095,47 @@ async def get_reports():
             {"year": "2022", "count": 210, "size": "1.9 GB"},
         ],
     }
+
+
+@router.get("/executive-summary")
+async def founder_executive_summary(
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+) -> dict[str, Any]:
+    """Founder executive summary for the main dashboard tile."""
+    svc = DominationService(db, get_event_publisher())
+
+    subscriptions = svc.repo("tenant_subscriptions").list(
+        tenant_id=current.tenant_id, limit=10000
+    )
+    mrr_cents = sum(
+        int(s.get("data", {}).get("monthly_amount_cents", 0))
+        for s in subscriptions
+        if s.get("data", {}).get("status") == "active"
+    )
+
+    tenants_list = svc.repo("tenants").list(tenant_id=current.tenant_id, limit=10000)
+    active_clients = sum(
+        1 for t in tenants_list
+        if t.get("data", {}).get("status") == "active"
+    )
+
+    system_alerts = svc.repo("system_alerts").list(tenant_id=current.tenant_id, limit=500)
+    one_hour_ago = datetime.now(UTC).timestamp() - 3600
+    recent_errors = sum(
+        1 for a in system_alerts
+        if a.get("data", {}).get("severity") in ("error", "critical")
+        and _parse_ts(a.get("data", {}).get("created_at", "")) >= one_hour_ago
+    )
+    system_status = "critical" if recent_errors >= 5 else ("warning" if recent_errors >= 1 else "ok")
+
+    return {
+        "mrr": round(mrr_cents / 100, 2),
+        "clients": active_clients,
+        "system_status": system_status,
+        "active_units": 0,
+        "open_incidents": 0,
+        "pending_claims": 0,
+        "collection_rate": 0.0,
+        "as_of": datetime.now(UTC).isoformat(),
+    }
