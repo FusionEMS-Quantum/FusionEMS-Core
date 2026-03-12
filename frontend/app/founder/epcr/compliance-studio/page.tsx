@@ -4,11 +4,15 @@ import { SeverityBadge } from '@/components/ui';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { SeverityLevel } from '@/lib/design-system/tokens';
 import {
+  checkNEMSISCtaRunStatus,
   createNEMSISPack,
   generatePatchTasksFromResult,
   getActiveNEMSISPacks,
   getNEMSISCertificationChecklist,
+  getNEMSISCtaCases,
+  getNEMSISCtaRuns,
   nemsisStudioAiExplain,
+  runNEMSISCtaCase,
   uploadNEMSISPackFile,
   validateNEMSISStudioFile,
 } from '@/services/api';
@@ -45,6 +49,48 @@ interface CertCheck {
   passed: boolean;
 }
 
+interface CTACase {
+  case_id: string;
+  short_name: string;
+  description: string;
+  dataset_type: 'DEM' | 'EMS';
+  expected_result: string;
+  schema_version: string;
+  request_data_schema: number;
+  test_key_element: string;
+}
+
+interface CTARun {
+  id: string;
+  status: string;
+  case_id: string;
+  case_label: string;
+  dataset_type: 'DEM' | 'EMS';
+  schema_version: string;
+  request_data_schema: number;
+  request_handle: string | null;
+  submit_status_code: number | null;
+  retrieve_status_code: number | null;
+  plain_summary: string;
+  current_state_label: string;
+  validation_blocking_count: number;
+  resolved_test_key: string | null;
+  organization: string | null;
+  last_checked_at: string | null;
+  created_at: string;
+  updated_at: string;
+  history: Array<{ status: string; at: string; summary?: string }>;
+  details: Record<string, unknown>;
+}
+
+interface CtaCredentialForm {
+  username: string;
+  password: string;
+  organization: string;
+  endpoint_url: string;
+  additional_info: string;
+}
+
 function validationSeverityToCanonical(severity: string): SeverityLevel {
   switch (severity.toLowerCase()) {
     case 'error':
@@ -55,6 +101,22 @@ function validationSeverityToCanonical(severity: string): SeverityLevel {
       return 'INFORMATIONAL';
     default:
       return 'INFORMATIONAL';
+  }
+}
+
+function formatTimestamp(value?: string | null): string {
+  if (!value) return 'Not checked yet';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+}
+
+function decodeXmlDetail(value: unknown): string {
+  if (typeof value !== 'string' || value.length === 0) return 'No XML available';
+  try {
+    return atob(value);
+  } catch {
+    return 'Unable to decode XML payload';
   }
 }
 
@@ -70,6 +132,22 @@ export default function ComplianceStudioPage() {
   const [aiLoadingIdx, setAiLoadingIdx] = useState<number | null>(null);
   const [certChecks, setCertChecks] = useState<CertCheck[]>([]);
   const [certLoading, setCertLoading] = useState(false);
+  const [ctaCases, setCtaCases] = useState<CTACase[]>([]);
+  const [ctaRuns, setCtaRuns] = useState<CTARun[]>([]);
+  const [ctaLoading, setCtaLoading] = useState(false);
+  const [ctaRunning, setCtaRunning] = useState(false);
+  const [ctaChecking, setCtaChecking] = useState(false);
+  const [ctaMessage, setCtaMessage] = useState<string>('');
+  const [ctaDetailsOpen, setCtaDetailsOpen] = useState(false);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('2025-DEM-1-FullSet_v351');
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [ctaCredentials, setCtaCredentials] = useState<CtaCredentialForm>({
+    username: '',
+    password: '',
+    organization: '',
+    endpoint_url: 'https://compliance.nemsis.org/',
+    additional_info: '',
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -105,10 +183,48 @@ export default function ComplianceStudioPage() {
     }
   }, []);
 
+  const fetchCtaCases = useCallback(async () => {
+    setCtaLoading(true);
+    try {
+      const data = await getNEMSISCtaCases();
+      setCtaCases(Array.isArray(data.cases) ? data.cases : []);
+    } catch {
+      setCtaCases([]);
+    } finally {
+      setCtaLoading(false);
+    }
+  }, []);
+
+  const fetchCtaRuns = useCallback(async () => {
+    setCtaLoading(true);
+    try {
+      const data = await getNEMSISCtaRuns();
+      setCtaRuns(Array.isArray(data.runs) ? data.runs : []);
+    } catch {
+      setCtaRuns([]);
+    } finally {
+      setCtaLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPackStatus();
     fetchCertChecks();
-  }, [fetchPackStatus, fetchCertChecks]);
+    fetchCtaCases();
+    fetchCtaRuns();
+  }, [fetchPackStatus, fetchCertChecks, fetchCtaCases, fetchCtaRuns]);
+
+  useEffect(() => {
+    if (!selectedCaseId && ctaCases.length > 0) {
+      setSelectedCaseId(ctaCases[0].case_id);
+    }
+  }, [ctaCases, selectedCaseId]);
+
+  useEffect(() => {
+    if (!selectedRunId && ctaRuns.length > 0) {
+      setSelectedRunId(ctaRuns[0].id);
+    }
+  }, [ctaRuns, selectedRunId]);
 
   const handleDropFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -176,6 +292,59 @@ export default function ComplianceStudioPage() {
       await generatePatchTasksFromResult({ validation_result_id: validationResult.record_id });
     } catch (err: unknown) {
       console.warn("[compliance-studio]", err);
+    }
+  };
+
+  const selectedRun = ctaRuns.find((run) => run.id === selectedRunId) ?? (ctaRuns.length > 0 ? ctaRuns[0] : null);
+
+  const runSelectedCtaCase = async () => {
+    if (!selectedCaseId) return;
+    setCtaRunning(true);
+    setCtaMessage('');
+    try {
+      const run = await runNEMSISCtaCase({
+        case_id: selectedCaseId,
+        endpoint_url: ctaCredentials.endpoint_url,
+        additional_info: ctaCredentials.additional_info || undefined,
+        credentials: {
+          username: ctaCredentials.username,
+          password: ctaCredentials.password,
+          organization: ctaCredentials.organization,
+        },
+      });
+      setSelectedRunId(run.id);
+      setCtaMessage(run.plain_summary || 'CTA test started.');
+      await fetchCtaRuns();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to run CTA test.';
+      setCtaMessage(message);
+    } finally {
+      setCtaRunning(false);
+    }
+  };
+
+  const checkSelectedRunStatus = async () => {
+    if (!selectedRun) return;
+    setCtaChecking(true);
+    setCtaMessage('');
+    try {
+      const run = await checkNEMSISCtaRunStatus(selectedRun.id, {
+        endpoint_url: ctaCredentials.endpoint_url,
+        additional_info: ctaCredentials.additional_info || undefined,
+        credentials: {
+          username: ctaCredentials.username,
+          password: ctaCredentials.password,
+          organization: ctaCredentials.organization,
+        },
+      });
+      setSelectedRunId(run.id);
+      setCtaMessage(run.plain_summary || 'CTA status updated.');
+      await fetchCtaRuns();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unable to check CTA status.';
+      setCtaMessage(message);
+    } finally {
+      setCtaChecking(false);
     }
   };
 
@@ -248,6 +417,200 @@ export default function ComplianceStudioPage() {
         {uploadStatus && (
           <div className="mt-3 text-xs text-zinc-400">{uploadStatus}</div>
         )}
+      </div>
+
+      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-zinc-400">CTA Collect &amp; Send</div>
+            <div className="text-xs text-zinc-500 mt-1">Start with DEM 1, submit over SOAP, persist the request handle, and poll status without exposing SOAP details.</div>
+          </div>
+          <div className="text-xs text-zinc-500">First-pass focus: DEM 1 end to end</div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.4fr] gap-4">
+          <div className="space-y-3">
+            <div className="text-micro uppercase tracking-wider text-zinc-500">Case List</div>
+            {ctaLoading && ctaCases.length === 0 ? (
+              <div className="p-4"><QuantumTableSkeleton rows={4} cols={2} /></div>
+            ) : (
+              <div className="space-y-2">
+                {ctaCases.map((ctaCase) => (
+                  <button
+                    key={ctaCase.case_id}
+                    onClick={() => setSelectedCaseId(ctaCase.case_id)}
+                    className={`w-full text-left border px-3 py-3 transition-colors ${selectedCaseId === ctaCase.case_id ? 'border-cyan-500/50 bg-cyan-500/[0.08]' : 'border-border-DEFAULT bg-bg-input hover:border-white/[0.2]'}`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-xs font-bold text-zinc-100">{ctaCase.short_name}</div>
+                      <span className={`text-micro font-bold px-2 py-0.5 ${ctaCase.dataset_type === 'DEM' ? 'bg-cyan-950 text-cyan-300' : 'bg-amber-950 text-amber-300'}`}>
+                        {ctaCase.dataset_type}
+                      </span>
+                    </div>
+                    <div className="text-xs text-zinc-500 mt-1">{ctaCase.description}</div>
+                    <div className="text-micro text-zinc-600 mt-2">
+                      Schema {ctaCase.schema_version} · requestDataSchema {ctaCase.request_data_schema} · key {ctaCase.test_key_element}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                value={ctaCredentials.username}
+                onChange={(event) => setCtaCredentials((prev) => ({ ...prev, username: event.target.value }))}
+                placeholder="CTA username"
+                className="bg-bg-input border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 outline-none focus:border-cyan-500/40"
+              />
+              <input
+                value={ctaCredentials.organization}
+                onChange={(event) => setCtaCredentials((prev) => ({ ...prev, organization: event.target.value }))}
+                placeholder="CTA organization"
+                className="bg-bg-input border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 outline-none focus:border-cyan-500/40"
+              />
+              <input
+                type="password"
+                value={ctaCredentials.password}
+                onChange={(event) => setCtaCredentials((prev) => ({ ...prev, password: event.target.value }))}
+                placeholder="CTA password"
+                className="bg-bg-input border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 outline-none focus:border-cyan-500/40"
+              />
+              <input
+                value={ctaCredentials.endpoint_url}
+                onChange={(event) => setCtaCredentials((prev) => ({ ...prev, endpoint_url: event.target.value }))}
+                placeholder="CTA endpoint"
+                className="bg-bg-input border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 outline-none focus:border-cyan-500/40"
+              />
+            </div>
+
+            <input
+              value={ctaCredentials.additional_info}
+              onChange={(event) => setCtaCredentials((prev) => ({ ...prev, additional_info: event.target.value }))}
+              placeholder="Optional additional info override"
+              className="w-full bg-bg-input border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 outline-none focus:border-cyan-500/40"
+            />
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={runSelectedCtaCase}
+                disabled={!selectedCaseId || ctaRunning}
+                className="bg-system-billing text-black text-xs font-bold px-5 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {ctaRunning ? 'Running Test...' : 'Run Test'}
+              </button>
+              <button
+                onClick={checkSelectedRunStatus}
+                disabled={!selectedRun || ctaChecking}
+                className="bg-bg-input border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {ctaChecking ? 'Checking...' : 'Check Status'}
+              </button>
+              <button
+                onClick={() => { void fetchCtaRuns(); }}
+                className="bg-bg-input border border-border-DEFAULT text-zinc-300 text-xs px-4 py-2"
+              >
+                Refresh Runs
+              </button>
+              {ctaMessage && <span className="text-xs text-zinc-400">{ctaMessage}</span>}
+            </div>
+
+            <div className="border border-border-DEFAULT bg-bg-input p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <div className="text-micro uppercase tracking-wider text-zinc-500">Latest Run</div>
+                  <div className="text-sm font-bold text-zinc-100">{selectedRun?.case_label || 'No CTA run yet'}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-system-billing font-bold">{selectedRun?.current_state_label || 'Ready'}</div>
+                  <div className="text-micro text-zinc-500">{selectedRun ? formatTimestamp(selectedRun.updated_at) : 'Select DEM 1 and run the test.'}</div>
+                </div>
+              </div>
+
+              {selectedRun ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <div className="text-zinc-500">Current State</div>
+                      <div className="text-zinc-100 font-bold">{selectedRun.current_state_label}</div>
+                    </div>
+                    <div>
+                      <div className="text-zinc-500">Request Handle</div>
+                      <div className="text-zinc-100 font-mono break-all">{selectedRun.request_handle || 'Not assigned yet'}</div>
+                    </div>
+                    <div>
+                      <div className="text-zinc-500">Timestamp</div>
+                      <div className="text-zinc-100">{formatTimestamp(selectedRun.last_checked_at || selectedRun.updated_at)}</div>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-zinc-300">{selectedRun.plain_summary}</div>
+                  <div className="text-micro text-zinc-500">
+                    Submit code: {selectedRun.submit_status_code ?? 'n/a'} · Retrieve code: {selectedRun.retrieve_status_code ?? 'n/a'} · Blocking validation issues: {selectedRun.validation_blocking_count}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="text-xs text-zinc-500">Retry by selecting the case and pressing Run Test again. Use Check Status for pending handles.</div>
+                    <button
+                      onClick={() => setCtaDetailsOpen((prev) => !prev)}
+                      className="text-xs bg-[#0A0A0B] border border-border-DEFAULT text-zinc-300 px-3 py-1.5"
+                    >
+                      {ctaDetailsOpen ? 'Hide Advanced Detail' : 'Show Advanced Detail'}
+                    </button>
+                  </div>
+
+                  {ctaDetailsOpen && (
+                    <div className="space-y-3 border-t border-border-DEFAULT pt-3">
+                      <div>
+                        <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Status History</div>
+                        <div className="space-y-1">
+                          {selectedRun.history.map((entry, index) => (
+                            <div key={`${entry.at}-${index}`} className="text-xs text-zinc-400">
+                              {formatTimestamp(entry.at)} · {entry.status} · {entry.summary || 'No summary'}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Generated XML</div>
+                          <pre className="bg-black/40 border border-border-DEFAULT p-3 text-[10px] text-zinc-300 overflow-auto max-h-64 whitespace-pre-wrap">
+                            {decodeXmlDetail(selectedRun.details.xml_b64)}
+                          </pre>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Submit Response</div>
+                            <pre className="bg-black/40 border border-border-DEFAULT p-3 text-[10px] text-zinc-300 overflow-auto max-h-28 whitespace-pre-wrap">
+                              {typeof selectedRun.details.submit_response_xml === 'string' ? selectedRun.details.submit_response_xml : 'No submit response yet'}
+                            </pre>
+                          </div>
+                          <div>
+                            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Retrieve Response</div>
+                            <pre className="bg-black/40 border border-border-DEFAULT p-3 text-[10px] text-zinc-300 overflow-auto max-h-28 whitespace-pre-wrap">
+                              {typeof selectedRun.details.retrieve_response_xml === 'string' ? selectedRun.details.retrieve_response_xml : 'No retrieve response yet'}
+                            </pre>
+                          </div>
+                          <div>
+                            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Validation Snapshot</div>
+                            <pre className="bg-black/40 border border-border-DEFAULT p-3 text-[10px] text-zinc-300 overflow-auto max-h-32 whitespace-pre-wrap">
+                              {JSON.stringify(selectedRun.details.validation ?? {}, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-xs text-zinc-500">No CTA runs recorded yet. Select DEM 1 and press Run Test.</div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3">

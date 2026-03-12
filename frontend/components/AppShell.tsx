@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import { ArrowUpRight, Shield, Wallet } from "lucide-react";
 
 export type SystemStatus =
   | "ACTIVE"
@@ -53,23 +54,40 @@ function NavLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
-
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-border bg-[rgba(11,15,20,0.9)] backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
+    <div className="min-h-screen bg-[#050505] text-text-primary">
+      <div className="fixed inset-0 pointer-events-none opacity-60"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 12% 10%, rgba(255,77,0,0.14), transparent 30%), radial-gradient(circle at 88% 0%, rgba(229,57,53,0.12), transparent 28%), linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px)",
+          backgroundSize: "auto, auto, 40px 40px, 40px 40px",
+        }}
+      />
+
+      <div className="relative z-40 border-b border-[rgba(255,255,255,0.08)] bg-[rgba(255,77,0,0.12)]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-2 text-[10px] uppercase tracking-[0.18em] text-[rgba(255,255,255,0.45)]">
+          <span>Sovereign Operations Surface</span>
+          <div className="hidden md:flex items-center gap-5">
+            <span>Billing-first execution</span>
+            <span>Role-based access</span>
+            <span>Deny-by-default access</span>
+          </div>
+        </div>
+      </div>
+
+      <header className="sticky top-0 z-40 border-b border-border bg-[rgba(11,15,20,0.94)] backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9  border border-border bg-panel2 flex items-center justify-center font-bold">
+            <div className="h-10 w-10 border border-border bg-panel2 flex items-center justify-center font-bold chamfer-8 shadow-[0_0_24px_rgba(255,77,0,0.24)]">
               FQ
             </div>
             <div>
-              <div className="text-sm font-semibold leading-4">FusionEMS Quantum</div>
-              <div className="text-xs text-muted">Billing-first infrastructure OS</div>
+              <div className="text-sm font-semibold leading-4 uppercase tracking-[0.12em]">FusionEMS Quantum</div>
+              <div className="text-xs text-muted uppercase tracking-[0.16em]">Public Safety Command Platform</div>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             <NavLink href="/" label="Platform" />
             <NavLink href="/billing" label="Billing" />
             <NavLink href="/systems" label="Systems" />
@@ -86,40 +104,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link href="/portal/patient" className=" border border-border px-3 py-2 text-sm text-muted hover:text-text">
+            <Link href="/portal/patient" className="hidden md:inline-flex items-center gap-2 border border-border px-3 py-2 text-sm text-muted hover:text-text chamfer-8 bg-panel">
+              <Wallet className="w-4 h-4" />
               Pay My Bill
             </Link>
-            <Link href="/billing/login" className=" border border-border px-3 py-2 text-sm text-muted hover:text-text">
+            <Link href="/billing/login" className="hidden md:inline-flex items-center gap-2 border border-border px-3 py-2 text-sm text-muted hover:text-text chamfer-8 bg-panel">
+              <Shield className="w-4 h-4" />
               Billing Login
             </Link>
-            <button
-              onClick={() => setCmdPaletteOpen(true)}
-              className=" bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
+            <Link
+              href="/founder-command"
+              className="inline-flex items-center gap-2 bg-billing px-4 py-2 text-sm font-semibold text-black hover:opacity-90 chamfer-8"
             >
-              Command
-            </button>
+              Founder Command
+            </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-5 py-6">
+      <main className="relative z-10 mx-auto max-w-7xl px-5 py-8 md:py-10">
         {children}
       </main>
 
-      <footer className="border-t border-border bg-[rgba(11,15,20,0.8)]">
-        <div className="mx-auto max-w-7xl px-5 py-5 text-xs text-muted flex flex-wrap items-center justify-between gap-3">
-          <div>Billing Engine: Active · Compliance Layer: Monitoring · System Status: Operational</div>
-          <div>Quantum v1.0</div>
+      <footer className="relative z-10 border-t border-border bg-[rgba(11,15,20,0.88)]">
+        <div className="mx-auto max-w-7xl px-5 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-muted">
+          <div className="space-y-1">
+            <div className="uppercase tracking-[0.16em] text-[rgba(255,255,255,0.38)]">FusionEMS Quantum Platform</div>
+            <div>Deterministic workflows • auditable actions • integrated agency operations</div>
+          </div>
+          <Link href="/founder-command" className="inline-flex items-center gap-2 text-[rgba(255,255,255,0.75)] hover:text-white transition-colors uppercase tracking-[0.14em]">
+            Founder Command
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </footer>
-
-      <ModalContainer
-        open={cmdPaletteOpen}
-        title="Founder Command Shortcuts"
-        body={"This is a minimal command surface. Use Founder Command Center for full control."}
-        onClose={() => setCmdPaletteOpen(false)}
-        ctaLabel="Close"
-      />
     </div>
   );
 }

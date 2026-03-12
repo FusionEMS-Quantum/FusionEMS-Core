@@ -121,15 +121,15 @@ export interface TransportLinkRequestSummaryApi {
   id: string;
   data: {
     status:
-      | 'draft'
-      | 'submitted'
-      | 'awaiting_signatures'
-      | 'missing_documentation'
-      | 'sent_to_cad'
-      | 'scheduled'
-      | 'accepted'
-      | 'rejected'
-      | 'cancelled';
+    | 'draft'
+    | 'submitted'
+    | 'awaiting_signatures'
+    | 'missing_documentation'
+    | 'sent_to_cad'
+    | 'scheduled'
+    | 'accepted'
+    | 'rejected'
+    | 'cancelled';
     priority?: string;
     patient_name?: string;
     patient_first?: string;
@@ -432,7 +432,7 @@ function normalizeEPCRStatus(value: unknown): EPCRChartStatus {
   }
 }
 
-    function normalizeEPCRChartRecord(value: unknown): EPCRChartApi {
+function normalizeEPCRChartRecord(value: unknown): EPCRChartApi {
   const rec = normalizeDominationRecord(value);
   const patient = asJsonObject(rec.patient);
   const dispatch = asJsonObject(rec.dispatch);
@@ -2719,7 +2719,7 @@ export async function getPortalMessages(): Promise<PortalMessageApi[]> {
     id: asString(message.id),
     subject: asString(message.subject),
     body: asString(message.body),
-      direction: asString(message.direction, 'inbound') === 'outbound' ? 'outbound' : 'inbound',
+    direction: asString(message.direction, 'inbound') === 'outbound' ? 'outbound' : 'inbound',
     created_at: asIsoDateString(message.created_at),
   }));
 }
@@ -3461,13 +3461,13 @@ export interface LegalIntakePayload {
   requester_name: string;
   requesting_entity?: string;
   requester_category?:
-    | 'patient'
-    | 'patient_representative'
-    | 'attorney'
-    | 'insurance'
-    | 'government_agency'
-    | 'employer'
-    | 'other_third_party_manual_review';
+  | 'patient'
+  | 'patient_representative'
+  | 'attorney'
+  | 'insurance'
+  | 'government_agency'
+  | 'employer'
+  | 'other_third_party_manual_review';
   patient_first_name?: string;
   patient_last_name?: string;
   patient_dob?: string;
@@ -3665,10 +3665,10 @@ export async function reviewFounderLegalRequest(
     document_sufficient: boolean;
     minimum_necessary_scope: boolean;
     redaction_mode:
-      | 'court_safe_minimum_necessary'
-      | 'expanded_disclosure_reviewed'
-      | 'expanded_disclosure_patient_authorized'
-      | 'expanded_disclosure_legal_override';
+    | 'court_safe_minimum_necessary'
+    | 'expanded_disclosure_reviewed'
+    | 'expanded_disclosure_patient_authorized'
+    | 'expanded_disclosure_legal_override';
     delivery_method: 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup';
     decision: 'approve' | 'request_more_docs' | 'reject';
     decision_notes?: string;
@@ -5843,6 +5843,91 @@ export async function generatePatchTasksFromResult(payload: { validation_result_
     withCredentials: true,
   });
   return data;
+}
+
+export interface NEMSISCtaCaseApi {
+  case_id: string;
+  short_name: string;
+  description: string;
+  dataset_type: 'DEM' | 'EMS';
+  expected_result: string;
+  schema_version: string;
+  request_data_schema: number;
+  test_key_element: string;
+}
+
+export interface NEMSISCtaRunApi {
+  id: string;
+  status: string;
+  case_id: string;
+  case_label: string;
+  dataset_type: 'DEM' | 'EMS';
+  schema_version: string;
+  request_data_schema: number;
+  request_handle: string | null;
+  submit_status_code: number | null;
+  retrieve_status_code: number | null;
+  plain_summary: string;
+  current_state_label: string;
+  validation_blocking_count: number;
+  resolved_test_key: string | null;
+  organization: string | null;
+  last_checked_at: string | null;
+  created_at: string;
+  updated_at: string;
+  history: Array<{ status: string; at: string; summary?: string }>;
+  details: Record<string, unknown>;
+}
+
+export interface NEMSISCtaCredentialsApi {
+  username: string;
+  password: string;
+  organization: string;
+}
+
+export interface RunNEMSISCtaCasePayload {
+  case_id: string;
+  endpoint_url?: string;
+  additional_info?: string;
+  credentials?: Partial<NEMSISCtaCredentialsApi>;
+}
+
+export async function getNEMSISCtaCases() {
+  const { data } = await API.get('/api/v1/nemsis/studio/cta/cases', {
+    withCredentials: true,
+  });
+  return data as { cases: NEMSISCtaCaseApi[] };
+}
+
+export async function getNEMSISCtaRuns() {
+  const { data } = await API.get('/api/v1/nemsis/studio/cta/runs', {
+    withCredentials: true,
+  });
+  return data as { runs: NEMSISCtaRunApi[] };
+}
+
+export async function getNEMSISCtaRun(runId: string) {
+  const { data } = await API.get(`/api/v1/nemsis/studio/cta/runs/${runId}`, {
+    withCredentials: true,
+  });
+  return data as NEMSISCtaRunApi;
+}
+
+export async function runNEMSISCtaCase(payload: RunNEMSISCtaCasePayload) {
+  const { data } = await API.post('/api/v1/nemsis/studio/cta/runs', payload, {
+    withCredentials: true,
+  });
+  return data as NEMSISCtaRunApi;
+}
+
+export async function checkNEMSISCtaRunStatus(
+  runId: string,
+  payload: Omit<RunNEMSISCtaCasePayload, 'case_id'>
+) {
+  const { data } = await API.post(`/api/v1/nemsis/studio/cta/runs/${runId}/check-status`, payload, {
+    withCredentials: true,
+  });
+  return data as NEMSISCtaRunApi;
 }
 
 // ── NEMSIS Patch Tasks ─────────────────────────────────────────────────────

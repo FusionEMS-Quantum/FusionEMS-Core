@@ -18,6 +18,13 @@ class Settings(BaseSettings):
             return v.strip().lower() in ("1", "true", "yes")
         return bool(v)
 
+    @field_validator("oss_tts_piper_speaker_id", mode="before")
+    @classmethod
+    def _coerce_optional_int(cls, v: object) -> object:
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
+
     database_url: str = Field(default="")
     api_base_url: str = Field(default="https://api.fusionemsquantum.com")
 
@@ -89,15 +96,15 @@ class Settings(BaseSettings):
         description="Canonical redirect URI registered in Entra app registration",
     )
     microsoft_post_login_url: str = Field(
-        default="https://app.fusionemsquantum.com/dashboard",
+        default="https://www.fusionemsquantum.com/dashboard",
         description="Frontend URL to redirect to after successful Microsoft login",
     )
     microsoft_founder_post_login_url: str = Field(
-        default="https://app.fusionemsquantum.com/dashboard?next=%2Ffounder",
+        default="https://www.fusionemsquantum.com/dashboard?next=%2Ffounder",
         description="Frontend URL to redirect founder-intent Microsoft logins after token issuance",
     )
     microsoft_post_logout_url: str = Field(
-        default="https://app.fusionemsquantum.com/login",
+        default="https://www.fusionemsquantum.com/login",
         description="Frontend URL Entra redirects to after logout (matches manifest logoutUrl)",
     )
 
@@ -197,6 +204,42 @@ class Settings(BaseSettings):
     )
     github_owner: str = Field(default="", description="GitHub org or username")
     github_repo: str = Field(default="FusionEMS-Core", description="GitHub repository name")
+
+    # NEMSIS CTA (Collect & Send) SOAP integration
+    nemsis_cta_endpoint: str = Field(
+        default="https://cta.nemsis.org:443/ComplianceTestingWs/endpoints/",
+        description="NEMSIS TAC CTA SOAP endpoint",
+    )
+    nemsis_cta_username: str = Field(default="", description="Default NEMSIS CTA SOAP username")
+    nemsis_cta_password: str = Field(default="", description="Default NEMSIS CTA SOAP password")
+    nemsis_cta_organization: str = Field(
+        default="",
+        description="Default NEMSIS CTA SOAP organization value",
+    )
+    nemsis_cta_timeout_seconds: float = Field(
+        default=30.0,
+        description="HTTP timeout for NEMSIS CTA SOAP requests",
+    )
+    nemsis_national_endpoint: str = Field(
+        default="https://nemsis.org/nemsisWs.wsdl",
+        description="NEMSIS national EMS database SOAP endpoint for production submissions",
+    )
+    nemsis_national_timeout_seconds: float = Field(
+        default=60.0,
+        description="HTTP timeout for NEMSIS national database SOAP requests",
+    )
+    nemsis_pm_endpoint: str = Field(
+        default="https://perfmeasures.nemsis.org//",
+        description="NEMSIS performance measures SOAP endpoint",
+    )
+    nemsis_local_schematron_dir: str = Field(
+        default="",
+        description="Optional local directory containing the NEMSIS Schematron development kit",
+    )
+    nemsis_saxon_jar_path: str = Field(
+        default="",
+        description="Optional Saxon HE jar path for compiling XSLT2 Schematron rules",
+    )
 
     # Observability
     otel_enabled: bool = Field(default=True)

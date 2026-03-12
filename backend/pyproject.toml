@@ -47,7 +47,10 @@ disable = [
 pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-markers = ["smoke: Smoke tests that require a live database and AWS credentials"]
+markers = [
+  "smoke: Smoke tests that require a live database and AWS credentials",
+  "integration: Integration tests that call real external services"
+]
 
 [tool.ruff]
 target-version = "py311"
