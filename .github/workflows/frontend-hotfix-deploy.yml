@@ -7,6 +7,9 @@ on:
         description: "Optional explicit image tag"
         required: false
         type: string
+  push:
+    branches:
+      - hotfix/frontend-clean-main-71c0e40
 
 permissions:
   id-token: write
