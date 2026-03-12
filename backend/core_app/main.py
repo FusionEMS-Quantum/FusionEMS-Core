@@ -33,7 +33,6 @@ from core_app.api.ar_router import router as ar_router  # noqa: E402
 from core_app.api.audit_router import router as audit_router  # noqa: E402
 from core_app.api.auth_rep_router import router as auth_rep_router  # noqa: E402
 from core_app.api.auth_router import router as auth_router  # noqa: E402
-from core_app.api.billing_command_router import router as billing_command_router  # noqa: E402
 from core_app.api.billing_router import router as billing_router  # noqa: E402
 from core_app.api.cad_calls_router import router as cad_calls_router  # noqa: E402
 from core_app.api.cad_units_router import router as cad_units_router  # noqa: E402
@@ -80,7 +79,6 @@ from core_app.api.founder_agents_router import router as founder_agents_router  
 from core_app.api.founder_billing_voice_router import (
     router as founder_billing_voice_router,  # noqa: E402
 )
-from core_app.api.founder_clinical_router import router as founder_clinical_router  # noqa: E402
 from core_app.api.founder_copilot_router import router as founder_copilot_router  # noqa: E402
 from core_app.api.founder_documents_router import router as founder_documents_router  # noqa: E402
 from core_app.api.founder_graph_router import router as founder_graph_router  # noqa: E402
@@ -100,7 +98,6 @@ from core_app.api.founder_specialty_ops_command_router import (  # noqa: E402
 from core_app.api.founder_success_command_router import (
     router as founder_success_command_router,  # noqa: E402
 )
-from core_app.api.founder_tax_router import tax_advisor_router  # noqa: E402
 from core_app.api.governance_router import router as governance_router  # noqa: E402
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
@@ -121,7 +118,6 @@ from core_app.api.nemsis_compliance_studio_router import (  # noqa: E402
     router as nemsis_compliance_studio_router,
 )
 from core_app.api.nemsis_copilot_router import router as nemsis_copilot_router  # noqa: E402
-from core_app.api.nemsis_manager_router import router as nemsis_manager_router  # noqa: E402
 from core_app.api.nemsis_pack_router import router as nemsis_pack_router  # noqa: E402
 from core_app.api.nemsis_router import router as nemsis_router  # noqa: E402
 from core_app.api.nemsis_submissions_router import router as nemsis_submissions_router  # noqa: E402
@@ -144,8 +140,6 @@ from core_app.api.patient_identity_router import (  # noqa: E402
 from core_app.api.patient_portal_router import router as patient_portal_router  # noqa: E402
 from core_app.api.patient_router import router as patient_router  # noqa: E402
 from core_app.api.payments_router import router as payments_router  # noqa: E402
-from core_app.api.platform_core_router import router as platform_core_router  # noqa: E402
-from core_app.api.platform_health_router import router as platform_health_router  # noqa: E402
 from core_app.api.platform_incidents_router import router as platform_incidents_router  # noqa: E402
 from core_app.api.policy_router import router as policy_router  # noqa: E402
 from core_app.api.portal_billing_router import router as portal_billing_router  # noqa: E402
@@ -201,6 +195,8 @@ app = FastAPI(title=settings.app_name)
 configure_otel(app)
 
 _allowed_origins = [
+    "https://www.fusionemsquantum.com",
+    "https://fusionemsquantum.com",
     "https://app.fusionemsquantum.com",
     "https://api.fusionemsquantum.com",
 ]
@@ -263,7 +259,6 @@ app.include_router(ai_router)
 app.include_router(analytics_router)
 app.include_router(ar_router)
 app.include_router(auth_rep_router)
-app.include_router(billing_command_router)
 app.include_router(billing_router)
 app.include_router(cad_calls_router)
 app.include_router(cad_units_router)
@@ -281,7 +276,6 @@ app.include_router(epcr_capture_router)
 app.include_router(epcr_customization_router)
 app.include_router(epcr_router)
 app.include_router(clinical_workflow_router)
-app.include_router(founder_clinical_router)
 app.include_router(events_router)
 app.include_router(export_offboarding_router)
 app.include_router(export_status_router)
@@ -315,11 +309,9 @@ app.include_router(mdt_router)
 app.include_router(metrics_router)
 app.include_router(mobile_ops_router)
 app.include_router(nemsis_compliance_studio_router)
-app.include_router(nemsis_manager_router)
 app.include_router(nemsis_pack_router)
 app.include_router(nemsis_submissions_router)
 app.include_router(nemsis_copilot_router)
-app.include_router(platform_health_router)
 app.include_router(platform_incidents_router)
 app.include_router(tech_copilot_router)
 app.include_router(neris_copilot_router)
@@ -376,8 +368,6 @@ app.include_router(founder_success_command_router)
 app.include_router(founder_copilot_router)
 
 # --- Platform Core Directive routers (self-prefixed) ---
-app.include_router(platform_core_router)
-app.include_router(tax_advisor_router, prefix="/api")
 app.include_router(quantum_csv_router, prefix="/api")
 app.include_router(dataset_router)
 
