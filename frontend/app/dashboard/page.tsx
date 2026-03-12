@@ -90,23 +90,31 @@ function DashboardPageInner() {
 
   return (
     <AppShell>
+      <div className="mb-4 flex flex-wrap items-center gap-4 border border-white/[0.06] bg-[var(--color-surface-secondary)] px-4 py-2.5">
+        <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-success)]">
+          <span className="h-1.5 w-1.5 bg-[var(--color-success)] shadow-[0_0_5px_#4E9F6E]" />
+          Operations live
+        </span>
+        <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-info)]">
+          <span className="h-1.5 w-1.5 bg-[var(--color-info)] shadow-[0_0_5px_#5C8DB8]" />
+          Dispatch telemetry active
+        </span>
+        <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-brand-orange)]">
+          <span className="h-1.5 w-1.5 bg-[var(--color-brand-orange)] shadow-[0_0_5px_#F36A21]" />
+          Founder visibility online
+        </span>
+      </div>
+
       {/* ── Page header ────────────────────────────────────────────────── */}
       <div
         className="hud-rail mb-6 flex items-center justify-between pb-4"
-        style={{ borderBottom: '1px solid var(--color-border-default)' }}
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div>
-          <h1
-            className="label-caps"
-            style={{
-              fontSize:  'var(--text-h2)',
-              color:     'var(--color-text-primary)',
-            }}
-          >
-            Operations Dashboard
-          </h1>
+          <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-brand-orange)]">Command Dashboard</div>
+          <h1 className="text-3xl font-black tracking-[0.01em] text-[var(--color-text-primary)] md:text-[2.2rem]">Operations Control Surface</h1>
           <p
-            className="micro-caps mt-1"
+            className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]"
             style={{ color: 'var(--color-text-muted)' }}
           >
             {today}
@@ -114,7 +122,7 @@ function DashboardPageInner() {
         </div>
 
         <div
-          className="chamfer-4 px-3 py-1.5"
+          className="px-3 py-1.5"
           style={{
             backgroundColor: 'var(--color-brand-orange-ghost)',
             border:          '1px solid var(--color-brand-orange-glow)',

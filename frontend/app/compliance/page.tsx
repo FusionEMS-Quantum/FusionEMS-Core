@@ -95,7 +95,7 @@ interface DomainMeta { label: string; accent: string; icon: React.ElementType }
 const DOMAIN_CONFIG: Record<DomainKey, DomainMeta> = {
   nemsis:        { label: 'NEMSIS',             accent: 'var(--color-status-active)', icon: Database },
   hipaa:         { label: 'HIPAA',              accent: '#38BDF8', icon: Lock },
-  pcr:           { label: 'PCR Completion',     accent: 'var(--q-yellow)', icon: Clipboard },
+  pcr:           { label: 'PCR Completion',     accent: 'var(--color-warning)', icon: Clipboard },
   billing:       { label: 'Billing Compliance', accent: '#22d3ee', icon: CreditCard },
   accreditation: { label: 'Accreditation',      accent: '#a855f7', icon: Award },
   dea:           { label: 'DEA',                accent: 'var(--color-brand-red)', icon: Pill },
@@ -110,7 +110,7 @@ const IMPACT_LABELS: Record<ImpactArea, { label: string; color: string }> = {
   licensing:       { label: 'Licensing',        color: '#a855f7' },
   dea:             { label: 'DEA',              color: 'var(--color-brand-red)' },
   hipaa:           { label: 'HIPAA',            color: '#38BDF8' },
-  'audit-risk':    { label: 'Audit Risk',       color: 'var(--q-yellow)' },
+  'audit-risk':    { label: 'Audit Risk',       color: 'var(--color-warning)' },
   'nemsis-export': { label: 'NEMSIS Export',    color: 'var(--color-status-active)' },
   accreditation:   { label: 'Accreditation',    color: '#a855f7' },
   cms:             { label: 'CMS',              color: 'var(--q-orange)' },
@@ -172,7 +172,7 @@ function ActionStateBadge({ state }: { state: ActionState }) {
 }
 
 function RiskLevel({ level, label }: { level: RiskTier; label: string }) {
-  const color = level === 'high' ? 'var(--color-brand-red)' : level === 'medium' ? 'var(--q-yellow)' : 'var(--color-status-active)';
+  const color = level === 'high' ? 'var(--color-brand-red)' : level === 'medium' ? 'var(--color-warning)' : 'var(--color-status-active)';
   return (
     <div className="flex items-center gap-2">
       <span className="text-[0.55rem] font-bold tracking-[0.15em] uppercase text-[var(--color-text-muted)]">{label}</span>
@@ -184,7 +184,7 @@ function RiskLevel({ level, label }: { level: RiskTier; label: string }) {
 }
 
 function ScoreGauge({ score, size = 'lg' }: { score: number; size?: 'sm' | 'lg' }) {
-  const color = score >= 90 ? 'var(--color-status-active)' : score >= 75 ? '#38BDF8' : score >= 60 ? 'var(--q-yellow)' : 'var(--color-brand-red)';
+  const color = score >= 90 ? 'var(--color-status-active)' : score >= 75 ? 'var(--color-info)' : score >= 60 ? 'var(--color-warning)' : 'var(--color-brand-red)';
   const dim = size === 'lg' ? 72 : 44;
   const stroke = size === 'lg' ? 5 : 3;
   const r = (dim - stroke) / 2;
@@ -232,7 +232,7 @@ function PriorityAlertCard({ alert, onNavigate }: { alert: PriorityAlert; onNavi
   const isCritical = alert.severity === 'critical';
   const borderColor = isCritical ? 'rgba(255,45,45,0.4)' : 'rgba(245,158,11,0.3)';
   const glowColor = isCritical ? 'rgba(255,45,45,0.08)' : 'rgba(245,158,11,0.05)';
-  const accentColor = isCritical ? 'var(--color-brand-red)' : 'var(--q-yellow)';
+  const accentColor = isCritical ? 'var(--color-brand-red)' : 'var(--color-warning)';
   return (
     <div
       className="relative border p-4 group cursor-pointer hover:border-opacity-70 transition-all"
@@ -277,7 +277,7 @@ function PriorityAlertCard({ alert, onNavigate }: { alert: PriorityAlert; onNavi
 function DomainSummaryPanel({ domain: _domain, summary, config }: { domain: DomainKey; summary: DomainSummary; config: DomainMeta }) {
   const DomainIcon = config.icon;
   return (
-    <div className="relative border border-white/8 bg-[#0a0a0c] p-5 mb-4" style={{ borderLeft: `3px solid ${config.accent}` }}>
+    <div className="relative border border-white/8 bg-[var(--color-surface-secondary)] p-5 mb-4" style={{ borderLeft: `3px solid ${config.accent}` }}>
       <TacticalCorners />
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_1fr] gap-6">
         {/* Score + Domain Info */}
@@ -290,7 +290,7 @@ function DomainSummaryPanel({ domain: _domain, summary, config }: { domain: Doma
             </div>
             <div className="flex items-center gap-4 mt-2">
               <span className="text-[0.6rem] font-bold text-[var(--color-status-active)]">{summary.passing} passing</span>
-              <span className="text-[0.6rem] font-bold text-[var(--q-yellow)]">{summary.warning} warning</span>
+              <span className="text-[0.6rem] font-bold text-[var(--color-warning)]">{summary.warning} warning</span>
               <span className="text-[0.6rem] font-bold text-[var(--color-brand-red)]">{summary.critical} critical</span>
             </div>
             <div className="mt-2">
@@ -316,7 +316,7 @@ function DomainSummaryPanel({ domain: _domain, summary, config }: { domain: Doma
           <div className="space-y-1.5">
             {summary.suggestedActions.map((action, i) => (
               <div key={i} className="flex items-start gap-2">
-                <ChevronRight className="w-3 h-3 text-[#FF6A00] mt-0.5 shrink-0" />
+                <ChevronRight className="w-3 h-3 text-[var(--color-brand-orange)] mt-0.5 shrink-0" />
                 <span className="text-[0.65rem] text-[var(--color-text-secondary)] leading-snug">{action}</span>
               </div>
             ))}
@@ -408,7 +408,7 @@ function ComplianceRow({ item, isExpanded, onToggle, accent }: { item: Complianc
               )}
               <div>
                 <span className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] block mb-1">Action State</span>
-                <span className="text-[0.65rem] font-semibold" style={{ color: actionCfg.status === 'critical' ? 'var(--color-brand-red)' : actionCfg.status === 'warning' ? 'var(--q-yellow)' : 'var(--color-status-active)' }}>
+                <span className="text-[0.65rem] font-semibold" style={{ color: actionCfg.status === 'critical' ? 'var(--color-brand-red)' : actionCfg.status === 'warning' ? 'var(--color-warning)' : 'var(--color-status-active)' }}>
                   {actionCfg.label}
                 </span>
               </div>
@@ -470,7 +470,7 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
     <div>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-[#FF6A00]" />
+          <Target className="w-4 h-4 text-[var(--color-brand-orange)]" />
           <span className="text-[0.65rem] font-bold tracking-[0.15em] uppercase text-white">Corrective Action Queue</span>
           <span className="text-[0.55rem] font-bold text-[var(--color-text-muted)] ml-1">{items.length} items</span>
         </div>
@@ -491,10 +491,10 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
           ))}
         </div>
       </div>
-      <div className="border border-white/6 bg-[#0a0a0c] divide-y divide-white/4">
+      <div className="border border-white/6 bg-[var(--color-surface-secondary)] divide-y divide-white/4">
         {items.map(item => {
           const domainCfg = DOMAIN_CONFIG[item.domain];
-          const stateColor = item.reviewState === 'in-progress' ? '#38BDF8' : item.reviewState === 'pending-review' ? 'var(--q-yellow)' : '#9CA3AF';
+          const stateColor = item.reviewState === 'in-progress' ? 'var(--color-info)' : item.reviewState === 'pending-review' ? 'var(--color-warning)' : 'var(--color-text-muted)';
           return (
             <div key={item.id} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -543,9 +543,9 @@ function ActionQueueTable({ items, filter, onFilterChange }: {
 
 function CompactMetric({ label, value, accent, severity }: { label: string; value: string; accent?: string; severity?: 'ok' | 'warn' | 'crit' }) {
   const borderColor = severity === 'crit' ? 'rgba(255,45,45,0.3)' : severity === 'warn' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)';
-  const valueColor = severity === 'crit' ? 'var(--color-brand-red)' : severity === 'warn' ? 'var(--q-yellow)' : accent ?? '#E5E7EB';
+  const valueColor = severity === 'crit' ? 'var(--color-brand-red)' : severity === 'warn' ? 'var(--color-warning)' : accent ?? 'var(--color-text-primary)';
   return (
-    <div className="relative border bg-[#0a0a0c] p-3 group hover:border-white/15 transition-colors" style={{ borderColor }}>
+    <div className="relative border bg-[var(--color-surface-secondary)] p-3 group hover:border-white/15 transition-colors" style={{ borderColor }}>
       <TacticalCorners />
       <p className="text-[0.5rem] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] mb-1.5">{label}</p>
       <p className="text-xl font-black leading-none" style={{ color: valueColor }}>{value}</p>
@@ -738,8 +738,8 @@ export default function ComplianceCommandPage() {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-2 h-2 bg-[#FF6A00] shadow-[0_0_8px_#FF6A00]" />
-              <span className="text-[0.6rem] font-bold tracking-[0.25em] uppercase text-[#FF6A00]">
+              <div className="w-2 h-2 bg-[var(--color-brand-orange)] shadow-[0_0_8px_#F36A21]" />
+              <span className="text-[0.6rem] font-bold tracking-[0.25em] uppercase text-[var(--color-brand-orange)]">
                 Mission-Critical Compliance
               </span>
             </div>
@@ -768,7 +768,7 @@ export default function ComplianceCommandPage() {
             </div>
             <button
               onClick={fetchSummary}
-              className="flex items-center gap-2 px-4 py-2.5 border border-[#FF6A00]/50 bg-[#FF6A00]/10 hover:bg-[#FF6A00]/20 transition-colors text-[0.6rem] font-bold tracking-wider text-[#FF6A00] uppercase"
+              className="flex items-center gap-2 px-4 py-2.5 border border-[var(--color-brand-orange)]/50 bg-[var(--color-brand-orange)]/10 hover:bg-[var(--color-brand-orange)]/20 transition-colors text-[0.6rem] font-bold tracking-wider text-[var(--color-brand-orange)] uppercase"
             >
               <Download className="w-3.5 h-3.5" /> Export Report
             </button>
@@ -835,7 +835,7 @@ export default function ComplianceCommandPage() {
                 <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-[var(--color-brand-red)]/20 text-[var(--color-brand-red)] border border-[var(--color-brand-red)]/30">{counts.critical}</span>
               )}
               {counts && counts.warning > 0 && counts.critical === 0 && (
-                <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-yellow-500/20 text-[var(--q-yellow)] border border-yellow-500/30">{counts.warning}</span>
+                <span className="flex items-center justify-center w-4 h-4 text-[0.5rem] font-bold bg-[var(--color-warning)]/20 text-[var(--color-warning)] border border-[var(--color-warning)]/30">{counts.warning}</span>
               )}
               {isActive && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: cfg.accent }} />
@@ -911,12 +911,12 @@ export default function ComplianceCommandPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           EVIDENCE & EXPORT CONTROLS
       ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="relative border border-white/6 bg-[#0a0a0c] p-5 mb-6">
+      <div className="relative border border-white/6 bg-[var(--color-surface-secondary)] p-5 mb-6">
         <TacticalCorners />
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Layers className="w-4 h-4 text-[#FF6A00]" />
+              <Layers className="w-4 h-4 text-[var(--color-brand-orange)]" />
               <span className="text-[0.65rem] font-bold tracking-[0.15em] uppercase text-white">Evidence & Documentation</span>
             </div>
             <p className="text-[0.6rem] text-[var(--color-text-muted)]">Export compliance reports, generate evidence packets, and download audit summaries.</p>
@@ -933,7 +933,7 @@ export default function ComplianceCommandPage() {
             </button>
             <button
               onClick={fetchSummary}
-              className="flex items-center gap-2 px-3 py-2 border border-[#FF6A00]/40 bg-[#FF6A00]/10 hover:bg-[#FF6A00]/20 transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-[#FF6A00]"
+              className="flex items-center gap-2 px-3 py-2 border border-[var(--color-brand-orange)]/40 bg-[var(--color-brand-orange)]/10 hover:bg-[var(--color-brand-orange)]/20 transition-colors text-[0.6rem] font-bold tracking-wider uppercase text-[var(--color-brand-orange)]"
             >
               <RefreshCw className="w-3 h-3" /> Refresh All Checks
             </button>
