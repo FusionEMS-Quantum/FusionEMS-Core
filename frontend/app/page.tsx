@@ -39,7 +39,7 @@ function TechIcon({ icon: Icon, color = "text-[var(--color-text-muted)]", classN
       <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-white/50"></div>
       <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-white/50"></div>
       <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/50"></div>
-      
+
       <div className="absolute inset-0 bg-[var(--q-orange)]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
       <Icon className={`quantum-icon ${color} relative z-10`} />
     </div>
@@ -61,7 +61,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen text-gray-200 selection:bg-[var(--q-orange)]/20 selection:text-[var(--q-orange)] overflow-x-hidden font-sans relative">
-      
+
       {/* GLOBAL BACKGROUND SYSTEM — aligned with new FQ Quantum aesthetic */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top, rgba(255,120,40,0.13) 0%, transparent 30%), radial-gradient(circle at bottom right, rgba(255,140,0,0.10) 0%, transparent 28%), linear-gradient(180deg, #070707 0%, #0a0a0b 45%, #050505 100%)' }} />
@@ -76,7 +76,7 @@ export default function LandingPage() {
       <nav className="relative z-50 border-b border-white/5 bg-[var(--color-bg-base)]/80 backdrop-blur-md">
         <div className="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
           <Logo />
-          
+
           <div className="hidden lg:flex items-center gap-8 text-[0.7rem] font-bold tracking-[0.15em] text-[var(--color-text-muted)] uppercase">
             <Link href="/roi" className="hover:text-white transition-colors flex items-center gap-1.5">
               <Calculator className="w-3 h-3 text-[var(--q-orange)]" /> ROI Calc
@@ -87,8 +87,8 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link 
-              href="/patient-billing-login" 
+            <Link
+              href="/patient-billing-login"
               className="group hidden sm:flex items-center gap-3 px-4 py-2.5 bg-[var(--color-bg-base)]/[0.02] border border-white/10 hover:border-orange/40 hover:bg-[var(--q-orange)]/5 transition-all shadow-inner"
             >
               <div className="w-2 h-2  bg-[var(--color-status-active)] animate-pulse shadow-[0_0_8px_#22c55e]"></div>
@@ -100,14 +100,14 @@ export default function LandingPage() {
 
             <Link
               href="/facility-transport-login"
-              className="text-[0.65rem] font-bold tracking-[0.13em] uppercase px-4 py-3 -none border border-white/25 bg-[var(--color-bg-base)]/[0.03] hover:border-orange/60 hover:bg-[var(--q-orange)]/10 transition-all text-gray-200 hover:text-white"
+              className="text-[0.65rem] font-bold tracking-[0.13em] uppercase px-4 py-3 rounded-none border border-white/25 bg-[var(--color-bg-base)]/[0.03] hover:border-orange/60 hover:bg-[var(--q-orange)]/10 transition-all text-gray-200 hover:text-white"
             >
               Facility TransportLink Login
             </Link>
 
-            <Link 
-              href="/founder-login" 
-              className="text-[0.7rem] font-bold tracking-[0.15em] uppercase px-6 py-3 -none border border-orange bg-[var(--q-orange)]/10 hover:bg-[var(--q-orange)] hover:text-black transition-all text-[var(--q-orange)] shadow-[0_0_15px_rgba(255,100,0,0.15)] flex items-center gap-2"
+            <Link
+              href="/founder-login"
+              className="text-[0.7rem] font-bold tracking-[0.15em] uppercase px-6 py-3 rounded-none border border-orange bg-[var(--q-orange)]/10 hover:bg-[var(--q-orange)] hover:text-black transition-all text-[var(--q-orange)] shadow-[0_0_15px_rgba(255,100,0,0.15)] flex items-center gap-2"
             >
               Founder Login <TerminalSquare className="w-4 h-4" />
             </Link>
@@ -116,37 +116,37 @@ export default function LandingPage() {
       </nav>
 
       <main className="relative z-10">
-        
+
         {/* HERO SECTION */}
         <section className="relative min-h-[85vh] flex items-center justify-center pt-20 pb-32 overflow-hidden border-b border-white/5">
           <div className="max-w-[1400px] mx-auto px-6 relative z-20 text-center">
-            
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 -none border border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/10 mb-8 shadow-inner">
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-none border border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/10 mb-8 shadow-inner">
               <Target className="w-3.5 h-3.5 text-[var(--color-brand-red)]" />
               <span className="text-[0.65rem] font-bold tracking-[0.2em] text-[var(--color-brand-red)] uppercase">Revenue integrity risk detected in legacy stack</span>
             </div>
 
             <h1 className="text-5xl md:text-8xl font-black tracking-tight mb-8 leading-[1.05] text-white drop-shadow-[0_0_15px_rgba(0,0,0,0.6)]">
-              Restore Revenue Performance with <br/>
+              Restore Revenue Performance with <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange via-red-500 to-orange bg-[length:200%_auto] animate-[pulse-glow_4s_ease-in-out_infinite]">Unified Mission-Critical Operations</span>
             </h1>
-            
+
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-[var(--color-text-muted)] leading-relaxed mb-12 font-medium">
               FusionEMS Quantum is the sovereign operating platform built to capture unrecovered cash. Before we deploy operations or fleet, we deploy <strong>Billing Command</strong> — an AI-powered infrastructure layer that stops the bleeding and forces revenue capture.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link 
-                href="/roi-funnel" 
-                className="group px-10 py-5 bg-[var(--q-orange)] text-black font-black text-xs tracking-[0.15em] uppercase -none hover:bg-[#ff7a00] transition-colors relative shadow-[0_0_30px_rgba(255,100,0,0.3)] hover:shadow-[0_0_40px_rgba(255,100,0,0.5)] flex items-center gap-3"
+              <Link
+                href="/roi-funnel"
+                className="group px-10 py-5 bg-[var(--q-orange)] text-black font-black text-xs tracking-[0.15em] uppercase rounded-none hover:bg-[#ff7a00] transition-colors relative shadow-[0_0_30px_rgba(255,100,0,0.3)] hover:shadow-[0_0_40px_rgba(255,100,0,0.5)] flex items-center gap-3"
               >
                 <div className="absolute inset-0 border border-white/30 pointer-events-none mix-blend-overlay"></div>
                 Calculate Your Unrecovered Yield <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
-              
-              <Link 
-                href="/platform" 
-                className="group px-8 py-5 bg-transparent border border-white/20 text-white font-bold text-xs tracking-[0.15em] uppercase -none hover:bg-[var(--color-bg-base)]/5 hover:border-white/40 transition-all flex items-center gap-2"
+
+              <Link
+                href="/platform"
+                className="group px-8 py-5 bg-transparent border border-white/20 text-white font-bold text-xs tracking-[0.15em] uppercase rounded-none hover:bg-[var(--color-bg-base)]/5 hover:border-white/40 transition-all flex items-center gap-2"
               >
                 View Platform Architecture
               </Link>
@@ -158,7 +158,7 @@ export default function LandingPage() {
         <section className="border-b border-white/5 bg-[#030304] relative z-20 shadow-inner">
           <div className="max-w-[1600px] mx-auto px-6 py-5 overflow-x-auto no-scrollbar">
             <div className="flex items-center justify-center gap-6 min-w-[1000px] text-[0.65rem] font-bold tracking-[0.2em] text-gray-600 uppercase">
-              <div className="flex items-center gap-2 text-[var(--q-orange)] drop-shadow-[0_0_5px_rgba(255,100,0,0.5)]"><Zap className="w-3 h-3"/> Billing Command</div>
+              <div className="flex items-center gap-2 text-[var(--q-orange)] drop-shadow-[0_0_5px_rgba(255,100,0,0.5)]"><Zap className="w-3 h-3" /> Billing Command</div>
               <span className="text-[var(--color-text-secondary)]">|</span>
               <span>ePCR</span>
               <span className="text-[var(--color-text-secondary)]">|</span>
@@ -179,7 +179,7 @@ export default function LandingPage() {
         <section id="roi" className="py-32 relative z-20 border-b border-white/5 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(255,100,0,0.05)_0%,_transparent_50%)]">
           <div className="max-w-[1400px] mx-auto px-6">
             <div className="grid lg:grid-cols-[1fr_1.2fr] gap-16 items-center">
-              
+
               {/* Marketing Hard / Why Me */}
               <div className="space-y-8">
                 <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[var(--q-orange)] uppercase flex items-center gap-2">
@@ -216,7 +216,7 @@ export default function LandingPage() {
               <div className="bg-[#0a0a0c] border border-white/10 p-8 md:p-12 shadow-[0_0_50px_rgba(255,100,0,0.05)] relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--q-orange)]/10 blur-[50px]"></div>
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-orange to-transparent"></div>
-                
+
                 <h3 className="text-xl font-black uppercase tracking-widest text-white mb-2">Revenue Impact Analysis</h3>
                 <p className="text-xs text-[var(--color-text-muted)] font-mono tracking-widest uppercase mb-10">Live Diagnostic / Private-Pay Yield</p>
 
@@ -227,9 +227,9 @@ export default function LandingPage() {
                       <span>Annual Transports</span>
                       <span className="text-[var(--q-orange)]">{transports.toLocaleString()}</span>
                     </div>
-                    <input 
+                    <input
                       type="range" min="1000" max="100000" step="1000" value={transports} onChange={(e) => setTransports(Number(e.target.value))}
-                      className="w-full h-1 bg-[var(--color-bg-panel)] -none appearance-none cursor-pointer accent-orange" 
+                      className="w-full h-1 bg-[var(--color-bg-panel)] rounded-none appearance-none cursor-pointer accent-orange"
                     />
                   </div>
                   {/* Slider 2 */}
@@ -238,9 +238,9 @@ export default function LandingPage() {
                       <span>Private Pay / Co-Pay Ratio (%)</span>
                       <span className="text-[var(--q-orange)]">{privatePayRatio}%</span>
                     </div>
-                    <input 
+                    <input
                       type="range" min="5" max="50" step="1" value={privatePayRatio} onChange={(e) => setPrivatePayRatio(Number(e.target.value))}
-                      className="w-full h-1 bg-[var(--color-bg-panel)] -none appearance-none cursor-pointer accent-orange" 
+                      className="w-full h-1 bg-[var(--color-bg-panel)] rounded-none appearance-none cursor-pointer accent-orange"
                     />
                   </div>
                   {/* Slider 3 */}
@@ -249,9 +249,9 @@ export default function LandingPage() {
                       <span>Current Collection Rate (%)</span>
                       <span className="text-[var(--q-orange)]">{collectionRate}%</span>
                     </div>
-                    <input 
+                    <input
                       type="range" min="10" max="80" step="1" value={collectionRate} onChange={(e) => setCollectionRate(Number(e.target.value))}
-                      className="w-full h-1 bg-[var(--color-bg-panel)] -none appearance-none cursor-pointer accent-orange" 
+                      className="w-full h-1 bg-[var(--color-bg-panel)] rounded-none appearance-none cursor-pointer accent-orange"
                     />
                   </div>
                 </div>
@@ -312,7 +312,7 @@ export default function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              
+
               <Link href="/billing-command" className="group border border-orange/50 bg-[var(--color-bg-base)]/50 p-8 flex flex-col justify-start relative overflow-hidden hover:border-orange/70 transition-colors">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--q-orange)]/5 blur-[30px]  group-hover:bg-[var(--q-orange)]/10 transition-colors"></div>
                 <TechIcon icon={Database} color="text-[var(--q-orange)]" className="mb-6" />

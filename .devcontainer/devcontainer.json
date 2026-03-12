@@ -45,7 +45,8 @@
         "bradlc.vscode-tailwindcss",
         "GitHub.copilot",
         "GitHub.copilot-chat",
-        "amazonwebservices.aws-toolkit-vscode"
+        "amazonwebservices.aws-toolkit-vscode",
+        "wassimdev.wassimdev-vscode-deepseek"
       ]
     }
   }

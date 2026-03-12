@@ -36,13 +36,14 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 function getQueueSeverity(item: LegalQueueItem): SeverityLevel {
-  if (item.deadline_risk === 'high' || (item.status === 'missing_docs' && item.missing_count > 0)) {
+  const missingCount = item.missing_count ?? 0;
+  if (item.deadline_risk === 'high' || (item.status === 'missing_docs' && missingCount > 0)) {
     return 'BLOCKING';
   }
   if (item.status === 'under_review' || item.status === 'packet_building') {
     return 'HIGH';
   }
-  if (item.deadline_risk === 'watch' || item.missing_count > 0) {
+  if (item.deadline_risk === 'watch' || missingCount > 0) {
     return 'MEDIUM';
   }
   if (item.status === 'delivered' || item.status === 'closed') {
@@ -70,38 +71,39 @@ export default function FounderLegalRequestsCommandPage() {
   const nextActions = useMemo<NextAction[]>(() => {
     const actions: NextAction[] = [];
     if (!summary) return actions;
+    const laneCounts = summary.lane_counts ?? {};
 
-    if ((summary.lane_counts?.missing_docs ?? 0) > 0) {
+    if ((laneCounts.missing_docs ?? 0) > 0) {
       actions.push({
         id: 'resolve-missing-docs',
-        title: `Resolve ${summary.lane_counts.missing_docs} missing-document request(s)`,
+        title: `Resolve ${laneCounts.missing_docs ?? 0} missing-document request(s)`,
         severity: 'BLOCKING',
         domain: 'Legal Requests',
         href: '/founder/legal-requests',
       });
     }
 
-    if ((summary.lane_counts?.deadline_risk ?? 0) > 0) {
+    if ((laneCounts.deadline_risk ?? 0) > 0) {
       actions.push({
         id: 'deadline-risk',
-        title: `Triage ${summary.lane_counts.deadline_risk} deadline-risk request(s)`,
+        title: `Triage ${laneCounts.deadline_risk ?? 0} deadline-risk request(s)`,
         severity: 'HIGH',
         domain: 'Legal Requests',
         href: '/founder/legal-requests',
       });
     }
 
-    if ((summary.lane_counts?.delivery_queue ?? 0) > 0) {
+    if ((laneCounts.delivery_queue ?? 0) > 0) {
       actions.push({
         id: 'delivery-queue',
-        title: `Advance ${summary.lane_counts.delivery_queue} request(s) to secure delivery`,
+        title: `Advance ${laneCounts.delivery_queue ?? 0} request(s) to secure delivery`,
         severity: 'MEDIUM',
         domain: 'Legal Fulfillment',
         href: '/founder/legal-requests',
       });
     }
 
-    if ((summary.lane_counts?.high_risk ?? 0) === 0 && (summary.total_open ?? 0) === 0) {
+    if ((laneCounts.high_risk ?? 0) === 0 && (summary.total_open ?? 0) === 0) {
       actions.push({
         id: 'stable-posture',
         title: 'Legal command posture stable — no active blockers',
@@ -162,11 +164,16 @@ export default function FounderLegalRequestsCommandPage() {
     );
   }
 
+  const laneCounts = summary.lane_counts ?? {};
+  const urgentDeadlines = summary.urgent_deadlines ?? 0;
+  const highRiskRequests = summary.high_risk_requests ?? 0;
+  const totalOpen = summary.total_open ?? 0;
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <FounderStatusBar
         isLive
-        activeIncidents={(summary.lane_counts.missing_docs ?? 0) + summary.urgent_deadlines + summary.high_risk_requests}
+        activeIncidents={(laneCounts.missing_docs ?? 0) + urgentDeadlines + highRiskRequests}
       />
 
       <div>
@@ -176,23 +183,23 @@ export default function FounderLegalRequestsCommandPage() {
           Intake-to-delivery command board for HIPAA ROI, subpoena, and court-order workflows.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <SeverityBadge severity={summary.high_risk_requests > 0 ? 'BLOCKING' : 'LOW'} size="sm" />
-          <StatusChip status={summary.urgent_deadlines > 0 ? 'critical' : 'active'} size="sm">
-            urgent deadlines {summary.urgent_deadlines}
+          <SeverityBadge severity={highRiskRequests > 0 ? 'BLOCKING' : 'LOW'} size="sm" />
+          <StatusChip status={urgentDeadlines > 0 ? 'critical' : 'active'} size="sm">
+            urgent deadlines {urgentDeadlines}
           </StatusChip>
-          <StatusChip status="info" size="sm">open queue {summary.total_open}</StatusChip>
+          <StatusChip status="info" size="sm">open queue {totalOpen}</StatusChip>
         </div>
       </div>
 
       <NextBestActionCard actions={nextActions} title="Legal Command Next Best Actions" maxVisible={4} />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4 lg:grid-cols-6">
-        <Stat label="Open Requests" value={summary.total_open} />
-        <Stat label="Urgent Deadlines" value={summary.urgent_deadlines} />
-        <Stat label="High Risk" value={summary.high_risk_requests} />
-        <Stat label="Missing Docs" value={summary.lane_counts.missing_docs ?? 0} />
-        <Stat label="Ready to Send" value={summary.lane_counts.delivery_queue ?? 0} />
-        <Stat label="Delivered/Closed" value={summary.lane_counts.completed ?? 0} />
+        <Stat label="Open Requests" value={totalOpen} />
+        <Stat label="Urgent Deadlines" value={urgentDeadlines} />
+        <Stat label="High Risk" value={highRiskRequests} />
+        <Stat label="Missing Docs" value={laneCounts.missing_docs ?? 0} />
+        <Stat label="Ready to Send" value={laneCounts.delivery_queue ?? 0} />
+        <Stat label="Delivered/Closed" value={laneCounts.completed ?? 0} />
       </div>
 
       <div className="border border-white/10 bg-[var(--color-bg-base)]/[0.03] p-4">
@@ -209,7 +216,7 @@ export default function FounderLegalRequestsCommandPage() {
                   : 'border-white/15 bg-[var(--color-bg-base)]/20 text-white/70 hover:text-white'
               }`}
             >
-              {entry.label} ({summary.lane_counts?.[entry.key] ?? 0})
+              {entry.label} ({laneCounts[entry.key] ?? 0})
             </button>
           ))}
         </div>
@@ -241,10 +248,10 @@ export default function FounderLegalRequestsCommandPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold text-white">
-                      {item.request_type.replace('_', ' ').toUpperCase()} · {item.requester_name}
+                      {(item.request_type ?? 'unknown').replace('_', ' ').toUpperCase()} · {String(item.requester_name ?? 'Unknown requester')}
                     </div>
                     <div className="text-xs text-[var(--color-text-secondary)]">
-                      party: {item.requesting_party} · missing: {item.missing_count}
+                      party: {String(item.requesting_party ?? 'Unknown')} · missing: {item.missing_count ?? 0}
                       {item.deadline_at ? ` · deadline: ${new Date(item.deadline_at).toLocaleString()}` : ''}
                     </div>
                   </div>

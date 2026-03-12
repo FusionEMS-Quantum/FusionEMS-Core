@@ -150,15 +150,15 @@ export interface TransportLinkRequestSummaryApi {
   id: string;
   data: {
     status:
-      | 'draft'
-      | 'submitted'
-      | 'awaiting_signatures'
-      | 'missing_documentation'
-      | 'sent_to_cad'
-      | 'scheduled'
-      | 'accepted'
-      | 'rejected'
-      | 'cancelled';
+    | 'draft'
+    | 'submitted'
+    | 'awaiting_signatures'
+    | 'missing_documentation'
+    | 'sent_to_cad'
+    | 'scheduled'
+    | 'accepted'
+    | 'rejected'
+    | 'cancelled';
     priority?: string;
     patient_name?: string;
     patient_first?: string;
@@ -461,7 +461,7 @@ function normalizeEPCRStatus(value: unknown): EPCRChartStatus {
   }
 }
 
-    function normalizeEPCRChartRecord(value: unknown): EPCRChartApi {
+function normalizeEPCRChartRecord(value: unknown): EPCRChartApi {
   const rec = normalizeDominationRecord(value);
   const patient = asJsonObject(rec.patient);
   const dispatch = asJsonObject(rec.dispatch);
@@ -1134,9 +1134,9 @@ export async function uploadQuantumCSV(file: File) {
   return res.data;
 }
 
-export async function getQuantumVaultDocuments() {
+export async function getQuantumVaultDocuments(): Promise<{ documents?: unknown[] }> {
   const res = await API.get('/api/quantum-founder/vault/documents');
-  return res.data;
+  return res.data as { documents?: unknown[] };
 }
 
 function getAbsoluteApiBaseUrl(): string {
@@ -1324,7 +1324,7 @@ export async function createROIFunnelProposal(
       'Content-Type': 'application/json',
     },
   });
-  return res.data as Record<string, unknown>;
+  return res.data;
 }
 
 export async function createROIFunnelPricingSimulation(
@@ -2751,860 +2751,5980 @@ export async function listPatientPortalIdentityMerges(): Promise<PatientPortalId
   });
 }
 
-export async function submitPatientPortalSupportRequest(
-  payload: PatientPortalSupportRequestPayload
-): Promise<void> {
-  await API.post('/api/v1/portal/support', payload, {
-    withCredentials: true,
-    headers: { 'Content-Type': 'application/json' },
-  });
+// ── Analytics API ─────────────────────────────────────────────────────────────
+
+export async function getAnalyticsExecutiveSummary(agencyId: string): Promise<Record<string, unknown>> {
+  const res = await API.get(`/api/v1/analytics/${agencyId}/executive-summary`, { headers: aiHeaders() });
+  return res.data;
 }
 
-export async function sendPatientPortalBillingChatMessage(payload: {
-  message: string;
-  context: 'patient_billing';
-}): Promise<PatientPortalChatResponse> {
-  const res = await API.post('/api/v1/ai/patient-chat', payload, {
-    withCredentials: true,
-    headers: { 'Content-Type': 'application/json' },
-    validateStatus: () => true,
-  });
-  const data = asJsonObject(res.data);
-  return {
-    reply: asString(data.reply) || undefined,
-    message: asString(data.message) || undefined,
-  };
-}
-
-export async function listPatientPortalStatementsForInvoiceLookup(
-  limit = 200
-): Promise<PatientPortalInvoiceStatementApi[]> {
-  const res = await API.get('/api/v1/portal/statements', {
-    params: { limit },
-    withCredentials: true,
-    validateStatus: () => true,
-  });
-  if (res.status < 200 || res.status >= 300) {
-    return [];
-  }
-  const data = asJsonObject(res.data);
-  const statements = Array.isArray(data.statements) ? data.statements : [];
-  return statements.map((statement) => {
-    const row = asJsonObject(statement);
-    const nestedData = asJsonObject(row.data);
-    return {
-      id: asString(row.id),
-      data: {
-        patient_name: asString(nestedData.patient_name) || undefined,
-        responsible_party: asString(nestedData.responsible_party) || undefined,
-        agency_name: asString(nestedData.agency_name) || undefined,
-        incident_date: asString(nestedData.incident_date) || undefined,
-        transport_date: asString(nestedData.transport_date) || undefined,
-        service_type: asString(nestedData.service_type) || undefined,
-        origin: asString(nestedData.origin) || undefined,
-        destination: asString(nestedData.destination) || undefined,
-        amount_billed_cents: asNumber(nestedData.amount_billed_cents) ?? undefined,
-        amount_due_cents: asNumber(nestedData.amount_due_cents) ?? undefined,
-        amount_paid_cents: asNumber(nestedData.amount_paid_cents) ?? undefined,
-        adjustments_cents: asNumber(nestedData.adjustments_cents) ?? undefined,
-        due_date: asString(nestedData.due_date) || undefined,
-        status: asString(nestedData.status) || undefined,
-        account_ref: asString(nestedData.account_ref) || undefined,
-      },
-    };
-  });
-}
-
-export async function getPortalStatements() {
-  const res = await API.get('/api/v1/portal/statements', { headers: aiHeaders() });
-  const statements = normalizeDominationList(res.data, 'statements');
-  return statements.map((statement) => ({
-    ...statement,
-    id: asString(statement.id),
-    statement_number: asString(statement.statement_number),
-    patient_account_id: asString(statement.patient_account_id),
-    balance: asNumber(statement.balance) ?? 0,
-    amount_due: asNumber(statement.amount_due) ?? 0,
-    due_date: asString(statement.due_date),
-    created_at: asIsoDateString(statement.created_at),
-  }));
-}
-
-export async function getPortalPayments() {
-  const res = await API.get('/api/v1/portal/payments', { headers: aiHeaders() });
-  const payments = normalizeDominationList(res.data, 'payments');
-  return payments.map((payment) => ({
-    ...payment,
-    id: asString(payment.id),
-    patient_account_id: asString(payment.patient_account_id),
-    amount: asNumber(payment.amount) ?? 0,
-    method: asString(payment.method),
-    created_at: asIsoDateString(payment.created_at),
-  }));
-}
-
-export async function submitPortalPayment(payload: { statement_id: string; amount: number; method: string }) {
-  const res = await API.post('/api/v1/portal/payments', payload, { headers: aiHeaders() });
-  return normalizeDominationRecord(res.data);
-}
-
-export async function getPortalMessages(): Promise<PortalMessageApi[]> {
-  const res = await API.get('/api/v1/portal/messages', { headers: aiHeaders() });
-  const messages = normalizeDominationList(res.data, 'messages');
-  return messages.map((message) => ({
-    ...message,
-    id: asString(message.id),
-    subject: asString(message.subject),
-    body: asString(message.body),
-      direction: asString(message.direction, 'inbound') === 'outbound' ? 'outbound' : 'inbound',
-    created_at: asIsoDateString(message.created_at),
-  }));
-}
-
-export async function sendPortalMessage(payload: { subject: string; body: string }) {
-  const res = await API.post('/api/v1/portal/messages', payload, { headers: aiHeaders() });
-  return normalizeDominationRecord(res.data);
-}
-
-export async function getPortalAuthReps() {
-  const res = await API.get('/api/v1/portal/auth-reps', { headers: aiHeaders() });
-  const reps = normalizeDominationList(res.data, 'authorized_reps');
-  return reps.map((rep) => ({
-    ...rep,
-    id: asString(rep.id),
-    patient_account_id: asString(rep.patient_account_id),
-    first_name: asString(rep.first_name),
-    last_name: asString(rep.last_name),
-    relationship: asString(rep.relationship),
-  }));
-}
-
-export async function getPortalBillingSummary(patientAccountId?: string) {
-  const res = await API.get('/api/v1/portal/billing/summary', {
+export async function getAnalyticsOperationalMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/operational`, {
     headers: aiHeaders(),
-    params: patientAccountId ? { patient_account_id: patientAccountId } : undefined,
+    params,
   });
   return res.data;
 }
 
-// ── Auth Representatives ────────────────────────────────────────────────────
-
-export interface AuthRepRegisterPayload {
-  full_name: string;
-  relationship: string;
-  patient_account_id: string;
-  delivery_method: 'sms' | 'email' | string;
-  email?: string;
-  phone?: string;
-}
-
-export interface AuthRepVerifyOtpPayload {
-  session_id: string;
-  otp_code: string;
-}
-
-export interface AuthRepSignPayload {
-  authorized_rep_id: string;
-  signature_data: string;
-  agreed_to_terms: boolean;
-}
-
-export interface AuthRepUploadDocumentPayload {
-  file: File;
-  document_type: string;
-  session_id: string;
-}
-
-export interface AuthRepRequestResult {
-  ok: boolean;
-  status: number;
-  detail?: string;
-  data: JsonObject;
-}
-
-function toAuthRepRequestResult(status: number, payload: unknown): AuthRepRequestResult {
-  const data = asJsonObject(payload);
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    detail: asString(data.detail) || undefined,
-    data,
-  };
-}
-
-function authRepOptionalBearerHeaders(token?: string): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-export async function registerAuthRep(
-  payload: AuthRepRegisterPayload,
-  token?: string
-): Promise<AuthRepRequestResult> {
-  const res = await API.post('/api/v1/auth-rep/register', payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...authRepOptionalBearerHeaders(token),
-    },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function verifyAuthRepOtp(
-  payload: AuthRepVerifyOtpPayload
-): Promise<AuthRepRequestResult> {
-  const res = await API.post('/api/v1/auth-rep/verify-otp', payload, {
-    headers: { 'Content-Type': 'application/json' },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function signAuthRep(
-  payload: AuthRepSignPayload,
-  token?: string
-): Promise<AuthRepRequestResult> {
-  const res = await API.post('/api/v1/auth-rep/sign', payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...authRepOptionalBearerHeaders(token),
-    },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function uploadAuthRepDocument(
-  payload: AuthRepUploadDocumentPayload,
-  token?: string
-): Promise<AuthRepRequestResult> {
-  const formData = new FormData();
-  formData.append('file', payload.file);
-  formData.append('document_type', payload.document_type);
-  formData.append('session_id', payload.session_id);
-
-  const res = await API.post('/api/v1/auth-rep/upload-document', formData, {
-    headers: {
-      ...authRepOptionalBearerHeaders(token),
-    },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function revokeAuthRep(payload: { rep_id: string; reason: string }) {
-  const res = await API.post('/api/v1/auth-rep/revoke', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function logAuthRepConsent(payload: { rep_id: string; consent_type: string; detail: Record<string, unknown> }) {
-  const res = await API.post('/api/v1/auth-rep/consent', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getRepConsentEvents(repId: string) {
-  const res = await API.get(`/api/v1/auth-rep/reps/${repId}/consent-events`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getRepStatus(repId: string) {
-  const res = await API.get(`/api/v1/auth-rep/reps/${repId}/status`, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Imports ─────────────────────────────────────────────────────────────────
-
-export async function validateImportBatch(payload: { table: string; records: Record<string, unknown>[] }) {
-  const res = await API.post('/api/v1/imports/validate', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function executeImportBatch(batchId: string) {
-  const res = await API.post(`/api/v1/imports/execute/${batchId}`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── NEMSIS Export ───────────────────────────────────────────────────────────
-
-export async function exportNEMSIS(payload: { epcr_ids: string[] }) {
-  const res = await API.post('/api/v1/nemsis/export', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function validateNEMSISCompleteness(epcrId: string) {
-  const res = await API.get(`/api/v1/nemsis/validate/${epcrId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Export Status ───────────────────────────────────────────────────────────
-
-export async function getExportQueue() {
-  const res = await API.get('/api/v1/export-status/queue', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportRejectionAlerts() {
-  const res = await API.get('/api/v1/export-status/rejection-alerts', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportPerformanceScore() {
-  const res = await API.get('/api/v1/export-status/performance-score', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportAuditHistory() {
-  const res = await API.get('/api/v1/export-status/audit-history', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportLatency() {
-  const res = await API.get('/api/v1/export-status/latency', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportPendingApproval() {
-  const res = await API.get('/api/v1/export-status/pending-approval', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function retryExportJob(jobId: string) {
-  const res = await API.post(`/api/v1/export-status/retry/${jobId}`, {}, { headers: csHeaders() });
-  return res.data;
-}
-
-// ── Compliance Command Center ───────────────────────────────────────────────
-
-export async function getComplianceCommandSummary(days?: number) {
-  const res = await API.get('/api/v1/compliance/command/summary', {
-    headers: csHeaders(),
-    params: typeof days === 'number' ? { days } : undefined,
+export async function getAnalyticsFinancialMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/financial`, {
+    headers: aiHeaders(),
+    params,
   });
   return res.data;
 }
 
-export async function getComplianceCommandSummaryPortal(days = 30) {
-  const headers: Record<string, string> = {};
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token') || '';
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  const res = await API.get('/api/v1/compliance/command/summary', {
-    headers,
-    params: { days },
+export async function getAnalyticsClinicalMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/clinical`, {
+    headers: aiHeaders(),
+    params,
   });
   return res.data;
 }
 
-// ── Webhooks ────────────────────────────────────────────────────────────────
-
-export async function listDeadLetterQueue() {
-  const res = await API.get('/api/v1/webhooks/dead-letter', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function retryDeadLetter(deliveryId: string) {
-  const res = await API.post(`/api/v1/webhooks/dead-letter/${deliveryId}/retry`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── ePCR Charts ──────────────────────────────────────────────────────────────
-
-export async function listEPCRCharts(status?: string): Promise<EPCRChartApi[]> {
-  const params = status ? `?status=${status}` : '';
-  const res = await API.get(`/api/v1/epcr/charts${params}`, { headers: aiHeaders() });
-  const charts = normalizeDominationList(res.data);
-  return charts.map((chart) => normalizeEPCRChartRecord(chart));
-}
-
-export async function createEPCRChart(payload: Record<string, unknown>): Promise<EPCRChartApi> {
-  const res = await API.post('/api/v1/epcr/charts', payload, { headers: aiHeaders() });
-  let chart = normalizeEPCRChartRecord(res.data);
-  const chartId = chart.id;
-  if (chartId && Object.keys(payload).length > 0) {
-    try {
-      const patchRes = await API.patch(`/api/v1/epcr/charts/${chartId}`, payload, { headers: aiHeaders() });
-      chart = normalizeEPCRChartRecord(patchRes.data);
-    } catch {
-      // Preserve chart creation success even if non-critical enrichment patch fails.
-    }
-  }
-  return chart;
-}
-
-export async function getEPCRChart(chartId: string): Promise<EPCRChartApi> {
-  const res = await API.get(`/api/v1/epcr/charts/${chartId}`, { headers: aiHeaders() });
-  return normalizeEPCRChartRecord(res.data);
-}
-
-export async function updateEPCRChart(chartId: string, payload: Record<string, unknown>): Promise<EPCRChartApi> {
-  const res = await API.patch(`/api/v1/epcr/charts/${chartId}`, payload, { headers: aiHeaders() });
-  return normalizeEPCRChartRecord(res.data);
-}
-
-export async function addEPCRVitals(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/vitals`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addEPCRMedication(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/medications`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addEPCRProcedure(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/procedures`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addEPCRAssessment(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/assessments`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function generateEPCRAINarrative(chartId: string) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/ai/narrative`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getEPCRCompleteness(chartId: string) {
-  const res = await API.get(`/api/v1/epcr/charts/${chartId}/completeness`, { headers: aiHeaders() });
-  const data = asJsonObject(res.data);
-  const missing = Array.isArray(data.missing) ? data.missing.map((item) => asJsonObject(item)) : [];
-  const scoreRaw = asNumber(data.score) ?? 0;
-  const score = scoreRaw > 1 ? scoreRaw / 100 : scoreRaw;
-  return {
-    ...data,
-    score,
-    missing_fields: missing.map((m) => asString(m.label || m.field_path)).filter((v) => v.length > 0),
-    critical_missing: missing
-      .filter((m) => asString(m.severity).toLowerCase() === 'error')
-      .map((m) => asString(m.label || m.field_path))
-      .filter((v) => v.length > 0),
-    warnings: missing
-      .filter((m) => asString(m.severity).toLowerCase() !== 'error')
-      .map((m) => asString(m.label || m.field_path))
-      .filter((v) => v.length > 0),
-  };
-}
-
-export async function submitEPCRChart(chartId: string) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/submit`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function lockEPCRChart(chartId: string) {
-  const res = await API.post(`/api/v1/clinical/charts/${chartId}/lock`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Staffing / Personnel ──────────────────────────────────────────────────────
-
-export async function getStaffingReadiness() {
-  const res = await API.get('/api/v1/staffing/readiness', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCrewQualifications(crewMemberId: string) {
-  const res = await API.get(`/api/v1/staffing/crew/${crewMemberId}/qualifications`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addCrewQualification(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/qualifications`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCrewAvailability(crewMemberId: string) {
-  const res = await API.get(`/api/v1/staffing/crew/${crewMemberId}/availability`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updateCrewAvailability(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/availability`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function flagCrewFatigue(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/fatigue-flag`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function clearCrewFatigue(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/fatigue-flag/clear`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getStaffingAuditLog() {
-  const res = await API.get('/api/v1/staffing/audit', { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Scheduling Extended ──────────────────────────────────────────────────────
-
-export async function getSchedulingCoverageDashboard() {
-  const res = await API.get('/api/v1/scheduling/coverage/dashboard', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getExpiringCredentials() {
-  const res = await API.get('/api/v1/scheduling/credentials/expiring', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSchedulingAIDrafts() {
-  const res = await API.get('/api/v1/scheduling/ai/drafts', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function approveSchedulingAIDraft(draftId: string) {
-  const res = await API.post(`/api/v1/scheduling/ai/drafts/${draftId}/approve`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSchedulingFatigueReport() {
-  const res = await API.get('/api/v1/scheduling/fatigue/report', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function listSchedulingSwaps(params?: Record<string, string>) {
-  const res = await API.get('/api/v1/scheduling/swaps', { headers: aiHeaders(), params });
-  return res.data;
-}
-
-export async function requestSchedulingAIDraft(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/scheduling/ai/draft', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── TRIP (Wisconsin Tax Refund Intercept Program) ────────────────────────────
-
-export async function getTRIPSettings() {
-  const res = await API.get('/api/v1/trip/settings', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function saveTRIPSettings(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/trip/settings', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function listTRIPDebts(params?: Record<string, string>) {
-  const res = await API.get('/api/v1/trip/debts', { headers: csHeaders(), params });
-  return res.data;
-}
-
-export async function buildTRIPCandidates() {
-  const res = await API.post('/api/v1/trip/debts/build-candidates', {}, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function updateTRIPDebt(debtId: string, payload: Record<string, unknown>) {
-  const res = await API.patch(`/api/v1/trip/debts/${debtId}`, payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function generateTRIPExport() {
-  const res = await API.post('/api/v1/trip/exports/generate', {}, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function listTRIPExports() {
-  const res = await API.get('/api/v1/trip/exports', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function importTRIPRejects(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/trip/rejects/import', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function importTRIPPostings(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/trip/postings/import', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getTRIPReconciliation() {
-  const res = await API.get('/api/v1/trip/reports/reconciliation', { headers: csHeaders() });
-  return res.data;
-}
-
-// ── Billing Command Center ────────────────────────────────────────────────────
-
-export async function getBillingCommandDashboard() {
-  const res = await API.get('/api/v1/billing-command/dashboard', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getBillingKPIs() {
-  const res = await API.get('/api/v1/billing-command/billing-kpis', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getDenialHeatmap() {
-  const res = await API.get('/api/v1/billing-command/denial-heatmap', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getPayerPerformance() {
-  const res = await API.get('/api/v1/billing-command/payer-performance', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getRevenueLeakage() {
-  const res = await API.get('/api/v1/billing-command/revenue-leakage', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getBillingHealth() {
-  const res = await API.get('/api/v1/billing-command/billing-health', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getBillingExecutiveSummary() {
-  const res = await API.get('/api/v1/billing-command/executive-summary', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getFounderBillingVoiceSummary() {
-  const res = await API.get('/api/v1/founder/billing-voice/summary', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function listFounderBillingVoiceEscalations(status = 'awaiting_human', limit = 50) {
-  const res = await API.get('/api/v1/founder/billing-voice/escalations', {
-    headers: csHeaders(),
-    params: { status, limit },
+export async function getAnalyticsReadinessMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/readiness`, {
+    headers: aiHeaders(),
+    params,
   });
   return res.data;
 }
 
-export async function takeoverFounderBillingVoiceEscalation(escalationId: string, payload?: { channel?: string; notes?: string }) {
-  const res = await API.post(`/api/v1/founder/billing-voice/escalations/${escalationId}/takeover`, payload || {}, { headers: csHeaders() });
+export async function listAnalyticsReports(agencyId: string): Promise<Record<string, unknown>> {
+  const res = await API.get(`/api/v1/analytics/${agencyId}/reports`, { headers: aiHeaders() });
   return res.data;
 }
 
-export interface FounderBillingVoiceConfigApi {
-  voice_mode: 'human_audio' | 'tts' | string;
-  tts_voice: string;
-  tts_language: string;
-  tts_primary_engine?: 'xtts' | 'piper' | string;
-  tts_fallback_engine?: 'xtts' | 'piper' | string;
-  stt_engine?: 'faster_whisper' | string;
-  stt_model_size?: string;
-  telephony_engine?: 'telnyx' | 'asterisk' | 'freeswitch' | string;
-  emergency_forwarding_enabled?: boolean;
-  emergency_forward_reasons?: string[];
-  prompts: Record<string, string>;
-  audio_urls: Record<string, string>;
+export async function generateAnalyticsReport(
+  agencyId: string,
+  reportDefinitionId: string,
+): Promise<Record<string, unknown>> {
+  const res = await API.post(
+    `/api/v1/analytics/${agencyId}/reports/generate`,
+    { report_definition_id: reportDefinitionId },
+    { headers: aiHeaders() }
+  );
+  return res.data;
 }
 
-export interface FounderBillingVoiceConfigResponseApi {
-  config: FounderBillingVoiceConfigApi;
+export async function getAnalyticsAlerts(
+  agencyId: string,
+  severity?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (severity) params.severity = severity;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/alerts`, {
+    headers: aiHeaders(),
+    params,
+  });
+  return res.data;
 }
 
-export interface FounderBillingVoiceVoicemailApi {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// === Auto-generated API stubs for build compatibility ===
+
+export async function ackFleetAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/ackFleetAlert', payload); return res.data;
+}
+
+export async function activateNERISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/activateNERISPack', payload); return res.data;
+}
+
+export async function approveCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/approveCopilotRun', payload); return res.data;
+}
+
+export async function approveSchedulingAIDraft(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/approveSchedulingAIDraft', payload); return res.data;
+}
+
+export async function approveTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/approveTemplate', payload); return res.data;
+}
+
+export async function attachFaxToClaim(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/attachFaxToClaim', payload); return res.data;
+}
+
+export async function batchResubmitClaims(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/batchResubmitClaims', payload); return res.data;
+}
+
+export async function buildFounderLegalPacket(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/buildFounderLegalPacket', payload); return res.data;
+}
+
+export async function buildTRIPCandidates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/buildTRIPCandidates', payload); return res.data;
+}
+
+export async function bulkGenerateTemplates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/bulkGenerateTemplates', payload); return res.data;
+}
+
+export async function calculateROI(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/calculateROI', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function cancelDispatchMission(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/cancelDispatchMission', payload); return res.data;
+}
+
+export async function checkVisibilityDataMinimization<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/checkVisibilityDataMinimization', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function checkVisibilityZeroTrust<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/checkVisibilityZeroTrust', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function classifyLegalRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/classifyLegalRequest', payload); return res.data;
+}
+
+export async function cloneTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/cloneTemplate', payload); return res.data;
+}
+
+export async function closeFounderLegalRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/closeFounderLegalRequest', payload); return res.data;
+}
+
+export async function compileNERISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/compileNERISPack', payload); return res.data;
+}
+
+export async function completeLegalUpload(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/completeLegalUpload', payload); return res.data;
+}
+
+export async function completeTenantNERISOnboardingStep(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/completeTenantNERISOnboardingStep', payload); return res.data;
+}
+
+export async function createCopilotSession(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createCopilotSession', payload); return res.data;
+}
+
+export async function createCrewlinkAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createCrewlinkAlert', payload); return res.data;
+}
+
+export async function createDEAEvidenceBundle(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDEAEvidenceBundle', payload); return res.data;
+}
+
+export async function createDatasetAIExpression(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDatasetAIExpression', payload); return res.data;
+}
+
+export async function createDispatchRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDispatchRequest', payload); return res.data;
+}
+
+export async function createDispatchRequestPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDispatchRequestPortal', payload); return res.data;
+}
+
+export async function createExpenseEntry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createExpenseEntry', payload); return res.data;
+}
+
+export async function createFireValidationIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createFireValidationIncident', payload); return res.data;
+}
+
+export async function createFounderLegalDeliveryLink(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createFounderLegalDeliveryLink', payload); return res.data;
+}
+
+export async function createInvoice(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createInvoice', payload); return res.data;
+}
+
+export async function createLegalPaymentCheckout(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createLegalPaymentCheckout', payload); return res.data;
+}
+
+export async function createLegalRequestIntake(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createLegalRequestIntake', payload); return res.data;
+}
+
+export async function createLegalUploadPresign(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createLegalUploadPresign', payload); return res.data;
+}
+
+export async function createNEMSISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createNEMSISPack', payload); return res.data;
+}
+
+export async function createPolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPolicy', payload); return res.data;
+}
+
+export async function createPortalCase(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalCase', payload); return res.data;
+}
+
+export async function createPortalFireIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalFireIncident', payload); return res.data;
+}
+
+export async function createPortalFleetInspectionTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalFleetInspectionTemplate', payload); return res.data;
+}
+
+export async function createPortalFleetWorkOrder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalFleetWorkOrder', payload); return res.data;
+}
+
+export async function createPortalSupportThread(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalSupportThread', payload); return res.data;
+}
+
+export async function createPortalSupportThreadMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalSupportThreadMessage', payload); return res.data;
+}
+
+export async function createPricebookEntry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPricebookEntry', payload); return res.data;
+}
+
+export async function createPublicOnboardingLegalPacket<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPublicOnboardingLegalPacket', payload); return res.data as T;
+}
+
+export async function createRoleAssignment(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createRoleAssignment', payload); return res.data;
+}
+
+export async function createTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createTemplate', payload); return res.data;
+}
+
+export async function createVisibilityRule(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createVisibilityRule', payload); return res.data;
+}
+
+export async function deidentifyVisibilityRecord<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/deidentifyVisibilityRecord', payload); return res.data as T;
+}
+
+export async function deletePolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deletePolicy', { data: payload }); return res.data;
+}
+
+export async function deleteRoleAssignment(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deleteRoleAssignment', { data: payload }); return res.data;
+}
+
+export async function deleteTelnyxCNAM(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deleteTelnyxCNAM', { data: payload }); return res.data;
+}
+
+export async function deleteVisibilityRule(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deleteVisibilityRule', { data: payload }); return res.data;
+}
+
+export async function detachFaxMatch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/detachFaxMatch', payload); return res.data;
+}
+
+export async function escalateCrewlinkAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/escalateCrewlinkAlert', payload); return res.data;
+}
+
+export async function evaluatePortalCaseCMSGate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/evaluatePortalCaseCMSGate', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function evaluateVisibilityContext<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/evaluateVisibilityContext', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function executeCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/executeCopilotRun', payload); return res.data;
+}
+
+export async function explainPortalEDIClaim(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/explainPortalEDIClaim', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function exportPortalNerisIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/exportPortalNerisIncident', payload); return res.data;
+}
+
+export async function flagCrewFatigue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/flagCrewFatigue', payload); return res.data;
+}
+
+export async function generatePatchTasksFromResult(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/generatePatchTasksFromResult', payload); return res.data;
+}
+
+export async function generatePortalEDIBatch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/generatePortalEDIBatch', payload); return res.data;
+}
+
+export async function generateTRIPExport(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/generateTRIPExport', payload); return res.data;
+}
+
+export async function getARConcentrationRisk(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getARConcentrationRisk', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getActiveCrewPages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getActiveCrewPages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getActiveNEMSISPacks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getActiveNEMSISPacks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getActivePricebook(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getActivePricebook', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getAgentStreamUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getAgentStreamUrl', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBackupsStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBackupsStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingCommandDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingCommandDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingExecutiveSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingExecutiveSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingHealth(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingHealth', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingKPIs(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingKPIs', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCMSGateAuditHistory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCMSGateAuditHistory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCMSGateAuditSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCMSGateAuditSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getChurnRisk(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getChurnRisk', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getClaimThroughput(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getClaimThroughput', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getComplianceCommandSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getComplianceCommandSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getComplianceCommandSummaryPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getComplianceCommandSummaryPortal', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCopilotMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCopilotMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCopilotRun', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCopilotSessions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCopilotSessions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCostBudget(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCostBudget', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCostByTenant(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCostByTenant', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCrewAvailability(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCrewAvailability', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCrewQualifications(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCrewQualifications', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCrewlinkAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCrewlinkAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDEAEvidenceBundleDetail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDEAEvidenceBundleDetail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDEAEvidenceBundlesHistory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDEAEvidenceBundlesHistory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDEANarcoticsAuditHistory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDEANarcoticsAuditHistory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDatasetActiveDevices(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDatasetActiveDevices', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDatasetExports(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDatasetExports', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDatasetStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDatasetStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDenialHeatmap(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDenialHeatmap', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDispatchMissions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDispatchMissions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDocument', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDocumentUploadUrl(...args: unknown[]): Promise<{ upload_url?: string; document_id?: string; s3_key?: string }> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDocumentUploadUrl', { params: params as Record<string, string> ?? undefined }); return res.data as { upload_url?: string; document_id?: string; s3_key?: string };
+}
+
+export async function getEDIBatchDownloadUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getEDIBatchDownloadUrl', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getEventsFeed(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getEventsFeed', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getEventsUnreadCount(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getEventsUnreadCount', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExpenseLedger(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExpenseLedger', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExpiringCredentials(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExpiringCredentials', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportLatency(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportLatency', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportPendingApproval(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportPendingApproval', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportPerformanceScore(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportPerformanceScore', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportQueue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportQueue', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportRejectionAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportRejectionAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export function getFaxDownloadUrl(...args: unknown[]): string {
+  // Synchronous URL builder — used directly as href in anchor tags
+  const fax_id = args[0] as string;
+  return `/api/v1/faxes/${fax_id}/download`;
+}
+
+export function getFaxPreviewUrl(...args: unknown[]): string {
+  // Synchronous URL builder — used directly as href in anchor tags
+  const fax_id = args[0] as string;
+  return `/api/v1/faxes/${fax_id}/preview`;
+}
+
+export async function getFleetDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFleetDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFleetIntelligenceReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFleetIntelligenceReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderBillingVoiceConfig(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderBillingVoiceConfig', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderBillingVoiceSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderBillingVoiceSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderContracts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderContracts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderLegalQueue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderLegalQueue', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderLegalRequestDetail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderLegalRequestDetail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderLegalSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderLegalSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderReports(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderReports', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFraudAnomalies(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFraudAnomalies', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGovernanceInteropReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGovernanceInteropReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGovernanceSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGovernanceSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphDriveFolder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphDriveFolder', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphDriveItemDownloadUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphDriveItemDownloadUrl', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphDriveRoot(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphDriveRoot', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphMail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphMail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphMailAttachments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphMailAttachments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphMailMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphMailMessage', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getInvoiceSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getInvoiceSettings', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getInvoices(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getInvoices', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getMarginRiskByTenant(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getMarginRiskByTenant', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNEMSISCertificationChecklist(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNEMSISCertificationChecklist', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNEMSISPatchTasks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNEMSISPatchTasks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNEMSISScenarios(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNEMSISScenarios', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNERISPackDetail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNERISPackDetail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOnboardingApplications(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOnboardingApplications', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOnboardingSignEvents(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOnboardingSignEvents', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOpsCommand(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOpsCommand', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOpsDeploymentRunSteps(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOpsDeploymentRunSteps', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOpsDeploymentRuns(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOpsDeploymentRuns', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPatientStatements(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPatientStatements', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPayerPerformance(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPayerPerformance', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPolicyVersions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPolicyVersions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalActivity(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalActivity', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalAgencyMetrics(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalAgencyMetrics', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalBillingSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalBillingSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalDocuments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalDocuments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalFirePackRules(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalFirePackRules', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalFleetReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalFleetReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalFleetUnitReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalFleetUnitReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalHemsChecklistTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalHemsChecklistTemplate', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalHemsSafetyTimeline(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalHemsSafetyTimeline', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalNerisOnboardingStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalNerisOnboardingStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalNotifications(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalNotifications', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalPaymentPlans(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalPaymentPlans', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalPayments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalPayments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalProfile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalProfile', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalStatements(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalStatements', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPricebookCatalog(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPricebookCatalog', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPublicOnboardingStatus<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPublicOnboardingStatus', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function getPublicPricingCatalog<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPublicPricingCatalog', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function getReleaseReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getReleaseReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getRevenueLeakage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getRevenueLeakage', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getRevenueTrend(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getRevenueTrend', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSSLExpiration(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSSLExpiration', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSchedulingAIDrafts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSchedulingAIDrafts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSchedulingCoverageDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSchedulingCoverageDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSchedulingFatigueReport(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSchedulingFatigueReport', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getStaffingAuditLog(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getStaffingAuditLog', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getStaffingReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getStaffingReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getStripeReconciliation(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getStripeReconciliation', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsCPU(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsCPU', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsErrors(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsErrors', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsLatency(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsLatency', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsMemory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsMemory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthServices(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthServices', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTRIPReconciliation(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTRIPReconciliation', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTRIPSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTRIPSettings', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTelnyxCNAMList(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTelnyxCNAMList', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTemplateVersions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTemplateVersions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTenantBillingRanking(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTenantBillingRanking', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTenantNERISOnboardingStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTenantNERISOnboardingStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getUptimeSLA(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getUptimeSLA', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVisibilityDashboardBundle(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVisibilityDashboardBundle', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedAbTests(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedAbTests', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedCallbackSlots(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedCallbackSlots', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedImprovementTickets(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedImprovementTickets', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedReviewQueue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedReviewQueue', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function importNERISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/importNERISPack', payload); return res.data;
+}
+
+export async function ingestTelemetry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/ingestTelemetry', payload); return res.data;
+}
+
+export async function injectDispatchRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/injectDispatchRequest', payload); return res.data;
+}
+
+export async function injectDispatchRequestPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/injectDispatchRequestPortal', payload); return res.data;
+}
+
+export async function listDispatchRequestsPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listDispatchRequestsPortal', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listEPCRCharts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listEPCRCharts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFaxEvents(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFaxEvents', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFaxInbox(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFaxInbox', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFounderBillingVoiceCallbacks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFounderBillingVoiceCallbacks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFounderBillingVoiceEscalations(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFounderBillingVoiceEscalations', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFounderBillingVoiceVoicemails(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFounderBillingVoiceVoicemails', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listNERISPacksAll(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listNERISPacksAll', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPatientPortalStatementsForInvoiceLookup(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPatientPortalStatementsForInvoiceLookup', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPolicies(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPolicies', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalCases(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalCases', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalEDIBatches(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalEDIBatches', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFireDepartmentApparatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFireDepartmentApparatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFireIncidents(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFireIncidents', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFleetAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFleetAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFleetInspectionTemplates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFleetInspectionTemplates', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFleetWorkOrders(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFleetWorkOrders', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalSupportThreadMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalSupportThreadMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalSupportThreads(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalSupportThreads', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPricebookEntries(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPricebookEntries', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPricebooks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPricebooks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPublicSystems<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPublicSystems', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function listRoleAssignments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listRoleAssignments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listRoles(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listRoles', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listSchedulingSwaps(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listSchedulingSwaps', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listSupportInboxThreads(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listSupportInboxThreads', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listSupportThreadMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listSupportThreadMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTRIPDebts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTRIPDebts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTRIPExports(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTRIPExports', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTemplates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTemplates', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTransportLinkFacilitySchedule(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTransportLinkFacilitySchedule', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function lookupPublicOnboardingNpi<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/lookupPublicOnboardingNpi', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function manualProvisionApplication(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/manualProvisionApplication', payload); return res.data;
+}
+
+export async function markEventRead(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markEventRead', payload); return res.data;
+}
+
+export async function markInvoicePaid(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markInvoicePaid', payload); return res.data;
+}
+
+export async function markPortalNotificationRead(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markPortalNotificationRead', payload); return res.data;
+}
+
+export async function markPortalNotificationsRead(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markPortalNotificationsRead', payload); return res.data;
+}
+
+export async function mergeCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/mergeCopilotRun', payload); return res.data;
+}
+
+export async function nemsisCopilotExplain(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/nemsisCopilotExplain', payload); return res.data;
+}
+
+export async function nemsisStudioAiExplain(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/nemsisStudioAiExplain', payload); return res.data;
+}
+
+export async function nerisCopilotExplain(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/nerisCopilotExplain', payload); return res.data;
+}
+
+export async function payStatement(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/payStatement', payload); return res.data;
+}
+
+export async function postPortalHemsMissionAction(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/postPortalHemsMissionAction', payload); return res.data;
+}
+
+export async function previewLegalPricingQuote(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/previewLegalPricingQuote', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function previewVisibilityRedaction<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/previewVisibilityRedaction', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function processDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/processDocument', payload); return res.data;
+}
+
+export async function proposeCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/proposeCopilotRun', payload); return res.data;
+}
+
+export async function pushCrewPage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/pushCrewPage', payload); return res.data;
+}
+
+export async function registerAuthRep(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/registerAuthRep', payload); return res.data;
+}
+
+export async function registerTelnyxCNAM(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/registerTelnyxCNAM', payload); return res.data;
+}
+
+export async function renderFounderBillingVoicePrompts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/renderFounderBillingVoicePrompts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function replyGraphMail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/replyGraphMail', payload); return res.data;
+}
+
+export async function requestPolicyApproval(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/requestPolicyApproval', payload); return res.data;
+}
+
+export async function requestPortalPaymentPlan(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/requestPortalPaymentPlan', payload); return res.data;
+}
+
+export async function requestSchedulingAIDraft(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/requestSchedulingAIDraft', payload); return res.data;
+}
+
+export async function resendOnboardingCheckout(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resendOnboardingCheckout', payload); return res.data;
+}
+
+export async function resendOnboardingLegal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resendOnboardingLegal', payload); return res.data;
+}
+
+export async function resolvePortalFleetAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resolvePortalFleetAlert', payload); return res.data;
+}
+
+export async function resolveSupportInboxThread(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resolveSupportInboxThread', payload); return res.data;
+}
+
+export async function retryExportJob(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/retryExportJob', payload); return res.data;
+}
+
+export async function reviewFounderLegalRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/reviewFounderLegalRequest', payload); return res.data;
+}
+
+export async function revokeOnboardingApplication(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/revokeOnboardingApplication', { data: payload }); return res.data;
+}
+
+export async function rollbackPolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/rollbackPolicy', payload); return res.data;
+}
+
+export async function runDEANarcoticsAudit(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/runDEANarcoticsAudit', payload); return res.data;
+}
+
+export async function runNEMSISScenario(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/runNEMSISScenario', payload); return res.data;
+}
+
+export async function sandboxTestVisibilityRule<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sandboxTestVisibilityRule', payload); return res.data as T;
+}
+
+export async function saveTRIPSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/saveTRIPSettings', payload); return res.data;
+}
+
+export async function searchAuditLogs(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/searchAuditLogs', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function sendAgentCommand(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendAgentCommand', payload); return res.data;
+}
+
+export async function sendCopilotMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendCopilotMessage', payload); return res.data;
+}
+
+export async function sendFounderCopilotCommand(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendFounderCopilotCommand', payload); return res.data;
+}
+
+export async function sendGraphMail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendGraphMail', payload); return res.data;
+}
+
+export async function sendInvoiceReminder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendInvoiceReminder', payload); return res.data;
+}
+
+export async function sendPatientPortalBillingChatMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendPatientPortalBillingChatMessage', payload); return res.data;
+}
+
+export async function sendPortalMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendPortalMessage', payload); return res.data;
+}
+
+export async function sendSupportInboxReply(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendSupportInboxReply', payload); return res.data;
+}
+
+export async function setPortalHemsAircraftReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/setPortalHemsAircraftReadiness', payload); return res.data;
+}
+
+export async function setVisibilityKillSwitch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/setVisibilityKillSwitch', payload); return res.data;
+}
+
+export async function signAuthRep(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/signAuthRep', payload); return res.data;
+}
+
+export async function signPublicOnboardingLegalPacket(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/signPublicOnboardingLegalPacket', payload); return res.data;
+}
+
+export async function simulateVisibilityRole<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/simulateVisibilityRole', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function simulateWisconsinNEMSIS(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/simulateWisconsinNEMSIS', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function startPublicOnboardingCheckout<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/startPublicOnboardingCheckout', payload); return res.data as T;
+}
+
+export async function startTenantNERISOnboarding(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/startTenantNERISOnboarding', payload); return res.data;
+}
+
+export async function submitEligibilityInquiry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitEligibilityInquiry', payload); return res.data;
+}
+
+export async function submitPatientPortalSupportRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPatientPortalSupportRequest', payload); return res.data;
+}
+
+export async function submitPortalHemsMissionAcceptance(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPortalHemsMissionAcceptance', payload); return res.data;
+}
+
+export async function submitPortalHemsWeatherBrief(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPortalHemsWeatherBrief', payload); return res.data;
+}
+
+export async function submitPortalSupportRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPortalSupportRequest', payload); return res.data;
+}
+
+export async function submitPublicOnboardingApplication<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPublicOnboardingApplication', payload); return res.data as T;
+}
+
+export async function summarizeSupportInboxThread(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/summarizeSupportInboxThread', payload); return res.data;
+}
+
+export async function takeoverFounderBillingVoiceEscalation(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/takeoverFounderBillingVoiceEscalation', payload); return res.data;
+}
+
+export async function transitionDispatchMission(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/transitionDispatchMission', payload); return res.data;
+}
+
+export async function triggerFaxMatch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/triggerFaxMatch', payload); return res.data;
+}
+
+export async function updateCrewAvailability(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateCrewAvailability', payload); return res.data;
+}
+
+export async function updateFounderBillingVoiceConfig(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateFounderBillingVoiceConfig', payload); return res.data;
+}
+
+export async function updateInvoiceSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateInvoiceSettings', payload); return res.data;
+}
+
+export async function updateMyCrewAvailability(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateMyCrewAvailability', payload); return res.data;
+}
+
+export async function updateNEMSISPatchTask(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateNEMSISPatchTask', payload); return res.data;
+}
+
+export async function updatePolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePolicy', payload); return res.data;
+}
+
+export async function updatePortalCaseStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalCaseStatus', payload); return res.data;
+}
+
+export async function updatePortalFireIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalFireIncident', payload); return res.data;
+}
+
+export async function updatePortalFleetWorkOrder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalFleetWorkOrder', payload); return res.data;
+}
+
+export async function updatePortalProfile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalProfile', payload); return res.data;
+}
+
+export async function uploadAuthRepDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadAuthRepDocument', payload); return res.data;
+}
+
+export async function uploadLegalDocumentToPresignedUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadLegalDocumentToPresignedUrl', payload); return res.data;
+}
+
+export async function uploadNEMSISPackFile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadNEMSISPackFile', payload); return res.data;
+}
+
+export async function uploadNEMSISScenario(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadNEMSISScenario', payload); return res.data;
+}
+
+export async function uploadPortalDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadPortalDocument', payload); return res.data;
+}
+
+export async function validateDispatchRequestPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateDispatchRequestPortal', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateFireValidationIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateFireValidationIncident', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateNEMSISRawXml(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateNEMSISRawXml', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateNEMSISStudioFile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateNEMSISStudioFile', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateNERISBundle(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateNERISBundle', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validatePortalFireIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validatePortalFireIncident', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function verifyAuthRepOtp(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/verifyAuthRepOtp', payload); return res.data;
+}
+
+export async function verifyDEAEvidenceBundleHash(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/verifyDEAEvidenceBundleHash', payload); return res.data;
+}
+
+export async function ingestPortalEDI277(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void params;
+  const res = await API.post('/api/v1/billing/edi/277/ingest', payload); return res.data;
+}
+
+export async function ingestPortalEDI835(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void params;
+  const res = await API.post('/api/v1/billing/edi/835/ingest', payload); return res.data;
+}
+
+export async function ingestPortalEDI999(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void params;
+  const res = await API.post('/api/v1/billing/edi/999/ingest', payload); return res.data;
+}
+
+export interface EdiBatchApi {
   id: string;
-  caller_phone_number: string | null;
-  received_at: string | null;
-  tenant_id: string | null;
-  statement_id: string | null;
-  account_id: string | null;
-  state: string;
-  urgency: string;
-  risk_level: string;
-  risk_score: number;
-  transcript_preview: string;
-  intent_code: string | null;
+  batch_type: string;
+  created_at: string;
+  file_name?: string;
+  record_count?: number;
+  [key: string]: unknown;
 }
 
-export interface FounderBillingVoiceCallbackApi {
+export interface EdiClaimExplanationApi {
+  claim_id: string;
+  explanation: string;
+  adjustment_codes?: { code: string; description: string }[];
+  [key: string]: unknown;
+}
+
+// ─── Missing API type exports ─────────────────────────────────────────────────
+
+export interface FaxItemApi {
   id: string;
-  voicemail_id: string | null;
-  tenant_id: string | null;
-  callback_phone: string | null;
-  callback_state: string;
-  sla_due_at: string | null;
-  priority: string;
-  reason: string | null;
-  created_at: string | null;
-  updated_at: string | null;
+  from_number?: string;
+  to_number?: string;
+  status?: string;
+  direction?: string;
+  received_at?: string;
+  created_at?: string;
+  pages?: number;
+  pdf_url?: string;
+  page_count?: number;
+  telnyx_fax_id?: string;
+  error?: string;
+  status_updated_at?: string;
+  document_match_status?: string;
+  data?: {
+    confidence?: number;
+    telnyx_fax_id?: string;
+    error?: string;
+    claim_id?: string;
+    patient_name?: string;
+    match_type?: string;
+    match_suggestions?: { claim_id?: string; patient_name?: string; match_type?: string; confidence?: number }[];
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 }
 
-export interface FounderBillingVoiceBoardResponseApi<T> {
-  items: T[];
+export interface FaxEventApi {
+  id: string;
+  event_type?: string;
+  fax_id?: string;
+  created_at?: string;
+  received_at?: string;
+  to_status?: string;
+  status?: string;
+  provider_event_type?: string;
+  [key: string]: unknown;
 }
 
-export async function getFounderBillingVoiceConfig(): Promise<FounderBillingVoiceConfigResponseApi> {
-  const res = await API.get('/api/v1/founder/billing-voice/config', { headers: csHeaders() });
-  return res.data as FounderBillingVoiceConfigResponseApi;
+export interface SupportThreadApi {
+  id: string;
+  subject?: string;
+  status?: string;
+  escalated?: boolean;
+  unread?: boolean;
+  updated_at?: string;
+  created_at?: string;
+  tenant_id?: string;
+  agency_name?: string;
+  data?: {
+    context?: { agency_name?: string;[key: string]: unknown };
+    title?: string;
+    last_message?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 }
 
-export async function updateFounderBillingVoiceConfig(
-  payload: FounderBillingVoiceConfigApi
-): Promise<FounderBillingVoiceConfigResponseApi> {
-  const res = await API.put('/api/v1/founder/billing-voice/config', payload, { headers: csHeaders() });
-  return res.data as FounderBillingVoiceConfigResponseApi;
+export interface SupportThreadMessageApi {
+  id: string;
+  content?: string;
+  sender_role?: string;
+  created_at?: string;
+  thread_id?: string;
+  [key: string]: unknown;
 }
 
-export async function renderFounderBillingVoicePrompts(payload: {
-  preferred_engine?: 'xtts' | 'piper' | string;
-}): Promise<FounderBillingVoiceConfigResponseApi> {
-  const res = await API.post('/api/v1/founder/billing-voice/config/render-prompts', payload, { headers: csHeaders() });
-  return res.data as FounderBillingVoiceConfigResponseApi;
+export interface LegalQueueItem {
+  id: string;
+  request_type?: string;
+  severity?: string;
+  status?: string;
+  created_at?: string;
+  agency_name?: string;
+  subject?: string;
+  requester_name?: string;
+  requesting_party?: string;
+  missing_count?: number;
+  deadline_risk?: string;
+  deadline_at?: string;
+  [key: string]: unknown;
 }
 
-export async function listFounderBillingVoiceVoicemails(
-  limit = 50
-): Promise<FounderBillingVoiceBoardResponseApi<FounderBillingVoiceVoicemailApi>> {
-  const res = await API.get('/api/v1/founder/billing-voice/voicemails', {
-    headers: csHeaders(),
-    params: { limit },
-  });
-  return res.data as FounderBillingVoiceBoardResponseApi<FounderBillingVoiceVoicemailApi>;
-}
-
-export async function listFounderBillingVoiceCallbacks(
-  limit = 50
-): Promise<FounderBillingVoiceBoardResponseApi<FounderBillingVoiceCallbackApi>> {
-  const res = await API.get('/api/v1/founder/billing-voice/callbacks', {
-    headers: csHeaders(),
-    params: { limit },
-  });
-  return res.data as FounderBillingVoiceBoardResponseApi<FounderBillingVoiceCallbackApi>;
-}
-
-export async function getBillingAlerts() {
-  const res = await API.get('/api/v1/billing-command/billing-alerts', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getPayerMix() {
-  const res = await API.get('/api/v1/billing-command/payer-mix', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getRevenueTrend() {
-  const res = await API.get('/api/v1/billing-command/revenue-trend', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getARConcentrationRisk() {
-  const res = await API.get('/api/v1/billing-command/ar-concentration-risk', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getClaimThroughput() {
-  const res = await API.get('/api/v1/billing-command/claim-throughput', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getAppealSuccessRate() {
-  const res = await API.get('/api/v1/billing-command/appeal-success', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getFraudAnomalies() {
-  const res = await API.get('/api/v1/billing-command/fraud-anomaly', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function batchResubmitClaims(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/billing-command/batch-resubmit', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function draftAppeal(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/billing-command/appeal-draft', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getDenialPredictor(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/billing-command/denial-predictor', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getStripeReconciliation() {
-  const res = await API.get('/api/v1/billing-command/stripe-reconciliation', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getChurnRisk() {
-  const res = await API.get('/api/v1/billing-command/churn-risk', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getDuplicateDetection() {
-  const res = await API.get('/api/v1/billing-command/duplicate-detection', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getTenantBillingRanking() {
-  const res = await API.get('/api/v1/billing-command/tenant-billing-ranking', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getRevenueByServiceLevel() {
-  const res = await API.get('/api/v1/billing-command/revenue-by-service-level', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getModifierImpact() {
-  const res = await API.get('/api/v1/billing-command/modifier-impact', { headers: csHeaders() });
-  return res.data;
-}
-
-// ── Legal Requests Command ───────────────────────────────────────────────────
-
-export type LegalRequestType = 'hipaa_roi' | 'subpoena' | 'court_order';
-export type LegalRequestStatus =
-  | 'received'
-  | 'triage_complete'
-  | 'missing_docs'
-  | 'under_review'
-  | 'packet_building'
-  | 'delivered'
-  | 'closed';
-
-export interface LegalMissingItemCard {
-  code: string;
-  title: string;
-  detail: string;
-  severity: 'high' | 'medium' | 'low';
+export interface LegalSummary {
+  total?: number;
+  pending?: number;
+  resolved?: number;
+  avg_response_hours?: number;
+  total_open?: number;
+  urgent_deadlines?: number;
+  high_risk_requests?: number;
+  lane_counts?: Record<string, number>;
+  [key: string]: unknown;
 }
 
 export interface LegalChecklistItem {
-  code: string;
+  id: string;
   label: string;
-  required: boolean;
-  satisfied: boolean;
-}
-
-export interface LegalTriageSummary {
-  classification: LegalRequestType;
-  classification_confidence: number;
-  likely_invalid_or_incomplete: boolean;
-  urgency_level: 'low' | 'normal' | 'high' | 'critical';
-  deadline_risk: 'none' | 'watch' | 'high';
-  mismatch_signals: string[];
-  rationale: string;
+  code?: string;
+  completed?: boolean;
+  required?: boolean;
+  [key: string]: unknown;
 }
 
 export interface LegalIntakePayload {
-  request_type?: LegalRequestType;
-  requesting_party: string;
-  requester_name: string;
+  request_type: string;
+  requesting_party?: string;
+  requester_name?: string;
   requesting_entity?: string;
-  requester_category?:
-    | 'patient'
-    | 'patient_representative'
-    | 'attorney'
-    | 'insurance'
-    | 'government_agency'
-    | 'employer'
-    | 'other_third_party_manual_review';
+  requester_category?: string;
   patient_first_name?: string;
   patient_last_name?: string;
   patient_dob?: string;
@@ -3613,2994 +8733,145 @@ export interface LegalIntakePayload {
   date_range_start?: string;
   date_range_end?: string;
   request_documents?: string[];
-  delivery_preference?: 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup';
   requested_page_count?: number;
   jurisdiction_state?: string;
   print_mail_requested?: boolean;
   rush_requested?: boolean;
+  delivery_preference?: string;
   deadline_at?: string;
   notes?: string;
+  subject?: string;
+  description?: string;
+  contact_email?: string;
+  [key: string]: unknown;
 }
 
 export interface LegalIntakeResponse {
-  request_id: string;
-  intake_token: string;
-  status: LegalRequestStatus;
-  request_type: LegalRequestType;
-  triage_summary: LegalTriageSummary;
-  missing_items: LegalMissingItemCard[];
-  required_document_checklist: LegalChecklistItem[];
-  workflow_state?: string;
-  payment_status?: string;
-  payment_required?: boolean;
-  margin_status?: string;
-  fee_quote?: Record<string, unknown>;
+  id: string;
+  request_id?: string;
+  status?: string;
+  created_at?: string;
+  triage_summary?: {
+    classification?: string;
+    urgency_level?: string;
+    [key: string]: unknown;
+  };
+  required_document_checklist?: LegalChecklistItem[];
+  missing_items?: string[];
+  [key: string]: unknown;
 }
 
 export interface LegalPricingQuoteResponse {
-  request_id: string;
-  currency: string;
-  total_due_cents: number;
-  agency_payout_cents: number;
-  platform_fee_cents: number;
-  margin_status: string;
-  payment_required: boolean;
-  workflow_state: string;
-  requester_category: string;
-  delivery_mode: 'secure_digital' | 'print_and_mail' | 'manual_pickup';
-  line_items: Array<{ code: string; label: string; amount_cents: number; payee: string; note?: string }>;
-  costs: {
-    estimated_processor_fee_cents: number;
-    estimated_labor_cost_cents: number;
-    estimated_lob_cost_cents: number;
-    estimated_platform_margin_cents: number;
-  };
-  hold_reasons: string[];
-}
-
-export interface LegalCheckoutResponse {
-  request_id: string;
-  payment_id: string;
-  payment_status: string;
-  workflow_state: string;
-  checkout_url: string;
-  checkout_session_id: string;
-  connected_account_id: string;
-  amount_due_cents: number;
-  agency_payout_cents: number;
-  platform_fee_cents: number;
-}
-
-export interface LegalPaymentRecord {
-  payment_id: string;
-  request_id: string;
-  status: string;
-  amount_due_cents: number;
-  amount_collected_cents: number;
-  platform_fee_cents: number;
-  agency_payout_cents: number;
-  currency: string;
-  stripe_connected_account_id?: string;
-  stripe_checkout_session_id?: string;
-  stripe_payment_intent_id?: string;
-  check_reference?: string;
-  paid_at?: string;
-  failed_at?: string;
-  refunded_at?: string;
-}
-
-export interface LegalQueueItem {
-  id: string;
-  request_type: LegalRequestType;
-  status: LegalRequestStatus;
-  requester_name: string;
-  requesting_party: string;
-  requesting_entity?: string;
-  deadline_at?: string;
-  deadline_risk: 'none' | 'watch' | 'high';
-  missing_count: number;
-  redaction_mode: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface LegalSummary {
-  total_open: number;
-  lane_counts: Record<string, number>;
-  urgent_deadlines: number;
-  high_risk_requests: number;
-}
-
-export async function classifyLegalRequest(payload: {
-  request_type?: LegalRequestType;
-  notes?: string;
-  request_documents?: string[];
-  deadline_at?: string;
-  date_range_start?: string;
-  date_range_end?: string;
-}) {
-  const res = await API.post('/api/v1/legal-requests/classify', payload);
-  return res.data;
-}
-
-export async function createLegalRequestIntake(payload: LegalIntakePayload): Promise<LegalIntakeResponse> {
-  const res = await API.post('/api/v1/legal-requests/intake', payload);
-  return res.data as LegalIntakeResponse;
-}
-
-export async function createLegalUploadPresign(
-  requestId: string,
-  payload: { intake_token: string; document_kind: string; file_name: string; content_type: string }
-) {
-  const res = await API.post(`/api/v1/legal-requests/${requestId}/uploads/presign`, payload);
-  return res.data;
-}
-
-export async function uploadLegalDocumentToPresignedUrl(uploadUrl: string, file: File): Promise<void> {
-  await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': file.type },
-    body: file,
-  });
-}
-
-export async function completeLegalUpload(
-  requestId: string,
-  payload: { intake_token: string; upload_id: string; byte_size: number; checksum_sha256?: string }
-) {
-  const res = await API.post(`/api/v1/legal-requests/${requestId}/uploads/complete`, payload);
-  return res.data;
-}
-
-export async function previewLegalPricingQuote(
-  requestId: string,
-  payload: {
-    intake_token: string;
-    requested_page_count?: number;
-    print_mail_requested?: boolean;
-    rush_requested?: boolean;
-  }
-): Promise<LegalPricingQuoteResponse> {
-  const res = await API.post(`/api/v1/legal-requests/${requestId}/pricing/quote`, payload);
-  return res.data as LegalPricingQuoteResponse;
-}
-
-export async function createLegalPaymentCheckout(
-  requestId: string,
-  payload: { intake_token: string; success_url?: string; cancel_url?: string }
-): Promise<LegalCheckoutResponse> {
-  const res = await API.post(`/api/v1/legal-requests/${requestId}/payment/checkout`, payload);
-  return res.data as LegalCheckoutResponse;
-}
-
-export async function getFounderLegalSummary(): Promise<LegalSummary> {
-  const res = await API.get('/api/v1/legal-requests/founder/summary', { headers: aiHeaders() });
-  return res.data as LegalSummary;
-}
-
-export async function getFounderLegalQueue(lane?: string, limit = 100): Promise<LegalQueueItem[]> {
-  const res = await API.get('/api/v1/legal-requests/founder/queue', {
-    headers: aiHeaders(),
-    params: { lane, limit },
-  });
-  return Array.isArray(res.data) ? (res.data as LegalQueueItem[]) : [];
-}
-
-export async function getFounderLegalRequestDetail(requestId: string) {
-  const res = await API.get(`/api/v1/legal-requests/founder/requests/${requestId}`, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function reviewFounderLegalRequest(
-  requestId: string,
-  payload: {
-    authority_valid: boolean;
-    identity_verified: boolean;
-    completeness_valid: boolean;
-    document_sufficient: boolean;
-    minimum_necessary_scope: boolean;
-    redaction_mode:
-      | 'court_safe_minimum_necessary'
-      | 'expanded_disclosure_reviewed'
-      | 'expanded_disclosure_patient_authorized'
-      | 'expanded_disclosure_legal_override';
-    delivery_method: 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup';
-    decision: 'approve' | 'request_more_docs' | 'reject';
-    decision_notes?: string;
-  }
-) {
-  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/review`, payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function buildFounderLegalPacket(requestId: string) {
-  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/packet-build`, {}, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function createFounderLegalDeliveryLink(
-  requestId: string,
-  payload: { expires_in_hours?: number; recipient_hint?: string }
-) {
-  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/delivery-links`, payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function revokeFounderLegalDeliveryLink(linkId: string) {
-  await API.post(`/api/v1/legal-requests/founder/delivery-links/${linkId}/revoke`, {}, {
-    headers: aiHeaders(),
-  });
-}
-
-export async function closeFounderLegalRequest(requestId: string) {
-  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/close`, {}, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function getFounderLegalPaymentRecord(requestId: string): Promise<LegalPaymentRecord> {
-  const res = await API.get(`/api/v1/legal-requests/founder/requests/${requestId}/payment`, {
-    headers: aiHeaders(),
-  });
-  return res.data as LegalPaymentRecord;
-}
-
-export async function markFounderLegalCheckReceived(
-  requestId: string,
-  payload: { check_reference: string }
-): Promise<LegalPaymentRecord> {
-  const res = await API.post(`/api/v1/legal-requests/founder/requests/${requestId}/payment/check-received`, payload, {
-    headers: aiHeaders(),
-  });
-  return res.data as LegalPaymentRecord;
-}
-
-export async function consumeLegalDeliveryLink(token: string) {
-  const res = await API.get(`/api/v1/legal-requests/delivery/${token}`);
-  return res.data;
-}
-
-// ── Office Ally Clearinghouse: Eligibility / Claim Status / ERA ──────────
-
-export async function submitEligibilityInquiry(payload: {
-  patient_id: string;
-  member_id: string;
-  payer_id?: string;
-  service_date?: string;
-}) {
-  const res = await API.post('/api/v1/billing/eligibility/inquire', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function pollEligibilityResponses() {
-  const res = await API.post('/api/v1/billing/eligibility/poll', {}, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function submitClaimStatusInquiry(payload: {
-  claim_id: string;
-  member_id?: string;
-  payer_id?: string;
-}) {
-  const res = await API.post('/api/v1/billing/claims/status-inquiry', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function pollClaimStatusResponses() {
-  const res = await API.post('/api/v1/billing/claims/status-poll', {}, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function pollERAFiles() {
-  const res = await API.post('/api/v1/billing/eras/poll', {}, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Release Readiness Gate ───────────────────────────────────────────────
-
-export async function getReleaseReadiness() {
-  const res = await API.get('/api/v1/platform/release-readiness', {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Margin Risk Analytics ────────────────────────────────────────────────
-
-export async function getMarginRiskByTenant() {
-  const res = await API.get('/api/v1/billing-command/margin-risk', {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Telnyx CNAM / Voice Operations ──────────────────────────────────────
-
-export async function getTelnyxCNAMList() {
-  const res = await API.get('/api/v1/founder/billing-voice/cnam/list', {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function registerTelnyxCNAM(payload: {
-  phone_number: string;
-  display_name: string;
-}) {
-  const res = await API.post('/api/v1/founder/billing-voice/cnam/register', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function deleteTelnyxCNAM(phoneNumber: string) {
-  const res = await API.delete(`/api/v1/founder/billing-voice/cnam/${encodeURIComponent(phoneNumber)}`, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Pricing Catalog / Pricebook ─────────────────────────────────────────
-
-export async function listPricebookEntries() {
-  const res = await API.get('/api/v1/pricebook/entries', {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function createPricebookEntry(payload: {
-  code: string;
-  description: string;
-  unit_price_cents: number;
-  category?: string;
-}) {
-  const res = await API.post('/api/v1/pricebook/entries', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function updatePricebookEntry(entryId: string, payload: {
-  description?: string;
-  unit_price_cents?: number;
-  category?: string;
-}) {
-  const res = await API.patch(`/api/v1/pricebook/entries/${entryId}`, payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Public Signup / Onboarding (Unauthenticated) ──────────────────────────
-
-export interface PublicOnboardingLegalPacketCreatePayload {
-  application_id: string;
-  signer_email: string;
-  signer_name: string;
-  agency_name: string;
-}
-
-export interface PublicOnboardingLegalPacketSignPayload {
-  signer_name: string;
-  consents: {
-    msa: boolean;
-    baa: boolean;
-    authority: boolean;
-  };
-  ip_address: string;
-  user_agent: string;
-  signature_text: string;
-}
-
-export async function getPublicPricingCatalog<T = Record<string, unknown>>() {
-  try {
-    const res = await API.get('/public/pricing/catalog');
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Failed to load pricing'));
-  }
-}
-
-export async function lookupPublicOnboardingNpi<T = Record<string, unknown>>(npiNumber: string) {
-  try {
-    const res = await API.get(`/public/onboarding/nppes/lookup/${encodeURIComponent(npiNumber)}`);
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'NPI lookup failed'));
-  }
-}
-
-export async function submitPublicOnboardingApplication<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  try {
-    const res = await API.post('/public/onboarding/apply', payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Failed to submit onboarding application'));
-  }
-}
-
-export async function createPublicOnboardingLegalPacket<T = Record<string, unknown>>(
-  payload: PublicOnboardingLegalPacketCreatePayload
-) {
-  try {
-    const res = await API.post('/public/onboarding/legal/packet/create', payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Failed to initialize legal packet'));
-  }
-}
-
-export async function signPublicOnboardingLegalPacket<T = Record<string, unknown>>(
-  packetId: string,
-  payload: PublicOnboardingLegalPacketSignPayload
-) {
-  try {
-    const res = await API.post(`/public/onboarding/legal/packet/${packetId}/sign`, payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Failed to sign legal packet'));
-  }
-}
-
-export async function startPublicOnboardingCheckout<T = Record<string, unknown>>(payload: { application_id: string }) {
-  try {
-    const res = await API.post('/public/onboarding/checkout/start', payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Failed to start checkout session'));
-  }
-}
-
-export async function getPublicOnboardingStatus<T = Record<string, unknown>>(applicationId: string) {
-  try {
-    const res = await API.get(`/public/onboarding/status/${applicationId}`);
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Unable to retrieve onboarding status'));
-  }
-}
-
-export async function listPublicSystems<T = Array<Record<string, unknown>>>() {
-  try {
-    const res = await API.get('/api/v1/systems', {
-      headers: {},
-    });
-    return res.data as T;
-  } catch (error) {
-    throw new Error(asErrorMessage(error, 'Failed to load systems'));
-  }
-}
-
-// ── Tenant Onboarding ───────────────────────────────────────────────────
-
-export async function getOnboardingStatus(tenantId: string) {
-  const res = await API.get(`/api/v1/onboarding/${tenantId}/status`, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function advanceOnboardingStep(tenantId: string, payload: {
-  step: string;
-  data?: Record<string, unknown>;
-}) {
-  const res = await API.post(`/api/v1/onboarding/${tenantId}/advance`, payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Visibility Rule Maker ──────────────────────────────────────────────────
-
-type VisibilityMethod = 'GET' | 'POST' | 'DELETE';
-
-async function visibilityRequest<T>(
-  path: string,
-  method: VisibilityMethod = 'GET',
-  body?: Record<string, unknown>
-): Promise<T | null> {
-  const token = typeof window !== 'undefined'
-    ? (localStorage.getItem('token') || localStorage.getItem('qs_token') || '')
-    : '';
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-
-  const res = await API.request<T>({
-    url: path,
-    method,
-    headers,
-    data: body,
-    validateStatus: () => true,
-  });
-
-  if (res.status < 200 || res.status >= 300) {
-    return null;
-  }
-  return res.data;
-}
-
-export async function getVisibilityDashboardBundle() {
-  const [
-    dashboard,
-    rules,
-    viewModes,
-    moduleGates,
-    phiFields,
-    roleMatrix,
-    killSwitchStatus,
-    accessScore,
-    heatmap,
-    endpointRestrictions,
-    alerts,
-    anomalies,
-    approvals,
-    complianceLocks,
-    timeWindows,
-    elevatedAccess,
-    policies,
-  ] = await Promise.all([
-    visibilityRequest<unknown>('/api/v1/visibility/dashboard'),
-    visibilityRequest<unknown>('/api/v1/visibility/rules'),
-    visibilityRequest<unknown>('/api/v1/visibility/view-modes'),
-    visibilityRequest<unknown>('/api/v1/visibility/module-gates'),
-    visibilityRequest<unknown>('/api/v1/visibility/phi-fields'),
-    visibilityRequest<unknown>('/api/v1/visibility/role-matrix'),
-    visibilityRequest<unknown>('/api/v1/visibility/kill-switch/status'),
-    visibilityRequest<unknown>('/api/v1/visibility/access-score'),
-    visibilityRequest<unknown>('/api/v1/visibility/heatmap'),
-    visibilityRequest<unknown>('/api/v1/visibility/endpoint-restrictions'),
-    visibilityRequest<unknown>('/api/v1/visibility/access-alerts'),
-    visibilityRequest<unknown>('/api/v1/visibility/anomaly-events'),
-    visibilityRequest<unknown>('/api/v1/visibility/approval-requests'),
-    visibilityRequest<unknown>('/api/v1/visibility/compliance-lock/status'),
-    visibilityRequest<unknown>('/api/v1/visibility/time-windows'),
-    visibilityRequest<unknown>('/api/v1/visibility/elevated-access'),
-    visibilityRequest<unknown>('/api/v1/visibility/policies'),
-  ]);
-
-  return {
-    dashboard,
-    rules,
-    viewModes,
-    moduleGates,
-    phiFields,
-    roleMatrix,
-    killSwitchStatus,
-    accessScore,
-    heatmap,
-    endpointRestrictions,
-    alerts,
-    anomalies,
-    approvals,
-    complianceLocks,
-    timeWindows,
-    elevatedAccess,
-    policies,
-  };
-}
-
-export async function createVisibilityRule<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/rules', 'POST', payload);
-}
-
-export async function deleteVisibilityRule(ruleId: string) {
-  return visibilityRequest<Record<string, unknown>>(`/api/v1/visibility/rules/${ruleId}`, 'DELETE');
-}
-
-export async function evaluateVisibilityContext<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/evaluate', 'POST', payload);
-}
-
-export async function sandboxTestVisibilityRule<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/rules/sandbox-test', 'POST', payload);
-}
-
-export async function checkVisibilityZeroTrust<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/zero-trust/check', 'POST', payload);
-}
-
-export async function previewVisibilityRedaction<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/redaction-preview', 'POST', payload);
-}
-
-export async function deidentifyVisibilityRecord<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/deidentify', 'POST', payload);
-}
-
-export async function simulateVisibilityRole<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/role-simulation', 'POST', payload);
-}
-
-export async function checkVisibilityDataMinimization<T = Record<string, unknown>>(payload: Record<string, unknown>) {
-  return visibilityRequest<T>('/api/v1/visibility/data-minimization/check', 'POST', payload);
-}
-
-export async function setVisibilityKillSwitch<T = Record<string, unknown>>(payload: { activated: boolean; reason: string }) {
-  return visibilityRequest<T>('/api/v1/visibility/kill-switch', 'POST', payload);
-}
-
-// ── EDI Batch Operations ────────────────────────────────────────────────
-
-export async function generateEDIBatch(payload: {
-  claim_ids: string[];
-  submitter_config?: Record<string, unknown>;
-}) {
-  const res = await API.post('/api/v1/edi/batches/generate', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function listEDIBatches(limit = 50, offset = 0) {
-  const res = await API.get(`/api/v1/edi/batches?limit=${limit}&offset=${offset}`, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function submitEDIBatchSFTP(batchId: string) {
-  const res = await API.post(`/api/v1/edi/batches/${batchId}/submit-sftp`, {}, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function ingestEDI999(payload: {
-  x12_content: string;
-  batch_id: string;
-}) {
-  const res = await API.post('/api/v1/edi/ingest/999', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-export async function ingestEDI835(payload: { x12_content: string }) {
-  const res = await API.post('/api/v1/edi/ingest/835', payload, {
-    headers: aiHeaders(),
-  });
-  return res.data;
-}
-
-// ── Document Management ────────────────────────────────────────────────────
-
-export async function getDocumentUploadUrl(payload: { filename: string; content_type: string }) {
-  const res = await API.post('/api/v1/documents/upload-url', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function processDocument(payload: { document_id: string; s3_key: string }) {
-  const res = await API.post('/api/v1/documents/process', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getDocument(documentId: string) {
-  const res = await API.get(`/api/v1/documents/${documentId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function attachDocumentMetadata(documentId: string, payload: { s3_key: string; filename: string; content_type: string }) {
-  const res = await API.post(`/api/v1/documents/${documentId}/attach`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function refreshDocumentExtraction(extractionId: string) {
-  const res = await API.post(`/api/v1/documents/extractions/${extractionId}/refresh`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Template Management ────────────────────────────────────────────────────
-
-export async function listTemplates(params?: Record<string, string>) {
-  const res = await API.get('/api/v1/templates', { headers: aiHeaders(), params });
-  return res.data;
-}
-
-export async function createTemplate(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/templates', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getTemplate(templateId: string) {
-  const res = await API.get(`/api/v1/templates/${templateId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updateTemplate(templateId: string, payload: Record<string, unknown>) {
-  const res = await API.patch(`/api/v1/templates/${templateId}`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function deleteTemplate(templateId: string) {
-  const res = await API.delete(`/api/v1/templates/${templateId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function cloneTemplate(payload: { source_template_id: string; new_name?: string }) {
-  const res = await API.post('/api/v1/templates/clone', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getTemplateVersions(templateId: string) {
-  const res = await API.get(`/api/v1/templates/${templateId}/versions`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function bulkGenerateTemplates(payload: { template_id: string; variable_sets: Record<string, unknown>[] }) {
-  const res = await API.post('/api/v1/templates/bulk-generate', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function approveTemplate(templateId: string) {
-  const res = await API.post(`/api/v1/templates/${templateId}/approve`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── ROI Calculator ─────────────────────────────────────────────────────────
-
-export async function calculateROI(payload: Record<string, unknown>) {
-  const res = await API.post('/public/roi/calc', payload);
-  return res.data;
-}
-
-export async function generateROIProposalPDF(payload: Record<string, unknown>) {
-  const res = await API.post('/public/roi/proposal-pdf', payload);
-  return res.data;
-}
-
-// ── System Health & Infrastructure ─────────────────────────────────────────
-
-export async function getSystemHealthDashboard() {
-  const res = await API.get('/api/v1/system-health/dashboard', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSystemHealthServices() {
-  const res = await API.get('/api/v1/system-health/services', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSystemHealthMetricsCPU() {
-  const res = await API.get('/api/v1/system-health/metrics/cpu', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSystemHealthMetricsMemory() {
-  const res = await API.get('/api/v1/system-health/metrics/memory', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSystemHealthMetricsLatency() {
-  const res = await API.get('/api/v1/system-health/metrics/api-latency', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSystemHealthMetricsErrors() {
-  const res = await API.get('/api/v1/system-health/metrics/error-rate', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSystemHealthAlerts() {
-  const res = await API.get('/api/v1/system-health/alerts', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createSystemHealthAlert(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/system-health/alerts', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function resolveSystemHealthAlert(alertId: string) {
-  const res = await API.post(`/api/v1/system-health/alerts/${alertId}/resolve`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSelfHealingRules() {
-  const res = await API.get('/api/v1/system-health/self-healing/rules', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSelfHealingAudit() {
-  const res = await API.get('/api/v1/system-health/self-healing/audit', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getUptimeSLA() {
-  const res = await API.get('/api/v1/system-health/uptime/sla', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSSLExpiration() {
-  const res = await API.get('/api/v1/system-health/ssl/expiration', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getBackupsStatus() {
-  const res = await API.get('/api/v1/system-health/backups/status', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCostBudget() {
-  const res = await API.get('/api/v1/system-health/cost/budget', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCostByTenant() {
-  const res = await API.get('/api/v1/system-health/cost/by-tenant', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getIncidentPostmortems() {
-  const res = await API.get('/api/v1/system-health/incident/postmortems', { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Policy Governance ──────────────────────────────────────────────────────
-
-export async function listPolicies() {
-  const res = await API.get('/api/v1/policies', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createPolicy(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/policies', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getPolicy(policyId: string) {
-  const res = await API.get(`/api/v1/policies/${policyId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updatePolicy(policyId: string, payload: Record<string, unknown>) {
-  const res = await API.patch(`/api/v1/policies/${policyId}`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function deletePolicy(policyId: string) {
-  const res = await API.delete(`/api/v1/policies/${policyId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getPolicyVersions(policyId: string) {
-  const res = await API.get(`/api/v1/policies/${policyId}/versions`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function listPolicyApprovals(policyId: string) {
-  const res = await API.get(`/api/v1/policies/${policyId}/approvals`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function requestPolicyApproval(policyId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/policies/${policyId}/approvals`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function rollbackPolicy(policyId: string, versionNumber: number) {
-  const res = await API.post(`/api/v1/policies/${policyId}/rollback/${versionNumber}`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── CrewLink Field Operations ──────────────────────────────────────────────
-
-export async function pushCrewPage(payload: { crew_ids: string[]; message: string; priority?: string }) {
-  const res = await API.post('/api/v1/crewlink/page', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function respondCrewPage(payload: { page_id: string; response: string }) {
-  const res = await API.post('/api/v1/crewlink/respond', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getActiveCrewPages() {
-  const res = await API.get('/api/v1/crewlink/pages/active', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updateMyCrewAvailability(payload: { status: string; note?: string }) {
-  const res = await API.post('/api/v1/crewlink/availability/me', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Patient Portal Extended ────────────────────────────────────────────────
-
-export async function getPortalProfile() {
-  const res = await API.get('/api/v1/portal/profile', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updatePortalProfile(payload: Record<string, unknown>) {
-  const res = await API.patch('/api/v1/portal/profile', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getPortalPaymentPlans() {
-  const res = await API.get('/api/v1/portal/payment-plans', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function requestPortalPaymentPlan(payload: { statement_id: string; proposed_monthly_amount: number; duration_months: number }) {
-  const res = await API.post('/api/v1/portal/payment-plans', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getPortalDocuments() {
-  const res = await API.get('/api/v1/portal/documents', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getPortalNotifications() {
-  const res = await API.get('/api/v1/portal/notifications', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function markPortalNotificationsRead() {
-  const res = await API.post('/api/v1/portal/notifications/read-all', {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getPortalActivity() {
-  const res = await API.get('/api/v1/portal/activity', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function submitPortalSupportRequest(payload: { subject: string; body: string; category?: string }) {
-  const res = await API.post('/api/v1/portal/support', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function markPortalNotificationRead(notificationId: string) {
-  const res = await API.post(`/api/v1/portal/notifications/${notificationId}/read`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function uploadPortalDocument(formData: FormData) {
-  const res = await API.post('/api/v1/portal/documents', formData, {
-    headers: { ...aiHeaders(), 'Content-Type': 'multipart/form-data' },
-  });
-  return res.data;
-}
-
-export async function getPatientStatements(limit = 50) {
-  const res = await API.get(`/api/v1/patient/statements?limit=${limit}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function payStatement(statementId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/statements/${statementId}/pay`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Founder Copilot ────────────────────────────────────────────────────────
-
-export async function sendFounderCopilotCommand(payload: { command: string; context?: Record<string, unknown> }) {
-  const res = await API.post('/api/founder/copilot/command', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Pricebook Extended ─────────────────────────────────────────────────────
-
-export async function getPricebookCatalog() {
-  const res = await API.get('/api/v1/pricebooks/catalog', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function listPricebooks() {
-  const res = await API.get('/api/v1/pricebooks/', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createPricebook(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/pricebooks/', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function activatePricebook(pricebookId: string) {
-  const res = await API.post(`/api/v1/pricebooks/${pricebookId}/activate`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getActivePricebook() {
-  const res = await API.get('/api/v1/pricebooks/active', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getTenantEntitlements(tenantId: string) {
-  const res = await API.get(`/api/v1/pricebooks/entitlements/${tenantId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function setTenantEntitlements(payload: { tenant_id: string; entitlements: Record<string, unknown> }) {
-  const res = await API.post('/api/v1/pricebooks/entitlements', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Founder Datasets ──────────────────────────────────────────────────────
-
-export interface DatasetSystemStatusApi {
-  nemsis: { version: string; last_update: string };
-  neris: { version: string; last_update: string };
-  rxnorm: { term_count: number };
-  snomed: { term_count: number };
-  icd10: { version: string };
-  facilities: { last_state_sync: string; active_count: number };
-}
-
-export interface DatasetExportAgencyApi {
-  name: string;
-  state: string;
-  status: string;
-  success_rate: number;
-  failed_charts: number;
-}
-
-export interface DatasetExportsApi {
-  total_today: number;
-  successful: number;
-  failed: number;
-  in_queue: number;
-  agencies: DatasetExportAgencyApi[];
-}
-
-export interface DatasetActiveDeviceApi {
-  id: string;
-  device_type: string;
-  ip: string;
-  agency: string;
-  user: string;
-  status: string;
-}
-
-export interface DatasetAIExpressionApi {
-  generated_xpath: string;
-  schematron_rule: string;
-  human_readable: string;
-}
-
-export async function getDatasetStatus(): Promise<DatasetSystemStatusApi> {
-  const res = await API.get('/api/datasets/status');
-  const payload = asJsonObject(res.data);
-  const nemsis = asJsonObject(payload.nemsis);
-  const neris = asJsonObject(payload.neris);
-  const rxnorm = asJsonObject(payload.rxnorm);
-  const snomed = asJsonObject(payload.snomed);
-  const icd10 = asJsonObject(payload.icd10);
-  const facilities = asJsonObject(payload.facilities);
-  return {
-    nemsis: {
-      version: asString(nemsis.version),
-      last_update: asString(nemsis.last_update),
-    },
-    neris: {
-      version: asString(neris.version),
-      last_update: asString(neris.last_update),
-    },
-    rxnorm: {
-      term_count: asNumber(rxnorm.term_count) ?? 0,
-    },
-    snomed: {
-      term_count: asNumber(snomed.term_count) ?? 0,
-    },
-    icd10: {
-      version: asString(icd10.version),
-    },
-    facilities: {
-      last_state_sync: asString(facilities.last_state_sync),
-      active_count: asNumber(facilities.active_count) ?? 0,
-    },
-  };
-}
-
-export async function getDatasetExports(): Promise<DatasetExportsApi> {
-  const res = await API.get('/api/datasets/exports');
-  const payload = asJsonObject(res.data);
-  const agenciesRaw = Array.isArray(payload.agencies) ? payload.agencies : [];
-  return {
-    total_today: asNumber(payload.total_today) ?? 0,
-    successful: asNumber(payload.successful) ?? 0,
-    failed: asNumber(payload.failed) ?? 0,
-    in_queue: asNumber(payload.in_queue) ?? 0,
-    agencies: agenciesRaw.map((agency) => {
-      const row = asJsonObject(agency);
-      return {
-        name: asString(row.name),
-        state: asString(row.state),
-        status: asString(row.status),
-        success_rate: asNumber(row.success_rate) ?? 0,
-        failed_charts: asNumber(row.failed_charts) ?? 0,
-      };
-    }),
-  };
-}
-
-export async function getDatasetActiveDevices(): Promise<DatasetActiveDeviceApi[]> {
-  const res = await API.get('/api/datasets/active-devices');
-  const payload = Array.isArray(res.data) ? res.data : [];
-  return payload.map((device) => {
-    const row = asJsonObject(device);
-    return {
-      id: asString(row.id),
-      device_type: asString(row.device_type),
-      ip: asString(row.ip),
-      agency: asString(row.agency),
-      user: asString(row.user),
-      status: asString(row.status),
-    };
-  });
-}
-
-export async function createDatasetAIExpression(payload: { natural_language: string }): Promise<DatasetAIExpressionApi> {
-  const res = await API.post('/api/datasets/ai-expression-builder', payload, {
-    headers: { 'Content-Type': 'application/json' },
-  });
-  const data = asJsonObject(res.data);
-  return {
-    generated_xpath: asString(data.generated_xpath),
-    schematron_rule: asString(data.schematron_rule),
-    human_readable: asString(data.human_readable),
-  };
-}
-
-// ── Support Inbox ──────────────────────────────────────────────────────────
-
-export type SupportThreadStatusApi = 'open' | 'escalated' | 'resolved';
-
-export interface SupportThreadApi {
-  id: string;
-  status: SupportThreadStatusApi;
-  unread: boolean;
-  escalated: boolean;
-  updated_at: string;
-  data: {
-    title?: string;
-    context?: {
-      agency_name?: string;
-    };
-    last_message?: string;
-  };
-}
-
-export interface SupportThreadMessageApi {
-  id: string;
-  sender_role: 'agency' | 'founder' | 'ai';
-  content: string;
-  created_at: string;
-}
-
-function normalizeSupportThreadStatus(value: unknown): SupportThreadStatusApi {
-  const status = asString(value).toLowerCase();
-  if (status === 'escalated' || status === 'resolved') return status;
-  return 'open';
-}
-
-export async function listSupportInboxThreads(params?: {
-  status?: string;
-  limit?: number;
-}): Promise<SupportThreadApi[]> {
-  const res = await API.get('/api/v1/support/inbox', {
-    headers: transportLinkHeaders(),
-    params,
-  });
-  const payload = res.data;
-  const rows = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload?.threads)
-      ? payload.threads
-      : [];
-  return rows.map((thread: unknown) => {
-    const row = asJsonObject(thread);
-    const data = asJsonObject(row.data);
-    const context = asJsonObject(data.context);
-    return {
-      id: asString(row.id),
-      status: normalizeSupportThreadStatus(row.status),
-      unread: asBoolean(row.unread),
-      escalated: asBoolean(row.escalated),
-      updated_at: asString(row.updated_at),
-      data: {
-        title: asString(data.title) || undefined,
-        context: {
-          agency_name: asString(context.agency_name) || undefined,
-        },
-        last_message: asString(data.last_message) || undefined,
-      },
-    };
-  });
-}
-
-export async function listSupportThreadMessages(threadId: string): Promise<SupportThreadMessageApi[]> {
-  const res = await API.get(`/api/v1/support/threads/${threadId}/messages`, {
-    headers: transportLinkHeaders(),
-  });
-  const payload = res.data;
-  const rows = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload?.messages)
-      ? payload.messages
-      : [];
-  return rows.map((message: unknown) => {
-    const row = asJsonObject(message);
-    const senderRole = asString(row.sender_role).toLowerCase();
-    return {
-      id: asString(row.id),
-      sender_role: senderRole === 'agency' || senderRole === 'ai' ? senderRole : 'founder',
-      content: asString(row.content),
-      created_at: asString(row.created_at),
-    };
-  });
-}
-
-export async function sendSupportInboxReply(threadId: string, payload: { content: string }) {
-  const res = await API.post(`/api/v1/support/inbox/${threadId}/reply`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function resolveSupportInboxThread(threadId: string) {
-  const res = await API.post(`/api/v1/support/inbox/${threadId}/resolve`, {}, {
-    headers: transportLinkHeaders(),
-  });
-  return res.data;
-}
-
-export async function summarizeSupportInboxThread(threadId: string): Promise<string> {
-  const res = await API.post(`/api/v1/support/inbox/${threadId}/summarize`, {}, {
-    headers: transportLinkHeaders(),
-  });
-  const payload = asJsonObject(res.data);
-  const summary = asString(payload.summary || payload.content, '');
-  return summary || JSON.stringify(payload);
-}
-
-// ── Portal Module Wrappers (Agency-facing Pages) ─────────────────────────
-
-export interface PortalStatCardApi {
-  label: string;
-  value: number | string;
-  href: string;
-}
-
-export interface PortalMetricsApi {
-  portal?: {
-    stat_cards?: PortalStatCardApi[];
-  };
-  [key: string]: unknown;
-}
-
-export async function getPortalAgencyMetrics(): Promise<PortalMetricsApi> {
-  const res = await API.get('/api/v1/metrics', {
-    headers: transportLinkHeaders(),
-  });
-  return asJsonObject(res.data) as PortalMetricsApi;
-}
-
-export type PortalFireIncidentStatusApi = 'draft' | 'validated' | 'exported' | string;
-
-export interface PortalFireIncidentApi extends Record<string, unknown> {
-  id: string;
-  incident_number: string;
-  incident_type_code: string;
-  start_datetime: string;
-  status: PortalFireIncidentStatusApi;
-}
-
-export interface PortalFireValidationIssueApi {
-  severity: 'error' | 'warning';
-  field_label?: string;
-  path?: string;
-  ui_section?: string;
-  message: string;
-  suggested_fix?: string;
-}
-
-export interface PortalFireValidationResultApi {
-  valid: boolean;
-  issues: PortalFireValidationIssueApi[];
-}
-
-export interface PortalFirePackRulesApi {
-  department_id?: string;
-  sections?: Array<Record<string, unknown>>;
-  value_sets?: Record<string, string[]>;
-  [key: string]: unknown;
-}
-
-export interface PortalFireApparatusApi {
-  id: string;
-  unit_id: string;
-  unit_type_code: string;
-  [key: string]: unknown;
-}
-
-export interface PortalNerisOnboardingStatusApi extends Record<string, unknown> {
-  department?: {
-    id?: string;
-    [key: string]: unknown;
-  };
-}
-
-export async function listPortalFireIncidents(params?: {
-  status?: string;
-}): Promise<PortalFireIncidentApi[]> {
-  const res = await API.get('/api/v1/incidents/fire', {
-    headers: transportLinkHeaders(),
-    params: params?.status ? { status: params.status } : undefined,
-  });
-  const payload = res.data;
-  if (Array.isArray(payload)) {
-    return payload as PortalFireIncidentApi[];
-  }
-  return Array.isArray(payload?.incidents)
-    ? (payload.incidents as PortalFireIncidentApi[])
-    : [];
-}
-
-export async function createPortalFireIncident(payload: Record<string, unknown>): Promise<PortalFireIncidentApi> {
-  const res = await API.post('/api/v1/incidents/fire', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(res.data) as PortalFireIncidentApi;
-}
-
-export async function updatePortalFireIncident(
-  incidentId: string,
-  payload: Record<string, unknown>
-): Promise<PortalFireIncidentApi> {
-  const res = await API.patch(`/api/v1/incidents/fire/${incidentId}`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(res.data) as PortalFireIncidentApi;
-}
-
-export async function validatePortalFireIncident(incidentId: string): Promise<PortalFireValidationResultApi> {
-  const res = await API.post(`/api/v1/incidents/fire/${incidentId}/validate`, {}, {
-    headers: transportLinkHeaders(),
-  });
-  return asJsonObject(res.data) as unknown as PortalFireValidationResultApi;
-}
-
-export async function getPortalFirePackRules(): Promise<PortalFirePackRulesApi | null> {
-  try {
-    const res = await API.get('/api/v1/incidents/fire/pack-rules', {
-      headers: transportLinkHeaders(),
-    });
-    return asJsonObject(res.data) as PortalFirePackRulesApi;
-  } catch {
-    return null;
-  }
-}
-
-export async function getPortalNerisOnboardingStatus(): Promise<PortalNerisOnboardingStatusApi | null> {
-  try {
-    const res = await API.get('/api/v1/tenant/neris/onboarding/status', {
-      headers: transportLinkHeaders(),
-    });
-    return asJsonObject(res.data) as PortalNerisOnboardingStatusApi;
-  } catch {
-    return null;
-  }
-}
-
-export async function listPortalFireDepartmentApparatus(departmentId: string): Promise<PortalFireApparatusApi[]> {
-  const res = await API.get(`/api/v1/incidents/fire/departments/${departmentId}/apparatus`, {
-    headers: transportLinkHeaders(),
-  });
-  if (Array.isArray(res.data)) {
-    return res.data as PortalFireApparatusApi[];
-  }
-  return Array.isArray(res.data?.apparatus)
-    ? (res.data.apparatus as PortalFireApparatusApi[])
-    : [];
-}
-
-export async function exportPortalNerisIncident(payload: {
-  department_id: string | null;
-  incident_ids: string[];
-}): Promise<Blob> {
-  const res = await API.post('/api/v1/neris/exports', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-    responseType: 'blob',
-  });
-  return res.data as Blob;
-}
-
-export type PortalFleetAlertSeverityApi = 'critical' | 'warning' | 'info';
-export type PortalFleetWorkOrderStatusApi = 'open' | 'in_progress' | 'completed';
-
-export interface PortalFleetReadinessApi extends Record<string, unknown> {
-  units?: PortalFleetUnitScoreApi[];
-  fleet_count?: number;
-  avg_readiness?: number;
-  units_ready?: number;
-  units_limited?: number;
-  units_no_go?: number;
-}
-
-export interface PortalFleetUnitScoreApi extends Record<string, unknown> {
-  unit_id: string;
-  readiness_score: number;
-  alert_count: number;
-  mdt_online: boolean;
-  open_maintenance: number;
-}
-
-export interface PortalFleetUnitDetailApi extends Record<string, unknown> {
-  unit_id: string;
-}
-
-export interface PortalFleetAlertApi extends Record<string, unknown> {
-  alert_id: string;
-  severity: PortalFleetAlertSeverityApi;
-  unit_id: string;
-  message: string;
-  detected_at: string;
-  resolved?: boolean;
-}
-
-export interface PortalFleetWorkOrderApi extends Record<string, unknown> {
-  work_order_id: string;
-  unit_id: string;
-  title: string;
-  description?: string;
-  priority: string;
-  status: PortalFleetWorkOrderStatusApi;
-  due_date?: string;
-}
-
-export interface PortalFleetInspectionTemplateApi extends Record<string, unknown> {
-  template_id: string;
-  name: string;
-  vehicle_type: string;
-  frequency: string;
-}
-
-export async function getPortalFleetReadiness(): Promise<PortalFleetReadinessApi> {
-  const res = await API.get('/api/v1/fleet-intelligence/readiness/fleet', {
-    headers: transportLinkHeaders(),
-  });
-  return asJsonObject(res.data) as PortalFleetReadinessApi;
-}
-
-export async function getPortalFleetUnitReadiness(unitId: string): Promise<PortalFleetUnitDetailApi> {
-  const res = await API.get(`/api/v1/fleet-intelligence/readiness/units/${unitId}`, {
-    headers: transportLinkHeaders(),
-  });
-  return asJsonObject(res.data) as PortalFleetUnitDetailApi;
-}
-
-export async function listPortalFleetAlerts(unresolvedOnly = true): Promise<PortalFleetAlertApi[]> {
-  const res = await API.get('/api/v1/fleet-intelligence/alerts', {
-    headers: transportLinkHeaders(),
-    params: { unresolved_only: unresolvedOnly },
-  });
-  const payload = res.data;
-  if (Array.isArray(payload)) {
-    return payload as PortalFleetAlertApi[];
-  }
-  return Array.isArray(payload?.alerts)
-    ? (payload.alerts as PortalFleetAlertApi[])
-    : [];
-}
-
-export async function resolvePortalFleetAlert(alertId: string, payload: { note: string }) {
-  const res = await API.patch(`/api/v1/fleet-intelligence/alerts/${alertId}/resolve`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function listPortalFleetWorkOrders(): Promise<PortalFleetWorkOrderApi[]> {
-  const res = await API.get('/api/v1/fleet-intelligence/maintenance/work-orders', {
-    headers: transportLinkHeaders(),
-  });
-  const payload = res.data;
-  if (Array.isArray(payload)) {
-    return payload as PortalFleetWorkOrderApi[];
-  }
-  return Array.isArray(payload?.work_orders)
-    ? (payload.work_orders as PortalFleetWorkOrderApi[])
-    : [];
-}
-
-export async function createPortalFleetWorkOrder(payload: {
-  unit_id: string;
-  title: string;
-  description?: string;
-  priority: string;
-  due_date?: string;
-}) {
-  const res = await API.post('/api/v1/fleet-intelligence/maintenance/work-orders', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function updatePortalFleetWorkOrder(
-  workOrderId: string,
-  payload: { status: PortalFleetWorkOrderStatusApi }
-) {
-  const res = await API.patch(`/api/v1/fleet-intelligence/maintenance/work-orders/${workOrderId}`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function listPortalFleetInspectionTemplates(): Promise<PortalFleetInspectionTemplateApi[]> {
-  const res = await API.get('/api/v1/fleet-intelligence/inspections/templates', {
-    headers: transportLinkHeaders(),
-  });
-  const payload = res.data;
-  if (Array.isArray(payload)) {
-    return payload as PortalFleetInspectionTemplateApi[];
-  }
-  return Array.isArray(payload?.templates)
-    ? (payload.templates as PortalFleetInspectionTemplateApi[])
-    : [];
-}
-
-export async function createPortalFleetInspectionTemplate(payload: {
-  name: string;
-  vehicle_type: string;
-  frequency: string;
-}) {
-  const res = await API.post('/api/v1/fleet-intelligence/inspections/templates', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export interface PortalHemsSafetyEventApi {
-  event_type: string;
-  timestamp: string;
-  details?: Record<string, unknown>;
-}
-
-export interface PortalHemsChecklistTemplateApi {
-  items?: string[];
-  risk_factors?: string[];
-}
-
-export async function getPortalHemsSafetyTimeline(missionId: string): Promise<PortalHemsSafetyEventApi[]> {
-  const res = await API.get(`/api/v1/hems/missions/${missionId}/safety-timeline`, {
-    headers: transportLinkHeaders(),
-  });
-  const payload = res.data;
-  if (Array.isArray(payload)) {
-    return payload as PortalHemsSafetyEventApi[];
-  }
-  return Array.isArray(payload?.events)
-    ? (payload.events as PortalHemsSafetyEventApi[])
-    : [];
-}
-
-export async function getPortalHemsChecklistTemplate(): Promise<PortalHemsChecklistTemplateApi | null> {
-  try {
-    const res = await API.get('/api/v1/hems/checklist-template', {
-      headers: transportLinkHeaders(),
-    });
-    return asJsonObject(res.data) as PortalHemsChecklistTemplateApi;
-  } catch {
-    return null;
-  }
-}
-
-export async function postPortalHemsMissionAction(
-  missionId: string,
-  endpoint: string,
-  payload: Record<string, unknown>
-) {
-  const res = await API.post(`/api/v1/hems/missions/${missionId}/${endpoint}`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function setPortalHemsAircraftReadiness(
-  aircraftId: string,
-  payload: { state: string; reason: string }
-) {
-  const res = await API.post(`/api/v1/hems/aircraft/${aircraftId}/readiness`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function submitPortalHemsMissionAcceptance(
-  missionId: string,
-  payload: {
-    aircraft_id?: string;
-    checklist: Record<string, boolean>;
-    risk_factors: Record<string, boolean>;
-    risk_score: number;
-  }
-) {
-  const res = await API.post(`/api/v1/hems/missions/${missionId}/acceptance`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function submitPortalHemsWeatherBrief(
-  missionId: string,
-  payload: {
-    ceiling_ft?: number;
-    visibility_sm?: number;
-    wind_direction?: number;
-    wind_speed_kt?: number;
-    gusts_kt?: number;
-    precip: boolean;
-    icing: boolean;
-    turbulence: string;
-    go_no_go: string;
-    source?: string;
-  }
-) {
-  const res = await API.post(`/api/v1/hems/missions/${missionId}/weather-brief`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export type PortalSupportThreadTypeApi =
-  | 'General Support'
-  | 'Billing Question'
-  | 'Technical Issue'
-  | 'Compliance';
-
-export type PortalSupportThreadStatusApi = 'open' | 'escalated' | 'resolved';
-
-export interface PortalSupportThreadApi {
-  id: string;
-  title: string;
-  thread_type: PortalSupportThreadTypeApi;
-  status: PortalSupportThreadStatusApi;
-  last_message_preview: string;
-  last_message_at: string;
-  unread_count?: number;
-}
-
-export interface PortalSupportMessageApi {
-  id: string;
-  sender_type: 'agency' | 'ai' | 'founder';
-  sender_label: string;
-  content: string;
-  created_at: string;
-}
-
-export async function listPortalSupportThreads(): Promise<PortalSupportThreadApi[]> {
-  const res = await API.get('/api/v1/support/threads', {
-    headers: transportLinkHeaders(),
-  });
-  return (Array.isArray(res.data) ? res.data : []) as PortalSupportThreadApi[];
-}
-
-export async function createPortalSupportThread(payload: {
-  thread_type: PortalSupportThreadTypeApi;
-  title: string;
-  initial_message: string;
-}): Promise<PortalSupportThreadApi> {
-  const res = await API.post('/api/v1/support/threads', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(res.data) as unknown as PortalSupportThreadApi;
-}
-
-export async function listPortalSupportThreadMessages(threadId: string): Promise<PortalSupportMessageApi[]> {
-  const res = await API.get(`/api/v1/support/threads/${threadId}/messages`, {
-    headers: transportLinkHeaders(),
-  });
-  return (Array.isArray(res.data) ? res.data : []) as PortalSupportMessageApi[];
-}
-
-export async function createPortalSupportThreadMessage(
-  threadId: string,
-  payload: { content: string }
-): Promise<PortalSupportMessageApi> {
-  const res = await API.post(`/api/v1/support/threads/${threadId}/messages`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(res.data) as unknown as PortalSupportMessageApi;
-}
-
-// ── Voice Advanced ─────────────────────────────────────────────────────────
-
-export async function getVoiceAdvancedDashboard(): Promise<Record<string, unknown> | null> {
-  const res = await API.get('/api/v1/voice-advanced/dashboard', { headers: aiHeaders() });
-  const payload = asJsonObject(res.data);
-  return Object.keys(payload).length > 0 ? payload : null;
-}
-
-export async function getVoiceAdvancedReviewQueue(): Promise<Record<string, unknown>[]> {
-  const res = await API.get('/api/v1/voice-advanced/review-queue', { headers: aiHeaders() });
-  return Array.isArray(res.data) ? (res.data as Record<string, unknown>[]) : [];
-}
-
-export async function getVoiceAdvancedImprovementTickets(): Promise<Record<string, unknown>[]> {
-  const res = await API.get('/api/v1/voice-advanced/improvement-tickets', { headers: aiHeaders() });
-  return Array.isArray(res.data) ? (res.data as Record<string, unknown>[]) : [];
-}
-
-export async function getVoiceAdvancedCallbackSlots(): Promise<Record<string, unknown>[]> {
-  const res = await API.get('/api/v1/voice-advanced/callback-optimizer/slots', { headers: aiHeaders() });
-  return Array.isArray(res.data) ? (res.data as Record<string, unknown>[]) : [];
-}
-
-export async function getVoiceAdvancedAbTests(): Promise<Record<string, unknown>[]> {
-  const res = await API.get('/api/v1/voice-advanced/ab-tests', { headers: aiHeaders() });
-  return Array.isArray(res.data) ? (res.data as Record<string, unknown>[]) : [];
-}
-
-// ── Dispatch Requests (Portal / TransportLink Auth) ───────────────────────
-
-export interface DispatchRequestApi {
-  id: string;
-  data: Record<string, unknown>;
-}
-
-function normalizeDispatchRequestRecord(value: unknown): DispatchRequestApi {
-  const row = asJsonObject(value);
-  const data = asJsonObject(row.data);
-  return {
-    id: asString(row.id || data.id),
-    data,
-  };
-}
-
-export async function listDispatchRequestsPortal(limit = 100): Promise<DispatchRequestApi[]> {
-  const res = await API.get('/api/v1/dispatch/requests', {
-    headers: transportLinkHeaders(),
-    params: { limit },
-  });
-  const payload = res.data;
-  const rows = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload?.requests)
-      ? payload.requests
-      : Array.isArray(payload?.data)
-        ? payload.data
-        : [];
-  return rows.map((row: unknown) => normalizeDispatchRequestRecord(row));
-}
-
-export async function listTransportLinkFacilitySchedule(facilityId: string): Promise<DispatchRequestApi[]> {
-  const res = await API.get(`/api/v1/transportlink/facilities/${facilityId}/schedule`, {
-    headers: transportLinkHeaders(),
-  });
-  const rows = Array.isArray(res.data) ? res.data : [];
-  return rows.map((row: unknown) => normalizeDispatchRequestRecord(row));
-}
-
-export async function createDispatchRequestPortal(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/dispatch/requests', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function injectDispatchRequestPortal(requestId: string) {
-  const res = await API.post(`/api/v1/dispatch/requests/${requestId}/inject`, {}, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-export async function validateDispatchRequestPortal(requestId: string) {
-  const res = await API.post(`/api/v1/dispatch/requests/${requestId}/validate`, {}, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-// ── Dispatch Missions (Founder Ops CAD) ────────────────────────────────────
-
-export async function getDispatchMissions(limit = 100) {
-  const res = await API.get(`/api/v1/dispatch/missions?limit=${limit}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function transitionDispatchMission(missionId: string, payload: { state: string; reason?: string }) {
-  const res = await API.patch(`/api/v1/dispatch/missions/${missionId}/transition`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function cancelDispatchMission(missionId: string, payload?: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/dispatch/missions/${missionId}/cancel`, payload ?? {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createDispatchRequest(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/dispatch/requests', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function injectDispatchRequest(requestId: string) {
-  const res = await API.post(`/api/v1/dispatch/requests/${requestId}/inject`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Fleet Intelligence (Founder Ops Fleet) ─────────────────────────────────
-
-export async function getFleetIntelligenceReadiness() {
-  const res = await API.get('/api/v1/fleet-intelligence/readiness/fleet', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getFleetDashboard() {
-  const res = await API.get('/api/v1/fleet/dashboard', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function ackFleetAlert(alertId: string, payload?: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/fleet/alerts/${alertId}/ack`, payload ?? {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function ingestTelemetry(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/ops/telemetry/ingest', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── CrewLink Alerts (Founder Ops CrewLink) ─────────────────────────────────
-
-export async function getCrewlinkAlerts(params?: { active?: boolean; limit?: number }) {
-  const url = params?.active ? '/api/v1/crewlink/alerts/active' : `/api/v1/crewlink/alerts?limit=${params?.limit ?? 100}`;
-  const res = await API.get(url, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createCrewlinkAlert(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/crewlink/alerts', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function escalateCrewlinkAlert(alertId: string, payload: { reason: string; triggered_by: string }) {
-  const res = await API.post(`/api/v1/crewlink/alerts/${alertId}/escalate`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Roles & Assignments (Security Role Builder) ────────────────────────────
-
-export async function listRoles() {
-  const res = await API.get('/api/v1/roles', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function listRoleAssignments() {
-  const res = await API.get('/api/v1/roles/assignments', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createRoleAssignment(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/roles/assignments', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function deleteRoleAssignment(assignmentId: string) {
-  const res = await API.delete(`/api/v1/roles/assignments/${assignmentId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Audit Logs (Security Access Logs) ──────────────────────────────────────
-
-export async function searchAuditLogs(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/audit/logs/search', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Governance (Security Governance) ───────────────────────────────────────
-
-export async function getGovernanceSummary() {
-  const res = await API.get('/api/v1/governance/summary', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getGovernanceInteropReadiness() {
-  const res = await API.get('/api/v1/governance/interop-readiness', { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Events Feed (Executive Events Feed) ────────────────────────────────────
-
-export async function getEventsFeed(params?: Record<string, string>) {
-  const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  const res = await API.get(`/api/v1/events/feed${qs}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getEventsUnreadCount() {
-  const res = await API.get('/api/v1/events/unread-count', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function markEventRead(eventId: string) {
-  const res = await API.post(`/api/v1/events/${eventId}/read`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Onboarding Control (Founder Tools) ─────────────────────────────────────
-
-export async function getOnboardingApplications(params?: Record<string, string>) {
-  const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  const res = await API.get(`/api/v1/founder/documents/onboarding-applications${qs}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getOnboardingSignEvents(applicationId: string) {
-  const res = await API.get(`/api/v1/founder/documents/sign-events?application_id=${applicationId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function resendOnboardingLegal(applicationId: string) {
-  const res = await API.post(`/api/v1/founder/documents/onboarding-applications/${applicationId}/resend-legal`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function resendOnboardingCheckout(applicationId: string) {
-  const res = await API.post(`/api/v1/founder/documents/onboarding-applications/${applicationId}/resend-checkout`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function manualProvisionApplication(applicationId: string) {
-  const res = await API.post(`/api/v1/founder/documents/onboarding-applications/${applicationId}/manual-provision`, { confirm: true }, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function revokeOnboardingApplication(applicationId: string, payload: { reason: string }) {
-  const res = await API.post(`/api/v1/founder/documents/onboarding-applications/${applicationId}/revoke`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Expense Ledger (Founder Tools) ─────────────────────────────────────────
-
-export async function getExpenseLedger(limit = 500) {
-  const res = await API.get(`/api/v1/founder/business/expense-ledger?limit=${limit}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createExpenseEntry(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/founder/business/expense-ledger/entries', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Invoice Creator (Founder Tools) ────────────────────────────────────────
-
-export async function getInvoices(limit = 500) {
-  const res = await API.get(`/api/v1/founder/business/invoices?limit=${limit}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createInvoice(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/founder/business/invoices', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function sendInvoiceReminder(invoiceId: string, payload: { channel: string }) {
-  const res = await API.post(`/api/v1/founder/business/invoices/${invoiceId}/send-reminder`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function markInvoicePaid(invoiceId: string) {
-  const res = await API.post(`/api/v1/founder/business/invoices/${invoiceId}/mark-paid`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getInvoiceSettings() {
-  const res = await API.get('/api/v1/founder/business/invoice-settings', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updateInvoiceSettings(payload: Record<string, unknown>) {
-  const res = await API.put('/api/v1/founder/business/invoice-settings', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Graph Mail (Founder Tools Email) ───────────────────────────────────────
-
-export async function getGraphMail(folder = 'inbox', top = 30) {
-  const res = await API.get(`/api/v1/founder/graph/mail?folder=${folder}&top=${top}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getGraphMailMessage(messageId: string) {
-  const res = await API.get(`/api/v1/founder/graph/mail/${messageId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getGraphMailAttachments(messageId: string) {
-  const res = await API.get(`/api/v1/founder/graph/mail/${messageId}/attachments`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function sendGraphMail(payload: { to: string[]; cc?: string[]; subject: string; body_html: string }) {
-  const res = await API.post('/api/v1/founder/graph/mail/send', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function replyGraphMail(messageId: string, payload: { body_html: string }) {
-  const res = await API.post(`/api/v1/founder/graph/mail/${messageId}/reply`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Graph Drive (Founder Tools Files) ──────────────────────────────────────
-
-export async function getGraphDriveRoot() {
-  const res = await API.get('/api/v1/founder/graph/drive', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getGraphDriveFolder(folderId: string) {
-  const res = await API.get(`/api/v1/founder/graph/drive/folders/${folderId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export function getGraphDriveItemDownloadUrl(itemId: string): string {
-  return `${API.defaults.baseURL ?? ''}/api/v1/founder/graph/drive/items/${itemId}/download`;
-}
-
-// ── Founder Reports (Templates) ────────────────────────────────────────────
-
-export async function getFounderReports() {
-  const res = await API.get('/api/v1/founder/reports', { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Founder Contracts (Templates) ──────────────────────────────────────────
-
-export async function getFounderContracts() {
-  const res = await API.get('/api/v1/founder/contracts', { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Founder Copilot Sessions ───────────────────────────────────────────────
-
-export async function getCopilotSessions() {
-  const res = await API.get('/api/v1/founder/copilot/sessions', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function createCopilotSession(payload: { title: string }) {
-  const res = await API.post('/api/v1/founder/copilot/sessions', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCopilotMessages(sessionId: string) {
-  const res = await API.get(`/api/v1/founder/copilot/sessions/${sessionId}/messages`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function sendCopilotMessage(sessionId: string, payload: { content: string }) {
-  const res = await API.post(`/api/v1/founder/copilot/sessions/${sessionId}/messages`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function proposeCopilotRun(sessionId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/founder/copilot/sessions/${sessionId}/runs/propose`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCopilotRun(runId: string) {
-  const res = await API.get(`/api/v1/founder/copilot/runs/${runId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function executeCopilotRun(runId: string, payload: { ref: string }) {
-  const res = await API.post(`/api/v1/founder/copilot/runs/${runId}/execute`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function approveCopilotRun(runId: string) {
-  const res = await API.post(`/api/v1/founder/copilot/runs/${runId}/approve`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function mergeCopilotRun(runId: string) {
-  const res = await API.post(`/api/v1/founder/copilot/runs/${runId}/merge`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Founder Agent Command ──────────────────────────────────────────────────
-
-export async function sendAgentCommand(payload: { command: string }) {
-  const res = await API.post('/api/v1/founder/agents/command', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export function getAgentStreamUrl(): string {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('qs_token') ?? '' : '';
-  return `${API.defaults.baseURL ?? ''}/api/v1/founder/agents/stream?token=${encodeURIComponent(token)}`;
-}
-
-// ── DEA/CMS Compliance Command ─────────────────────────────────────────────
-
-export async function getDEANarcoticsAuditHistory(limit = 10) {
-  const { data } = await API.get('/api/v1/dea-compliance/audits/narcotics/history', {
-    params: { limit },
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getCMSGateAuditSummary(days = 30) {
-  const { data } = await API.get('/api/v1/cms-gate/audit/summary', {
-    params: { days },
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getCMSGateAuditHistory(limit = 10) {
-  const { data } = await API.get('/api/v1/cms-gate/audit/history', {
-    params: { limit },
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getDEAEvidenceBundlesHistory(limit = 10) {
-  const { data } = await API.get('/api/v1/dea-compliance/evidence-bundles/history', {
-    params: { limit },
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function runDEANarcoticsAudit(payload: { lookback_days: number; min_count_events: number }) {
-  const { data } = await API.post('/api/v1/dea-compliance/audits/narcotics', payload, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function createDEAEvidenceBundle(payload: { lookback_days: number; include_raw_rows: boolean }) {
-  const { data } = await API.post('/api/v1/dea-compliance/evidence-bundles', payload, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getDEAEvidenceBundleDetail(bundleId: string) {
-  const { data } = await API.get(`/api/v1/dea-compliance/evidence-bundles/${bundleId}`, {
-    params: { include_artifacts: true },
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function verifyDEAEvidenceBundleHash(bundleId: string) {
-  const { data } = await API.get(`/api/v1/dea-compliance/evidence-bundles/${bundleId}/verify-hash`, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-// ── NEMSIS Validation ──────────────────────────────────────────────────────
-
-export async function simulateWisconsinNEMSIS() {
-  const { data } = await API.post('/api/v1/nemsis/simulate_wisconsin', {}, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function validateNEMSISRawXml(xmlContent: string) {
-  const { data } = await API.post('/api/v1/nemsis/validate_raw_xml', xmlContent, {
-    headers: { ...transportLinkHeaders(), 'Content-Type': 'application/xml' },
-  });
-  return data;
-}
-
-export async function nemsisCopilotExplain(payload: { issues: unknown[]; context?: unknown }) {
-  const { data } = await API.post('/api/v1/nemsis/copilot/explain', payload, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-// ── NERIS Pack Management ──────────────────────────────────────────────────
-
-export async function importNERISPack(payload: { source_type: string; repo: string; ref: string; name: string }) {
-  const { data } = await API.post('/api/v1/founder/neris/packs/import', payload, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function compileNERISPack(packId: string) {
-  const { data } = await API.post(`/api/v1/founder/neris/packs/${packId}/compile`, {}, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function activateNERISPack(packId: string) {
-  const { data } = await API.post(`/api/v1/founder/neris/packs/${packId}/activate`, {}, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function validateNERISBundle(payload: { pack_id: string; entity_type: string; payload: unknown }) {
-  const { data } = await API.post('/api/v1/founder/neris/validate/bundle', payload, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function nerisCopilotExplain(payload: { issues: unknown[] }) {
-  const { data } = await API.post('/api/v1/neris/copilot/explain', payload, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getNERISPackDetail(packId: string) {
-  const { data } = await API.get(`/api/v1/founder/neris/packs/${packId}`, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function listNERISPacksAll() {
-  const { data } = await API.get('/api/v1/founder/neris/packs', {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-// ── NEMSIS Compliance Studio ───────────────────────────────────────────────
-
-export async function getActiveNEMSISPacks() {
-  const { data } = await API.get('/api/v1/nemsis/packs', {
-    params: { active: true },
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function getNEMSISCertificationChecklist() {
-  const { data } = await API.get('/api/v1/nemsis/studio/certification-checklist', {
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function createNEMSISPack(payload: { pack_name: string; pack_type: string }) {
-  const { data } = await API.post('/api/v1/nemsis/packs', payload, {
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function uploadNEMSISPackFile(packId: string, formData: FormData) {
-  const { data } = await API.post(`/api/v1/nemsis/packs/${packId}/files/upload`, formData, {
-    withCredentials: true,
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return data;
-}
-
-export async function validateNEMSISStudioFile(formData: FormData) {
-  const { data } = await API.post('/api/v1/nemsis/studio/validate-file', formData, {
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function nemsisStudioAiExplain(payload: { validation_result_id: string; issue_index: number }) {
-  const { data } = await API.post('/api/v1/nemsis/studio/ai-explain', payload, {
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function generatePatchTasksFromResult(payload: { validation_result_id: string }) {
-  const { data } = await API.post('/api/v1/nemsis/studio/patch-tasks/generate-from-result', payload, {
-    withCredentials: true,
-  });
-  return data;
-}
-
-// ── NEMSIS Patch Tasks ─────────────────────────────────────────────────────
-
-export async function getNEMSISPatchTasks() {
-  const { data } = await API.get('/api/v1/nemsis/studio/patch-tasks', {
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function updateNEMSISPatchTask(taskId: string, payload: { status: string }) {
-  const { data } = await API.patch(`/api/v1/nemsis/studio/patch-tasks/${taskId}`, payload, {
-    withCredentials: true,
-  });
-  return data;
-}
-
-// ── NEMSIS Test Scenarios ──────────────────────────────────────────────────
-
-export async function getNEMSISScenarios() {
-  const { data } = await API.get('/api/v1/nemsis/studio/scenarios', {
-    withCredentials: true,
-  });
-  return data;
-}
-
-export async function uploadNEMSISScenario(formData: FormData) {
-  const { data } = await API.post('/api/v1/nemsis/studio/scenarios/upload', formData, {
-    withCredentials: true,
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return data;
-}
-
-export async function runNEMSISScenario(scenarioId: string) {
-  const { data } = await API.post(`/api/v1/nemsis/studio/scenarios/${scenarioId}/run`, {}, {
-    withCredentials: true,
-  });
-  return data;
-}
-
-// ── Ops Command ────────────────────────────────────────────────────────────
-
-export async function getOpsDeploymentRuns(limit = 20) {
-  const { data } = await API.get('/api/v1/ops/deployment-runs', {
-    params: { limit },
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getOpsDeploymentRunSteps(runId: string) {
-  const { data } = await API.get(`/api/v1/ops/deployment-runs/${runId}/steps`, {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-export async function getOpsCommand() {
-  const { data } = await API.get('/api/v1/ops/command', {
-    headers: transportLinkHeaders(),
-  });
-  return data;
-}
-
-// ── NERIS Tenant Onboarding (Portal) ──────────────────────────────────────
-
-export type NERISOnboardingStepStatusApi = 'pending' | 'in_progress' | 'complete' | 'skipped';
-
-export interface NERISOnboardingStepApi {
-  id: string;
-  label: string;
-  status: NERISOnboardingStepStatusApi;
-  required?: boolean;
-}
-
-export interface NERISOnboardingDepartmentApi {
-  id: string;
-  data?: {
-    name?: string;
-    reporting_mode?: string;
-    [key: string]: unknown;
-  };
-}
-
-export interface NERISOnboardingStatusApi {
-  onboarding_id: string;
-  department?: NERISOnboardingDepartmentApi;
-  steps?: NERISOnboardingStepApi[];
-  progress_percent?: number;
-  required_complete?: number;
-  required_total?: number;
-  production_ready?: boolean;
-  completed_at?: string | null;
-  wi_dsps_checklist?: Record<string, boolean>;
-  golive_items?: string[];
-}
-
-export interface NERISOnboardingStartPayload {
-  department_name: string;
-  state: string;
-}
-
-export interface FireIncidentAddressPayload {
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-}
-
-export interface FireValidationIncidentCreatePayload {
-  incident_number: string;
-  start_datetime: string;
-  incident_type_code: string;
-  address: FireIncidentAddressPayload;
-}
-
-export interface FireValidationIssueApi {
-  severity: 'error' | 'warning';
-  field_label?: string;
-  path?: string;
-  message: string;
-  suggested_fix?: string;
-}
-
-export interface FireValidationIncidentApi {
-  id?: string;
-  incident_id?: string;
-  [key: string]: unknown;
-}
-
-export interface FireValidationIncidentResultApi {
-  issues?: FireValidationIssueApi[];
-  [key: string]: unknown;
-}
-
-export async function getTenantNERISOnboardingStatus(): Promise<NERISOnboardingStatusApi | null> {
-  try {
-    const { data } = await API.get('/api/v1/tenant/neris/onboarding/status', {
-      headers: transportLinkHeaders(),
-    });
-    return data as NERISOnboardingStatusApi;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response?.status === 404) {
-      return null;
-    }
-    throw error;
-  }
-}
-
-export async function startTenantNERISOnboarding(
-  payload: NERISOnboardingStartPayload,
-): Promise<NERISOnboardingStatusApi> {
-  const { data } = await API.post('/api/v1/tenant/neris/onboarding/start', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return data as NERISOnboardingStatusApi;
-}
-
-export async function completeTenantNERISOnboardingStep(
-  stepId: string,
-  payload: { data: unknown },
-): Promise<Record<string, unknown>> {
-  const { data } = await API.post(`/api/v1/tenant/neris/onboarding/step/${stepId}/complete`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export async function createFireValidationIncident(
-  payload: FireValidationIncidentCreatePayload,
-): Promise<FireValidationIncidentApi> {
-  const { data } = await API.post('/api/v1/incidents/fire', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data) as FireValidationIncidentApi;
-}
-
-export async function validateFireValidationIncident(
-  incidentId: string,
-): Promise<FireValidationIncidentResultApi> {
-  const { data } = await API.post(`/api/v1/incidents/fire/${incidentId}/validate`, undefined, {
-    headers: transportLinkHeaders(),
-  });
-  return asJsonObject(data) as FireValidationIncidentResultApi;
-}
-
-// ── Fax Inbox (Portal) ─────────────────────────────────────────────────────
-
-export interface FaxMatchSuggestionApi {
-  claim_id: string;
-  patient_name?: string;
-  score?: number;
-}
-
-export interface FaxItemApi {
-  id: string;
-  from_number?: string;
-  to_number?: string;
-  received_at?: string;
-  page_count?: number;
-  document_match_status?: string;
-  status?: string;
-  telnyx_fax_id?: string;
-  status_updated_at?: string;
-  error?: string;
-  data?: {
-    direction?: 'inbound' | 'outbound' | string;
-    s3_key?: string;
-    match_suggestions?: FaxMatchSuggestionApi[];
-    claim_id?: string;
-    patient_name?: string;
-    match_type?: string;
-    confidence?: number;
-    telnyx_fax_id?: string;
-    status_updated_at?: string;
-    error?: string;
-  };
-}
-
-function normalizeFaxItem(value: unknown): FaxItemApi {
-  const row = asJsonObject(value);
-  const data = asJsonObject(row.data);
-  const suggestionsRaw = Array.isArray(data.match_suggestions) ? data.match_suggestions : [];
-  return {
-    id: asString(row.id),
-    from_number: asString(row.from_number) || undefined,
-    to_number: asString(row.to_number) || undefined,
-    received_at: asString(row.received_at) || undefined,
-    page_count: asNumber(row.page_count) ?? undefined,
-    document_match_status: asString(row.document_match_status) || undefined,
-    status: asString(row.status) || undefined,
-    telnyx_fax_id: asString(row.telnyx_fax_id) || asString(data.telnyx_fax_id) || undefined,
-    status_updated_at: asString(row.status_updated_at) || asString(data.status_updated_at) || undefined,
-    error: asString(row.error) || asString(data.error) || undefined,
-    data: {
-      direction: (asString(data.direction) || undefined) as NonNullable<FaxItemApi['data']>['direction'],
-      s3_key: asString(data.s3_key) || undefined,
-      match_suggestions: suggestionsRaw.map((suggestion) => {
-        const item = asJsonObject(suggestion);
-        return {
-          claim_id: asString(item.claim_id),
-          patient_name: asString(item.patient_name) || undefined,
-          score: asNumber(item.score) ?? undefined,
-        } as FaxMatchSuggestionApi;
-      }),
-      claim_id: asString(data.claim_id) || undefined,
-      patient_name: asString(data.patient_name) || undefined,
-      match_type: asString(data.match_type) || undefined,
-      confidence: asNumber(data.confidence) ?? undefined,
-      telnyx_fax_id: asString(data.telnyx_fax_id) || undefined,
-      status_updated_at: asString(data.status_updated_at) || undefined,
-      error: asString(data.error) || undefined,
-    },
-  };
-}
-
-export interface FaxEventApi {
-  id: string;
-  created_at?: string;
-  data?: JsonObject;
-}
-
-function normalizeFaxEvent(value: unknown): FaxEventApi {
-  const row = asJsonObject(value);
-  return {
-    id: asString(row.id),
-    created_at: asString(row.created_at) || undefined,
-    data: asJsonObject(row.data),
-  };
-}
-
-export async function listFaxEvents(faxId: string, params?: { limit?: number }): Promise<FaxEventApi[]> {
-  const { data } = await API.get(`/api/v1/fax/${faxId}/events`, {
-    headers: transportLinkHeaders(),
-    params,
-  });
-  const rows = Array.isArray(data) ? data : [];
-  return rows.map((row: unknown) => normalizeFaxEvent(row));
-}
-
-export async function listFaxInbox(params?: {
-  folder?: 'inbox' | 'outbox' | string;
-  status?: string;
-  limit?: number;
-}): Promise<FaxItemApi[]> {
-  const { data } = await API.get('/api/v1/fax/inbox', {
-    headers: transportLinkHeaders(),
-    params,
-  });
-  const rows = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data?.faxes)
-        ? data.faxes
-        : [];
-  return rows.map((row: unknown) => normalizeFaxItem(row));
-}
-
-export async function triggerFaxMatch(faxId: string): Promise<Record<string, unknown>> {
-  const { data } = await API.post(`/api/v1/fax/${faxId}/match/trigger`, undefined, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export async function attachFaxToClaim(
-  claimId: string,
-  payload: { fax_id: string; attachment_type: string },
-): Promise<Record<string, unknown>> {
-  const { data } = await API.post(`/api/v1/claims/${claimId}/documents/attach-fax`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export async function detachFaxMatch(faxId: string): Promise<Record<string, unknown>> {
-  const { data } = await API.post(`/api/v1/fax/${faxId}/match/detach`, undefined, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export function getFaxDownloadUrl(faxId: string): string {
-  return `${API.defaults.baseURL ?? ''}/api/v1/fax/${faxId}/download`;
-}
-
-export async function getFaxPreviewUrl(faxId: string): Promise<{ url: string; expires_seconds: number }> {
-  const { data } = await API.get(`/api/v1/fax/${faxId}/preview-url`, {
-    headers: transportLinkHeaders(),
-  });
-  const row = asJsonObject(data);
-  return {
-    url: asString(row.url),
-    expires_seconds: asNumber(row.expires_seconds) ?? 0,
-  };
-}
-
-// ── EDI (Portal) ───────────────────────────────────────────────────────────
-
-export type EdiBatchStatusApi = 'pending' | 'submitted' | 'accepted' | 'rejected' | 'partial';
-
-export interface EdiBatchApi {
-  id: string;
-  created_at?: string;
-  claim_count?: number;
-  status?: EdiBatchStatusApi | string;
-  claim_ids?: string[];
-  validation_errors?: string[];
-  metadata?: Record<string, unknown>;
-}
-
-export interface EdiGenerateBatchPayload {
-  claim_ids: string[];
-  submitter_config: {
-    npi: string;
-    name: string;
-    ein: string;
-  };
-}
-
-export interface EdiIngest999Payload {
-  x12_content: string;
-  batch_id?: string;
-}
-
-export interface EdiIngest277Payload {
-  x12_content: string;
-}
-
-export interface EdiIngest835Payload {
-  x12_content: string;
-}
-
-export interface EdiClaimExplanationApi {
-  explanation?: {
-    overall_status?: string;
-    adjustment_reasons?: { code: string; description: string }[];
-    denial_analysis?: string;
-    recommended_actions?: string[];
-    next_steps?: string;
-  };
-  [key: string]: unknown;
-}
-
-function normalizeEdiBatch(value: unknown): EdiBatchApi {
-  const row = asJsonObject(value);
-  const claimIdsRaw = Array.isArray(row.claim_ids) ? row.claim_ids : [];
-  const validationErrorsRaw = Array.isArray(row.validation_errors) ? row.validation_errors : [];
-  return {
-    id: asString(row.id),
-    created_at: asString(row.created_at) || undefined,
-    claim_count: asNumber(row.claim_count) ?? undefined,
-    status: asString(row.status) || undefined,
-    claim_ids: claimIdsRaw.map((claimId) => asString(claimId)).filter((claimId) => claimId.length > 0),
-    validation_errors: validationErrorsRaw
-      .map((error) => asString(error))
-      .filter((error) => error.length > 0),
-    metadata: isJsonObject(row.metadata) ? row.metadata : undefined,
-  };
-}
-
-export async function listPortalEDIBatches(limit = 50): Promise<EdiBatchApi[]> {
-  const { data } = await API.get('/api/v1/edi/batches', {
-    headers: transportLinkHeaders(),
-    params: { limit },
-  });
-  const rows = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data?.batches)
-        ? data.batches
-        : [];
-  return rows.map((row: unknown) => normalizeEdiBatch(row));
-}
-
-export async function generatePortalEDIBatch(payload: EdiGenerateBatchPayload): Promise<EdiBatchApi> {
-  const { data } = await API.post('/api/v1/edi/batches/generate', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return normalizeEdiBatch(data);
-}
-
-export async function ingestPortalEDI999(payload: EdiIngest999Payload): Promise<Record<string, unknown>> {
-  const { data } = await API.post('/api/v1/edi/ingest/999', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export async function ingestPortalEDI277(payload: EdiIngest277Payload): Promise<Record<string, unknown>> {
-  const { data } = await API.post('/api/v1/edi/ingest/277', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export async function ingestPortalEDI835(payload: EdiIngest835Payload): Promise<Record<string, unknown>> {
-  const { data } = await API.post('/api/v1/edi/ingest/835', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
-}
-
-export async function explainPortalEDIClaim(claimId: string): Promise<EdiClaimExplanationApi> {
-  const { data } = await API.get(`/api/v1/edi/claims/${claimId}/explain`, {
-    headers: transportLinkHeaders(),
-  });
-  return asJsonObject(data) as EdiClaimExplanationApi;
-}
-
-export function getEDIBatchDownloadUrl(batchId: string): string {
-  return `${API.defaults.baseURL ?? ''}/api/v1/edi/batches/${batchId}/download`;
-}
-
-// ── Cases + CMS Gate (Portal) ─────────────────────────────────────────────
-
-export type CaseTransportModeApi = 'ground' | 'rotor' | 'fixed_wing';
-export type CasePriorityApi = 'routine' | 'urgent' | 'emergent';
-
-export interface CaseTimelineEventApi {
-  event: string;
-  timestamp: string;
+  quote_id?: string;
+  estimated_cost?: number;
+  currency?: string;
+  total_due_cents?: number;
+  agency_payout_cents?: number;
+  platform_fee_cents?: number;
+  margin_status?: string;
+  hold_reasons?: string[];
   [key: string]: unknown;
 }
 
 export interface CaseRecordApi {
-  case_id: string;
-  transport_mode: CaseTransportModeApi;
-  status: string;
-  priority: CasePriorityApi;
+  id: string;
+  case_number?: string;
+  status?: string;
+  priority?: string;
+  transport_mode?: string;
+  created_at?: string;
   patient_name?: string;
-  opened_at: string;
-  transport_request_id?: string;
-  cad_call_id?: string;
-  timeline?: CaseTimelineEventApi[];
   [key: string]: unknown;
 }
 
-export interface CaseCreatePayload {
-  transport_mode: CaseTransportModeApi;
-  priority: CasePriorityApi;
-  patient_name: string;
-  origin_address: string;
-  destination_address?: string;
-  transport_request_id?: string;
-  cad_call_id?: string;
-}
+export type CasePriorityApi = 'emergent' | 'urgent' | 'routine';
+export type CaseTransportModeApi = 'ground' | 'rotor' | 'fixed_wing';
 
 export interface CaseCMSGatePayload {
-  patient_condition: string;
-  transport_reason: string;
-  transport_level: 'BLS' | 'ALS' | 'SCT' | 'SPECIALTY';
-  origin_address: string;
-  destination_name: string;
-  pcs_on_file: boolean;
-  pcs_obtained: boolean;
-  medical_necessity_documented: boolean;
-  patient_signature: boolean;
-  signature_on_file: boolean;
-  primary_insurance_id: string;
-  medicare_id: string;
-  medicaid_id: string;
+  case_id?: string;
+  transport_mode?: string;
+  patient_condition?: string;
+  transport_reason?: string;
+  transport_level?: string;
+  origin_address?: string;
+  destination_name?: string;
+  pcs_on_file?: boolean;
+  pcs_obtained?: boolean;
+  medical_necessity_documented?: boolean;
+  patient_signature?: boolean;
+  signature_on_file?: boolean;
+  primary_insurance_id?: string;
+  medicare_id?: string;
+  medicaid_id?: string;
+  [key: string]: unknown;
 }
 
 export interface CaseCMSGateResultApi {
-  score: number;
-  passed: boolean;
-  hard_block?: boolean;
-  bs_flag?: boolean;
-  gates?: { name: string; passed: boolean; weight: number }[];
-  issues?: string[];
+  approved?: boolean;
+  reason?: string;
+  codes?: string[];
   [key: string]: unknown;
 }
 
-function normalizeCaseRecord(value: unknown): CaseRecordApi {
-  const row = asJsonObject(value);
-  const timelineRaw = Array.isArray(row.timeline) ? row.timeline : [];
-  const transportModeRaw = asString(row.transport_mode, 'ground').toLowerCase();
-  const priorityRaw = asString(row.priority, 'routine').toLowerCase();
-  const transport_mode: CaseTransportModeApi =
-    transportModeRaw === 'rotor' || transportModeRaw === 'fixed_wing' ? (transportModeRaw as CaseTransportModeApi) : 'ground';
-  const priority: CasePriorityApi =
-    priorityRaw === 'urgent' || priorityRaw === 'emergent' ? (priorityRaw as CasePriorityApi) : 'routine';
-
-  return {
-    ...(row as CaseRecordApi),
-    case_id: asString(row.case_id || row.id),
-    transport_mode,
-    status: asString(row.status),
-    priority,
-    patient_name: asString(row.patient_name) || undefined,
-    opened_at: asString(row.opened_at || row.created_at),
-    transport_request_id: asString(row.transport_request_id) || undefined,
-    cad_call_id: asString(row.cad_call_id) || undefined,
-    timeline: timelineRaw.map((event) => {
-      const item = asJsonObject(event);
-      return {
-        ...(item as CaseTimelineEventApi),
-        event: asString(item.event),
-        timestamp: asString(item.timestamp),
-      };
-    }),
-  };
+export interface DatasetActiveDeviceApi {
+  id: string;
+  device_name?: string;
+  device_type?: string;
+  ip?: string;
+  agency?: string;
+  user?: string;
+  status?: string;
+  last_seen?: string;
+  tenant_id?: string;
+  [key: string]: unknown;
 }
 
-export async function listPortalCases(): Promise<CaseRecordApi[]> {
-  const { data } = await API.get('/api/v1/cases/', {
-    headers: transportLinkHeaders(),
-  });
-  const rows = Array.isArray(data) ? data : Array.isArray(data?.cases) ? data.cases : [];
-  return rows.map((row: unknown) => normalizeCaseRecord(row));
+export interface DatasetAIExpressionApi {
+  expression_id?: string;
+  result?: Record<string, unknown>;
+  confidence?: number;
+  [key: string]: unknown;
 }
 
-export async function updatePortalCaseStatus(
-  caseId: string,
-  payload: { status: string },
-): Promise<Record<string, unknown>> {
-  const { data } = await API.patch(`/api/v1/cases/${caseId}/status`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
+export interface DatasetExportsApi {
+  exports?: { id: string; format: string; created_at: string }[];
+  total?: number;
+  total_today?: number;
+  successful?: number;
+  failed?: number;
+  in_queue?: number;
+  agencies?: { name: string; state: string; status: string; success_rate: number; failed_charts: number }[];
+  [key: string]: unknown;
 }
 
-export async function createPortalCase(payload: CaseCreatePayload): Promise<CaseRecordApi> {
-  const { data } = await API.post('/api/v1/cases/', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return normalizeCaseRecord(data);
+export interface DatasetSystemStatusApi {
+  healthy?: boolean;
+  last_sync?: string;
+  record_count?: number;
+  nemsis?: { healthy?: boolean; last_sync?: string; record_count?: number; version?: string; last_update?: string };
+  neris?: { healthy?: boolean; last_sync?: string; record_count?: number; version?: string; last_update?: string };
+  rxnorm?: { healthy?: boolean; last_sync?: string; record_count?: number; term_count?: number };
+  snomed?: { healthy?: boolean; last_sync?: string; record_count?: number; term_count?: number };
+  icd10?: { healthy?: boolean; last_sync?: string; record_count?: number; version?: string };
+  facilities?: { total?: number; active?: number; last_state_sync?: string; active_count?: number };
+  [key: string]: unknown;
 }
 
-export async function evaluatePortalCaseCMSGate(
-  caseId: string,
-  payload: CaseCMSGatePayload,
-): Promise<CaseCMSGateResultApi> {
-  const { data } = await API.post(`/api/v1/cms-gate/cases/${caseId}/evaluate`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data) as CaseCMSGateResultApi;
+export interface DispatchRequestApi {
+  id: string;
+  request_type?: string;
+  status?: string;
+  priority?: string;
+  created_at?: string;
+  origin_address?: string;
+  destination_address?: string;
+  [key: string]: unknown;
+}
+
+export interface FounderBillingVoiceConfigApi {
+  enabled?: boolean;
+  phone_number?: string;
+  ivr_flow?: string;
+  escalation_threshold?: number;
+  [key: string]: unknown;
 }

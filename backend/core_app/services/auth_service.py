@@ -152,14 +152,15 @@ class AuthService:
 
     # ─── Password reset ───────────────────────────────────────────────────────
 
-    def request_password_reset(self, payload: PasswordResetRequest, ip_address: str | None = None) -> None:
+    def request_password_reset(self, payload: PasswordResetRequest, ip_address: str | None = None) -> tuple[str, str] | None:
         """
-        Always returns without error even if email not found — prevents enumeration.
-        Caller is responsible for sending the email with the raw token.
+        Returns (raw_token, user_email) for the caller to deliver via email, or None if
+        the email address doesn't match any account (no enumeration).
+        Always completes without raising — caller controls email dispatch.
         """
         user = self.user_repo.get_by_email(payload.email)
         if user is None:
-            return  # intentional — no enumeration
+            return None  # intentional — no enumeration
 
         raw_token = secrets.token_urlsafe(48)
         reset = PasswordResetToken(
@@ -171,7 +172,7 @@ class AuthService:
         self.db.add(reset)
         self.db.flush()
         self._record_auth_event(user.tenant_id, user.id, AuthenticationEventType.PASSWORD_RESET_REQUEST, ip_address=ip_address)
-        # NOTE: caller must dispatch email with raw_token out-of-band
+        return raw_token, str(user.email)
 
     def confirm_password_reset(self, payload: PasswordResetConfirm, ip_address: str | None = None) -> TokenResponse:
         token_h = _token_hash(payload.token)

@@ -103,12 +103,28 @@ export default function FounderFilesPage() {
     if (isOfficeFile(item) && item.webUrl) {
       setPreviewUrl(`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(item.webUrl)}`);
     } else if (isPdf(item)) {
-      setPreviewUrl(getGraphDriveItemDownloadUrl(item.id));
+      const downloadRes = await getGraphDriveItemDownloadUrl(item.id);
+      const downloadUrl =
+        typeof downloadRes === 'string'
+          ? downloadRes
+          : typeof (downloadRes as { url?: unknown })?.url === 'string'
+            ? ((downloadRes as { url?: string }).url as string)
+            : '';
+      setPreviewUrl(downloadUrl);
     }
   };
 
-  const downloadItem = (item: DriveItem) => {
-    window.open(getGraphDriveItemDownloadUrl(item.id), '_blank');
+  const downloadItem = async (item: DriveItem) => {
+    const downloadRes = await getGraphDriveItemDownloadUrl(item.id);
+    const downloadUrl =
+      typeof downloadRes === 'string'
+        ? downloadRes
+        : typeof (downloadRes as { url?: unknown })?.url === 'string'
+          ? ((downloadRes as { url?: string }).url as string)
+          : '';
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank');
+    }
   };
 
   return (

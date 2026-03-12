@@ -54,7 +54,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
   useEffect(() => {
     listPatientPortalStatementsForInvoiceLookup(200)
       .then((stmts) => {
-        const found = stmts.find((s) => s.id === params.invoiceId);
+        const found = stmts.find((s: { id: string }) => s.id === params.invoiceId);
         if (!found) throw new Error('Invoice not found.');
         setInvoice(found);
       })

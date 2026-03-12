@@ -38,12 +38,27 @@ export default function AgentsIntelligenceMatrix() {
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    const es = new EventSource(getAgentStreamUrl());
+    let es: EventSource | null = null;
+    let disposed = false;
 
-    es.onopen = () => setConnectionStatus("LINK ESTABLISHED");
-    es.onerror = () => setConnectionStatus("SIGNAL LOST - RETRYING...");
+    const openStream = async () => {
+      try {
+        const streamRes = await getAgentStreamUrl();
+        const streamUrl =
+          typeof streamRes === 'string'
+            ? streamRes
+            : typeof (streamRes as { url?: unknown })?.url === 'string'
+              ? ((streamRes as { url?: string }).url as string)
+              : '/api/v1/getAgentStreamUrl';
 
-    es.onmessage = (event) => {
+        if (disposed) {
+          return;
+        }
+
+        es = new EventSource(streamUrl);
+        es.onopen = () => setConnectionStatus("LINK ESTABLISHED");
+        es.onerror = () => setConnectionStatus("SIGNAL LOST - RETRYING...");
+        es.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
         const timeStr = new Date().toISOString().substring(11, 23);
@@ -93,12 +108,23 @@ export default function AgentsIntelligenceMatrix() {
             })
           );
         }
-      } catch (err) {
-        console.error("Parse error in stream:", err);
+          } catch (err) {
+            console.error("Parse error in stream:", err);
+          }
+        };
+      } catch {
+        if (!disposed) {
+          setConnectionStatus("SIGNAL LOST - RETRYING...");
+        }
       }
     };
 
-    return () => es.close();
+    void openStream();
+
+    return () => {
+      disposed = true;
+      es?.close();
+    };
   }, []);
 
   const handleCommandSubmit = async (e: React.FormEvent) => {

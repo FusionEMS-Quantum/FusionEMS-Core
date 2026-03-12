@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+import logging
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency, get_current_user
 from core_app.core.config import get_settings
 from core_app.core.security import create_access_token
+from core_app.integrations.graph_service import GraphNotConfigured, GraphClient
 from core_app.repositories.user_repository import UserRepository
 from core_app.schemas.auth import (
     CurrentUser,
@@ -26,7 +28,41 @@ from core_app.services.auth_service import (
     TokenInvalidError,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _get_graph_service() -> GraphClient | None:
+    """Build GraphClient from settings; returns None and logs a warning if not configured."""
+    s = get_settings()
+    try:
+        return GraphClient(
+            tenant_id=s.graph_tenant_id,
+            client_id=s.graph_client_id,
+            client_secret=s.graph_client_secret,
+            founder_email=s.graph_founder_email,
+        )
+    except GraphNotConfigured as exc:
+        logger.warning(
+            "Graph email not configured — transactional email will not be sent",
+            extra={"error": str(exc)},
+        )
+        return None
+
+
+def _dispatch_email_best_effort(to: str, subject: str, body_html: str) -> None:
+    """Send an email via Microsoft Graph. Logs and silences all failures."""
+    graph = _get_graph_service()
+    if graph is None:
+        return
+    try:
+        graph.send_mail(to=[to], subject=subject, body_html=body_html)
+        logger.info("Transactional email sent", extra={"to": to, "subject": subject})
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Failed to dispatch transactional email — manual intervention required",
+            extra={"to": to, "subject": subject, "error": str(exc)},
+        )
 
 
 def _get_client_ip(request: Request) -> str | None:
@@ -108,8 +144,17 @@ def invite_user(
             payload=payload,
         )
         db.commit()
-        # NOTE: In production, _raw_token must be dispatched via a secure email
-        # channel here (e.g., SES, SendGrid). Out-of-scope for current integration.
+        settings = get_settings()
+        accept_url = f"{settings.resolved_frontend_base_url}/auth/accept-invite?token={_raw_token}"
+        _dispatch_email_best_effort(
+            to=str(payload.email),
+            subject="You've been invited to FusionEMS Quantum",
+            body_html=(
+                f"<p>You have been invited to join FusionEMS Quantum as <strong>{payload.role}</strong>.</p>"
+                f"<p><a href='{accept_url}'>Accept Invitation</a></p>"
+                f"<p>This link expires in 72 hours.</p>"
+            ),
+        )
         return invite_response
     except EmailAlreadyRegisteredError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
@@ -146,8 +191,21 @@ def request_password_reset(
     email exists — prevents account enumeration.
     """
     service = AuthService(UserRepository(db), db)
-    service.request_password_reset(payload, ip_address=_get_client_ip(request))
+    result = service.request_password_reset(payload, ip_address=_get_client_ip(request))
     db.commit()
+    if result is not None:
+        raw_token, user_email = result
+        settings = get_settings()
+        reset_url = f"{settings.resolved_frontend_base_url}/auth/reset-password?token={raw_token}"
+        _dispatch_email_best_effort(
+            to=user_email,
+            subject="FusionEMS Quantum — Password Reset",
+            body_html=(
+                f"<p>A password reset was requested for your FusionEMS Quantum account.</p>"
+                f"<p><a href='{reset_url}'>Reset Password</a></p>"
+                f"<p>This link expires in 2 hours. If you did not request this, ignore this email.</p>"
+            ),
+        )
 
 
 @router.post("/password-reset/confirm", response_model=TokenResponse)

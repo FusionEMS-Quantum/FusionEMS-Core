@@ -391,6 +391,7 @@ module "sqs" {
     neris-pack-compile = {}
     neris-export       = {}
     nemsis-export      = {}
+    onboarding-events  = {}
   }
 }
 
@@ -456,6 +457,7 @@ module "backend_service" {
     { name = "NERIS_PACK_COMPILE_QUEUE_URL", value = module.sqs.queue_urls["neris-pack-compile"] },
     { name = "NERIS_EXPORT_QUEUE_URL", value = module.sqs.queue_urls["neris-export"] },
     { name = "NEMSIS_EXPORT_QUEUE_URL", value = module.sqs.queue_urls["nemsis-export"] },
+    { name = "ONBOARDING_EVENTS_QUEUE_URL", value = module.sqs.queue_urls["onboarding-events"] },
 
     # Non-secret config
     { name = "GRAPH_FOUNDER_EMAIL", value = "joshua.j.wendorf@fusionemsquantum.com" },

@@ -58,7 +58,7 @@ export default function ToolsDocumentsPage() {
     setError(null);
     try {
       const res = await getDocument('list');
-      const docs = Array.isArray(res?.documents) ? res.documents : Array.isArray(res) ? res : [];
+      const docs = Array.isArray((res as { documents?: OrgDocument[] })?.documents) ? (res as { documents?: OrgDocument[] }).documents! : Array.isArray(res) ? (res as OrgDocument[]) : [];
       setDocuments(docs);
     } catch {
       setDocuments([]);
@@ -146,9 +146,8 @@ export default function ToolsDocumentsPage() {
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
-            className={`bg-[var(--color-bg-panel)] border border-dashed chamfer-12 p-8 text-center cursor-pointer transition-all duration-fast ${
-              dragOver ? 'border-[var(--q-orange)] bg-[var(--color-brand-orange-ghost)]' : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)]'
-            }`}
+            className={`bg-[var(--color-bg-panel)] border border-dashed chamfer-12 p-8 text-center cursor-pointer transition-all duration-fast ${dragOver ? 'border-[var(--q-orange)] bg-[var(--color-brand-orange-ghost)]' : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)]'
+              }`}
           >
             <Upload className={`w-8 h-8 mx-auto mb-2 transition-colors ${dragOver ? 'text-[var(--q-orange)]' : 'text-[var(--color-text-muted)]'}`} />
             <span className="text-body text-[var(--color-text-muted)] block">

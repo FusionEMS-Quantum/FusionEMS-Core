@@ -102,10 +102,10 @@ function FaxCommandPane() {
     setLoading(true);
     setError(null);
     try {
-      const data = await listFaxInbox({ folder, status: 'all', limit: 50 });
+      const data = await listFaxInbox({ folder, status: 'all', limit: 50 }) as FaxItemApi[];
       setItems(data);
       setActive((prev) => {
-        if (prev && data.some((i) => i.id === prev.id)) return prev;
+        if (prev && data.some((i: FaxItemApi) => i.id === prev.id)) return prev;
         return data.length ? data[0] : null;
       });
     } catch {
@@ -129,7 +129,13 @@ function FaxCommandPane() {
         return;
       }
       try {
-        const { url } = await getFaxPreviewUrl(active.id);
+        const previewRes = await getFaxPreviewUrl(active.id);
+        const url =
+          typeof previewRes === 'string'
+            ? previewRes
+            : typeof (previewRes as { url?: unknown })?.url === 'string'
+              ? ((previewRes as { url?: string }).url as string)
+              : '';
         if (!cancelled) setPreviewUrl(url);
       } catch {
         if (!cancelled) setPreviewUrl('');
@@ -540,7 +546,7 @@ export default function SupportInboxPage() {
                         {lastPreview(thread)}
                       </p>
                       <span className="text-micro text-[var(--color-text-muted)] whitespace-nowrap flex-shrink-0">
-                        {relativeTime(thread.updated_at)}
+                        {relativeTime(thread.updated_at ?? new Date().toISOString())}
                       </span>
                     </div>
                   </button>
@@ -568,7 +574,7 @@ export default function SupportInboxPage() {
                     <span className="text-sm font-bold text-[var(--color-text-primary)] truncate">
                       {agencyName(activeThread)}
                     </span>
-                    <StatusBadge status={activeThread.status} />
+                    <StatusBadge status={(activeThread.status ?? 'open') as ThreadStatus} />
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
@@ -663,7 +669,7 @@ export default function SupportInboxPage() {
                             {msg.sender_role}
                           </span>
                           <span className="text-micro text-text-disabled">
-                            {relativeTime(msg.created_at)}
+                            {relativeTime(msg.created_at ?? new Date().toISOString())}
                           </span>
                         </div>
                       </div>

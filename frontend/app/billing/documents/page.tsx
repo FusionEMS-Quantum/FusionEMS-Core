@@ -27,8 +27,8 @@ export default function BillingDocumentsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await getDocument('list');
-      const docs = Array.isArray(res?.documents) ? res.documents : Array.isArray(res) ? res : [];
+      const res = await getDocument('list') as { documents?: DocRecord[] } | DocRecord[];
+      const docs = Array.isArray((res as { documents?: DocRecord[] })?.documents) ? (res as { documents?: DocRecord[] }).documents! : Array.isArray(res) ? (res as DocRecord[]) : [];
       setDocuments(docs);
     } catch {
       setDocuments([]);

@@ -207,7 +207,7 @@ export default function QuantumAccountingPage() {
   const loadVault = useCallback(async () => {
     setLoadingVault(true);
     try {
-      const data = await getQuantumVaultDocuments();
+      const data = await getQuantumVaultDocuments() as { documents?: VaultDoc[] };
       setVaultDocs(data.documents ?? []);
     } finally {
       setLoadingVault(false);

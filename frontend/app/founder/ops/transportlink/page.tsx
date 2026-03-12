@@ -82,7 +82,7 @@ export default function TransportLinkPage() {
 
   const load = useCallback(async () => {
     try {
-      const all = await listDispatchRequestsPortal(100);
+      const all = await listDispatchRequestsPortal(100) as DispatchRequestApi[];
       setRequests(all.map(toTransportRequest).filter((r) => r.data?.origin_facility));
     } finally { setLoading(false); }
   }, []);
@@ -90,7 +90,7 @@ export default function TransportLinkPage() {
   // Also get from transportlink endpoint
   const loadTransportlink = useCallback(async () => {
     try {
-      const all = await listTransportLinkFacilitySchedule('00000000-0000-0000-0000-000000000000');
+      const all = await listTransportLinkFacilitySchedule('00000000-0000-0000-0000-000000000000') as DispatchRequestApi[];
       setRequests(prev => {
         const ids = new Set(prev.map(p => p.id));
         const mapped = all.map(toTransportRequest);
