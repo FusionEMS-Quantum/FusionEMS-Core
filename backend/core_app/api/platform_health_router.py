@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends
 from redis.exceptions import RedisError
 from sqlalchemy.exc import SQLAlchemyError
 
+from core_app.ai.service import AiService
 from core_app.api.dependencies import get_current_user
 from core_app.core.config import get_settings
 from core_app.db.session import async_engine
@@ -98,10 +99,12 @@ async def get_platform_health(
 
     # Integration status — report configured vs. unconfigured
     integrations = []
+    ai_provider = (settings.ai_provider or "disabled").strip().lower()
+    ai_configured = AiService.is_configured()
     for name, configured in [
         ("Stripe", bool(settings.stripe_secret_key)),
         ("Telnyx", bool(settings.telnyx_api_key)),
-        ("OpenAI", bool(settings.openai_api_key)),
+        (f"AI ({ai_provider})", ai_configured),
     ]:
         integrations.append({
             "name": name,

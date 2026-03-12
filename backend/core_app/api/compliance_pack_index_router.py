@@ -13,10 +13,15 @@ import boto3
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from core_app.api.dependencies import require_founder_only_audited
 from core_app.db.session import get_db_session as get_db
 from core_app.repositories.domination_repository import DominationRepository
 
-router = APIRouter(prefix="/api/v1/founder/compliance", tags=["founder-compliance"])
+router = APIRouter(
+    prefix="/api/v1/founder/compliance",
+    tags=["founder-compliance"],
+    dependencies=[Depends(require_founder_only_audited())],
+)
 
 
 @lru_cache(maxsize=1)
@@ -44,8 +49,7 @@ _PACK_S3_KEYS: dict[str, str] = {
     "HOSPITAL_EMS_PACK_V1": "compliance/packs/hospital_ems_pack_v1.json",
 }
 
-_index_cache: dict = {}
-_index_cache_ts: float = 0
+_index_cache_state: dict[str, Any] = {"cache": {}, "ts": 0.0}
 _INDEX_TTL = 600
 
 
@@ -94,10 +98,11 @@ def _ssm_key(pack_id: str) -> str:
 
 
 def _load_pack_index() -> dict:
-    global _index_cache, _index_cache_ts
     now = time.time()
-    if _index_cache and (now - _index_cache_ts) < _INDEX_TTL:
-        return _index_cache
+    cached = _index_cache_state.get("cache")
+    cached_ts = float(_index_cache_state.get("ts") or 0.0)
+    if isinstance(cached, dict) and cached and (now - cached_ts) < _INDEX_TTL:
+        return cached
     try:
         ssm_val = _ssm_client().get_parameter(Name=_ssm_key("index"))["Parameter"][
             "Value"
@@ -107,11 +112,14 @@ def _load_pack_index() -> dict:
         s3_key = _PACK_S3_KEYS["pack_index_v1"]
     try:
         obj = _s3_client().get_object(Bucket=BUCKET, Key=s3_key)
-        _index_cache = json.loads(obj["Body"].read())
-        _index_cache_ts = now
+        loaded = json.loads(obj["Body"].read())
+        _index_cache_state["cache"] = loaded
+        _index_cache_state["ts"] = now
     except Exception:
-        _index_cache = {"packs": [], "recommended_sets": []}
-    return _index_cache
+        loaded = {"packs": [], "recommended_sets": []}
+        _index_cache_state["cache"] = loaded
+        _index_cache_state["ts"] = now
+    return loaded
 
 
 def _load_pack_json(pack_id: str) -> dict:
@@ -124,7 +132,7 @@ def _load_pack_json(pack_id: str) -> dict:
         obj = _s3_client().get_object(Bucket=BUCKET, Key=s3_key)
         return json.loads(obj["Body"].read())
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Cannot load pack from S3: {e}")
+        raise HTTPException(status_code=503, detail=f"Cannot load pack from S3: {e}") from e
 
 
 def _ingest_pack(pack_id: str, tenant_id: uuid.UUID, db: Session) -> dict:

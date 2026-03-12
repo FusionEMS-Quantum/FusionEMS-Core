@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "next dev",
     "clean:next": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\"",
-    "build": "npm run clean:next && next build",
+    "audit:routes": "node ./scripts/audit-routes.mjs",
+    "build": "npm run audit:routes && npm run clean:next && next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "typecheck": "tsc --noEmit",

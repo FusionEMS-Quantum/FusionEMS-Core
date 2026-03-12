@@ -74,7 +74,7 @@ function cardTone(reason: string): { border: string; bg: string; text: string } 
     return { border: 'rgba(229,57,53,0.45)', bg: 'rgba(229,57,53,0.10)', text: 'var(--color-brand-red)' };
   }
   if (r.includes('dispute') || r.includes('policy') || r.includes('lookup')) {
-    return { border: 'rgba(255,152,0,0.45)', bg: 'rgba(255,152,0,0.10)', text: '#FF4D00' };
+    return { border: 'rgba(255,152,0,0.45)', bg: 'rgba(255,152,0,0.10)', text: 'var(--q-orange)' };
   }
   return { border: 'rgba(76,175,80,0.35)', bg: 'rgba(76,175,80,0.08)', text: 'var(--color-status-active)' };
 }
@@ -202,11 +202,11 @@ export default function FounderBillingVoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 px-4 md:px-8 py-6 space-y-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] px-4 md:px-8 py-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">Central Billing Voice Command</h1>
-          <p className="text-xs text-zinc-500">WHAT HAPPENED · WHY IT MATTERS · DO THIS NEXT</p>
+          <p className="text-xs text-[var(--color-text-muted)]">WHAT HAPPENED · WHY IT MATTERS · DO THIS NEXT</p>
         </div>
         <button
           onClick={load}
@@ -225,25 +225,25 @@ export default function FounderBillingVoicePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4">
-          <div className="text-xs text-zinc-500">Active Calls</div>
+          <div className="text-xs text-[var(--color-text-muted)]">Active Calls</div>
           <div className="text-2xl font-bold">{summary?.active_billing_calls ?? '—'}</div>
         </div>
         <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4">
-          <div className="text-xs text-zinc-500">Awaiting Human</div>
-          <div className="text-2xl font-bold text-[#FF4D00]">{summary?.awaiting_human_followup ?? '—'}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">Awaiting Human</div>
+          <div className="text-2xl font-bold text-[var(--q-orange)]">{summary?.awaiting_human_followup ?? '—'}</div>
         </div>
         <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4">
-          <div className="text-xs text-zinc-500">Unresolved Sessions</div>
+          <div className="text-xs text-[var(--color-text-muted)]">Unresolved Sessions</div>
           <div className="text-2xl font-bold">{summary?.unresolved_voice_sessions ?? '—'}</div>
         </div>
         <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4">
-          <div className="text-xs text-zinc-500">High-Risk Escalations</div>
-          <div className="text-2xl font-bold text-red-400">{highPriorityCount}</div>
+          <div className="text-xs text-[var(--color-text-muted)]">High-Risk Escalations</div>
+          <div className="text-2xl font-bold text-[var(--color-brand-red)]">{highPriorityCount}</div>
         </div>
       </div>
 
       <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4">
-        <div className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Top 3 Billing Phone Actions</div>
+        <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-3">Top 3 Billing Phone Actions</div>
         <div className="flex flex-wrap gap-2">
           {(summary?.top_billing_phone_actions || []).map((a) => (
             <span key={a.action} className="text-xs px-2 py-1  border border-border-subtle bg-[rgba(255,255,255,0.03)]">
@@ -251,7 +251,7 @@ export default function FounderBillingVoicePage() {
             </span>
           ))}
           {(!summary?.top_billing_phone_actions || summary.top_billing_phone_actions.length === 0) && (
-            <span className="text-xs text-zinc-500">No action data yet.</span>
+            <span className="text-xs text-[var(--color-text-muted)]">No action data yet.</span>
           )}
         </div>
       </div>
@@ -259,13 +259,13 @@ export default function FounderBillingVoicePage() {
       <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
-            <div className="text-xs uppercase tracking-wider text-zinc-500">AI Phone Script + Voice Control</div>
-            <div className="text-xs text-zinc-400">Type exactly what the phone says, and choose human voice audio or TTS.</div>
+            <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">AI Phone Script + Voice Control</div>
+            <div className="text-xs text-[var(--color-text-secondary)]">Type exactly what the phone says, and choose human voice audio or TTS.</div>
           </div>
           <button
             onClick={saveVoiceConfig}
             disabled={!voiceConfig || savingConfig}
-            className="px-3 py-2 text-xs font-bold bg-[#FF4D00] text-black chamfer-4 disabled:opacity-50"
+            className="px-3 py-2 text-xs font-bold bg-[var(--q-orange)] text-black chamfer-4 disabled:opacity-50"
           >
             {savingConfig ? 'Saving…' : 'Save Voice Config'}
           </button>
@@ -274,7 +274,7 @@ export default function FounderBillingVoicePage() {
         {voiceConfig && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 Voice Mode
                 <select
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -285,7 +285,7 @@ export default function FounderBillingVoicePage() {
                   <option value="tts">Text-to-Speech</option>
                 </select>
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 TTS Voice
                 <input
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -293,7 +293,7 @@ export default function FounderBillingVoicePage() {
                   onChange={(e) => setVoiceConfig({ ...voiceConfig, tts_voice: e.target.value })}
                 />
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 TTS Language
                 <input
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -301,7 +301,7 @@ export default function FounderBillingVoicePage() {
                   onChange={(e) => setVoiceConfig({ ...voiceConfig, tts_language: e.target.value })}
                 />
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 Primary TTS Engine
                 <select
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -312,7 +312,7 @@ export default function FounderBillingVoicePage() {
                   <option value="piper">Piper</option>
                 </select>
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 Fallback TTS Engine
                 <select
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -323,7 +323,7 @@ export default function FounderBillingVoicePage() {
                   <option value="xtts">XTTS</option>
                 </select>
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 STT Engine
                 <input
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -331,7 +331,7 @@ export default function FounderBillingVoicePage() {
                   onChange={(e) => setVoiceConfig({ ...voiceConfig, stt_engine: e.target.value })}
                 />
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 STT Model
                 <input
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -339,7 +339,7 @@ export default function FounderBillingVoicePage() {
                   onChange={(e) => setVoiceConfig({ ...voiceConfig, stt_model_size: e.target.value })}
                 />
               </label>
-              <label className="text-xs text-zinc-400">
+              <label className="text-xs text-[var(--color-text-secondary)]">
                 Telephony Engine
                 <select
                   className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -351,7 +351,7 @@ export default function FounderBillingVoicePage() {
                   <option value="freeswitch">FreeSWITCH bridge</option>
                 </select>
               </label>
-              <label className="text-xs text-zinc-400 flex items-center gap-2 mt-5">
+              <label className="text-xs text-[var(--color-text-secondary)] flex items-center gap-2 mt-5">
                 <input
                   type="checkbox"
                   checked={Boolean(voiceConfig.emergency_forwarding_enabled)}
@@ -373,7 +373,7 @@ export default function FounderBillingVoicePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {promptKeys.map(([key, label]) => (
-                <label key={key} className="text-xs text-zinc-400">
+                <label key={key} className="text-xs text-[var(--color-text-secondary)]">
                   {label}
                   <textarea
                     className="mt-1 w-full min-h-[74px] bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -386,7 +386,7 @@ export default function FounderBillingVoicePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {audioKeys.map(([key, label]) => (
-                <label key={key} className="text-xs text-zinc-400">
+                <label key={key} className="text-xs text-[var(--color-text-secondary)]">
                   {label}
                   <input
                     className="mt-1 w-full bg-[rgba(255,255,255,0.04)] border border-border-subtle  px-2 py-2 text-sm"
@@ -402,9 +402,9 @@ export default function FounderBillingVoicePage() {
       </div>
 
       <div className="space-y-3">
-        <div className="text-xs uppercase tracking-wider text-zinc-500">Calls Awaiting Founder Takeover</div>
+        <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">Calls Awaiting Founder Takeover</div>
         {escalations.length === 0 && (
-          <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 text-sm text-zinc-500">
+          <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 text-sm text-[var(--color-text-muted)]">
             No pending escalations. AI is holding the line. ☕
           </div>
         )}
@@ -418,21 +418,21 @@ export default function FounderBillingVoicePage() {
                   <div className="text-sm font-semibold" style={{ color: tone.text }}>
                     {e.escalation_reason || 'escalation'}
                   </div>
-                  <div className="text-xs text-zinc-400">
+                  <div className="text-xs text-[var(--color-text-secondary)]">
                     Caller: {e.caller_phone_number || 'unknown'} · Statement: {e.statement_id || 'unknown'} · Account: {e.account_id || 'unknown'}
                   </div>
-                  <div className="text-xs text-zinc-400">
+                  <div className="text-xs text-[var(--color-text-secondary)]">
                     Verification: {e.verification_state || 'unknown'} · Intent: {e.ai_intent || 'unknown'}
                   </div>
-                  {e.ai_summary && <div className="text-sm text-zinc-100">{e.ai_summary}</div>}
+                  {e.ai_summary && <div className="text-sm text-[var(--color-text-primary)]">{e.ai_summary}</div>}
                   {e.recommended_next_action && (
-                    <div className="text-xs text-zinc-500">Do this next: {e.recommended_next_action}</div>
+                    <div className="text-xs text-[var(--color-text-muted)]">Do this next: {e.recommended_next_action}</div>
                   )}
                 </div>
                 <button
                   onClick={() => takeover(e.id)}
                   disabled={takeoverId === e.id}
-                  className="px-3 py-2 text-xs font-bold bg-[#FF4D00] text-black chamfer-4 disabled:opacity-50"
+                  className="px-3 py-2 text-xs font-bold bg-[var(--q-orange)] text-black chamfer-4 disabled:opacity-50"
                 >
                   {takeoverId === e.id ? 'Connecting…' : 'Accept Call'}
                 </button>
@@ -443,9 +443,9 @@ export default function FounderBillingVoicePage() {
       </div>
 
       <div className="space-y-3">
-        <div className="text-xs uppercase tracking-wider text-zinc-500">Visual Voicemail Board</div>
+        <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">Visual Voicemail Board</div>
         {voicemails.length === 0 && (
-          <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 text-sm text-zinc-500">
+          <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 text-sm text-[var(--color-text-muted)]">
             No voicemail cards yet.
           </div>
         )}
@@ -460,12 +460,12 @@ export default function FounderBillingVoicePage() {
                 backgroundColor: high ? 'rgba(229,57,53,0.08)' : 'rgba(255,152,0,0.07)',
               }}
             >
-              <div className="text-xs text-zinc-400 mb-1">
+              <div className="text-xs text-[var(--color-text-secondary)] mb-1">
                 {v.state} · Risk {v.risk_level} ({v.risk_score}) · {v.urgency}
               </div>
               <div className="text-sm font-semibold">{v.caller_phone_number || 'Unknown caller'}</div>
-              <div className="text-xs text-zinc-400">Statement: {v.statement_id || '—'} · Account: {v.account_id || '—'}</div>
-              <div className="text-xs text-zinc-400">Intent: {v.intent_code || 'unknown'} · Received: {v.received_at || '—'}</div>
+              <div className="text-xs text-[var(--color-text-secondary)]">Statement: {v.statement_id || '—'} · Account: {v.account_id || '—'}</div>
+              <div className="text-xs text-[var(--color-text-secondary)]">Intent: {v.intent_code || 'unknown'} · Received: {v.received_at || '—'}</div>
               {v.transcript_preview && <div className="text-sm mt-2">{v.transcript_preview}</div>}
             </div>
           );
@@ -473,17 +473,17 @@ export default function FounderBillingVoicePage() {
       </div>
 
       <div className="space-y-3">
-        <div className="text-xs uppercase tracking-wider text-zinc-500">Callback Task Lane</div>
+        <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">Callback Task Lane</div>
         {callbacks.length === 0 && (
-          <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 text-sm text-zinc-500">
+          <div className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4 text-sm text-[var(--color-text-muted)]">
             No callback tasks yet.
           </div>
         )}
         {callbacks.map((c) => (
           <div key={c.id} className="p-4 border border-border-subtle bg-[rgba(255,255,255,0.02)] chamfer-4">
-            <div className="text-xs text-zinc-400">{c.callback_state} · {c.priority}</div>
+            <div className="text-xs text-[var(--color-text-secondary)]">{c.callback_state} · {c.priority}</div>
             <div className="text-sm font-semibold">{c.callback_phone || 'No callback phone'}</div>
-            <div className="text-xs text-zinc-400">Due: {c.sla_due_at || '—'} · Reason: {c.reason || '—'}</div>
+            <div className="text-xs text-[var(--color-text-secondary)]">Due: {c.sla_due_at || '—'} · Reason: {c.reason || '—'}</div>
           </div>
         ))}
       </div>

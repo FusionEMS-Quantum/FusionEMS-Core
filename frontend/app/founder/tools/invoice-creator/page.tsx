@@ -32,9 +32,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -56,7 +56,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -170,20 +170,20 @@ export default function InvoiceCreatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-micro font-bold text-[#FF4D00]/70 font-mono tracking-widest uppercase">
+          <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono tracking-widest uppercase">
             MODULE 11 · FOUNDER TOOLS
           </span>
-          <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
+          <Link href="/founder" className="text-body text-[var(--color-text-muted)] hover:text-[var(--q-orange)] transition-colors">
             ← Back to Founder OS
           </Link>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-100" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ textShadow: '0 0 24px rgba(255,106,0,0.3)' }}>
           Invoice Creator
         </h1>
-        <p className="text-xs text-zinc-500 mt-1">Generate professional invoices · track payment status · revenue</p>
+        <p className="text-xs text-[var(--color-text-muted)] mt-1">Generate professional invoices · track payment status · revenue</p>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
@@ -195,7 +195,7 @@ export default function InvoiceCreatorPage() {
             { label: 'Outstanding', value: String(summary.outstanding_count), status: 'warn' as const },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-micro text-zinc-500 uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">{s.label}</span>
               <span
                 className="text-xl font-bold"
                 style={{ color: s.status === 'ok' ? 'var(--color-status-active)' : s.status === 'warn' ? 'var(--color-status-warning)' : 'rgba(255,255,255,0.9)' }}
@@ -213,47 +213,47 @@ export default function InvoiceCreatorPage() {
           <SectionHeader number="2" title="Create Invoice" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Client / Agency</label>
+              <label className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">Client / Agency</label>
               <input
                 type="text"
                 value={invoiceForm.client}
                 onChange={(e) => setInvoiceForm({ ...invoiceForm, client: e.target.value })}
                 placeholder="Agency name"
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-zinc-500"
+                className="bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[var(--color-text-muted)]"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Invoice Date</label>
+              <label className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">Invoice Date</label>
               <input
                 type="date"
                 value={invoiceForm.invoiceDate}
                 onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceDate: e.target.value })}
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Due Date</label>
+              <label className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">Due Date</label>
               <input
                 type="date"
                 value={invoiceForm.dueDate}
                 onChange={(e) => setInvoiceForm({ ...invoiceForm, dueDate: e.target.value })}
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                className="bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange"
               />
             </div>
             <div className="flex flex-col gap-1 md:col-span-2 lg:col-span-3">
-              <label className="text-micro text-zinc-500 uppercase tracking-wider">Service Description</label>
+              <label className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">Service Description</label>
               <textarea
                 value={invoiceForm.description}
                 onChange={(e) => setInvoiceForm({ ...invoiceForm, description: e.target.value })}
                 placeholder="Describe services rendered..."
                 rows={2}
-                className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-zinc-500 resize-none"
+                className="bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[var(--color-text-muted)] resize-none"
               />
             </div>
           </div>
 
           <div className="mb-3">
-            <p className="text-micro text-zinc-500 uppercase tracking-wider mb-2">Line Items</p>
+            <p className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Line Items</p>
             <div className="space-y-2">
               {lineItems.map((item, i) => (
                 <div key={i} className="flex gap-2">
@@ -266,7 +266,7 @@ export default function InvoiceCreatorPage() {
                       setLineItems(updated);
                     }}
                     placeholder="Description"
-                    className="flex-1 bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-zinc-500"
+                    className="flex-1 bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange placeholder:text-[var(--color-text-muted)]"
                   />
                   <input
                     type="number"
@@ -276,7 +276,7 @@ export default function InvoiceCreatorPage() {
                       updated[i].amount = Number(e.target.value);
                       setLineItems(updated);
                     }}
-                    className="w-28 bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                    className="w-28 bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange"
                   />
                 </div>
               ))}
@@ -292,22 +292,22 @@ export default function InvoiceCreatorPage() {
 
           <div className="border-t border-border-subtle pt-3 flex flex-col items-end gap-1 mb-4">
             <div className="flex gap-8 text-xs">
-              <span className="text-zinc-500">Subtotal</span>
-              <span className="font-mono text-zinc-100">${subtotal.toLocaleString()}</span>
+              <span className="text-[var(--color-text-muted)]">Subtotal</span>
+              <span className="font-mono text-[var(--color-text-primary)]">${subtotal.toLocaleString()}</span>
             </div>
             <div className="flex gap-8 text-xs">
-              <span className="text-zinc-500">Tax (0%)</span>
-              <span className="font-mono text-zinc-100">$0</span>
+              <span className="text-[var(--color-text-muted)]">Tax (0%)</span>
+              <span className="font-mono text-[var(--color-text-primary)]">$0</span>
             </div>
             <div className="flex gap-8 text-sm font-bold border-t border-border-DEFAULT pt-1 mt-1">
-              <span className="text-zinc-100">Total</span>
-              <span className="font-mono text-[#FF4D00]">${subtotal.toLocaleString()}</span>
+              <span className="text-[var(--color-text-primary)]">Total</span>
+              <span className="font-mono text-[var(--q-orange)]">${subtotal.toLocaleString()}</span>
             </div>
           </div>
 
           <button
             className="px-5 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
-            style={{ background: '#FF4D00', color: '#000' }}
+            style={{ background: 'var(--q-orange)', color: '#000' }}
             onClick={() => {
               createInvoice().catch((e: unknown) => {
                 setError(e instanceof Error ? e.message : 'Failed to create invoice');
@@ -327,7 +327,7 @@ export default function InvoiceCreatorPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Invoice #', 'Client', 'Amount', 'Date', 'Due', 'Status'].map((h) => (
-                    <th key={h} className="text-left py-1.5 px-2 text-zinc-500 font-semibold uppercase tracking-wider text-micro">
+                    <th key={h} className="text-left py-1.5 px-2 text-[var(--color-text-muted)] font-semibold uppercase tracking-wider text-micro">
                       {h}
                     </th>
                   ))}
@@ -335,15 +335,15 @@ export default function InvoiceCreatorPage() {
               </thead>
               <tbody>
                 {invoices.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-4 text-zinc-500">No invoices generated yet.</td></tr>
+                  <tr><td colSpan={6} className="text-center py-4 text-[var(--color-text-muted)]">No invoices generated yet.</td></tr>
                 ) : (
                   invoices.map((inv) => (
-                    <tr key={inv.id} className="border-b border-white/[0.03] hover:bg-zinc-950/[0.02]">
+                    <tr key={inv.id} className="border-b border-white/[0.03] hover:bg-[var(--color-bg-base)]/[0.02]">
                       <td className="py-2 px-2 font-mono text-brand-orange text-body">{inv.invoice_number || inv.id.slice(0, 8).toUpperCase()}</td>
-                      <td className="py-2 px-2 text-zinc-100">{inv.client}</td>
-                      <td className="py-2 px-2 font-mono text-zinc-100 font-semibold">${(inv.total_cents / 100).toLocaleString()}</td>
-                      <td className="py-2 px-2 text-zinc-500">{inv.invoice_date?.slice(0, 10) || '—'}</td>
-                      <td className="py-2 px-2 text-zinc-500">{inv.due_date?.slice(0, 10) || '—'}</td>
+                      <td className="py-2 px-2 text-[var(--color-text-primary)]">{inv.client}</td>
+                      <td className="py-2 px-2 font-mono text-[var(--color-text-primary)] font-semibold">${(inv.total_cents / 100).toLocaleString()}</td>
+                      <td className="py-2 px-2 text-[var(--color-text-muted)]">{inv.invoice_date?.slice(0, 10) || '—'}</td>
+                      <td className="py-2 px-2 text-[var(--color-text-muted)]">{inv.due_date?.slice(0, 10) || '—'}</td>
                       <td className="py-2 px-2">
                         <Badge
                           label={inv.status}
@@ -363,17 +363,17 @@ export default function InvoiceCreatorPage() {
         <Panel>
           <SectionHeader number="4" title="Payment Tracking" sub="outstanding invoices" />
           <div className="space-y-3">
-            {OUTSTANDING.length === 0 && <p className="text-xs text-zinc-500">No outstanding invoices.</p>}
+            {OUTSTANDING.length === 0 && <p className="text-xs text-[var(--color-text-muted)]">No outstanding invoices.</p>}
             {OUTSTANDING.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between p-3 chamfer-4" style={{ background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)' }}>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-zinc-100">{inv.invoice_number || inv.id.slice(0, 8).toUpperCase()}</span>
-                    <span className="text-micro text-zinc-500">{inv.client}</span>
+                    <span className="text-xs font-semibold text-[var(--color-text-primary)]">{inv.invoice_number || inv.id.slice(0, 8).toUpperCase()}</span>
+                    <span className="text-micro text-[var(--color-text-muted)]">{inv.client}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="font-mono text-sm font-bold text-status-warning">${(inv.total_cents / 100).toLocaleString()}</span>
-                    <span className="text-micro text-zinc-500">Due {inv.due_date?.slice(0, 10) || '—'}</span>
+                    <span className="text-micro text-[var(--color-text-muted)]">Due {inv.due_date?.slice(0, 10) || '—'}</span>
                     <Badge label="Needs Attention" status="warn" />
                   </div>
                 </div>
@@ -418,12 +418,12 @@ export default function InvoiceCreatorPage() {
               { label: 'Late Fee Policy', key: 'lateFee' as const },
             ].map((field) => (
               <div key={field.key} className="flex flex-col gap-1">
-                <label className="text-micro text-zinc-500 uppercase tracking-wider">{field.label}</label>
+                <label className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">{field.label}</label>
                 <input
                   type="text"
                   value={settings[field.key]}
                   onChange={(e) => setSettings({ ...settings, [field.key]: e.target.value })}
-                  className="bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-orange"
+                  className="bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-orange"
                 />
               </div>
             ))}
@@ -431,7 +431,7 @@ export default function InvoiceCreatorPage() {
           <div className="mt-4">
             <button
               className="px-4 py-2 text-xs font-bold uppercase tracking-widest chamfer-4 transition-all hover:brightness-110"
-              style={{ background: '#FF4D00', color: '#000' }}
+              style={{ background: 'var(--q-orange)', color: '#000' }}
               onClick={() => {
                 saveSettings().catch((e: unknown) => {
                   setError(e instanceof Error ? e.message : 'Failed to save settings');
@@ -446,14 +446,14 @@ export default function InvoiceCreatorPage() {
 
       {(loading || error) && (
         <Panel>
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-[var(--color-text-muted)]">
             {loading ? 'Synchronizing invoices and settings...' : error}
           </div>
         </Panel>
       )}
 
       <div className="pt-2">
-        <Link href="/founder" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
+        <Link href="/founder" className="text-body text-[var(--color-text-muted)] hover:text-[var(--q-orange)] transition-colors">
           ← Back to Founder OS
         </Link>
       </div>

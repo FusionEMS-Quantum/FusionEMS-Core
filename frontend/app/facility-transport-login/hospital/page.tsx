@@ -26,9 +26,9 @@ export default function HospitalTransportLoginPage() {
     >
       <form className="space-y-3" onSubmit={onSubmit}>
         <div className="space-y-1">
-          <label className="text-label uppercase tracking-[0.12em] text-zinc-500">Hospital Facility Code</label>
+          <label className="text-label uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Hospital Facility Code</label>
           <input
-            className="w-full bg-bg-input border border-border-default chamfer-8 px-3 py-2 text-body text-zinc-100 outline-none"
+            className="w-full bg-bg-input border border-border-default chamfer-8 px-3 py-2 text-body text-[var(--color-text-primary)] outline-none"
             value={facilityCode}
             onChange={(event) => setFacilityCode(event.target.value)}
             required
@@ -36,9 +36,9 @@ export default function HospitalTransportLoginPage() {
         </div>
 
         <div className="space-y-1">
-          <label className="text-label uppercase tracking-[0.12em] text-zinc-500">Staff Login ID</label>
+          <label className="text-label uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Staff Login ID</label>
           <input
-            className="w-full bg-bg-input border border-border-default chamfer-8 px-3 py-2 text-body text-zinc-100 outline-none"
+            className="w-full bg-bg-input border border-border-default chamfer-8 px-3 py-2 text-body text-[var(--color-text-primary)] outline-none"
             value={staffId}
             onChange={(event) => setStaffId(event.target.value)}
             required

@@ -404,7 +404,7 @@ def _send_reply(
         )
 
 
-@router.post("/webhooks/telnyx/sms")
+@router.post("/api/v1/webhooks/telnyx/sms")
 async def telnyx_sms_webhook(
     request: Request,
     db: Session = Depends(db_session_dependency),

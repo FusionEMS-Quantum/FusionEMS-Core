@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import QuantumLogo from '@/components/branding/QuantumLogo';
 
 export default function AccessShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
@@ -15,7 +14,7 @@ export default function AccessShell({ title, subtitle, children }: { title: stri
 
       <header className="h-14 border-b border-border-default bg-[rgba(7,9,13,0.92)] backdrop-blur-sm flex items-center justify-between px-6 relative z-10">
         <Link href="/" className="flex items-center gap-2">
-          <QuantumLogo size="sm" showWordmark={false} />
+          <span className="chamfer-4 inline-flex h-7 min-w-7 items-center justify-center border border-border-default bg-[var(--color-bg-input)] px-2 text-label font-bold tracking-[0.12em] text-brand-orange-bright">FQ</span>
           <span className="text-label uppercase tracking-[0.16em] text-zinc-400">Secure Access</span>
         </Link>
         <Link href="/" className="text-label uppercase tracking-[0.16em] text-zinc-500 hover:text-zinc-100">Back to Site</Link>

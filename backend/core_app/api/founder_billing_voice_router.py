@@ -13,7 +13,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, get_current_user
+from core_app.api.dependencies import db_session_dependency, require_founder_only_audited
 from core_app.core.config import get_settings
 from core_app.schemas.auth import CurrentUser
 from core_app.services.open_source_tts_service import (
@@ -33,13 +33,6 @@ def _isoformat_or_none(value: Any) -> str | None:
     if callable(iso):
         return str(iso())
     return str(value)
-
-
-def _require_founder(current: CurrentUser) -> None:
-    if str(current.role).lower() != "founder":
-        raise HTTPException(status_code=403, detail="founder_only")
-
-
 def _default_voice_config() -> dict[str, Any]:
     return {
         "voice_mode": "human_audio",  # human_audio | tts
@@ -226,20 +219,18 @@ def _save_voice_config(db: Session, config_payload: dict[str, Any]) -> dict[str,
 
 @router.get("/config")
 async def get_voice_config(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     return {"config": _load_voice_config(db)}
 
 
 @router.put("/config")
 async def update_voice_config(
     payload: dict[str, Any],
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     cfg = _save_voice_config(db, payload)
     return {"status": "ok", "config": cfg}
 
@@ -247,10 +238,9 @@ async def update_voice_config(
 @router.post("/config/render-prompts")
 async def render_voice_prompts_to_audio(
     payload: dict[str, Any],
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     cfg = _load_voice_config(db)
     preferred_engine = str(
         payload.get("preferred_engine") or cfg.get("tts_primary_engine") or "xtts"
@@ -278,7 +268,10 @@ async def render_voice_prompts_to_audio(
 
 
 @router.get("/audio/{audio_id}.wav")
-async def serve_generated_prompt_audio(audio_id: str):
+async def serve_generated_prompt_audio(
+    audio_id: str,
+    _current: CurrentUser = Depends(require_founder_only_audited()),
+):
     try:
         wav_path = audio_file_path(audio_id)
     except OpenSourceTTSError as exc:
@@ -292,10 +285,9 @@ async def serve_generated_prompt_audio(audio_id: str):
 
 @router.get("/summary")
 async def billing_voice_summary(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     active_calls = db.execute(
         text("SELECT COUNT(*) FROM billing_voice_sessions WHERE ended_at IS NULL")
     ).scalar() or 0
@@ -332,10 +324,9 @@ async def billing_voice_summary(
 async def list_escalations(
     status: str = "awaiting_human",
     limit: int = 50,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     rows = db.execute(
         text(
             """
@@ -390,10 +381,9 @@ async def list_escalations(
 async def list_voicemails(
     state: str | None = None,
     limit: int = 50,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     sql = (
         """
         SELECT
@@ -470,10 +460,9 @@ async def list_voicemails(
 async def list_callback_tasks(
     state: str | None = None,
     limit: int = 50,
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     sql = (
         """
         SELECT
@@ -524,10 +513,9 @@ async def list_callback_tasks(
 async def takeover_escalation(
     escalation_id: str,
     payload: dict[str, Any],
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
-    _require_founder(current)
     row = db.execute(
         text("SELECT id, session_id, status FROM billing_call_escalations WHERE id = :id::uuid"),
         {"id": escalation_id},
@@ -578,11 +566,10 @@ async def takeover_escalation(
 
 @router.get("/phone-status")
 async def phone_stack_status(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict[str, Any]:
     """Live phone stack status: provisioned number, CNAM, voice config, routing health."""
-    _require_founder(current)
     settings = get_settings()
 
     central_phone = (settings.central_billing_phone_e164 or "").strip()
@@ -668,11 +655,10 @@ async def phone_stack_status(
 async def set_tenant_cnam_override(
     tenant_id: str,
     payload: dict[str, Any],
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict[str, Any]:
     """Set per-tenant CNAM caller ID override. Default is FusionEMS Quantum."""
-    _require_founder(current)
 
     cnam_name = str(payload.get("cnam_display_name") or "").strip()
     if not cnam_name:
@@ -737,12 +723,10 @@ async def set_tenant_cnam_override(
 
 @router.get("/cnam/live-status")
 async def cnam_live_status(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
 ) -> dict[str, Any]:
     """Query Telnyx API for live CNAM registration status of the central billing number."""
     from core_app.telnyx import client as telnyx_client
-
-    _require_founder(current)
     settings = get_settings()
 
     number_id = (settings.telnyx_central_billing_number_id or "").strip()
@@ -786,12 +770,10 @@ async def cnam_live_status(
 @router.post("/cnam/update")
 async def update_cnam_registration(
     payload: dict[str, Any],
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
 ) -> dict[str, Any]:
     """Submit CNAM update to Telnyx for the central billing number."""
     from core_app.telnyx import client as telnyx_client
-
-    _require_founder(current)
     settings = get_settings()
 
     display_name = str(payload.get("cnam_display_name") or "").strip()

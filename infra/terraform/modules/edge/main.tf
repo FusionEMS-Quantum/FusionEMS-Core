@@ -27,6 +27,8 @@ locals {
   all_viewer_except_host_header_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
 }
 
+data "aws_caller_identity" "current" {}
+
 # ========================= WAF (CLOUDFRONT scope – us-east-1) =================
 
 resource "aws_wafv2_web_acl" "cloudfront" {
@@ -277,33 +279,28 @@ resource "aws_s3_bucket_policy" "cloudfront_logs" {
         }
       },
       {
+        Sid    = "AllowLogsDeliveryGetBucketAcl"
+        Effect = "Allow"
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        }
+        Action   = "s3:GetBucketAcl"
+        Resource = aws_s3_bucket.cloudfront_logs.arn
+      },
+      {
         Sid    = "AllowLogsDeliveryPutObject"
         Effect = "Allow"
         Principal = {
-          Service = [
-            "delivery.logs.amazonaws.com",
-            "logging.s3.amazonaws.com"
-          ]
+          Service = "delivery.logs.amazonaws.com"
         }
         Action   = "s3:PutObject"
         Resource = "${aws_s3_bucket.cloudfront_logs.arn}/*"
         Condition = {
           StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+            "s3:x-amz-acl"      = "bucket-owner-full-control"
           }
         }
-      },
-      {
-        Sid    = "AllowLogsDeliveryGetBucketAcl"
-        Effect = "Allow"
-        Principal = {
-          Service = [
-            "delivery.logs.amazonaws.com",
-            "logging.s3.amazonaws.com"
-          ]
-        }
-        Action   = "s3:GetBucketAcl"
-        Resource = aws_s3_bucket.cloudfront_logs.arn
       }
     ]
   })
@@ -323,18 +320,9 @@ resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
   bucket = aws_s3_bucket.cloudfront_logs.id
 
   rule {
+    # Prefer bucket owner control, but keep compatibility with AWS log-delivery ACL semantics.
     object_ownership = "BucketOwnerPreferred"
   }
-}
-
-resource "aws_s3_bucket_acl" "cloudfront_logs" {
-  bucket = aws_s3_bucket.cloudfront_logs.id
-  acl    = "log-delivery-write"
-
-  depends_on = [
-    aws_s3_bucket_ownership_controls.cloudfront_logs,
-    aws_s3_bucket_public_access_block.cloudfront_logs,
-  ]
 }
 
 # ========================= CloudFront Distribution ============================
@@ -419,7 +407,7 @@ resource "aws_cloudfront_distribution" "this" {
     }
   }
 
-  depends_on = [aws_s3_bucket_acl.cloudfront_logs]
+  depends_on = [aws_s3_bucket_ownership_controls.cloudfront_logs]
 
   tags = local.common_tags
 }

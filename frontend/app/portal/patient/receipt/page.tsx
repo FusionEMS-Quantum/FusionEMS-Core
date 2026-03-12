@@ -17,6 +17,10 @@ type PatientStatement = {
   };
 };
 
+function asNumberOrZero(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
 function PatientReceiptPageContent() {
   const searchParams = useSearchParams();
   const statementIdFromUrl = searchParams.get('statement_id');
@@ -68,7 +72,7 @@ function PatientReceiptPageContent() {
   }, [statementIdFromUrl]);
 
   const amountPaid = useMemo(() => {
-    const paid = statement?.data?.amount_paid_cents ?? 0;
+    const paid = asNumberOrZero(statement?.data?.amount_paid_cents);
     return `$${(paid / 100).toFixed(2)}`;
   }, [statement]);
 
@@ -80,7 +84,7 @@ function PatientReceiptPageContent() {
     <div
       style={{
         minHeight: '100vh',
-        background: '#050505',
+        background: 'var(--color-bg-base)',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -143,7 +147,7 @@ function PatientReceiptPageContent() {
         {/* Receipt card */}
         <div
           style={{
-            background: '#0A0A0B',
+            background: 'var(--color-bg-panel)',
             border: '1px solid var(--color-border-default)',
             borderLeft: '3px solid var(--color-status-active)',
             clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
@@ -271,7 +275,7 @@ function PatientReceiptPageContent() {
           <button
             onClick={() => window.print()}
             style={{
-              background: '#0A0A0B',
+              background: 'var(--color-bg-panel)',
               border: '1px solid var(--color-border-strong)',
               color: 'var(--color-text-primary)',
               fontFamily: 'var(--font-label)',
@@ -292,7 +296,7 @@ function PatientReceiptPageContent() {
             href="/portal/patient/statements"
             style={{
               display: 'block',
-              background: '#FF4D00',
+              background: 'var(--q-orange)',
               color: '#000',
               fontFamily: 'var(--font-label)',
               fontSize: 'var(--text-label)',

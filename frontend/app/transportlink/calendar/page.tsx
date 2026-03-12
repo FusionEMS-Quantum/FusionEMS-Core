@@ -61,15 +61,15 @@ function normalizeTransportEvent(item: TransportLinkRequestSummaryApi): Transpor
 }
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string; bar: string }> = {
-  draft:                 { bg: 'bg-zinc-950/[0.03]',       border: 'border-white/[0.08]',        text: 'text-zinc-500',     bar: '#475569' },
+  draft:                 { bg: 'bg-[var(--color-bg-base)]/[0.03]',       border: 'border-white/[0.08]',        text: 'text-[var(--color-text-muted)]',     bar: '#475569' },
   submitted:             { bg: 'bg-status-info/[0.07]', border: 'border-status-info/25',       text: 'text-status-info',    bar: '#38bdf8' },
   awaiting_signatures:   { bg: 'bg-status-warning/[0.07]', border: 'border-status-warning/25', text: 'text-status-warning', bar: '#fbbf24' },
   missing_documentation: { bg: 'bg-red/[0.07]',          border: 'border-red/25',              text: 'text-red',            bar: '#ef4444' },
-  sent_to_cad:           { bg: 'bg-[#FF4D00]/[0.08]',        border: 'border-orange/30',           text: 'text-[#FF4D00]',         bar: '#f97316' },
-  scheduled:             { bg: 'bg-status-active/[0.07]', border: 'border-status-active/25',   text: 'text-status-active',  bar: '#22c55e' },
-  accepted:              { bg: 'bg-status-active/[0.07]', border: 'border-status-active/25',   text: 'text-status-active',  bar: '#22c55e' },
+  sent_to_cad:           { bg: 'bg-[var(--q-orange)]/[0.08]',        border: 'border-orange/30',           text: 'text-[var(--q-orange)]',         bar: '#f97316' },
+  scheduled:             { bg: 'bg-status-active/[0.07]', border: 'border-status-active/25',   text: 'text-[var(--color-status-active)]',  bar: '#22c55e' },
+  accepted:              { bg: 'bg-status-active/[0.07]', border: 'border-status-active/25',   text: 'text-[var(--color-status-active)]',  bar: '#22c55e' },
   rejected:              { bg: 'bg-red/[0.07]',           border: 'border-red/25',              text: 'text-red',            bar: '#dc2626' },
-  cancelled:             { bg: 'bg-zinc-950/[0.02]',         border: 'border-white/[0.05]',        text: 'text-zinc-500',     bar: '#334155' },
+  cancelled:             { bg: 'bg-[var(--color-bg-base)]/[0.02]',         border: 'border-white/[0.05]',        text: 'text-[var(--color-text-muted)]',     bar: '#334155' },
 };
 
 function patientName(e: TransportEvent) {
@@ -154,10 +154,10 @@ function EventDrawer({ event, onClose }: { event: TransportEvent; onClose: () =>
       >
         <div className="px-5 py-4 border-b border-white/[0.05] flex items-center justify-between bg-gradient-to-r from-orange/[0.05]">
           <div>
-            <div className="text-[9px] font-bold tracking-widest text-[#FF4D00] uppercase">Transport Detail</div>
+            <div className="text-[9px] font-bold tracking-widest text-[var(--q-orange)] uppercase">Transport Detail</div>
             <div className="text-[11px] font-black text-white mt-0.5">{patientName(event)}</div>
           </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-100 text-[10px] font-bold uppercase tracking-wider px-2 py-1 border border-white/[0.08] hover:border-white/[0.14] transition-colors">
+          <button onClick={onClose} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] text-[10px] font-bold uppercase tracking-wider px-2 py-1 border border-white/[0.08] hover:border-white/[0.14] transition-colors">
             Close
           </button>
         </div>
@@ -165,7 +165,7 @@ function EventDrawer({ event, onClose }: { event: TransportEvent; onClose: () =>
         <div className="p-5 space-y-4">
           {/* Status */}
           <div>
-            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</div>
+            <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Status</div>
             <span className={`inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${c.bg} ${c.text} ${c.border}`}
               style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}>
               {status.replace(/_/g, ' ')}
@@ -182,23 +182,23 @@ function EventDrawer({ event, onClose }: { event: TransportEvent; onClose: () =>
             { label: 'Priority', value: d.priority },
           ].filter(({ value }) => value).map(({ label, value }) => (
             <div key={label}>
-              <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">{label}</div>
-              <div className="text-[11px] text-zinc-100 mt-0.5">{value}</div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">{label}</div>
+              <div className="text-[11px] text-[var(--color-text-primary)] mt-0.5">{value}</div>
             </div>
           ))}
 
           {/* Medical necessity */}
           {d.medical_necessity_status && (
-            <div className="p-3 border border-white/[0.06] bg-zinc-950/[0.02]"
+            <div className="p-3 border border-white/[0.06] bg-[var(--color-bg-base)]/[0.02]"
               style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}>
-              <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Medical Necessity</div>
-              <div className="text-[10px] font-semibold text-zinc-100">{d.medical_necessity_status.replace(/_/g, ' ')}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Medical Necessity</div>
+              <div className="text-[10px] font-semibold text-[var(--color-text-primary)]">{d.medical_necessity_status.replace(/_/g, ' ')}</div>
             </div>
           )}
 
           {/* Docs */}
           <div>
-            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">Documentation</div>
+            <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Documentation</div>
             <div className="space-y-1.5">
               {[
                 { label: 'PCS', ok: d.pcs_complete },
@@ -206,8 +206,8 @@ function EventDrawer({ event, onClose }: { event: TransportEvent; onClose: () =>
                 { label: 'Facesheet', ok: d.facesheet_uploaded },
               ].map(({ label, ok }) => (
                 <div key={label} className="flex items-center gap-2 text-[10px]">
-                  {ok ? <CheckCircle2 className="w-3 h-3 text-status-active" /> : <AlertTriangle className="w-3 h-3 text-status-warning" />}
-                  <span className={ok ? 'text-zinc-400' : 'text-status-warning'}>{label}</span>
+                  {ok ? <CheckCircle2 className="w-3 h-3 text-[var(--color-status-active)]" /> : <AlertTriangle className="w-3 h-3 text-status-warning" />}
+                  <span className={ok ? 'text-[var(--color-text-secondary)]' : 'text-status-warning'}>{label}</span>
                 </div>
               ))}
             </div>
@@ -231,7 +231,7 @@ function EventDrawer({ event, onClose }: { event: TransportEvent; onClose: () =>
 
           <Link
             href={`/transportlink/requests/${event.id}`}
-            className="flex items-center gap-1.5 h-9 w-full px-4 text-[10px] font-black uppercase tracking-wider text-white bg-[#FF4D00] hover:bg-[#FF6A1A] transition-colors justify-center"
+            className="flex items-center gap-1.5 h-9 w-full px-4 text-[10px] font-black uppercase tracking-wider text-white bg-[var(--q-orange)] hover:bg-[#FF6A1A] transition-colors justify-center"
             style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -262,7 +262,7 @@ function Legend() {
       {LEGEND_ITEMS.map(({ label, bar }) => (
         <div key={label} className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5  flex-shrink-0" style={{ backgroundColor: bar }} />
-          <span className="text-[9px] text-zinc-500">{label}</span>
+          <span className="text-[9px] text-[var(--color-text-muted)]">{label}</span>
         </div>
       ))}
     </div>
@@ -308,11 +308,11 @@ function TimelineView({ events }: { events: TransportEvent[] }) {
               <div className="flex-shrink-0 w-24 text-right">
                 {pickupDt ? (
                   <>
-                    <div className="text-[10px] font-bold text-zinc-100">{pickupDt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                    <div className="text-[9px] text-zinc-500">{pickupDt.toLocaleDateString()}</div>
+                    <div className="text-[10px] font-bold text-[var(--color-text-primary)]">{pickupDt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    <div className="text-[9px] text-[var(--color-text-muted)]">{pickupDt.toLocaleDateString()}</div>
                   </>
                 ) : (
-                  <div className="text-[9px] text-zinc-500">Unscheduled</div>
+                  <div className="text-[9px] text-[var(--color-text-muted)]">Unscheduled</div>
                 )}
               </div>
 
@@ -325,17 +325,17 @@ function TimelineView({ events }: { events: TransportEvent[] }) {
                     </span>
                   )}
                   <span className={`text-[11px] font-bold ${c.text}`}>{patientName(ev)}</span>
-                  {d.mrn && <span className="text-[9px] text-zinc-500 font-mono">MRN {d.mrn}</span>}
+                  {d.mrn && <span className="text-[9px] text-[var(--color-text-muted)] font-mono">MRN {d.mrn}</span>}
                   {d.requested_service_level && (
-                    <span className="text-[9px] font-bold text-[#FF4D00] border border-orange/20 bg-[#FF4D00]/[0.06] px-1.5"
+                    <span className="text-[9px] font-bold text-[var(--q-orange)] border border-orange/20 bg-[var(--q-orange)]/[0.06] px-1.5"
                       style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}>
                       {d.requested_service_level}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-zinc-500">
+                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-[var(--color-text-muted)]">
                   <span>{d.origin_facility || '—'}</span>
-                  <ChevronRight className="w-2.5 h-2.5 text-zinc-500/30" />
+                  <ChevronRight className="w-2.5 h-2.5 text-[var(--color-text-muted)]/30" />
                   <span>{d.destination_facility || '—'}</span>
                 </div>
               </div>
@@ -351,8 +351,8 @@ function TimelineView({ events }: { events: TransportEvent[] }) {
 
         {sorted.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Calendar className="w-10 h-10 text-zinc-500/20" />
-            <p className="text-[11px] text-zinc-500">No transports in this period.</p>
+            <Calendar className="w-10 h-10 text-[var(--color-text-muted)]/20" />
+            <p className="text-[11px] text-[var(--color-text-muted)]">No transports in this period.</p>
           </div>
         )}
       </div>
@@ -394,7 +394,7 @@ function MonthView({ year, month, events }: { year: number; month: number; event
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-white/[0.06]">
           {DAYS.map((d) => (
-            <div key={d} className="px-2 py-2 text-[9px] font-black uppercase tracking-widest text-zinc-500 text-center border-r border-white/[0.04] last:border-0">
+            <div key={d} className="px-2 py-2 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] text-center border-r border-white/[0.04] last:border-0">
               {d}
             </div>
           ))}
@@ -411,13 +411,13 @@ function MonthView({ year, month, events }: { year: number; month: number; event
             return (
               <div
                 key={i}
-                className={`min-h-[90px] p-1.5 border-b border-white/[0.04] relative ${day ? 'hover:bg-zinc-950/[0.02]' : 'bg-black/20'} transition-colors`}
+                className={`min-h-[90px] p-1.5 border-b border-white/[0.04] relative ${day ? 'hover:bg-[var(--color-bg-base)]/[0.02]' : 'bg-[var(--color-bg-base)]/20'} transition-colors`}
               >
                 {day && (
                   <>
                     <div className="flex items-center justify-between mb-1">
                       <span
-                        className={`text-[10px] font-bold w-5 h-5 flex items-center justify-center ${isToday ? 'bg-[#FF4D00] text-white' : 'text-zinc-500'}`}
+                        className={`text-[10px] font-bold w-5 h-5 flex items-center justify-center ${isToday ? 'bg-[var(--q-orange)] text-white' : 'text-[var(--color-text-muted)]'}`}
                         style={isToday ? { clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' } : {}}
                       >
                         {day}
@@ -430,7 +430,7 @@ function MonthView({ year, month, events }: { year: number; month: number; event
                         <EventChip key={ev.id} event={ev} onClick={() => setSelected(ev)} />
                       ))}
                       {evs.length > 3 && (
-                        <div className="text-[8px] text-zinc-500 text-center py-0.5">+{evs.length - 3} more</div>
+                        <div className="text-[8px] text-[var(--color-text-muted)] text-center py-0.5">+{evs.length - 3} more</div>
                       )}
                     </div>
                   </>
@@ -508,14 +508,14 @@ export default function TransportCalendarPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3 mb-5">
         <div>
-          <div className="text-[9px] font-bold tracking-[0.3em] text-[#FF4D00] uppercase mb-1">TransportLink · Calendar</div>
+          <div className="text-[9px] font-bold tracking-[0.3em] text-[var(--q-orange)] uppercase mb-1">TransportLink · Calendar</div>
           <h1 className="text-h1 font-black text-white">Transport Calendar</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={load}
             disabled={loading}
-            className="flex items-center gap-1.5 h-9 px-3 text-[10px] font-bold uppercase tracking-wider border border-white/[0.08] text-zinc-500 hover:text-zinc-100 transition-colors"
+            className="flex items-center gap-1.5 h-9 px-3 text-[10px] font-bold uppercase tracking-wider border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
@@ -537,8 +537,8 @@ export default function TransportCalendarPage() {
       {/* Urgency/status summary bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
         {[
-          { label: 'Scheduled', value: counts.scheduled, icon: CheckCircle2, color: 'text-status-active', border: 'border-status-active/20', bg: 'bg-status-active/[0.04]' },
-          { label: 'Sent to CAD', value: counts.sentToCad, icon: Activity, color: 'text-[#FF4D00]', border: 'border-orange/20', bg: 'bg-[#FF4D00]/[0.04]' },
+          { label: 'Scheduled', value: counts.scheduled, icon: CheckCircle2, color: 'text-[var(--color-status-active)]', border: 'border-status-active/20', bg: 'bg-status-active/[0.04]' },
+          { label: 'Sent to CAD', value: counts.sentToCad, icon: Activity, color: 'text-[var(--q-orange)]', border: 'border-orange/20', bg: 'bg-[var(--q-orange)]/[0.04]' },
           { label: 'Missing Docs', value: counts.missingDocs, icon: FileWarning, color: 'text-status-warning', border: 'border-status-warning/20', bg: 'bg-status-warning/[0.04]', alert: counts.missingDocs > 0 },
           { label: 'Urgent', value: counts.urgent, icon: AlertTriangle, color: 'text-red', border: 'border-red/20', bg: 'bg-red/[0.04]', alert: counts.urgent > 0 },
         ].map(({ label, value, icon: Icon, color, border, bg }) => (
@@ -547,7 +547,7 @@ export default function TransportCalendarPage() {
             <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
             <div>
               <div className={`text-[14px] font-black leading-none ${color}`}>{value}</div>
-              <div className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mt-0.5">{label}</div>
+              <div className="text-[9px] text-[var(--color-text-muted)] uppercase tracking-widest font-bold mt-0.5">{label}</div>
             </div>
           </div>
         ))}
@@ -559,29 +559,29 @@ export default function TransportCalendarPage() {
         style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}
       >
         {/* Toolbar */}
-        <div className="px-4 py-3 border-b border-white/[0.05] flex items-center justify-between flex-wrap gap-3 bg-zinc-950/[0.02]">
+        <div className="px-4 py-3 border-b border-white/[0.05] flex items-center justify-between flex-wrap gap-3 bg-[var(--color-bg-base)]/[0.02]">
           <div className="flex items-center gap-3">
             <button
               onClick={prevMonth}
-              className="w-8 h-8 flex items-center justify-center border border-white/[0.08] text-zinc-500 hover:text-zinc-100 hover:border-white/[0.14] transition-colors"
+              className="w-8 h-8 flex items-center justify-center border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-white/[0.14] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-black text-white">{MONTHS[month]}</span>
-              <span className="text-[12px] font-bold text-zinc-500">{year}</span>
+              <span className="text-[12px] font-bold text-[var(--color-text-muted)]">{year}</span>
             </div>
             <button
               onClick={nextMonth}
-              className="w-8 h-8 flex items-center justify-center border border-white/[0.08] text-zinc-500 hover:text-zinc-100 hover:border-white/[0.14] transition-colors"
+              className="w-8 h-8 flex items-center justify-center border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-white/[0.14] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }}
-              className="h-7 px-2 text-[9px] font-bold uppercase tracking-widest border border-orange/25 bg-[#FF4D00]/[0.06] text-[#FF4D00] hover:bg-[#FF4D00]/15 transition-colors"
+              className="h-7 px-2 text-[9px] font-bold uppercase tracking-widest border border-orange/25 bg-[var(--q-orange)]/[0.06] text-[var(--q-orange)] hover:bg-[var(--q-orange)]/15 transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
             >
               Today
@@ -590,19 +590,19 @@ export default function TransportCalendarPage() {
 
           <div className="flex items-center gap-2">
             <Legend />
-            <div className="w-px h-5 bg-zinc-950/[0.06]" />
+            <div className="w-px h-5 bg-[var(--color-bg-base)]/[0.06]" />
             <div className="flex items-center border border-white/[0.08]"
               style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}>
               <button
                 onClick={() => setViewMode('month')}
-                className={`flex items-center gap-1.5 h-7 px-3 text-[9px] font-bold uppercase tracking-wider transition-colors ${viewMode === 'month' ? 'bg-[#FF4D00]/15 text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-100'}`}
+                className={`flex items-center gap-1.5 h-7 px-3 text-[9px] font-bold uppercase tracking-wider transition-colors ${viewMode === 'month' ? 'bg-[var(--q-orange)]/15 text-[var(--q-orange)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}
               >
                 <LayoutGrid className="w-3 h-3" />
                 <span className="hidden sm:inline">Month</span>
               </button>
               <button
                 onClick={() => setViewMode('timeline')}
-                className={`flex items-center gap-1.5 h-7 px-3 text-[9px] font-bold uppercase tracking-wider border-l border-white/[0.08] transition-colors ${viewMode === 'timeline' ? 'bg-[#FF4D00]/15 text-[#FF4D00]' : 'text-zinc-500 hover:text-zinc-100'}`}
+                className={`flex items-center gap-1.5 h-7 px-3 text-[9px] font-bold uppercase tracking-wider border-l border-white/[0.08] transition-colors ${viewMode === 'timeline' ? 'bg-[var(--q-orange)]/15 text-[var(--q-orange)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}
               >
                 <List className="w-3 h-3" />
                 <span className="hidden sm:inline">Timeline</span>
@@ -613,7 +613,7 @@ export default function TransportCalendarPage() {
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="flex items-center gap-2 text-zinc-500 text-[11px]">
+            <div className="flex items-center gap-2 text-[var(--color-text-muted)] text-[11px]">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               Loading calendar…
             </div>
@@ -622,8 +622,8 @@ export default function TransportCalendarPage() {
           <MonthView year={year} month={month} events={events} />
         ) : (
           <div className="p-4">
-            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-3 flex items-center gap-2">
-              <Clock className="w-3 h-3 text-zinc-500" />
+            <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-3 flex items-center gap-2">
+              <Clock className="w-3 h-3 text-[var(--color-text-muted)]" />
               {viewMode === 'timeline' ? `All Requests — ${monthEvents.length} in ${MONTHS[month]}` : ''}
             </div>
             <TimelineView events={monthEvents} />
@@ -642,7 +642,7 @@ export default function TransportCalendarPage() {
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-1.5 h-8 px-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 border border-white/[0.06] hover:text-zinc-100 hover:border-white/[0.12] transition-colors"
+            className="flex items-center gap-1.5 h-8 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)] border border-white/[0.06] hover:text-[var(--color-text-primary)] hover:border-white/[0.12] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
           >
             <Truck className="w-3 h-3" />

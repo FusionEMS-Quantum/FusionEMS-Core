@@ -12,13 +12,16 @@ import {
   StatusChip,
 } from '@/components/ui';
 import type { SeverityLevel, StatusVariant } from '@/lib/design-system/tokens';
+import { CadLiveMap } from '@/components/CadLiveMap';
 import {
   getActiveCADCalls,
-  listCADUnits,
+  listCADUnitsWithLatestLocations,
   transitionCADCall,
   assignCADUnit,
   createCADCall,
 } from '@/services/api';
+import type { RealtimeEvent } from '@/services/websocket';
+import { getWSClient } from '@/services/websocket';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,12 +64,12 @@ const PRIORITY_CONFIG: Record<string, {
   label: string; bg: string; border: string; text: string;
   ring: string; sortOrder: number;
 }> = {
-  ECHO:   { label: 'E', bg: 'bg-red-900/40',     border: 'border-red-500',     text: 'text-red-300',    ring: 'shadow-red-500/40',    sortOrder: 5 },
-  DELTA:  { label: 'D', bg: 'bg-[rgba(255,77,0,0.4)]', border: 'border-orange-500',  text: 'text-[#FF9A66]', ring: 'shadow-orange-500/40', sortOrder: 4 },
+  ECHO:   { label: 'E', bg: 'bg-red-900/40',     border: 'border-[var(--color-brand-red)]',     text: 'text-[var(--color-brand-red)]',    ring: 'shadow-red-500/40',    sortOrder: 5 },
+  DELTA:  { label: 'D', bg: 'bg-[rgba(255,106,0,0.4)]', border: 'border-orange-500',  text: 'text-[#FF9A66]', ring: 'shadow-orange-500/40', sortOrder: 4 },
   CHARLIE:{ label: 'C', bg: 'bg-yellow-900/40',   border: 'border-yellow-500',  text: 'text-yellow-300', ring: 'shadow-yellow-500/40', sortOrder: 3 },
-  BRAVO:  { label: 'B', bg: 'bg-blue-900/40',     border: 'border-blue-500',    text: 'text-blue-300',   ring: 'shadow-blue-500/40',   sortOrder: 2 },
-  ALPHA:  { label: 'A', bg: 'bg-green-900/40',    border: 'border-green-500',   text: 'text-green-300',  ring: 'shadow-green-500/40',  sortOrder: 1 },
-  OMEGA:  { label: 'Ω', bg: 'bg-zinc-900/50',     border: 'border-gray-600',    text: 'text-zinc-500',   ring: '',                     sortOrder: 0 },
+  BRAVO:  { label: 'B', bg: 'bg-blue-900/40',     border: 'border-[var(--color-status-info)]',    text: 'text-[var(--color-status-info)]',   ring: 'shadow-blue-500/40',   sortOrder: 2 },
+  ALPHA:  { label: 'A', bg: 'bg-green-900/40',    border: 'border-[var(--color-status-active)]',   text: 'text-[var(--color-status-active)]',  ring: 'shadow-green-500/40',  sortOrder: 1 },
+  OMEGA:  { label: 'Ω', bg: 'bg-[var(--color-bg-panel)]/50',     border: 'border-gray-600',    text: 'text-[var(--color-text-muted)]',   ring: '',                     sortOrder: 0 },
 };
 
 const PRIORITY_SEVERITY_MAP: Record<string, SeverityLevel> = {
@@ -152,7 +155,7 @@ function ElapsedTimer({ startTime, critical }: { startTime: string; critical?: n
   const isCritical = critical !== undefined && minutes >= critical;
 
   return (
-    <span className={`font-mono text-xs font-bold ${isCritical ? 'text-red-400 animate-pulse' : minutes > 8 ? 'text-[#FF7A33]' : 'text-zinc-500'}`}>
+    <span className={`font-mono text-xs font-bold ${isCritical ? 'text-[var(--color-brand-red)] animate-pulse' : minutes > 8 ? 'text-[#FF7A33]' : 'text-[var(--color-text-muted)]'}`}>
       {elapsed}
     </span>
   );
@@ -188,13 +191,13 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span
-            className={`w-8 h-8 flex items-center justify-center font-black text-sm border ${cfg.border} ${cfg.text} bg-black/30`}
+            className={`w-8 h-8 flex items-center justify-center font-black text-sm border ${cfg.border} ${cfg.text} bg-[var(--color-bg-base)]/30`}
             style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
           >
             {cfg.label}
           </span>
           <div>
-            <div className="text-sm font-bold text-zinc-100">#{call.call_number}</div>
+            <div className="text-sm font-bold text-[var(--color-text-primary)]">#{call.call_number}</div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`text-micro font-semibold ${cfg.text}`}>{call.priority}</span>
               <SeverityBadge severity={PRIORITY_SEVERITY_MAP[call.priority] ?? 'INFORMATIONAL'} size="sm" />
@@ -206,14 +209,14 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
             startTime={call.call_received_at}
             critical={call.priority === 'ECHO' ? 4 : call.priority === 'DELTA' ? 8 : 15}
           />
-          <div className="text-micro text-zinc-500 mt-0.5">elapsed</div>
+          <div className="text-micro text-[var(--color-text-muted)] mt-0.5">elapsed</div>
         </div>
       </div>
 
       {/* Complaint + Address */}
       <div className="mb-2">
-        <div className="text-sm font-semibold text-zinc-100">{call.chief_complaint || 'No complaint noted'}</div>
-        <div className="text-micro text-zinc-500 mt-0.5 truncate mb-1.5">
+        <div className="text-sm font-semibold text-[var(--color-text-primary)]">{call.chief_complaint || 'No complaint noted'}</div>
+        <div className="text-micro text-[var(--color-text-muted)] mt-0.5 truncate mb-1.5">
           📍 {call.address || call.location_address || 'Address pending'}
         </div>
         <StatusChip status={CALL_STATE_STATUS_MAP[call.state]} size="sm">
@@ -233,7 +236,7 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
               className={`h-1 flex-1  transition-all ${
                 idx < currentIdx ? `${activeBg} opacity-80` :
                 idx === currentIdx ? currentBg :
-                'bg-zinc-950/10'
+                'bg-[var(--color-bg-base)]/10'
               }`}
             />
           );
@@ -244,16 +247,16 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
       {isSelected && (
         <div className="border-t border-white/10 pt-3 mt-1 space-y-2">
           {call.caller_name && (
-            <div className="text-sm text-zinc-400">
+            <div className="text-sm text-[var(--color-text-secondary)]">
               📞 {call.caller_name}{call.caller_phone ? ` · ${call.caller_phone}` : ''}
             </div>
           )}
           {call.triage_notes && (
-            <div className="text-xs text-zinc-500 bg-black/20 chamfer-4 p-2">{call.triage_notes}</div>
+            <div className="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-base)]/20 chamfer-4 p-2">{call.triage_notes}</div>
           )}
           {call.assigned_unit && (
-            <div className="text-xs text-zinc-400">
-              🚑 Assigned: <span className="font-semibold text-zinc-100">{call.assigned_unit}</span>
+            <div className="text-xs text-[var(--color-text-secondary)]">
+              🚑 Assigned: <span className="font-semibold text-[var(--color-text-primary)]">{call.assigned_unit}</span>
             </div>
           )}
         </div>
@@ -264,7 +267,7 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
         {nextState && NEXT_ACTION_LABEL[call.state] && (
           <button
             onClick={() => onTransition(nextState)}
-            className={`px-3 py-1.5 text-micro font-bold uppercase border ${cfg.border} ${cfg.text} bg-black/20 hover:bg-black/40 transition-colors chamfer-4`}
+            className={`px-3 py-1.5 text-micro font-bold uppercase border ${cfg.border} ${cfg.text} bg-[var(--color-bg-base)]/20 hover:bg-[var(--color-bg-base)]/40 transition-colors chamfer-4`}
           >
             {NEXT_ACTION_LABEL[call.state]} →
           </button>
@@ -278,15 +281,15 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
               Assign {availableUnits.length > 0 ? `(${availableUnits.length})` : '—'}
             </button>
             {assignOpen && availableUnits.length > 0 && (
-              <div className="absolute bottom-full left-0 mb-1 w-48 bg-black border border-border-subtle chamfer-8 z-50 shadow-[0_0_15px_rgba(0,0,0,0.6)]">
+              <div className="absolute bottom-full left-0 mb-1 w-48 bg-[var(--color-bg-base)] border border-border-subtle chamfer-8 z-50 shadow-[0_0_15px_rgba(0,0,0,0.6)]">
                 {availableUnits.map(u => (
                   <button
                     key={u.id}
                     onClick={() => { onAssign(u.id); setAssignOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-xs text-zinc-400 hover:bg-brand-orange/10 hover:text-brand-orange transition-colors border-b border-border-subtle last:border-0"
+                    className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-brand-orange/10 hover:text-brand-orange transition-colors border-b border-border-subtle last:border-0"
                   >
-                    <span className="font-bold text-zinc-100">{u.unit_name}</span>
-                    <span className="text-zinc-500 ml-2">{u.unit_type}</span>
+                    <span className="font-bold text-[var(--color-text-primary)]">{u.unit_name}</span>
+                    <span className="text-[var(--color-text-muted)] ml-2">{u.unit_type}</span>
                   </button>
                 ))}
               </div>
@@ -295,7 +298,7 @@ function CallCard({ call, isSelected, onSelect, onTransition, units, onAssign }:
         )}
         <button
           onClick={() => onTransition('CANCELLED')}
-          className="ml-auto px-2 py-1.5 text-micro text-zinc-500 hover:text-red-400 transition-colors"
+          className="ml-auto px-2 py-1.5 text-micro text-[var(--color-text-muted)] hover:text-[var(--color-brand-red)] transition-colors"
           title="Cancel call"
         >
           ✕
@@ -333,18 +336,18 @@ function NewCallForm({ onClose, onCreated }: NewCallFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
-      <div className="bg-black border border-brand-orange/40 chamfer-16 p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg-base)]/80" onClick={onClose}>
+      <div className="bg-[var(--color-bg-base)] border border-brand-orange/40 chamfer-16 p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-black text-zinc-100 uppercase tracking-wider">New CAD Call</h2>
-            <div className="text-micro text-zinc-500">All fields captured for NEMSIS compliance</div>
+            <h2 className="text-base font-black text-[var(--color-text-primary)] uppercase tracking-wider">New CAD Call</h2>
+            <div className="text-micro text-[var(--color-text-muted)]">All fields captured for NEMSIS compliance</div>
           </div>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-100">✕</button>
+          <button onClick={onClose} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">✕</button>
         </div>
         <div className="space-y-3">
           <div>
-            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">PRIORITY *</label>
+            <label className="block text-micro text-[var(--color-text-muted)] mb-1 uppercase tracking-wider">PRIORITY *</label>
             <div className="flex gap-2">
               {(['ECHO','DELTA','CHARLIE','BRAVO','ALPHA'] as const).map(prio => {
                 const cfg = PRIORITY_CONFIG[prio];
@@ -355,7 +358,7 @@ function NewCallForm({ onClose, onCreated }: NewCallFormProps) {
                     className={`flex-1 py-2 text-xs font-black uppercase border transition-all chamfer-4 ${
                       form.priority === prio
                         ? `${cfg.bg} ${cfg.border} ${cfg.text}`
-                        : 'border-border-subtle text-zinc-500 hover:border-white/20'
+                        : 'border-border-subtle text-[var(--color-text-muted)] hover:border-white/20'
                     }`}
                   >
                     {prio}
@@ -366,49 +369,49 @@ function NewCallForm({ onClose, onCreated }: NewCallFormProps) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">CALLER NAME</label>
+              <label className="block text-micro text-[var(--color-text-muted)] mb-1 uppercase tracking-wider">CALLER NAME</label>
               <input
                 value={form.caller_name}
                 onChange={e => setForm(f => ({ ...f, caller_name: e.target.value }))}
-                className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+                className="w-full bg-[var(--color-bg-panel)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
                 placeholder="Jane Smith"
               />
             </div>
             <div>
-              <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">CALLER PHONE</label>
+              <label className="block text-micro text-[var(--color-text-muted)] mb-1 uppercase tracking-wider">CALLER PHONE</label>
               <input
                 value={form.caller_phone}
                 onChange={e => setForm(f => ({ ...f, caller_phone: e.target.value }))}
-                className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+                className="w-full bg-[var(--color-bg-panel)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
                 placeholder="(555) 000-0000"
               />
             </div>
           </div>
           <div>
-            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">LOCATION ADDRESS *</label>
+            <label className="block text-micro text-[var(--color-text-muted)] mb-1 uppercase tracking-wider">LOCATION ADDRESS *</label>
             <input
               value={form.location_address}
               onChange={e => setForm(f => ({ ...f, location_address: e.target.value }))}
-              className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-[var(--color-bg-panel)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
               placeholder="123 Main St, Anytown, WI 53703"
             />
           </div>
           <div>
-            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">CHIEF COMPLAINT *</label>
+            <label className="block text-micro text-[var(--color-text-muted)] mb-1 uppercase tracking-wider">CHIEF COMPLAINT *</label>
             <input
               value={form.chief_complaint}
               onChange={e => setForm(f => ({ ...f, chief_complaint: e.target.value }))}
-              className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-[var(--color-bg-panel)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
               placeholder="Chest pain, difficulty breathing…"
             />
           </div>
           <div>
-            <label className="block text-micro text-zinc-500 mb-1 uppercase tracking-wider">EMD TRIAGE NOTES</label>
+            <label className="block text-micro text-[var(--color-text-muted)] mb-1 uppercase tracking-wider">EMD TRIAGE NOTES</label>
             <textarea
               value={form.triage_notes}
               onChange={e => setForm(f => ({ ...f, triage_notes: e.target.value }))}
               rows={2}
-              className="w-full bg-[#0A0A0B] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60 resize-none"
+              className="w-full bg-[var(--color-bg-panel)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60 resize-none"
               placeholder="Patient is conscious and breathing, denies prior cardiac history…"
             />
           </div>
@@ -445,24 +448,24 @@ function UnitBoard({ units }: { units: CADUnit[] }) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-green-900/20 border border-green-500/30 chamfer-8 p-2 text-center">
-          <div className="text-xl font-black text-green-400">{available}</div>
-          <div className="text-micro text-zinc-500">Available</div>
+        <div className="bg-green-900/20 border border-[var(--color-status-active)]/30 chamfer-8 p-2 text-center">
+          <div className="text-xl font-black text-[var(--color-status-active)]">{available}</div>
+          <div className="text-micro text-[var(--color-text-muted)]">Available</div>
         </div>
-        <div className="bg-[rgba(255,77,0,0.2)] border border-orange-500/30 chamfer-8 p-2 text-center">
+        <div className="bg-[rgba(255,106,0,0.2)] border border-orange-500/30 chamfer-8 p-2 text-center">
           <div className="text-xl font-black text-[#FF7A33]">{busy}</div>
-          <div className="text-micro text-zinc-500">Committed</div>
+          <div className="text-micro text-[var(--color-text-muted)]">Committed</div>
         </div>
-        <div className="bg-zinc-900/30 border border-gray-600/30 chamfer-8 p-2 text-center">
-          <div className="text-xl font-black text-zinc-500">{oos}</div>
-          <div className="text-micro text-zinc-500">OOS</div>
+        <div className="bg-[var(--color-bg-panel)]/30 border border-gray-600/30 chamfer-8 p-2 text-center">
+          <div className="text-xl font-black text-[var(--color-text-muted)]">{oos}</div>
+          <div className="text-micro text-[var(--color-text-muted)]">OOS</div>
         </div>
       </div>
       {Object.entries(byStation).map(([station, stationUnits]) => (
-        <div key={station} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
+        <div key={station} className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 overflow-hidden">
           <div className="px-3 py-2 border-b border-border-subtle flex items-center justify-between">
-            <span className="text-micro font-bold text-zinc-500 uppercase tracking-widest">{station}</span>
-            <span className="text-micro text-zinc-500">
+            <span className="text-micro font-bold text-[var(--color-text-muted)] uppercase tracking-widest">{station}</span>
+            <span className="text-micro text-[var(--color-text-muted)]">
               {stationUnits.filter(u => u.state === 'AVAILABLE').length}/{stationUnits.length} avail
             </span>
           </div>
@@ -471,11 +474,11 @@ function UnitBoard({ units }: { units: CADUnit[] }) {
               const statusVariant = UNIT_STATE_STATUS_MAP[unit.state] ?? 'neutral';
               const readinessPct = unit.readiness_score != null ? Math.round(unit.readiness_score * 100) : null;
               return (
-                <div key={unit.id} className="px-3 py-2 flex items-center justify-between hover:bg-zinc-950/[0.02]">
+                <div key={unit.id} className="px-3 py-2 flex items-center justify-between hover:bg-[var(--color-bg-base)]/[0.02]">
                   <div className="flex items-center gap-2">
                     <div>
-                      <div className="text-sm font-bold text-zinc-100">{unit.unit_name}</div>
-                      <div className="text-micro text-zinc-500">{unit.unit_type}</div>
+                      <div className="text-sm font-bold text-[var(--color-text-primary)]">{unit.unit_name}</div>
+                      <div className="text-micro text-[var(--color-text-muted)]">{unit.unit_type}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -493,7 +496,7 @@ function UnitBoard({ units }: { units: CADUnit[] }) {
         </div>
       ))}
       {units.length === 0 && (
-        <div className="text-center py-6 text-sm text-zinc-500">
+        <div className="text-center py-6 text-sm text-[var(--color-text-muted)]">
           No units registered. Add units through Fleet Management.
         </div>
       )}
@@ -514,13 +517,32 @@ export default function CADDispatchPage() {
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const handleRealtimeEvent = useCallback((event: RealtimeEvent) => {
+    if (event.event_type !== 'unit_locations.created' && event.event_type !== 'unit_locations.updated') return;
+    const record = (event.payload?.record ?? null) as unknown;
+    if (!record || typeof record !== 'object') return;
+    const recObj = record as Record<string, unknown>;
+    const data = recObj.data as unknown;
+    if (!data || typeof data !== 'object') return;
+    const dataObj = data as Record<string, unknown>;
+    const unitId = typeof dataObj.unit_id === 'string' ? dataObj.unit_id : null;
+    if (!unitId) return;
+    const points = Array.isArray(dataObj.points) ? (dataObj.points as unknown[]) : null;
+    const first = points && points.length > 0 ? (points[0] as Record<string, unknown>) : null;
+    const lat = first && typeof first.lat === 'number' ? first.lat : null;
+    const lng = first && typeof first.lng === 'number' ? first.lng : null;
+    if (lat == null || lng == null) return;
+
+    setUnits((prev) => prev.map((u) => (u.id === unitId ? { ...u, lat, lng } : u)));
+  }, []);
+
   const refresh = useCallback(async () => {
     setLoadError(null);
     let anyFailed = false;
     try {
       const [callData, unitData] = await Promise.all([
         getActiveCADCalls().catch((err) => { anyFailed = true; console.error('[CAD] calls load failed:', err); return [] as CADCall[]; }),
-        listCADUnits().catch((err) => { anyFailed = true; console.error('[CAD] units load failed:', err); return [] as CADUnit[]; }),
+        listCADUnitsWithLatestLocations().catch((err) => { anyFailed = true; console.error('[CAD] units load failed:', err); return [] as CADUnit[]; }),
       ]);
       if (anyFailed) {
         setLoadError('Some CAD data failed to load — displayed calls or units may be incomplete. Refresh immediately.');
@@ -540,6 +562,23 @@ export default function CADDispatchPage() {
     intervalRef.current = setInterval(refresh, 10_000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [refresh]);
+
+  useEffect(() => {
+    let detach: (() => void) | null = null;
+    const tryAttach = () => {
+      if (detach) return;
+      const client = getWSClient();
+      if (!client) return;
+      detach = client.addHandler(handleRealtimeEvent);
+    };
+
+    tryAttach();
+    const timer = setInterval(tryAttach, 500);
+    return () => {
+      clearInterval(timer);
+      detach?.();
+    };
+  }, [handleRealtimeEvent]);
 
   const handleTransition = async (callId: string, state: string) => {
     try {
@@ -573,10 +612,20 @@ export default function CADDispatchPage() {
   const availableUnits = units.filter(u => u.state === 'AVAILABLE').length;
   const blockingCalls = calls.filter(c => c.priority === 'ECHO' && !['CLOSED', 'CANCELLED'].includes(c.state)).length;
 
+  const mapUnits = units
+    .filter((u) => u.lat != null && u.lng != null)
+    .map((u) => ({
+      unit_id: u.id,
+      unit_number: u.unit_name,
+      lat: u.lat as number,
+      lng: u.lng as number,
+      status: (u.state || '').toLowerCase(),
+    }));
+
   return (
     <>
       {loadError && (
-        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-[var(--color-brand-red)]/30 text-[var(--color-brand-red)] text-sm font-medium chamfer-4">
           ⚠ {loadError}
         </div>
       )}
@@ -606,7 +655,7 @@ export default function CADDispatchPage() {
                   key={v}
                   onClick={() => setActiveView(v)}
                   className={`px-3 py-1.5 text-micro font-semibold capitalize transition-colors ${
-                    activeView === v ? 'bg-brand-orange text-white' : 'text-zinc-500 hover:text-zinc-400 hover:bg-zinc-950/5'
+                    activeView === v ? 'bg-brand-orange text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-base)]/5'
                   }`}
                 >
                   {v}
@@ -615,7 +664,7 @@ export default function CADDispatchPage() {
             </div>
             {activeView === 'dispatch' && (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-micro text-zinc-500 mr-1 uppercase tracking-widest">Priority:</span>
+                <span className="text-micro text-[var(--color-text-muted)] mr-1 uppercase tracking-widest">Priority:</span>
                 {['ALL','ECHO','DELTA','CHARLIE','BRAVO','ALPHA'].map(p => {
                   const cfg = PRIORITY_CONFIG[p];
                   return (
@@ -625,7 +674,7 @@ export default function CADDispatchPage() {
                       className={`px-2.5 py-1 text-micro font-bold transition-all chamfer-4 border ${
                         priorityFilter === p
                           ? cfg ? `${cfg.bg} ${cfg.border} ${cfg.text}` : 'bg-brand-orange border-brand-orange text-white'
-                          : cfg ? `${cfg.border} ${cfg.text} opacity-50 hover:opacity-80` : 'border-border-subtle text-zinc-500 hover:border-brand-orange/40'
+                          : cfg ? `${cfg.border} ${cfg.text} opacity-50 hover:opacity-80` : 'border-border-subtle text-[var(--color-text-muted)] hover:border-brand-orange/40'
                       }`}
                     >
                       {p}
@@ -659,6 +708,9 @@ export default function CADDispatchPage() {
                 : 'Maintain cadence by clearing in-flight calls and preserving unit availability.'}
               requiresReview={echoDelta > 0}
             />
+            {(activeView === 'dispatch' || activeView === 'units') && (
+              <CadLiveMap units={mapUnits} className="chamfer-8" />
+            )}
             {activeView === 'dispatch' && <UnitBoard units={units} />}
           </div>
         }
@@ -693,12 +745,12 @@ export default function CADDispatchPage() {
           historyCalls.length === 0 ? (
             <QuantumEmptyState title="No closed calls" description="Closed and cancelled calls will appear here." icon="archive" />
           ) : (
-            <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
+            <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 overflow-hidden">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-border-subtle">
                     {['Call #','Priority','Complaint','Address','Status','Received'].map(h => (
-                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
+                      <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-[var(--color-text-muted)]">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -706,15 +758,15 @@ export default function CADDispatchPage() {
                   {historyCalls.map(call => {
                     const cfg = PRIORITY_CONFIG[call.priority] || PRIORITY_CONFIG.ALPHA;
                     return (
-                      <tr key={call.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
-                        <td className="px-4 py-3 text-sm font-bold text-zinc-100">#{call.call_number}</td>
+                      <tr key={call.id} className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02]">
+                        <td className="px-4 py-3 text-sm font-bold text-[var(--color-text-primary)]">#{call.call_number}</td>
                         <td className={`px-4 py-3 text-sm font-semibold ${cfg.text}`}>{call.priority}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-400">{call.chief_complaint || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-500 truncate max-w-xs">{call.address || call.location_address || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-500">
+                        <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{call.chief_complaint || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-[var(--color-text-muted)] truncate max-w-xs">{call.address || call.location_address || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-[var(--color-text-muted)]">
                           <StatusChip status={CALL_STATE_STATUS_MAP[call.state]} size="sm">{STATE_LABEL[call.state]}</StatusChip>
                         </td>
-                        <td className="px-4 py-3 text-sm font-mono text-zinc-500">
+                        <td className="px-4 py-3 text-sm font-mono text-[var(--color-text-muted)]">
                           {call.call_received_at ? new Date(call.call_received_at).toLocaleTimeString() : '—'}
                         </td>
                       </tr>

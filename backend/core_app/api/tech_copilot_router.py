@@ -12,8 +12,8 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from core_app.ai.service import AiService
 from core_app.api.dependencies import get_current_user
-from core_app.core.config import get_settings
 from core_app.schemas.auth import CurrentUser
 
 logger = logging.getLogger(__name__)
@@ -323,59 +323,41 @@ async def analyze_issue(
     _current: CurrentUser = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Analyze platform health using AI with deterministic fallback."""
-    settings = get_settings()
-
-    # Try AI analysis if OpenAI is configured
-    if settings.openai_api_key:
+    # Try AI analysis if any provider is configured (Bedrock/OpenAI)
+    if AiService.is_configured():
         try:
-            from openai import (
-                APIConnectionError,
-                APIError,
-                APITimeoutError,
-                AuthenticationError,
-                OpenAI,
-                RateLimitError,
+            svc = AiService()
+            user_msg = json.dumps({"type": payload.type, "data": payload.data}, default=str)
+            _resp = svc.chat(
+                system=ANALYSIS_SYSTEM_PROMPT,
+                user=user_msg,
+                temperature=0.1,
+                max_tokens=500,
             )
-        except (ImportError, ModuleNotFoundError) as exc:
-            logger.warning("OpenAI client unavailable, using heuristic fallback: %s", exc)
-        else:
-            try:
-                client = OpenAI(api_key=settings.openai_api_key)
-                user_msg = json.dumps({"type": payload.type, "data": payload.data}, default=str)
-                resp = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": ANALYSIS_SYSTEM_PROMPT},
-                        {"role": "user", "content": user_msg},
-                    ],
-                    temperature=0.1,
-                    max_tokens=500,
+            content = _resp.content
+            result = json.loads(content)
+            required = {
+                "issue",
+                "severity",
+                "source",
+                "what_is_wrong",
+                "why_it_matters",
+                "what_to_do_next",
+                "tech_context",
+                "human_review",
+                "confidence",
+            }
+            if required.issubset(result.keys()):
+                logger.info(
+                    "Tech Copilot AI analysis completed",
+                    extra={"extra_fields": {"type": payload.type, "provider": _resp.provider}},
                 )
-                content = resp.choices[0].message.content or ""
-                result = json.loads(content)
-                # Validate required fields exist
-                required = {"issue", "severity", "source", "what_is_wrong", "why_it_matters",
-                            "what_to_do_next", "tech_context", "human_review", "confidence"}
-                if required.issubset(result.keys()):
-                    logger.info(
-                        "Tech Copilot AI analysis completed",
-                        extra={"extra_fields": {"type": payload.type}},
-                    )
-                    return result
-                logger.warning("AI response missing fields, falling back to heuristic")
-            except (
-                APIConnectionError,
-                APIError,
-                APITimeoutError,
-                AuthenticationError,
-                RateLimitError,
-                json.JSONDecodeError,
-                TypeError,
-                ValueError,
-                KeyError,
-                IndexError,
-            ) as exc:
-                logger.warning("AI analysis failed, using heuristic fallback: %s", exc)
+                return result
+            logger.warning("AI response missing fields, falling back to heuristic")
+        except (json.JSONDecodeError, TypeError, ValueError, KeyError, IndexError) as exc:
+            logger.warning("AI analysis failed, using heuristic fallback: %s", exc)
+        except Exception as exc:
+            logger.warning("AI analysis failed, using heuristic fallback: %s", exc)
 
     # Deterministic fallback
     return _heuristic_analysis(payload.data)

@@ -7,7 +7,11 @@
 html,
 body {
   height: 100%;
-  background-color: var(--color-bg-base);
+  background:
+    radial-gradient(circle at top, rgba(255, 120, 40, 0.10) 0%, transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 140, 0, 0.08) 0%, transparent 25%),
+    linear-gradient(180deg, #070707 0%, #0a0a0b 45%, #050505 100%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-body);
@@ -39,25 +43,62 @@ body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--color-bg-base);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-border-strong);
   clip-path: var(--chamfer-4);
 }
+
+button.bg-orange:hover {
+  background-color: #E64500 !important;
+  box-shadow: 0 0 20px rgba(255, 77, 0, 0.3) !important;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-brand-orange-dim);
 }
 
 /* SOVEREIGN SYSTEMS TACTICAL ENFORCEMENTS */
-.chamfer-2 { clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%); }
-.chamfer-4 { clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%); }
-.chamfer-6 { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%); }
-.chamfer-8 { clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%); }
-.chamfer-16 { clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%); }
+.chamfer-2 {
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
+}
 
-.chamfer { clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); }
+.chamfer-4 {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+}
+
+.chamfer-6 {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.chamfer-8 {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+.chamfer-16 {
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+}
+
+.chamfer {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
 
 /* Global Button Enforcements for legacy buttons to make them tactical */
 button.bg-orange {

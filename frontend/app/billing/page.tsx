@@ -33,7 +33,7 @@ const NAV_CARDS = [
     href: '/billing-command',
     title: 'Command Center',
     description: 'Full billing intelligence dashboard',
-    accent: '#FF4D00',
+    accent: 'var(--q-orange)',
   },
   {
     href: '/compliance',
@@ -55,7 +55,7 @@ export default function BillingPage() {
     <AppShell>
       <div
         className="min-h-screen"
-        style={{ background: '#050505', color: 'var(--color-text-primary)' }}
+        style={{ background: 'var(--color-bg-base)', color: 'var(--color-text-primary)' }}
       >
         {/* Page Header */}
         <div
@@ -90,7 +90,7 @@ export default function BillingPage() {
             <Link key={card.href} href={card.href} style={{ textDecoration: 'none' }}>
               <div
                 style={{
-                  background: '#0A0A0B',
+                  background: 'var(--color-bg-panel)',
                   clipPath: 'var(--chamfer-8)',
                   borderLeft: `3px solid ${card.accent}`,
                   padding: '20px 24px',
@@ -104,7 +104,7 @@ export default function BillingPage() {
                     'var(--color-bg-panel-raised)';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.background = '#0A0A0B';
+                  (e.currentTarget as HTMLDivElement).style.background = 'var(--color-bg-panel)';
                 }}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -159,7 +159,7 @@ export default function BillingPage() {
               <div
                 key={stat.label}
                 style={{
-                  background: '#0A0A0B',
+                  background: 'var(--color-bg-panel)',
                   clipPath: 'var(--chamfer-8)',
                   padding: '20px',
                   borderTop: `2px solid ${stat.accent}`,

@@ -1,0 +1,33 @@
+{
+  "nemsis_version": "3.5.1",
+  "state_profile": "Wisconsin",
+  "status": "NEMSIS-ready / validation-passing",
+  "xsd_validation": [
+    {
+      "file": "sample_ems_minimal.xml",
+      "dataset_type": "EMS",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "No XSD file found for EMS dataset in /workspaces/FusionEMS-Core/backend/compliance/nemsis/v3.5.1"
+      ],
+      "xsd_version": "3.5.1"
+    }
+  ],
+  "wisconsin_profile_validation": [
+    {
+      "file": "sample_ems_record.json",
+      "passed": true,
+      "rules_checked": 9,
+      "rules_passed": 9,
+      "violations": [],
+      "warnings": []
+    }
+  ],
+  "certification_status": "Not certified - pending formal NEMSIS compliance process",
+  "evidence": {
+    "xsd_checks": 1,
+    "wi_profile_checks": 1,
+    "all_passed": true
+  }
+}

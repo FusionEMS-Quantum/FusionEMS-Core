@@ -72,7 +72,7 @@ function truncateId(id: string): string {
 
 const TRANSPORT_STYLE: Record<TransportMode, { label: string; color: string; bg: string }> = {
   ground:    { label: 'GROUND',     color: 'var(--color-status-info)', bg: 'rgba(66,165,245,0.12)'   },
-  rotor:     { label: 'ROTOR',      color: '#FF4D00', bg: 'rgba(255,107,26,0.12)'   },
+  rotor:     { label: 'ROTOR',      color: 'var(--q-orange)', bg: 'rgba(255,106,0,0.12)'   },
   fixed_wing:{ label: 'FIXED WING', color: 'var(--color-system-compliance)', bg: 'rgba(206,147,216,0.12)'  },
 };
 
@@ -89,7 +89,7 @@ const STATUS_COLORS: Record<string, string> = {
   created:     'rgba(255,255,255,0.5)',
   assigned:    'var(--color-status-info)',
   en_route:    'var(--color-status-warning)',
-  on_scene:    '#FF4D00',
+  on_scene:    'var(--q-orange)',
   transporting:'var(--color-system-compliance)',
   arrived:     'var(--color-status-info)',
   completed:   'var(--color-status-active)',
@@ -287,19 +287,19 @@ export default function CasesPage() {
             ] as { key: keyof CMSGate; label: string; type: string }[]
           ).map(({ key, label, type }) => (
             <div key={key} className="flex flex-col gap-1">
-              <label className="text-body text-zinc-500">{label}</label>
+              <label className="text-body text-[var(--color-text-muted)]">{label}</label>
               <input
                 type={type}
-                className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-zinc-100 outline-none"
+                className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
                 value={cmsGate[key] as string}
                 onChange={(e) => setCmsGate((p) => ({ ...p, [key]: e.target.value }))}
               />
             </div>
           ))}
           <div className="flex flex-col gap-1">
-            <label className="text-body text-zinc-500">Transport Level</label>
+            <label className="text-body text-[var(--color-text-muted)]">Transport Level</label>
             <select
-              className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-zinc-100 outline-none"
+              className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
               value={cmsGate.transport_level}
               onChange={(e) => setCmsGate((p) => ({ ...p, transport_level: e.target.value as TransportLevel }))}
             >
@@ -327,9 +327,9 @@ export default function CasesPage() {
                 type="checkbox"
                 checked={cmsGate[key] as boolean}
                 onChange={(e) => setCmsGate((p) => ({ ...p, [key]: e.target.checked }))}
-                className="w-3.5 h-3.5 accent-[#FF4D00] cursor-pointer"
+                className="w-3.5 h-3.5 accent-[var(--q-orange)] cursor-pointer"
               />
-              <span className="text-body text-zinc-400">{label}</span>
+              <span className="text-body text-[var(--color-text-secondary)]">{label}</span>
             </label>
           ))}
         </div>
@@ -350,7 +350,7 @@ export default function CasesPage() {
               <div className="p-6"><QuantumCardSkeleton /></div>
             )}
             {!casesBusy && cases.length === 0 && (
-              <p className="text-body text-zinc-500">No active cases.</p>
+              <p className="text-body text-[var(--color-text-muted)]">No active cases.</p>
             )}
             <div className="space-y-2">
               {cases.map((c) => {
@@ -366,12 +366,12 @@ export default function CasesPage() {
                     {/* Row */}
                     <div
                       className="px-3 py-2.5 flex flex-wrap items-center gap-2 cursor-pointer"
-                      style={{ background: '#050505' }}
+                      style={{ background: 'var(--color-bg-base)' }}
                       onClick={() => setExpandedId(isExpanded ? null : c.case_id)}
                     >
                       <span
                         className="text-xs font-mono font-semibold"
-                        style={{ color: '#FF4D00' }}
+                        style={{ color: 'var(--q-orange)' }}
                         title={c.case_id}
                       >
                         {truncateId(c.case_id)}
@@ -381,10 +381,10 @@ export default function CasesPage() {
                         {c.status.replace(/_/g, ' ').toUpperCase()}
                       </StatusChip>
                       <SeverityBadge severity={prioritySeverity(c.priority)} size="sm" label={c.priority.toUpperCase()} />
-                      <span className="text-body ml-1 text-zinc-400">
+                      <span className="text-body ml-1 text-[var(--color-text-secondary)]">
                         {c.patient_name ?? '—'}
                       </span>
-                      <span className="text-micro ml-auto text-zinc-500">
+                      <span className="text-micro ml-auto text-[var(--color-text-muted)]">
                         {fmtTs(c.opened_at)}
                       </span>
                     </div>
@@ -399,26 +399,26 @@ export default function CasesPage() {
                         <div className="flex flex-wrap gap-4">
                           {c.transport_request_id && (
                             <div>
-                              <p className="text-micro mb-0.5 text-zinc-500">Transport Request ID</p>
-                              <p className="text-xs font-mono text-zinc-400">{c.transport_request_id}</p>
+                              <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">Transport Request ID</p>
+                              <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.transport_request_id}</p>
                             </div>
                           )}
                           {c.cad_call_id && (
                             <div>
-                              <p className="text-micro mb-0.5 text-zinc-500">CAD Call ID</p>
-                              <p className="text-xs font-mono text-zinc-400">{c.cad_call_id}</p>
+                              <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">CAD Call ID</p>
+                              <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.cad_call_id}</p>
                             </div>
                           )}
                           <div>
-                              <p className="text-micro mb-0.5 text-zinc-500">Full Case ID</p>
-                              <p className="text-xs font-mono text-zinc-400">{c.case_id}</p>
+                              <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">Full Case ID</p>
+                              <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.case_id}</p>
                           </div>
                         </div>
 
                         {/* Timeline */}
                         {Array.isArray(c.timeline) && c.timeline.length > 0 && (
                           <div>
-                            <p className="text-micro mb-1.5 font-label text-zinc-500">
+                            <p className="text-micro mb-1.5 font-label text-[var(--color-text-muted)]">
                               Timeline
                             </p>
                             <div className="relative pl-4 space-y-2">
@@ -429,12 +429,12 @@ export default function CasesPage() {
                                 <div key={i} className="relative">
                                   <div
                                     className="absolute -left-[13px] top-1 w-2 h-2 "
-                                    style={{ background: '#FF4D00' }}
+                                    style={{ background: 'var(--q-orange)' }}
                                   />
-                                  <p className="text-micro text-zinc-500">
+                                  <p className="text-micro text-[var(--color-text-muted)]">
                                     {fmtTs(ev.timestamp)}
                                   </p>
-                                  <p className="text-body text-zinc-400">{ev.event}</p>
+                                  <p className="text-body text-[var(--color-text-secondary)]">{ev.event}</p>
                                 </div>
                               ))}
                             </div>
@@ -466,15 +466,15 @@ export default function CasesPage() {
 
       <TabPanel tabId="new" activeTab={activeTab}>
           <div className="space-y-4">
-            <div className="p-4 chamfer-8 bg-[#0A0A0B] border border-[var(--color-border-default)]">
-              <p className="text-body font-label mb-3 text-zinc-400">
+            <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
+              <p className="text-body font-label mb-3 text-[var(--color-text-secondary)]">
                 New Transport Case
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div className="flex flex-col gap-1">
-                <label className="text-body text-zinc-500">Transport Mode</label>
+                <label className="text-body text-[var(--color-text-muted)]">Transport Mode</label>
                   <select
-                    className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-zinc-100 outline-none"
+                    className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
                     value={newCase.transport_mode}
                     onChange={(e) => setNewCase((p) => ({ ...p, transport_mode: e.target.value as TransportMode }))}
                   >
@@ -484,9 +484,9 @@ export default function CasesPage() {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                <label className="text-body text-zinc-500">Priority</label>
+                <label className="text-body text-[var(--color-text-muted)]">Priority</label>
                   <select
-                    className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-zinc-100 outline-none"
+                    className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
                     value={newCase.priority}
                     onChange={(e) => setNewCase((p) => ({ ...p, priority: e.target.value as CasePriority }))}
                   >
@@ -505,10 +505,10 @@ export default function CasesPage() {
                   ] as { key: keyof typeof newCase; label: string }[]
                 ).map(({ key, label }) => (
                   <div key={key} className="flex flex-col gap-1">
-                    <label className="text-body text-zinc-500">{label}</label>
+                    <label className="text-body text-[var(--color-text-muted)]">{label}</label>
                     <input
                       type="text"
-                      className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-zinc-100 outline-none"
+                      className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
                       value={newCase[key] as string}
                       onChange={(e) => setNewCase((p) => ({ ...p, [key]: e.target.value }))}
                     />
@@ -519,7 +519,7 @@ export default function CasesPage() {
                 onClick={submitNewCase}
                 disabled={newCaseBusy}
                 className="px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
-                style={{ background: '#FF4D00', color: 'var(--color-text-primary)' }}
+                style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
               >
                 {newCaseBusy ? 'Creating...' : 'Create Case'}
               </button>
@@ -527,11 +527,11 @@ export default function CasesPage() {
 
             {/* CMS gate shown immediately after creation */}
             {showCmsAfterNew && createdCaseId && (
-              <div className="p-4 chamfer-8 bg-[#0A0A0B] border border-brand-orange/20">
+              <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-brand-orange/20">
                 <p className="text-body font-label mb-1 text-brand-orange">
                   CMS Gate — Case {createdCaseId}
                 </p>
-                <p className="text-micro mb-3 text-zinc-500">
+                <p className="text-micro mb-3 text-[var(--color-text-muted)]">
                   Complete and evaluate the CMS gate for the newly created case.
                 </p>
                 <CmsForm />
@@ -542,7 +542,7 @@ export default function CasesPage() {
                   }}
                   disabled={cmsBusy}
                   className="mt-3 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
-                  style={{ background: '#FF4D00', color: 'var(--color-text-primary)' }}
+                  style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
                 >
                   {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
                 </button>
@@ -554,16 +554,16 @@ export default function CasesPage() {
 
       <TabPanel tabId="cms" activeTab={activeTab}>
           <div className="space-y-4">
-            <div className="p-4 chamfer-8 bg-[#0A0A0B] border border-[var(--color-border-default)]">
-              <p className="text-body font-label mb-3 text-zinc-400">
+            <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
+              <p className="text-body font-label mb-3 text-[var(--color-text-secondary)]">
                 CMS Gate Evaluation
               </p>
 
               <div className="flex flex-col gap-1 mb-4 max-w-xs">
-                <label className="text-body text-zinc-500">Case ID</label>
+                <label className="text-body text-[var(--color-text-muted)]">Case ID</label>
                 <input
                   type="text"
-                  className="bg-black chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-zinc-100 outline-none"
+                  className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
                   placeholder="Enter case ID"
                   value={cmsCaseId}
                   onChange={(e) => setCmsCaseId(e.target.value)}
@@ -576,7 +576,7 @@ export default function CasesPage() {
                 onClick={evaluateCms}
                 disabled={cmsBusy}
                 className="mt-4 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
-                style={{ background: '#FF4D00', color: 'var(--color-text-primary)' }}
+                style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
               >
                 {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
               </button>
@@ -624,16 +624,16 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
       )}
 
       {/* Score + pass/fail */}
-      <div className="p-4 chamfer-8 bg-[#0A0A0B] border border-[var(--color-border-default)]">
+      <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-body text-zinc-500">Score</span>
+          <span className="text-body text-[var(--color-text-muted)]">Score</span>
           <span
             className="text-lg font-bold tabular-nums"
             style={{ color: result.score >= 70 ? 'var(--color-status-active)' : result.score >= 40 ? 'var(--color-status-warning)' : 'var(--color-brand-red)' }}
           >
             {result.score}
           </span>
-          <span className="text-body text-zinc-500">/100</span>
+          <span className="text-body text-[var(--color-text-muted)]">/100</span>
           <span
             className="px-2 py-0.5 text-micro font-semibold uppercase chamfer-4"
             style={{
@@ -663,7 +663,7 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
         {/* Gates table */}
         {result.gates && result.gates.length > 0 && (
           <div>
-            <p className="text-micro font-label mb-2 text-zinc-500">GATES</p>
+            <p className="text-micro font-label mb-2 text-[var(--color-text-muted)]">GATES</p>
             <table className="w-full text-xs">
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -681,8 +681,8 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
               <tbody>
                 {result.gates.map((g, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td className="py-1.5 pr-4 text-zinc-400">{g.name}</td>
-                    <td className="py-1.5 pr-4 tabular-nums text-zinc-500">{g.weight}</td>
+                    <td className="py-1.5 pr-4 text-[var(--color-text-secondary)]">{g.name}</td>
+                    <td className="py-1.5 pr-4 tabular-nums text-[var(--color-text-muted)]">{g.weight}</td>
                     <td className="py-1.5">
                       <span
                         className="px-1.5 py-0.5 text-[9px] font-semibold uppercase chamfer-4"
@@ -704,12 +704,12 @@ function CmsResultPanel({ result }: { result: CMSGateResult }) {
         {/* Issues list */}
         {result.issues && result.issues.length > 0 && (
           <div className="mt-3">
-            <p className="text-micro font-label mb-1.5 text-zinc-500">ISSUES</p>
+            <p className="text-micro font-label mb-1.5 text-[var(--color-text-muted)]">ISSUES</p>
             <ul className="space-y-1">
               {result.issues.map((issue, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="mt-0.5 text-micro" style={{ color: 'var(--q-red)' }}>&#x25CF;</span>
-                  <span className="text-body text-zinc-400">{issue}</span>
+                  <span className="text-body text-[var(--color-text-secondary)]">{issue}</span>
                 </li>
               ))}
             </ul>

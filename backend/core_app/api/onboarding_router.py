@@ -645,13 +645,13 @@ async def checkout_start(
                 detail="No billable line items for this plan configuration",
             )
 
-        base_url = str(settings.api_base_url).rstrip("/")
+        frontend_base = str(settings.resolved_frontend_base_url()).rstrip("/")
         session = stripe_lib.checkout.Session.create(
             mode="subscription",
             line_items=line_items,
             metadata={"application_id": application_id, "source": "onboarding"},
-            success_url=f"{base_url}/onboarding/success?application_id={application_id}",
-            cancel_url=f"{base_url}/onboarding/cancel?application_id={application_id}",
+            success_url=f"{frontend_base}/signup/success?application_id={application_id}",
+            cancel_url=f"{frontend_base}/signup?canceled=1&application_id={application_id}",
         )
 
         db.execute(
@@ -722,9 +722,12 @@ async def onboarding_status(
     tenant_id = str(app_row["tenant_id"]) if app_row["tenant_id"] else None
     billing_mode = app_row.get("billing_mode") or "FUSION_RCM"
     operational_mode = app_row.get("operational_mode") or "EMS_TRANSPORT"
-    provisioning_status = app_row.get("provisioning_status") or (
-        "complete" if provisioned else "processing"
-    )
+    # A provisioned tenant must always present as complete, even if prior steps
+    # left provisioning_status as a non-null intermediate value.
+    if provisioned:
+        provisioning_status = "complete"
+    else:
+        provisioning_status = app_row.get("provisioning_status") or "processing"
     provisioning_steps = app_row.get("provisioning_steps") or []
     provisioning_error = app_row.get("provisioning_error")
     statement_prefix = app_row.get("statement_prefix")

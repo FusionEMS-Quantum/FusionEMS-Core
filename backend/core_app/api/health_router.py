@@ -22,7 +22,7 @@ def health() -> dict[str, str]:
 @router.get("/status")
 def status(db: Session = Depends(db_session_dependency)) -> dict:
     settings = get_settings()
-    checks: dict[str, str] = {}
+    checks: dict[str, object] = {}
 
     try:
         db.execute(text("SELECT 1"))
@@ -46,6 +46,7 @@ def status(db: Session = Depends(db_session_dependency)) -> dict:
 
     checks["auth_mode"] = settings.auth_mode
     checks["version"] = "quantum-v1"
+    checks["integrations"] = settings.integration_state_table()
 
     all_ok = checks["database"] == "connected" and (redis_ok or not settings.redis_url)
     checks["system_status"] = "operational" if all_ok else "degraded"

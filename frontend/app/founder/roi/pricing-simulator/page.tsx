@@ -17,9 +17,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -41,7 +41,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -52,12 +52,12 @@ function Panel({ children, className }: { children: ReactNode; className?: strin
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[var(--color-text-muted)] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -159,6 +159,15 @@ export default function PricingSimulatorPage() {
   const platformBase = 1200;
   const perCall = 6;
   const platformCost = platformBase + calls * perCall;
+  const pricingMonthlyCents = typeof pricingSimulation?.monthly_cents === 'number' && Number.isFinite(pricingSimulation.monthly_cents)
+    ? pricingSimulation.monthly_cents
+    : null;
+  const pricingAnnualCents = typeof pricingSimulation?.annual_cents === 'number' && Number.isFinite(pricingSimulation.annual_cents)
+    ? pricingSimulation.annual_cents
+    : null;
+  const pricingAnnualSavingsPct = typeof pricingSimulation?.annual_savings_pct === 'number' && Number.isFinite(pricingSimulation.annual_savings_pct)
+    ? pricingSimulation.annual_savings_pct
+    : null;
 
   const fmt = (n: number) =>
     n < 0
@@ -212,7 +221,7 @@ export default function PricingSimulatorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-6 space-y-6">
       <FounderStatusBar isLive={pricingStatus !== 'error'} activeIncidents={pricingStatus === 'error' ? 1 : 0} />
 
       {/* Page Header */}
@@ -223,7 +232,7 @@ export default function PricingSimulatorPage() {
               MODULE 8 · ROI &amp; SALES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>Pricing Simulator</h1>
-            <p className="text-xs text-zinc-500 mt-1">Model different pricing scenarios · compare vs competitor billing models</p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">Model different pricing scenarios · compare vs competitor billing models</p>
             <div className="mt-2">
               <SeverityBadge severity={pricingSeverity} size="sm" />
             </div>
@@ -235,7 +244,7 @@ export default function PricingSimulatorPage() {
             >
               Refresh Pricing Telemetry
             </button>
-            <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
+            <Link href="/founder/roi" className="text-body text-[var(--color-text-muted)] hover:text-status-warning transition-colors font-mono">
               ← Back to ROI Command
             </Link>
           </div>
@@ -268,13 +277,13 @@ export default function PricingSimulatorPage() {
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
-              <label className="text-micro text-zinc-500 block mb-1">Monthly Call Volume: <span className="text-status-warning font-bold">{calls}</span></label>
+              <label className="text-micro text-[var(--color-text-muted)] block mb-1">Monthly Call Volume: <span className="text-status-warning font-bold">{calls}</span></label>
               <input
                 type="range" min={50} max={1000} step={10} value={calls}
                 onChange={(e) => setCalls(Number(e.target.value))}
                 className="w-full accent-[var(--color-status-warning)]"
               />
-              <div className="flex justify-between text-[9px] text-zinc-500 mt-0.5">
+              <div className="flex justify-between text-[9px] text-[var(--color-text-muted)] mt-0.5">
                 <span>50</span><span>1,000</span>
               </div>
             </div>
@@ -286,17 +295,17 @@ export default function PricingSimulatorPage() {
                 { label: 'Billing % Fee', val: billingPct, set: setBillingPct },
               ].map(({ label, val, set }) => (
                 <div key={label}>
-                  <label className="text-micro text-zinc-500 block mb-1">{label}</label>
+                  <label className="text-micro text-[var(--color-text-muted)] block mb-1">{label}</label>
                   <input
                     type="number" value={val}
                     onChange={(e) => set(Number(e.target.value))}
-                    className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+                    className="w-full bg-bg-input border border-border-DEFAULT text-body text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
                   />
                 </div>
               ))}
             </div>
             <div>
-              <label className="text-micro text-zinc-500 block mb-1">Current Collection Rate (%): <span className="text-status-warning font-bold">{collectionRate}%</span></label>
+              <label className="text-micro text-[var(--color-text-muted)] block mb-1">Current Collection Rate (%): <span className="text-status-warning font-bold">{collectionRate}%</span></label>
               <input
                 type="range" min={40} max={100} step={1} value={collectionRate}
                 onChange={(e) => setCollectionRate(Number(e.target.value))}
@@ -305,7 +314,7 @@ export default function PricingSimulatorPage() {
             </div>
           </div>
           <div>
-            <p className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">Payer Mix (%)</p>
+            <p className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Payer Mix (%)</p>
             <div className="space-y-3">
               {[
                 { label: 'Medicare %', val: medicareP, set: setMedicareP, color: 'var(--color-status-info)' },
@@ -315,7 +324,7 @@ export default function PricingSimulatorPage() {
               ].map(({ label, val, set, color }) => (
                 <div key={label}>
                   <div className="flex justify-between mb-1">
-                    <span className="text-micro text-zinc-500">{label}</span>
+                    <span className="text-micro text-[var(--color-text-muted)]">{label}</span>
                     <span className="text-micro font-bold" style={{ color }}>{val}%</span>
                   </div>
                   <input
@@ -327,8 +336,8 @@ export default function PricingSimulatorPage() {
                 </div>
               ))}
               <div className="flex justify-between text-micro pt-1 border-t border-border-subtle">
-                <span className="text-zinc-500">Total</span>
-                <span className={`font-bold ${medicareP + medicaidP + commercialP + selfPayP === 100 ? 'text-status-active' : 'text-red'}`}>
+                <span className="text-[var(--color-text-muted)]">Total</span>
+                <span className={`font-bold ${medicareP + medicaidP + commercialP + selfPayP === 100 ? 'text-[var(--color-status-active)]' : 'text-red'}`}>
                   {medicareP + medicaidP + commercialP + selfPayP}%
                 </span>
               </div>
@@ -351,12 +360,12 @@ export default function PricingSimulatorPage() {
             sub={model.platformPctOfRevenue < 8 ? 'Better than 8% billing' : 'Higher than 8% billing'}
           />
         </div>
-        <div className="mt-3 text-body text-zinc-500 font-mono">
+        <div className="mt-3 text-body text-[var(--color-text-muted)] font-mono">
           $1,200 + ({calls} × $6) = {fmt(platformCost)}/mo
         </div>
         <div className="mt-3">
           {pricingStatus === 'loading' || pricingStatus === 'idle' ? (
-            <div className="text-xs text-zinc-500">Loading live pricing simulation telemetry...</div>
+            <div className="text-xs text-[var(--color-text-muted)]">Loading live pricing simulation telemetry...</div>
           ) : pricingStatus === 'error' ? (
             <QuantumEmptyState
               title="Pricing telemetry unavailable"
@@ -367,15 +376,15 @@ export default function PricingSimulatorPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <StatCard
                 label="Live Monthly Cost"
-                value={`$${((pricingSimulation?.monthly_cents ?? 0) / 100).toLocaleString()}`}
+                value={pricingMonthlyCents != null ? `$${(pricingMonthlyCents / 100).toLocaleString()}` : '—'}
                 color="var(--color-status-warning)"
                 sub="ROI pricing simulation API"
               />
               <StatCard
                 label="Live Annual Cost"
-                value={`$${((pricingSimulation?.annual_cents ?? 0) / 100).toLocaleString()}`}
+                value={pricingAnnualCents != null ? `$${(pricingAnnualCents / 100).toLocaleString()}` : '—'}
                 color="var(--color-status-info)"
-                sub={`Annual discount: ${pricingSimulation?.annual_savings_pct ?? 0}%`}
+                sub={`Annual discount: ${pricingAnnualSavingsPct != null ? `${pricingAnnualSavingsPct}%` : '—'}`}
               />
               <StatCard
                 label="Cost / Transport"
@@ -392,8 +401,8 @@ export default function PricingSimulatorPage() {
       <Panel>
         <SectionHeader number="3" title="Revenue Comparison" sub="Current vs FusionEMS Quantum" />
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-bg-input border border-red-ghost chamfer-4">
-            <p className="text-micro font-bold uppercase tracking-widest text-red-500/70 mb-3">Current Model ({billingPct}% billing)</p>
+          <div className="p-4 bg-bg-input border border-[var(--color-brand-red)]/20 chamfer-4">
+            <p className="text-micro font-bold uppercase tracking-widest text-[var(--color-brand-red)]/70 mb-3">Current Model ({billingPct}% billing)</p>
             <div className="space-y-2">
               {[
                 { label: 'Gross Revenue', val: fmt(model.gross), color: 'rgba(255,255,255,0.7)' },
@@ -401,29 +410,29 @@ export default function PricingSimulatorPage() {
                 { label: 'Net to Agency', val: fmt(model.currentNet), color: 'var(--color-text-primary)' },
               ].map(({ label, val, color }) => (
                 <div key={label} className="flex justify-between py-1.5 border-b border-border-subtle last:border-b-2 last:border-white/[0.12]">
-                  <span className="text-body text-zinc-500">{label}</span>
+                  <span className="text-body text-[var(--color-text-muted)]">{label}</span>
                   <span className="text-body font-bold font-mono" style={{ color }}>{val}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="p-4 bg-bg-input border border-green-500/[0.2] chamfer-4">
-            <p className="text-micro font-bold uppercase tracking-widest text-green-500/[0.7] mb-3">FusionEMS Quantum</p>
+          <div className="p-4 bg-bg-input border border-[var(--color-status-active)]/[0.2] chamfer-4">
+            <p className="text-micro font-bold uppercase tracking-widest text-[var(--color-status-active)]/[0.7] mb-3">FusionEMS Quantum</p>
             <div className="space-y-2">
               {[
                 { label: 'Gross Revenue', val: fmt(model.gross), color: 'rgba(255,255,255,0.7)' },
                 { label: `Platform Cost`, val: `-${fmt(platformCost)}`, color: 'var(--q-yellow)' },
                 { label: 'Net to Agency', val: fmt(model.fusionNet), color: 'var(--q-green)' },
               ].map(({ label, val, color }) => (
-                <div key={label} className="flex justify-between py-1.5 border-b border-border-subtle last:border-b-2 last:border-green-500/[0.2]">
-                  <span className="text-body text-zinc-500">{label}</span>
+                <div key={label} className="flex justify-between py-1.5 border-b border-border-subtle last:border-b-2 last:border-[var(--color-status-active)]/[0.2]">
+                  <span className="text-body text-[var(--color-text-muted)]">{label}</span>
                   <span className="text-body font-bold font-mono" style={{ color }}>{val}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-3 pt-2 border-t border-green-500/[0.2]">
+            <div className="mt-3 pt-2 border-t border-[var(--color-status-active)]/[0.2]">
               <div className="flex justify-between items-center">
-                <span className="text-body font-semibold text-zinc-400">Monthly Saving</span>
+                <span className="text-body font-semibold text-[var(--color-text-secondary)]">Monthly Saving</span>
                 <span className="text-[15px] font-bold" style={{ color: model.saving >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>
                   {model.saving >= 0 ? '+' : ''}{fmt(model.saving)}/mo
                 </span>
@@ -466,7 +475,7 @@ export default function PricingSimulatorPage() {
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Size', 'Calls/mo', 'Platform Cost', 'Gross Rev', 'Net (Current)', 'Net (Fusion)', 'Monthly Saving'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-[var(--color-text-muted)] font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -477,20 +486,20 @@ export default function PricingSimulatorPage() {
                 return (
                   <tr
                     key={s.label}
-                    className="border-b border-border-subtle hover:bg-zinc-950/[0.02]"
+                    className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02]"
                     style={{ background: s.highlight ? 'rgba(255,152,0,0.04)' : undefined }}
                   >
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-100">{s.label}</span>
+                        <span className="font-semibold text-[var(--color-text-primary)]">{s.label}</span>
                         {s.highlight && <Badge label="Most Common" status="warn" />}
                       </div>
                     </td>
-                    <td className="py-2 pr-4 text-zinc-400">{s.calls}</td>
+                    <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{s.calls}</td>
                     <td className="py-2 pr-4 font-mono text-status-warning">{fmt(pc)}/mo</td>
-                    <td className="py-2 pr-4 font-mono text-zinc-400">{fmt(m.gross)}/mo</td>
-                    <td className="py-2 pr-4 font-mono text-zinc-400">{fmt(m.currentNet)}/mo</td>
-                    <td className="py-2 pr-4 font-mono text-zinc-100">{fmt(m.fusionNet)}/mo</td>
+                    <td className="py-2 pr-4 font-mono text-[var(--color-text-secondary)]">{fmt(m.gross)}/mo</td>
+                    <td className="py-2 pr-4 font-mono text-[var(--color-text-secondary)]">{fmt(m.currentNet)}/mo</td>
+                    <td className="py-2 pr-4 font-mono text-[var(--color-text-primary)]">{fmt(m.fusionNet)}/mo</td>
                     <td className="py-2 pr-4 font-mono font-bold" style={{ color: m.saving >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>
                       {m.saving >= 0 ? '+' : ''}{fmt(m.saving)}/mo
                     </td>
@@ -507,13 +516,13 @@ export default function PricingSimulatorPage() {
         <SectionHeader number="6" title="Export Proposal" sub="Generate and send ROI proposal" />
         <div className="flex items-end gap-3">
           <div className="flex-1">
-            <label className="text-micro text-zinc-500 block mb-1">Agency Email Address</label>
+            <label className="text-micro text-[var(--color-text-muted)] block mb-1">Agency Email Address</label>
             <input
               type="email"
               value={proposalEmail}
               onChange={(e) => setProposalEmail(e.target.value)}
               placeholder="agency@example.com"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <button

@@ -123,6 +123,9 @@ module "iam" {
     module.s3.kms_key_arn,
     module.secrets.kms_key_arn,
   ]
+
+  # Optional Bedrock permissions (least privilege)
+  bedrock_model_arns = var.bedrock_model_arns
   tags = local.common_tags
 }
 
@@ -150,6 +153,17 @@ module "s3" {
 }
 
 # ─── 5. WAF ──────────────────────────────────────────────────────────────────
+  module "document_vault_s3" {
+    source = "../../modules/document-vault-s3"
+
+    environment       = var.environment
+    project           = var.project
+    aws_region        = var.aws_region
+    ecs_task_role_arn = module.iam.ecs_task_role_arn
+    tags              = local.common_tags
+  }
+
+  # ─── 5a. WAF ─────────────────────────────────────────────────────────────────
 
 module "waf" {
   source = "../../modules/waf"
@@ -280,7 +294,7 @@ module "security_hub" {
 }
 
 module "backup" {
-  source = "../../modules/backup"
+  source = "../../modules/aws_backup"
 
   environment          = var.environment
   project              = var.project
@@ -376,6 +390,8 @@ module "sqs" {
     neris-pack-import  = {}
     neris-pack-compile = {}
     neris-export       = {}
+    nemsis-export      = {}
+    onboarding-events  = {}
   }
 }
 
@@ -419,11 +435,17 @@ module "backend_service" {
     # In staging/prod we require Cognito-based auth (the app refuses to boot with AUTH_MODE=local).
     { name = "AUTH_MODE", value = "cognito" },
     { name = "AWS_DEFAULT_REGION", value = var.aws_region },
+    # AI provider selection (Bedrock/OpenAI/disabled)
+    { name = "AI_PROVIDER", value = var.ai_provider },
+    # Non-secret Bedrock model ID (required when AI_PROVIDER=bedrock)
+    { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
     { name = "COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
     { name = "COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
     { name = "S3_DOCS_BUCKET", value = module.s3.docs_bucket_name },
     { name = "S3_EXPORTS_BUCKET", value = module.s3.exports_bucket_name },
     { name = "S3_PROPOSALS_BUCKET", value = module.s3.proposals_bucket_name },
+      { name = "S3_BUCKET_DOCS", value = module.document_vault_s3.documents_bucket_name },
+      { name = "S3_BUCKET_EXPORTS", value = module.document_vault_s3.exports_bucket_name },
     { name = "CENTRAL_BILLING_PHONE_E164", value = module.telnyx_central_billing_line.phone_e164 },
     { name = "TELNYX_CENTRAL_BILLING_NUMBER_ID", value = module.telnyx_central_billing_line.number_id },
     { name = "CNAM_DISPLAY_NAME", value = module.telnyx_central_billing_line.cnam_display_name },
@@ -434,6 +456,8 @@ module "backend_service" {
     { name = "NERIS_PACK_IMPORT_QUEUE_URL", value = module.sqs.queue_urls["neris-pack-import"] },
     { name = "NERIS_PACK_COMPILE_QUEUE_URL", value = module.sqs.queue_urls["neris-pack-compile"] },
     { name = "NERIS_EXPORT_QUEUE_URL", value = module.sqs.queue_urls["neris-export"] },
+    { name = "NEMSIS_EXPORT_QUEUE_URL", value = module.sqs.queue_urls["nemsis-export"] },
+    { name = "ONBOARDING_EVENTS_QUEUE_URL", value = module.sqs.queue_urls["onboarding-events"] },
 
     # Non-secret config
     { name = "GRAPH_FOUNDER_EMAIL", value = "joshua.j.wendorf@fusionemsquantum.com" },

@@ -71,7 +71,7 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 };
 
 const CONFIDENCE_COLOR = (c: number) => {
-  if (c >= 0.85) return 'text-status-active';
+  if (c >= 0.85) return 'text-[var(--color-status-active)]';
   if (c >= 0.60) return 'text-status-warning';
   return 'text-red';
 };
@@ -118,14 +118,14 @@ function OcrFieldRow({
           ? 'border-status-active/20 bg-status-active/[0.03]'
           : field.rejected
           ? 'border-red/15 bg-red/[0.02]'
-          : 'border-white/[0.06] bg-zinc-950/[0.02]'
+          : 'border-white/[0.06] bg-[var(--color-bg-base)]/[0.02]'
       }`}
       style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
     >
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{field.label}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)]">{field.label}</span>
             <span className={`text-[9px] font-bold uppercase ${CONFIDENCE_COLOR(field.confidence)}`}>
               {CONFIDENCE_LABEL(field.confidence)} confidence ({Math.round(field.confidence * 100)}%)
             </span>
@@ -137,20 +137,20 @@ function OcrFieldRow({
                 type="text"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="flex-1 h-8 px-2 bg-zinc-950/[0.05] border border-white/[0.12] text-[11px] text-white focus:outline-none focus:border-orange/50"
+                className="flex-1 h-8 px-2 bg-[var(--color-bg-base)]/[0.05] border border-white/[0.12] text-[11px] text-white focus:outline-none focus:border-orange/50"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
                 autoFocus
               />
               <button
                 onClick={confirm}
-                className="h-8 px-3 text-[9px] font-black uppercase tracking-wider bg-status-active/15 border border-status-active/30 text-status-active hover:bg-status-active/25 transition-colors"
+                className="h-8 px-3 text-[9px] font-black uppercase tracking-wider bg-status-active/15 border border-status-active/30 text-[var(--color-status-active)] hover:bg-status-active/25 transition-colors"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
               >
                 Save
               </button>
               <button
                 onClick={() => setEditing(false)}
-                className="h-8 px-3 text-[9px] font-bold uppercase tracking-wider border border-white/[0.08] text-zinc-500 hover:text-zinc-100 transition-colors"
+                className="h-8 px-3 text-[9px] font-bold uppercase tracking-wider border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}
               >
                 Cancel
@@ -158,11 +158,11 @@ function OcrFieldRow({
             </div>
           ) : (
             <div className="mt-1">
-              <div className="text-[11px] text-zinc-100 font-mono">
+              <div className="text-[11px] text-[var(--color-text-primary)] font-mono">
                 {field.confirmed ? field.confirmed_value || field.suggestion : field.suggestion || '—'}
               </div>
               {field.raw_value && field.raw_value !== field.suggestion && (
-                <div className="text-[9px] text-zinc-500 mt-0.5">OCR raw: <span className="font-mono">{field.raw_value}</span></div>
+                <div className="text-[9px] text-[var(--color-text-muted)] mt-0.5">OCR raw: <span className="font-mono">{field.raw_value}</span></div>
               )}
             </div>
           )}
@@ -170,13 +170,13 @@ function OcrFieldRow({
 
         {!editing && (
           <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
-            {field.confirmed && <CheckCircle2 className="w-3.5 h-3.5 text-status-active" />}
+            {field.confirmed && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--color-status-active)]" />}
             {field.rejected && <span className="text-[9px] font-bold text-red">Rejected</span>}
             {!field.confirmed && !field.rejected && (
               <>
                 <button
                   onClick={startEdit}
-                  className="h-6 px-2 text-[8px] font-black uppercase tracking-wider border border-orange/20 bg-[#FF4D00]/[0.06] text-[#FF4D00] hover:bg-[#FF4D00]/15 transition-colors"
+                  className="h-6 px-2 text-[8px] font-black uppercase tracking-wider border border-orange/20 bg-[var(--q-orange)]/[0.06] text-[var(--q-orange)] hover:bg-[var(--q-orange)]/15 transition-colors"
                   style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}
                 >
                   Confirm
@@ -193,7 +193,7 @@ function OcrFieldRow({
             {(field.confirmed || field.rejected) && (
               <button
                 onClick={() => onChange({ ...field, confirmed: false, rejected: false })}
-                className="h-6 px-2 text-[8px] font-bold uppercase tracking-wider border border-white/[0.06] text-zinc-500 hover:text-zinc-100 transition-colors"
+                className="h-6 px-2 text-[8px] font-bold uppercase tracking-wider border border-white/[0.06] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}
               >
                 Reset
@@ -237,11 +237,11 @@ function DocumentCard({
     >
       {/* Card header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.04]">
-        <FileText className="w-4 h-4 text-[#FF4D00] flex-shrink-0" />
+        <FileText className="w-4 h-4 text-[var(--q-orange)] flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-black text-white truncate">{doc.filename}</span>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#FF4D00] border border-orange/20 bg-[#FF4D00]/[0.06] px-1.5"
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--q-orange)] border border-orange/20 bg-[var(--q-orange)]/[0.06] px-1.5"
               style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}>
               {DOC_TYPE_LABELS[doc.doc_type] ?? doc.doc_type}
             </span>
@@ -256,12 +256,12 @@ function DocumentCard({
               </span>
             )}
             {statusOk && allConfirmed && (
-              <span className="flex items-center gap-1 text-[9px] text-status-active font-bold">
+              <span className="flex items-center gap-1 text-[9px] text-[var(--color-status-active)] font-bold">
                 <CheckCircle2 className="w-2.5 h-2.5" /> All Confirmed
               </span>
             )}
           </div>
-          <div className="text-[9px] text-zinc-500 mt-0.5">
+          <div className="text-[9px] text-[var(--color-text-muted)] mt-0.5">
             Uploaded {new Date(doc.uploaded_at).toLocaleString()}
             {doc.request_id && (
               <> · Request <span className="font-mono">{doc.request_id.slice(0, 8)}</span></>
@@ -271,11 +271,11 @@ function DocumentCard({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {totalFields > 0 && (
-            <span className="text-[9px] text-zinc-500">{confirmedFields}/{totalFields}</span>
+            <span className="text-[9px] text-[var(--color-text-muted)]">{confirmedFields}/{totalFields}</span>
           )}
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="h-7 px-2 text-[9px] font-bold uppercase tracking-wider border border-white/[0.08] text-zinc-500 hover:text-zinc-100 transition-colors flex items-center gap-1"
+            className="h-7 px-2 text-[9px] font-bold uppercase tracking-wider border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors flex items-center gap-1"
             style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}
           >
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -305,7 +305,7 @@ function DocumentCard({
           </div>
 
           {doc.fields.length === 0 && doc.ocr_status === 'done' && (
-            <p className="text-[10px] text-zinc-500 py-3 text-center">No extractable fields found in this document.</p>
+            <p className="text-[10px] text-[var(--color-text-muted)] py-3 text-center">No extractable fields found in this document.</p>
           )}
 
           {doc.fields.map((field) => (
@@ -323,8 +323,8 @@ function DocumentCard({
                 disabled={pendingFields > 0}
                 className={`flex items-center gap-1.5 h-9 px-4 text-[10px] font-black uppercase tracking-wider transition-colors ${
                   pendingFields > 0
-                    ? 'opacity-40 cursor-not-allowed bg-[#FF4D00]/[0.06] border-orange/15 text-[#FF4D00]'
-                    : 'bg-[#FF4D00] hover:bg-[#FF6A1A] text-white'
+                    ? 'opacity-40 cursor-not-allowed bg-[var(--q-orange)]/[0.06] border-orange/15 text-[var(--q-orange)]'
+                    : 'bg-[var(--q-orange)] hover:bg-[#FF6A1A] text-white'
                 } border border-orange/30`}
                 style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
               >
@@ -332,7 +332,7 @@ function DocumentCard({
                 Apply to Request
               </button>
               {pendingFields > 0 && (
-                <span className="text-[9px] text-zinc-500">
+                <span className="text-[9px] text-[var(--color-text-muted)]">
                   Confirm all fields before applying.
                 </span>
               )}
@@ -344,7 +344,7 @@ function DocumentCard({
             <div className="pt-2 mt-2 border-t border-white/[0.04]">
               <button
                 onClick={() => setShowAudit((v) => !v)}
-                className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-100 flex items-center gap-1"
+                className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] flex items-center gap-1"
               >
                 {showAudit ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
                 Audit Trail ({doc.audit.length})
@@ -353,11 +353,11 @@ function DocumentCard({
                 <div className="mt-2 space-y-1">
                   {doc.audit.map((a, i) => (
                     <div key={i} className="flex items-baseline gap-2 text-[9px]">
-                      <span className="text-zinc-500 font-mono">{new Date(a.ts).toLocaleString()}</span>
-                      <span className="text-zinc-500/60">·</span>
-                      <span className="text-[#FF4D00]/70 font-semibold">{a.actor}</span>
-                      <span className="text-zinc-500">{a.action}</span>
-                      {a.detail && <span className="text-zinc-500/60">{a.detail}</span>}
+                      <span className="text-[var(--color-text-muted)] font-mono">{new Date(a.ts).toLocaleString()}</span>
+                      <span className="text-[var(--color-text-muted)]/60">·</span>
+                      <span className="text-[var(--q-orange)]/70 font-semibold">{a.actor}</span>
+                      <span className="text-[var(--color-text-muted)]">{a.action}</span>
+                      {a.detail && <span className="text-[var(--color-text-muted)]/60">{a.detail}</span>}
                     </div>
                   ))}
                 </div>
@@ -455,11 +455,11 @@ function UploadZone({
     <div className="space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div>
-          <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 block mb-1">Document Type</label>
+          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] block mb-1">Document Type</label>
           <select
             value={docType}
             onChange={(e) => setDocType(e.target.value as DocumentRecord['doc_type'])}
-            className="h-9 px-3 bg-zinc-950/[0.05] border border-white/[0.10] text-[10px] text-zinc-100 focus:outline-none focus:border-orange/40"
+            className="h-9 px-3 bg-[var(--color-bg-base)]/[0.05] border border-white/[0.10] text-[10px] text-[var(--color-text-primary)] focus:outline-none focus:border-orange/40"
             style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
           >
             {Object.entries(DOC_TYPE_LABELS).map(([value, label]) => (
@@ -476,8 +476,8 @@ function UploadZone({
         onClick={() => inputRef.current?.click()}
         className={`relative flex flex-col items-center justify-center gap-2 p-8 cursor-pointer border-2 border-dashed transition-colors ${
           dragging
-            ? 'border-orange/60 bg-[#FF4D00]/[0.06]'
-            : 'border-white/[0.10] bg-zinc-950/[0.02] hover:border-white/[0.20] hover:bg-zinc-950/[0.03]'
+            ? 'border-orange/60 bg-[var(--q-orange)]/[0.06]'
+            : 'border-white/[0.10] bg-[var(--color-bg-base)]/[0.02] hover:border-white/[0.20] hover:bg-[var(--color-bg-base)]/[0.03]'
         }`}
         style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
       >
@@ -490,15 +490,15 @@ function UploadZone({
         />
         {uploading ? (
           <>
-            <RefreshCw className="w-8 h-8 text-[#FF4D00] animate-spin" />
-            <span className="text-[11px] text-zinc-500">Uploading…</span>
+            <RefreshCw className="w-8 h-8 text-[var(--q-orange)] animate-spin" />
+            <span className="text-[11px] text-[var(--color-text-muted)]">Uploading…</span>
           </>
         ) : (
           <>
-            <Upload className="w-8 h-8 text-zinc-500/30" />
+            <Upload className="w-8 h-8 text-[var(--color-text-muted)]/30" />
             <div className="text-center">
-              <p className="text-[11px] text-zinc-100 font-semibold">Drop PDF, PNG, JPEG, or TIFF here</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">or click to browse · Max 25 MB</p>
+              <p className="text-[11px] text-[var(--color-text-primary)] font-semibold">Drop PDF, PNG, JPEG, or TIFF here</p>
+              <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">or click to browse · Max 25 MB</p>
             </div>
           </>
         )}
@@ -626,22 +626,22 @@ function DocumentsPageInner() {
     <div className="p-5 max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-5">
-        <div className="text-[9px] font-bold tracking-[0.3em] text-[#FF4D00] uppercase mb-1">TransportLink · Documents</div>
+        <div className="text-[9px] font-bold tracking-[0.3em] text-[var(--q-orange)] uppercase mb-1">TransportLink · Documents</div>
         <h1 className="text-h1 font-black text-white">Documents &amp; OCR Review</h1>
         {requestId && (
-          <p className="text-[11px] text-zinc-500 mt-1">
-            Showing documents for request <span className="font-mono text-zinc-100">{requestId.slice(0, 8)}…</span>
+          <p className="text-[11px] text-[var(--color-text-muted)] mt-1">
+            Showing documents for request <span className="font-mono text-[var(--color-text-primary)]">{requestId.slice(0, 8)}…</span>
           </p>
         )}
       </div>
 
       {/* OCR notice */}
-      <div className="flex items-start gap-3 p-3 border border-orange/20 bg-[#FF4D00]/[0.04] mb-5"
+      <div className="flex items-start gap-3 p-3 border border-orange/20 bg-[var(--q-orange)]/[0.04] mb-5"
         style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
-        <Cpu className="w-4 h-4 text-[#FF4D00] flex-shrink-0 mt-0.5" />
+        <Cpu className="w-4 h-4 text-[var(--q-orange)] flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-[10px] text-zinc-100 font-bold">OCR Extraction — Human Review Required</p>
-          <p className="text-[10px] text-zinc-500 mt-0.5">
+          <p className="text-[10px] text-[var(--color-text-primary)] font-bold">OCR Extraction — Human Review Required</p>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
             All OCR suggestions must be individually confirmed or rejected by a human before they can be applied to a
             transport request. Data is never silently overwritten.
           </p>
@@ -679,7 +679,7 @@ function DocumentsPageInner() {
         className="p-4 border border-white/[0.06] bg-[#0D0D0F] mb-6"
         style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
       >
-        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3 flex items-center gap-2">
+        <div className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-3 flex items-center gap-2">
           <Upload className="w-3 h-3" />
           Upload New Document
         </div>
@@ -689,14 +689,14 @@ function DocumentsPageInner() {
       {/* Document list */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+          <div className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] flex items-center gap-2">
             <FileText className="w-3 h-3" />
             Documents ({docs.length})
           </div>
           <button
             onClick={loadDocs}
             disabled={loading}
-            className="flex items-center gap-1.5 h-7 px-2 text-[9px] font-bold uppercase tracking-wider border border-white/[0.06] text-zinc-500 hover:text-zinc-100 transition-colors"
+            className="flex items-center gap-1.5 h-7 px-2 text-[9px] font-bold uppercase tracking-wider border border-white/[0.06] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}
           >
             <RefreshCw className={`w-2.5 h-2.5 ${loading ? 'animate-spin' : ''}`} />
@@ -706,15 +706,15 @@ function DocumentsPageInner() {
 
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="flex items-center gap-2 text-zinc-500 text-[11px]">
+            <div className="flex items-center gap-2 text-[var(--color-text-muted)] text-[11px]">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Loading documents…
             </div>
           </div>
         ) : docs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 border border-dashed border-white/[0.06]"
             style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
-            <Eye className="w-10 h-10 text-zinc-500/20" />
-            <p className="text-[11px] text-zinc-500">
+            <Eye className="w-10 h-10 text-[var(--color-text-muted)]/20" />
+            <p className="text-[11px] text-[var(--color-text-muted)]">
               {loadError ? 'Documents unavailable. Resolve the error and retry.' : 'No documents uploaded yet.'}
             </p>
           </div>
@@ -744,7 +744,7 @@ export default function DocumentsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-64 text-zinc-500 text-[11px] gap-2">
+        <div className="flex items-center justify-center h-64 text-[var(--color-text-muted)] text-[11px] gap-2">
           <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Loading…
         </div>
       }

@@ -1,0 +1,97 @@
+{
+  "version": "2026-03-10",
+  "platform": "FusionEMS",
+  "primary_execution_environment": "OpenAI Codex",
+  "execution_model": "master-orchestrator-plus-nine-primary-specialists",
+  "agents": [
+    {
+      "id": "agent-01-master-orchestrator",
+      "name": "MasterOrchestrator",
+      "model": "gpt-5.4",
+      "ownership": [
+        "global sequencing",
+        "release authority",
+        "rollback authority",
+        "completion gates"
+      ]
+    },
+    {
+      "id": "agent-02-platform-core",
+      "name": "PlatformCoreAgent",
+      "model": "gpt-5-codex",
+      "ownership": ["backend", "domain services", "api contracts"]
+    },
+    {
+      "id": "agent-03-frontend-command-surface",
+      "name": "FrontendCommandSurfaceAgent",
+      "model": "claude-opus",
+      "ownership": ["frontend", "command-surface UI", "dashboard runtime"]
+    },
+    {
+      "id": "agent-04-auth-access-control",
+      "name": "AuthenticationAndAccessControlAgent",
+      "model": "gpt-5.4",
+      "ownership": ["login", "session hardening", "access control"]
+    },
+    {
+      "id": "agent-05-data-persistence",
+      "name": "DataAndPersistenceAgent",
+      "model": "gpt-5-codex",
+      "ownership": ["migrations", "schema integrity", "persistence checks"]
+    },
+    {
+      "id": "agent-06-nemsis-neris-interoperability",
+      "name": "NEMSISNERISInteroperabilityAgent",
+      "model": "gpt-5-codex",
+      "ownership": ["nemsis", "neris", "interop validation"]
+    },
+    {
+      "id": "agent-07-aws-infra-terraform",
+      "name": "AWSInfrastructureAndTerraformAgent",
+      "model": "gpt-5-codex",
+      "ownership": ["terraform", "aws modules", "iac safety"]
+    },
+    {
+      "id": "agent-08-security-compliance-audit",
+      "name": "SecurityComplianceAuditAgent",
+      "model": "gpt-5.4",
+      "ownership": ["security controls", "compliance artifacts", "audit gates"]
+    },
+    {
+      "id": "agent-09-observability-reliability-ops",
+      "name": "ObservabilityReliabilityOperationsAgent",
+      "model": "claude-opus",
+      "ownership": ["observability", "operational telemetry", "runtime visibility"]
+    },
+    {
+      "id": "agent-10-qa-validation-release",
+      "name": "QAValidationDeploymentReleaseAgent",
+      "model": "gemini-2.5-pro",
+      "ownership": ["test gates", "smoke checks", "release confidence"]
+    }
+  ],
+  "deployment_controls": {
+    "required_for_apply": [
+      "AWS credentials",
+      "terraform plan success",
+      "all required specialist lanes pass",
+      "post-deploy authenticated smoke checks pass"
+    ],
+    "apply_flag": "--allow-apply",
+    "required_smoke_env": [
+      "FUSIONEMS_API_BASE_URL",
+      "SMOKE_AUTH_EMAIL",
+      "SMOKE_AUTH_PASSWORD"
+    ]
+  },
+  "required_artifacts": [
+    "artifacts/multi_agent_execution_report.json",
+    "artifacts/post_deploy_smoke_report.json",
+    "artifacts/multi-agent-logs/"
+  ],
+  "audit_requirements": [
+    "no static secrets in code",
+    "structured artifacts per lane",
+    "failed gates include command-level evidence"
+  ]
+}

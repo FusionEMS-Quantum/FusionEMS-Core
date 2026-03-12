@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import uuid
 from typing import Any
 
@@ -127,9 +128,7 @@ def _compute_acuity(payload: dict[str, Any]) -> dict[str, Any]:
                 triggered_rules.append("R09:geriatric_age_gt_80")
                 risk_flags.append("GERIATRIC")
         except (TypeError, ValueError) as e:
-            import logging
-
-            logging.error(f"Error: {e}")
+            logging.error("Error: %s", e)
 
     if distance is not None:
         try:
@@ -139,9 +138,7 @@ def _compute_acuity(payload: dict[str, Any]) -> dict[str, Any]:
                 score += 5
                 triggered_rules.append("R10:long_distance_als_upgrade")
         except (TypeError, ValueError) as e:
-            import logging
-
-            logging.error(f"Error: {e}")
+            logging.error("Error: %s", e)
 
     score = min(score, 100)
     if score >= 60:
@@ -428,9 +425,6 @@ async def ops_board(
             tenant_id=current.tenant_id, limit=limit, offset=0
         ),
         "unit_status_events": svc.repo("unit_status_events").list(
-            tenant_id=current.tenant_id, limit=limit, offset=0
-        ),
-        "unit_locations": svc.repo("unit_locations").list(
             tenant_id=current.tenant_id, limit=limit, offset=0
         ),
         "weather_alerts": svc.repo("weather_alerts").list(

@@ -46,9 +46,9 @@ export default function PublicRoiPage() {
           { label: 'Talk to Founder', href: '/contact' },
         ]}
       >
-        <div className="border border-border-default bg-[#0A0A0B] chamfer-8 p-5">
-          <div className="text-label uppercase tracking-widest text-zinc-500">Need implementation guidance first?</div>
-          <p className="text-body text-zinc-400 mt-2 max-w-3xl">
+        <div className="border border-border-default bg-[var(--color-bg-panel)] chamfer-8 p-5">
+          <div className="text-label uppercase tracking-widest text-[var(--color-text-muted)]">Need implementation guidance first?</div>
+          <p className="text-body text-[var(--color-text-secondary)] mt-2 max-w-3xl">
             Start with an executive assessment and we will sequence Billing Command activation, patient communication lanes,
             and command portal onboarding in a single deterministic rollout plan.
           </p>

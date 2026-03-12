@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, require_role
+from core_app.api.dependencies import db_session_dependency, require_founder_only_audited
 from core_app.core.config import get_settings
 from core_app.neris.pack_manager import NERISPackManager
 from core_app.neris.validator import NERISValidator
@@ -61,7 +61,7 @@ def _enqueue_pack_compile(pack_id: str, tenant_id: str, actor_user_id: str) -> N
 async def import_pack(
     payload: dict[str, Any],
     request: Request,
-    current: CurrentUser = Depends(require_role("founder", "agency_admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     payload.get("source_type", "github")
@@ -80,7 +80,7 @@ async def import_pack(
 async def activate_pack(
     pack_id: uuid.UUID,
     request: Request,
-    current: CurrentUser = Depends(require_role("founder", "agency_admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     correlation_id = getattr(request.state, "correlation_id", None)
@@ -89,7 +89,7 @@ async def activate_pack(
             pack_id=pack_id, correlation_id=correlation_id
         )
     except ValueError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     if result is None:
         raise HTTPException(
             status_code=409, detail="Version conflict or pack not found"
@@ -99,7 +99,7 @@ async def activate_pack(
 
 @router.get("/packs")
 async def list_packs(
-    current: CurrentUser = Depends(require_role("founder", "agency_admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     return _manager(db, current).list_packs()
@@ -108,7 +108,7 @@ async def list_packs(
 @router.get("/packs/{pack_id}")
 async def get_pack(
     pack_id: uuid.UUID,
-    current: CurrentUser = Depends(require_role("founder", "agency_admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     mgr = _manager(db, current)
@@ -128,7 +128,7 @@ async def get_pack(
 async def compile_pack(
     pack_id: uuid.UUID,
     request: Request,
-    current: CurrentUser = Depends(require_role("founder", "agency_admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     mgr = _manager(db, current)
@@ -142,7 +142,7 @@ async def compile_pack(
 @router.post("/validate/bundle")
 async def validate_bundle(
     payload: dict[str, Any],
-    current: CurrentUser = Depends(require_role("founder", "agency_admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     pack_id_str = payload.get("pack_id")
@@ -152,8 +152,8 @@ async def validate_bundle(
         raise HTTPException(status_code=422, detail="pack_id is required")
     try:
         pack_id = uuid.UUID(pack_id_str)
-    except ValueError:
-        raise HTTPException(status_code=422, detail="pack_id must be a valid UUID")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="pack_id must be a valid UUID") from exc
     issues = _validator(db, current).validate(
         pack_id=pack_id, entity_type=entity_type, payload=data
     )

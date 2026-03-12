@@ -27,8 +27,8 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
           <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -37,7 +37,7 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
 function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -78,14 +78,16 @@ export default function FunnelPage() {
     fetchFunnelTelemetry();
   }, [fetchFunnelTelemetry]);
 
-  const conversionPct = kpis?.proposal_to_paid_conversion_pct ?? 0;
-  const hasTelemetryError = status === 'error';
+  const hasTelemetryGap = kpis == null || pipeline == null;
+  const conversionPct = kpis?.proposal_to_paid_conversion_pct;
+  const conversionPctNum = conversionPct ?? 0;
+  const hasTelemetryError = status === 'error' || hasTelemetryGap;
   const maxCount = Math.max(...funnelData.map((stage) => stage.count), 1);
   const funnelSeverity: SeverityLevel = hasTelemetryError
     ? 'BLOCKING'
-    : conversionPct < 20
+    : conversionPctNum < 20
       ? 'HIGH'
-      : conversionPct < 40
+      : conversionPctNum < 40
         ? 'MEDIUM'
         : 'LOW';
 
@@ -102,7 +104,7 @@ export default function FunnelPage() {
       });
     }
 
-    if (conversionPct < 30) {
+    if (conversionPctNum < 30) {
       actions.push({
         id: 'roi-funnel-low-conversion',
         title: 'Conversion is below 30%; prioritize proposal follow-up and close-loop execution.',
@@ -133,12 +135,12 @@ export default function FunnelPage() {
     }
 
     return actions;
-  }, [conversionPct, hasTelemetryError, pipeline?.pipeline_to_mrr_ratio]);
+  }, [conversionPctNum, hasTelemetryError, pipeline?.pipeline_to_mrr_ratio]);
 
-  const activeIncidents = hasTelemetryError || conversionPct < 20 ? 1 : 0;
+  const activeIncidents = hasTelemetryError || (conversionPct != null && conversionPct < 20) ? 1 : 0;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-6 space-y-6">
       <FounderStatusBar isLive={!hasTelemetryError} activeIncidents={activeIncidents} />
 
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -153,15 +155,15 @@ export default function FunnelPage() {
             >
               Refresh Telemetry
             </button>
-            <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
+            <Link href="/founder/roi" className="text-body text-[var(--color-text-muted)] hover:text-[var(--q-orange)] transition-colors">
               ← Back to ROI
             </Link>
           </div>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-100" style={{ textShadow: '0 0 24px rgba(255,107,26,0.3)' }}>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]" style={{ textShadow: '0 0 24px rgba(255,106,0,0.3)' }}>
           Funnel Intelligence
         </h1>
-        <p className="text-xs text-zinc-500 mt-1">Lead tracking · conversion velocity · pipeline stages</p>
+        <p className="text-xs text-[var(--color-text-muted)] mt-1">Lead tracking · conversion velocity · pipeline stages</p>
         <div className="mt-2">
           <SeverityBadge severity={funnelSeverity} size="sm" />
         </div>
@@ -190,13 +192,13 @@ export default function FunnelPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Events', value: kpis?.total_events ?? '-' },
-            { label: 'Total Proposals', value: kpis?.total_proposals ?? '-' },
-            { label: 'Active Subs', value: kpis?.active_subscriptions ?? '-' },
+            { label: 'Total Events', value: kpis?.total_events ?? '—' },
+            { label: 'Total Proposals', value: kpis?.total_proposals ?? '—' },
+            { label: 'Active Subs', value: kpis?.active_subscriptions ?? '—' },
             { label: 'Conversion Rate', value: kpis ? `${kpis.proposal_to_paid_conversion_pct.toFixed(2)}%` : '-' },
           ].map((s) => (
             <Panel key={s.label} className="flex flex-col gap-1">
-              <span className="text-micro text-zinc-500 uppercase tracking-wider">{s.label}</span>
+              <span className="text-micro text-[var(--color-text-muted)] uppercase tracking-wider">{s.label}</span>
               <span className="text-xl font-bold" style={{ color: 'var(--color-status-info)' }}>{s.value}</span>
             </Panel>
           ))}
@@ -212,13 +214,13 @@ export default function FunnelPage() {
             <QuantumEmptyState title="Funnel telemetry unavailable" description={error ?? 'Unable to load ROI funnel telemetry.'} icon="activity" />
           ) : (
             <div className="space-y-4">
-              {funnelData.length === 0 ? <p className="text-xs text-zinc-500">No events logged yet.</p> : null}
+              {funnelData.length === 0 ? <p className="text-xs text-[var(--color-text-muted)]">No events logged yet.</p> : null}
               {funnelData.map((s) => {
                 const width = Math.max((s.count / maxCount) * 100, 5);
                 return (
                   <div key={s.stage} className="flex items-center gap-4">
-                    <div className="w-32 text-xs text-zinc-100 uppercase tracking-wider">{s.stage}</div>
-                    <div className="flex-1 h-3 bg-zinc-950/5 chamfer-4 overflow-hidden relative">
+                    <div className="w-32 text-xs text-[var(--color-text-primary)] uppercase tracking-wider">{s.stage}</div>
+                    <div className="flex-1 h-3 bg-[var(--color-bg-base)]/5 chamfer-4 overflow-hidden relative">
                       <div
                         className="absolute top-0 left-0 h-full transition-all duration-1000"
                         style={{ width: `${width}%`, background: 'var(--color-brand-cyan)' }}
@@ -243,22 +245,22 @@ export default function FunnelPage() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="bg-zinc-950/20 border border-border-subtle p-3">
-              <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Pending Pipeline</div>
+            <div className="bg-[var(--color-bg-base)]/20 border border-border-subtle p-3">
+              <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Pending Pipeline</div>
               <div className="text-lg font-bold text-status-warning">
-                ${((pipeline?.pending_pipeline_cents ?? 0) / 100).toLocaleString()}
+                {pipeline?.pending_pipeline_cents != null ? `$${(pipeline.pending_pipeline_cents / 100).toLocaleString()}` : '—'}
               </div>
             </div>
-            <div className="bg-zinc-950/20 border border-border-subtle p-3">
-              <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Active MRR</div>
-              <div className="text-lg font-bold text-status-active">
-                ${((pipeline?.active_mrr_cents ?? 0) / 100).toLocaleString()}
+            <div className="bg-[var(--color-bg-base)]/20 border border-border-subtle p-3">
+              <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Active MRR</div>
+              <div className="text-lg font-bold text-[var(--color-status-active)]">
+                {pipeline?.active_mrr_cents != null ? `$${(pipeline.active_mrr_cents / 100).toLocaleString()}` : '—'}
               </div>
             </div>
-            <div className="bg-zinc-950/20 border border-border-subtle p-3">
-              <div className="text-micro uppercase tracking-wider text-zinc-500 mb-1">Pipeline / MRR</div>
+            <div className="bg-[var(--color-bg-base)]/20 border border-border-subtle p-3">
+              <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Pipeline / MRR</div>
               <div className="text-lg font-bold text-system-billing">
-                {(pipeline?.pipeline_to_mrr_ratio ?? 0).toFixed(2)}x
+                {pipeline?.pipeline_to_mrr_ratio != null ? `${pipeline.pipeline_to_mrr_ratio.toFixed(2)}x` : '—'}
               </div>
             </div>
           </div>
@@ -266,7 +268,7 @@ export default function FunnelPage() {
       </Panel>
 
       <div className="pt-2">
-        <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-[#FF4D00] transition-colors">
+        <Link href="/founder/roi" className="text-body text-[var(--color-text-muted)] hover:text-[var(--q-orange)] transition-colors">
           ← Back to ROI Overview
         </Link>
       </div>

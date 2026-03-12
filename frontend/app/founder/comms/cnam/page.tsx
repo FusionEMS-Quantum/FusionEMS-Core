@@ -70,46 +70,46 @@ export default function CNAMManagementPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-[var(--color-status-active)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-white p-6">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/founder/comms" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2">
+            <Link href="/founder/comms" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 text-sm mb-2">
               <ArrowLeft className="w-4 h-4" /> Back to Comms
             </Link>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Phone className="w-8 h-8 text-teal-400" />
+              <Phone className="w-8 h-8 text-[var(--color-status-info)]" />
               CNAM Management
             </h1>
-            <p className="text-gray-400 mt-1">Manage Caller ID (CNAM) registrations for Telnyx voice lines</p>
+            <p className="text-[var(--color-text-secondary)] mt-1">Manage Caller ID (CNAM) registrations for Telnyx voice lines</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 bg-teal-600 hover:bg-teal-500 rounded-lg flex items-center gap-2 text-sm">
+            <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 bg-teal-600 hover:bg-teal-500 chamfer-8 flex items-center gap-2 text-sm">
               <Plus className="w-4 h-4" /> Register
             </button>
-            <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+            <button onClick={loadData} className="px-4 py-2 bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-overlay)] chamfer-8 flex items-center gap-2 text-sm">
               <RefreshCw className="w-4 h-4" /> Refresh
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-            <span className="text-red-300">{error}</span>
+          <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-[var(--color-brand-red)]" />
+            <span className="text-[var(--color-brand-red)]">{error}</span>
           </div>
         )}
 
         {/* Add Form */}
         {showAdd && (
-          <div className="bg-gray-900 border border-teal-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-teal-800 chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4">Register New CNAM</h2>
             <div className="flex flex-col md:flex-row gap-3">
               <input
@@ -117,35 +117,35 @@ export default function CNAMManagementPage() {
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
                 placeholder="Phone number (e.g., +15551234567)"
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm"
+                className="flex-1 bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-8 px-4 py-2 text-sm"
               />
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Display name (e.g., Metro EMS)"
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm"
+                className="flex-1 bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-8 px-4 py-2 text-sm"
                 maxLength={15}
               />
               <button
                 onClick={handleRegister}
                 disabled={submitting || !newPhone.trim() || !newName.trim()}
-                className="px-6 py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 rounded-lg text-sm font-medium"
+                className="px-6 py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 chamfer-8 text-sm font-medium"
               >
                 {submitting ? 'Registering...' : 'Register'}
               </button>
             </div>
-            <p className="text-gray-500 text-xs mt-2">CNAM display name max 15 characters. Changes may take 24-48 hours to propagate across carriers.</p>
+            <p className="text-[var(--color-text-muted)] text-xs mt-2">CNAM display name max 15 characters. Changes may take 24-48 hours to propagate across carriers.</p>
           </div>
         )}
 
         {/* CNAM Entries Table */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
           <h2 className="text-lg font-semibold mb-4">Registered CNAM Entries ({entries.length})</h2>
           {entries.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="text-gray-400 border-b border-gray-800">
+                <thead><tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border-default)]">
                   <th className="text-left py-2">Phone Number</th>
                   <th className="text-left py-2">Display Name</th>
                   <th className="text-left py-2">Status</th>
@@ -154,19 +154,19 @@ export default function CNAMManagementPage() {
                 </tr></thead>
                 <tbody>
                   {entries.map((e, i) => (
-                    <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                    <tr key={i} className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-raised)]/30">
                       <td className="py-2 font-mono">{e.phone_number ?? '—'}</td>
                       <td className="py-2 font-medium">{e.display_name ?? '—'}</td>
-                      <td className={`py-2 ${e.status === 'active' ? 'text-emerald-400' : e.status === 'pending' ? 'text-amber-400' : 'text-gray-400'}`}>
+                      <td className={`py-2 ${e.status === 'active' ? 'text-[var(--color-status-active)]' : e.status === 'pending' ? 'text-[var(--q-yellow)]' : 'text-[var(--color-text-secondary)]'}`}>
                         {e.status ?? '—'}
                       </td>
-                      <td className="py-2 text-gray-400">{e.created_at ?? '—'}</td>
+                      <td className="py-2 text-[var(--color-text-secondary)]">{e.created_at ?? '—'}</td>
                       <td className="py-2 text-right">
                         {e.phone_number && (
                           <button
                             onClick={() => handleDelete(e.phone_number!)}
                             disabled={deleting === e.phone_number}
-                            className="text-red-400 hover:text-red-300 p-1"
+                            className="text-[var(--color-brand-red)] hover:text-[var(--color-brand-red)] p-1"
                             title="Delete CNAM"
                           >
                             <Trash2 className={`w-4 h-4 ${deleting === e.phone_number ? 'animate-pulse' : ''}`} />
@@ -179,7 +179,7 @@ export default function CNAMManagementPage() {
               </table>
             </div>
           ) : (
-            <div className="text-gray-500 text-center py-8">
+            <div className="text-[var(--color-text-muted)] text-center py-8">
               <Phone className="w-12 h-12 text-gray-700 mx-auto mb-3" />
               <p>No CNAM registrations yet. Click &ldquo;Register&rdquo; to add a Caller ID entry.</p>
             </div>

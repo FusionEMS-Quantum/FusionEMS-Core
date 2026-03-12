@@ -209,3 +209,52 @@ async def list_exports(
             "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
         })
     return {"jobs": jobs, "total": len(jobs)}
+
+
+@router.post("/exports/{job_id}/submit")
+async def submit_export_to_state(
+    job_id: uuid.UUID,
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+):
+    """Queue a completed NEMSIS export job for submission to the state API."""
+    from core_app.nemsis.publish_queue import NEMSISPublishQueue
+
+    svc = DominationService(db, get_event_publisher())
+    job = svc.repo("nemsis_export_jobs").get(tenant_id=current.tenant_id, record_id=job_id)
+    if not job:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Export job not found")
+
+    data = job.get("data", {})
+    if not data.get("xml_b64"):
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail="Export job has no generated XML")
+
+    correlation_id = getattr(request.state, "correlation_id", None)
+
+    queue = NEMSISPublishQueue()
+    enqueued_id = queue.enqueue_epcr_export(
+        tenant_id=str(current.tenant_id),
+        record=data,
+        correlation_id=correlation_id,
+    )
+
+    await svc.update(
+        table="nemsis_export_jobs",
+        record_id=job_id,
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        expected_version=0,
+        patch={"status": "queued_for_submission"},
+        correlation_id=correlation_id,
+    )
+
+    return {
+        "job_id": str(job_id),
+        "status": "queued_for_submission",
+        "queue_message_id": enqueued_id,
+    }

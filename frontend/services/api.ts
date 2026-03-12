@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 
 export const API = axios.create({
   baseURL:
@@ -6,10 +6,31 @@ export const API = axios.create({
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     "",
+  withCredentials: true,
+});
+
+API.interceptors.request.use((config) => {
+  if (typeof window === 'undefined') {
+    return config;
+  }
+
+  const token = localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
+  const headers = config.headers instanceof AxiosHeaders
+    ? config.headers
+    : new AxiosHeaders(config.headers);
+  const hasAuthHeader = Boolean(headers.get('Authorization'));
+
+  if (token && !hasAuthHeader) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  config.headers = headers;
+
+  return config;
 });
 
 export async function getExecutiveSummary() {
-  const res = await API.get('/api/founder/executive-summary', {
+  const res = await API.get('/api/v1/founder/executive-summary', {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
       'X-Tenant-ID': 'founder'
@@ -61,6 +82,14 @@ export interface CADUnitApi {
   lng: number | null;
   readiness_score: number | null;
   active_call_id: string | null;
+}
+
+export interface CADLatestUnitLocationApi {
+  unit_id: string;
+  lat: number | null;
+  lng: number | null;
+  recorded_at: string;
+  record_id: string;
 }
 
 export interface EPCRChartApi {
@@ -463,7 +492,7 @@ function normalizeEPCRChartRecord(value: unknown): EPCRChartApi {
 
 // ── AI Platform ─────────────────────────────────────────────────────────────
 
-function aiHeaders() {
+export function aiHeaders() {
   return {
     Authorization: `Bearer ${localStorage.getItem('token')}`,
   };
@@ -615,6 +644,17 @@ export interface FounderDashboardApi {
   mrr_cents: number;
   tenant_count: number;
   error_count_1h: number;
+  clinical_datasets?: {
+    icd10?: { version?: string; term_count?: number };
+    rxnorm?: { status?: string; source?: string };
+    snomed?: { status?: string; source?: string };
+    nemsis?: { version?: string; element_count?: number };
+    npi?: { verification_supported?: boolean; source?: string };
+  };
+  integration_readiness?: {
+    required_missing?: string[];
+    required_missing_count?: number;
+  };
   as_of: string;
 }
 
@@ -1094,9 +1134,9 @@ export async function uploadQuantumCSV(file: File) {
   return res.data;
 }
 
-export async function getQuantumVaultDocuments() {
+export async function getQuantumVaultDocuments(): Promise<{ documents?: unknown[] }> {
   const res = await API.get('/api/quantum-founder/vault/documents');
-  return res.data;
+  return res.data as { documents?: unknown[] };
 }
 
 function getAbsoluteApiBaseUrl(): string {
@@ -1118,6 +1158,64 @@ export function getQuantumEfileRealtimeStatusStreamUrl(): string {
 
 export function getQuantumVaultRenderUrl(documentId: string): string {
   return `${getAbsoluteApiBaseUrl()}/api/quantum-founder/vault/render/${encodeURIComponent(documentId)}`;
+}
+
+// ── Founder Accounting: Bank Connections ─────────────────────────────────────
+
+export async function getBankConnectionStatus() {
+  const res = await API.get('/api/quantum-founder/accounting/bank/status');
+  return res.data;
+}
+
+export async function connectSimpleFIN(setupToken: string) {
+  const res = await API.post('/api/quantum-founder/accounting/bank/simplefin/connect', {
+    setup_token: setupToken,
+  });
+  return res.data;
+}
+
+export async function getSimpleFINAccounts(daysBack = 90) {
+  const res = await API.get('/api/quantum-founder/accounting/bank/simplefin/accounts', {
+    params: { days_back: daysBack },
+  });
+  return res.data;
+}
+
+export async function importBankCSV(file: File, institution = 'generic', accountId = 'imported') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('institution', institution);
+  formData.append('account_id', accountId);
+  const res = await API.post('/api/quantum-founder/accounting/bank/import/csv', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+export async function importBankOFX(file: File, institution = 'Imported') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('institution', institution);
+  const res = await API.post('/api/quantum-founder/accounting/bank/import/ofx', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+// ── Founder Accounting: E-file ────────────────────────────────────────────────
+
+export async function getEfileStatus() {
+  const res = await API.get('/api/quantum-founder/efile/realtime-status');
+  return res.data;
+}
+
+export async function scanReceipt(imageFile: File) {
+  const formData = new FormData();
+  formData.append('receipt_image', imageFile);
+  const res = await API.post('/api/quantum-founder/receipts/scan', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
 }
 
 function roiHeaders(): Record<string, string> {
@@ -1226,7 +1324,7 @@ export async function createROIFunnelProposal(
       'Content-Type': 'application/json',
     },
   });
-  return res.data as Record<string, unknown>;
+  return res.data;
 }
 
 export async function createROIFunnelPricingSimulation(
@@ -1461,10 +1559,10 @@ function nemsisManagerHeaders(): Record<string, string> {
   if (typeof window === 'undefined') {
     return { 'Content-Type': 'application/json' };
   }
-  const token = localStorage.getItem('access_token') || '';
+  const token = localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
@@ -2060,6 +2158,45 @@ export async function listCADUnits(): Promise<CADUnitApi[]> {
   }) as CADUnitApi[];
 }
 
+export async function getLatestCADUnitLocations(limit: number = 500): Promise<CADLatestUnitLocationApi[]> {
+  const res = await API.get('/api/v1/cad/units/locations/latest', {
+    headers: aiHeaders(),
+    params: { limit },
+  });
+  const items = Array.isArray(res.data?.items) ? (res.data.items as unknown[]) : [];
+  return items
+    .map((raw) => {
+      const obj = (raw ?? {}) as Record<string, unknown>;
+      return {
+        unit_id: asString(obj.unit_id),
+        lat: asNumber(obj.lat),
+        lng: asNumber(obj.lng),
+        recorded_at: asIsoDateString(obj.recorded_at),
+        record_id: asString(obj.record_id),
+      };
+    })
+    .filter((loc) => Boolean(loc.unit_id) && Boolean(loc.record_id) && loc.lat != null && loc.lng != null);
+}
+
+export async function listCADUnitsWithLatestLocations(): Promise<CADUnitApi[]> {
+  const [units, locations] = await Promise.all([
+    listCADUnits(),
+    getLatestCADUnitLocations().catch(() => [] as CADLatestUnitLocationApi[]),
+  ]);
+  const byUnitId = new Map<string, CADLatestUnitLocationApi>();
+  locations.forEach((loc) => byUnitId.set(loc.unit_id, loc));
+
+  return units.map((unit) => {
+    const loc = byUnitId.get(unit.id);
+    if (!loc) return unit;
+    return {
+      ...unit,
+      lat: loc.lat != null && Number.isFinite(loc.lat) ? loc.lat : unit.lat,
+      lng: loc.lng != null && Number.isFinite(loc.lng) ? loc.lng : unit.lng,
+    };
+  });
+}
+
 export async function registerCADUnit(payload: Record<string, unknown>) {
   const res = await API.post('/api/v1/cad/units', payload, { headers: aiHeaders() });
   return res.data;
@@ -2614,13 +2751,11 @@ export async function listPatientPortalIdentityMerges(): Promise<PatientPortalId
   });
 }
 
-export async function submitPatientPortalSupportRequest(
-  payload: PatientPortalSupportRequestPayload
-): Promise<void> {
-  await API.post('/api/v1/portal/support', payload, {
-    withCredentials: true,
-    headers: { 'Content-Type': 'application/json' },
-  });
+// ── Analytics API ─────────────────────────────────────────────────────────────
+
+export async function getAnalyticsExecutiveSummary(agencyId: string): Promise<Record<string, unknown>> {
+  const res = await API.get(`/api/v1/analytics/${agencyId}/executive-summary`, { headers: aiHeaders() });
+  return res.data;
 }
 
 export async function sendPatientPortalBillingChatMessage(payload: {
@@ -2745,720 +2880,5961 @@ export async function getPortalAuthReps() {
 export async function getPortalBillingSummary(patientAccountId?: string) {
   const res = await API.get('/api/v1/portal/billing/summary', {
     headers: aiHeaders(),
-    params: patientAccountId ? { patient_account_id: patientAccountId } : undefined,
+    params,
   });
   return res.data;
 }
 
-// ── Auth Representatives ────────────────────────────────────────────────────
-
-export interface AuthRepRegisterPayload {
-  full_name: string;
-  relationship: string;
-  patient_account_id: string;
-  delivery_method: 'sms' | 'email' | string;
-  email?: string;
-  phone?: string;
-}
-
-export interface AuthRepVerifyOtpPayload {
-  session_id: string;
-  otp_code: string;
-}
-
-export interface AuthRepSignPayload {
-  authorized_rep_id: string;
-  signature_data: string;
-  agreed_to_terms: boolean;
-}
-
-export interface AuthRepUploadDocumentPayload {
-  file: File;
-  document_type: string;
-  session_id: string;
-}
-
-export interface AuthRepRequestResult {
-  ok: boolean;
-  status: number;
-  detail?: string;
-  data: JsonObject;
-}
-
-function toAuthRepRequestResult(status: number, payload: unknown): AuthRepRequestResult {
-  const data = asJsonObject(payload);
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    detail: asString(data.detail) || undefined,
-    data,
-  };
-}
-
-function authRepOptionalBearerHeaders(token?: string): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-export async function registerAuthRep(
-  payload: AuthRepRegisterPayload,
-  token?: string
-): Promise<AuthRepRequestResult> {
-  const res = await API.post('/api/v1/auth-rep/register', payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...authRepOptionalBearerHeaders(token),
-    },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function verifyAuthRepOtp(
-  payload: AuthRepVerifyOtpPayload
-): Promise<AuthRepRequestResult> {
-  const res = await API.post('/api/v1/auth-rep/verify-otp', payload, {
-    headers: { 'Content-Type': 'application/json' },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function signAuthRep(
-  payload: AuthRepSignPayload,
-  token?: string
-): Promise<AuthRepRequestResult> {
-  const res = await API.post('/api/v1/auth-rep/sign', payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...authRepOptionalBearerHeaders(token),
-    },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function uploadAuthRepDocument(
-  payload: AuthRepUploadDocumentPayload,
-  token?: string
-): Promise<AuthRepRequestResult> {
-  const formData = new FormData();
-  formData.append('file', payload.file);
-  formData.append('document_type', payload.document_type);
-  formData.append('session_id', payload.session_id);
-
-  const res = await API.post('/api/v1/auth-rep/upload-document', formData, {
-    headers: {
-      ...authRepOptionalBearerHeaders(token),
-    },
-    validateStatus: () => true,
-  });
-  return toAuthRepRequestResult(res.status, res.data);
-}
-
-export async function revokeAuthRep(payload: { rep_id: string; reason: string }) {
-  const res = await API.post('/api/v1/auth-rep/revoke', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function logAuthRepConsent(payload: { rep_id: string; consent_type: string; detail: Record<string, unknown> }) {
-  const res = await API.post('/api/v1/auth-rep/consent', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getRepConsentEvents(repId: string) {
-  const res = await API.get(`/api/v1/auth-rep/reps/${repId}/consent-events`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getRepStatus(repId: string) {
-  const res = await API.get(`/api/v1/auth-rep/reps/${repId}/status`, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Imports ─────────────────────────────────────────────────────────────────
-
-export async function validateImportBatch(payload: { table: string; records: Record<string, unknown>[] }) {
-  const res = await API.post('/api/v1/imports/validate', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function executeImportBatch(batchId: string) {
-  const res = await API.post(`/api/v1/imports/execute/${batchId}`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── NEMSIS Export ───────────────────────────────────────────────────────────
-
-export async function exportNEMSIS(payload: { epcr_ids: string[] }) {
-  const res = await API.post('/api/v1/nemsis/export', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function validateNEMSISCompleteness(epcrId: string) {
-  const res = await API.get(`/api/v1/nemsis/validate/${epcrId}`, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Export Status ───────────────────────────────────────────────────────────
-
-export async function getExportQueue() {
-  const res = await API.get('/api/v1/export-status/queue', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportRejectionAlerts() {
-  const res = await API.get('/api/v1/export-status/rejection-alerts', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportPerformanceScore() {
-  const res = await API.get('/api/v1/export-status/performance-score', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportAuditHistory() {
-  const res = await API.get('/api/v1/export-status/audit-history', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportLatency() {
-  const res = await API.get('/api/v1/export-status/latency', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getExportPendingApproval() {
-  const res = await API.get('/api/v1/export-status/pending-approval', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function retryExportJob(jobId: string) {
-  const res = await API.post(`/api/v1/export-status/retry/${jobId}`, {}, { headers: csHeaders() });
-  return res.data;
-}
-
-// ── Compliance Command Center ───────────────────────────────────────────────
-
-export async function getComplianceCommandSummary(days?: number) {
-  const res = await API.get('/api/v1/compliance/command/summary', {
-    headers: csHeaders(),
-    params: typeof days === 'number' ? { days } : undefined,
+export async function getAnalyticsFinancialMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/financial`, {
+    headers: aiHeaders(),
+    params,
   });
   return res.data;
 }
 
-export async function getComplianceCommandSummaryPortal(days = 30) {
-  const headers: Record<string, string> = {};
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token') || '';
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  const res = await API.get('/api/v1/compliance/command/summary', {
-    headers,
-    params: { days },
+export async function getAnalyticsClinicalMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/clinical`, {
+    headers: aiHeaders(),
+    params,
   });
   return res.data;
 }
 
-// ── Webhooks ────────────────────────────────────────────────────────────────
-
-export async function listDeadLetterQueue() {
-  const res = await API.get('/api/v1/webhooks/dead-letter', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function retryDeadLetter(deliveryId: string) {
-  const res = await API.post(`/api/v1/webhooks/dead-letter/${deliveryId}/retry`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── ePCR Charts ──────────────────────────────────────────────────────────────
-
-export async function listEPCRCharts(status?: string): Promise<EPCRChartApi[]> {
-  const params = status ? `?status=${status}` : '';
-  const res = await API.get(`/api/v1/epcr/charts${params}`, { headers: aiHeaders() });
-  const charts = normalizeDominationList(res.data);
-  return charts.map((chart) => normalizeEPCRChartRecord(chart));
-}
-
-export async function createEPCRChart(payload: Record<string, unknown>): Promise<EPCRChartApi> {
-  const res = await API.post('/api/v1/epcr/charts', payload, { headers: aiHeaders() });
-  let chart = normalizeEPCRChartRecord(res.data);
-  const chartId = chart.id;
-  if (chartId && Object.keys(payload).length > 0) {
-    try {
-      const patchRes = await API.patch(`/api/v1/epcr/charts/${chartId}`, payload, { headers: aiHeaders() });
-      chart = normalizeEPCRChartRecord(patchRes.data);
-    } catch {
-      // Preserve chart creation success even if non-critical enrichment patch fails.
-    }
-  }
-  return chart;
-}
-
-export async function getEPCRChart(chartId: string): Promise<EPCRChartApi> {
-  const res = await API.get(`/api/v1/epcr/charts/${chartId}`, { headers: aiHeaders() });
-  return normalizeEPCRChartRecord(res.data);
-}
-
-export async function updateEPCRChart(chartId: string, payload: Record<string, unknown>): Promise<EPCRChartApi> {
-  const res = await API.patch(`/api/v1/epcr/charts/${chartId}`, payload, { headers: aiHeaders() });
-  return normalizeEPCRChartRecord(res.data);
-}
-
-export async function addEPCRVitals(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/vitals`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addEPCRMedication(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/medications`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addEPCRProcedure(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/procedures`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addEPCRAssessment(chartId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/assessments`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function generateEPCRAINarrative(chartId: string) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/ai/narrative`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getEPCRCompleteness(chartId: string) {
-  const res = await API.get(`/api/v1/epcr/charts/${chartId}/completeness`, { headers: aiHeaders() });
-  const data = asJsonObject(res.data);
-  const missing = Array.isArray(data.missing) ? data.missing.map((item) => asJsonObject(item)) : [];
-  const scoreRaw = asNumber(data.score) ?? 0;
-  const score = scoreRaw > 1 ? scoreRaw / 100 : scoreRaw;
-  return {
-    ...data,
-    score,
-    missing_fields: missing.map((m) => asString(m.label || m.field_path)).filter((v) => v.length > 0),
-    critical_missing: missing
-      .filter((m) => asString(m.severity).toLowerCase() === 'error')
-      .map((m) => asString(m.label || m.field_path))
-      .filter((v) => v.length > 0),
-    warnings: missing
-      .filter((m) => asString(m.severity).toLowerCase() !== 'error')
-      .map((m) => asString(m.label || m.field_path))
-      .filter((v) => v.length > 0),
-  };
-}
-
-export async function submitEPCRChart(chartId: string) {
-  const res = await API.post(`/api/v1/epcr/charts/${chartId}/submit`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function lockEPCRChart(chartId: string) {
-  const res = await API.post(`/api/v1/clinical/charts/${chartId}/lock`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Staffing / Personnel ──────────────────────────────────────────────────────
-
-export async function getStaffingReadiness() {
-  const res = await API.get('/api/v1/staffing/readiness', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCrewQualifications(crewMemberId: string) {
-  const res = await API.get(`/api/v1/staffing/crew/${crewMemberId}/qualifications`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function addCrewQualification(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/qualifications`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getCrewAvailability(crewMemberId: string) {
-  const res = await API.get(`/api/v1/staffing/crew/${crewMemberId}/availability`, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function updateCrewAvailability(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/availability`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function flagCrewFatigue(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/fatigue-flag`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function clearCrewFatigue(crewMemberId: string, payload: Record<string, unknown>) {
-  const res = await API.post(`/api/v1/staffing/crew/${crewMemberId}/fatigue-flag/clear`, payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getStaffingAuditLog() {
-  const res = await API.get('/api/v1/staffing/audit', { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── Scheduling Extended ──────────────────────────────────────────────────────
-
-export async function getSchedulingCoverageDashboard() {
-  const res = await API.get('/api/v1/scheduling/coverage/dashboard', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getExpiringCredentials() {
-  const res = await API.get('/api/v1/scheduling/credentials/expiring', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSchedulingAIDrafts() {
-  const res = await API.get('/api/v1/scheduling/ai/drafts', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function approveSchedulingAIDraft(draftId: string) {
-  const res = await API.post(`/api/v1/scheduling/ai/drafts/${draftId}/approve`, {}, { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function getSchedulingFatigueReport() {
-  const res = await API.get('/api/v1/scheduling/fatigue/report', { headers: aiHeaders() });
-  return res.data;
-}
-
-export async function listSchedulingSwaps(params?: Record<string, string>) {
-  const res = await API.get('/api/v1/scheduling/swaps', { headers: aiHeaders(), params });
-  return res.data;
-}
-
-export async function requestSchedulingAIDraft(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/scheduling/ai/draft', payload, { headers: aiHeaders() });
-  return res.data;
-}
-
-// ── TRIP (Wisconsin Tax Refund Intercept Program) ────────────────────────────
-
-export async function getTRIPSettings() {
-  const res = await API.get('/api/v1/trip/settings', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function saveTRIPSettings(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/trip/settings', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function listTRIPDebts(params?: Record<string, string>) {
-  const res = await API.get('/api/v1/trip/debts', { headers: csHeaders(), params });
-  return res.data;
-}
-
-export async function buildTRIPCandidates() {
-  const res = await API.post('/api/v1/trip/debts/build-candidates', {}, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function updateTRIPDebt(debtId: string, payload: Record<string, unknown>) {
-  const res = await API.patch(`/api/v1/trip/debts/${debtId}`, payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function generateTRIPExport() {
-  const res = await API.post('/api/v1/trip/exports/generate', {}, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function listTRIPExports() {
-  const res = await API.get('/api/v1/trip/exports', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function importTRIPRejects(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/trip/rejects/import', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function importTRIPPostings(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/trip/postings/import', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getTRIPReconciliation() {
-  const res = await API.get('/api/v1/trip/reports/reconciliation', { headers: csHeaders() });
-  return res.data;
-}
-
-// ── Billing Command Center ────────────────────────────────────────────────────
-
-export async function getBillingCommandDashboard() {
-  const res = await API.get('/api/v1/billing-command/dashboard', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getBillingKPIs() {
-  const res = await API.get('/api/v1/billing-command/billing-kpis', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getDenialHeatmap() {
-  const res = await API.get('/api/v1/billing-command/denial-heatmap', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getPayerPerformance() {
-  const res = await API.get('/api/v1/billing-command/payer-performance', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getRevenueLeakage() {
-  const res = await API.get('/api/v1/billing-command/revenue-leakage', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getBillingHealth() {
-  const res = await API.get('/api/v1/billing-command/billing-health', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getBillingExecutiveSummary() {
-  const res = await API.get('/api/v1/billing-command/executive-summary', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getFounderBillingVoiceSummary() {
-  const res = await API.get('/api/v1/founder/billing-voice/summary', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function listFounderBillingVoiceEscalations(status = 'awaiting_human', limit = 50) {
-  const res = await API.get('/api/v1/founder/billing-voice/escalations', {
-    headers: csHeaders(),
-    params: { status, limit },
+export async function getAnalyticsReadinessMetrics(
+  agencyId: string,
+  periodStart?: string,
+  periodEnd?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (periodStart) params.period_start = periodStart;
+  if (periodEnd) params.period_end = periodEnd;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/metrics/readiness`, {
+    headers: aiHeaders(),
+    params,
   });
   return res.data;
 }
 
-export async function takeoverFounderBillingVoiceEscalation(escalationId: string, payload?: { channel?: string; notes?: string }) {
-  const res = await API.post(`/api/v1/founder/billing-voice/escalations/${escalationId}/takeover`, payload || {}, { headers: csHeaders() });
+export async function listAnalyticsReports(agencyId: string): Promise<Record<string, unknown>> {
+  const res = await API.get(`/api/v1/analytics/${agencyId}/reports`, { headers: aiHeaders() });
   return res.data;
 }
 
-export interface FounderBillingVoiceConfigApi {
-  voice_mode: 'human_audio' | 'tts' | string;
-  tts_voice: string;
-  tts_language: string;
-  tts_primary_engine?: 'xtts' | 'piper' | string;
-  tts_fallback_engine?: 'xtts' | 'piper' | string;
-  stt_engine?: 'faster_whisper' | string;
-  stt_model_size?: string;
-  telephony_engine?: 'telnyx' | 'asterisk' | 'freeswitch' | string;
-  emergency_forwarding_enabled?: boolean;
-  emergency_forward_reasons?: string[];
-  prompts: Record<string, string>;
-  audio_urls: Record<string, string>;
+export async function generateAnalyticsReport(
+  agencyId: string,
+  reportDefinitionId: string,
+): Promise<Record<string, unknown>> {
+  const res = await API.post(
+    `/api/v1/analytics/${agencyId}/reports/generate`,
+    { report_definition_id: reportDefinitionId },
+    { headers: aiHeaders() }
+  );
+  return res.data;
 }
 
-export interface FounderBillingVoiceConfigResponseApi {
-  config: FounderBillingVoiceConfigApi;
+export async function getAnalyticsAlerts(
+  agencyId: string,
+  severity?: string,
+): Promise<Record<string, unknown>> {
+  const params: Record<string, string> = {};
+  if (severity) params.severity = severity;
+  const res = await API.get(`/api/v1/analytics/${agencyId}/alerts`, {
+    headers: aiHeaders(),
+    params,
+  });
+  return res.data;
 }
 
-export interface FounderBillingVoiceVoicemailApi {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// === Auto-generated API stubs for build compatibility ===
+
+export async function ackFleetAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/ackFleetAlert', payload); return res.data;
+}
+
+export async function activateNERISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/activateNERISPack', payload); return res.data;
+}
+
+export async function approveCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/approveCopilotRun', payload); return res.data;
+}
+
+export async function approveSchedulingAIDraft(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/approveSchedulingAIDraft', payload); return res.data;
+}
+
+export async function approveTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/approveTemplate', payload); return res.data;
+}
+
+export async function attachFaxToClaim(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/attachFaxToClaim', payload); return res.data;
+}
+
+export async function batchResubmitClaims(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/batchResubmitClaims', payload); return res.data;
+}
+
+export async function buildFounderLegalPacket(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/buildFounderLegalPacket', payload); return res.data;
+}
+
+export async function buildTRIPCandidates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/buildTRIPCandidates', payload); return res.data;
+}
+
+export async function bulkGenerateTemplates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/bulkGenerateTemplates', payload); return res.data;
+}
+
+export async function calculateROI(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/calculateROI', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function cancelDispatchMission(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/cancelDispatchMission', payload); return res.data;
+}
+
+export async function checkVisibilityDataMinimization<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/checkVisibilityDataMinimization', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function checkVisibilityZeroTrust<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/checkVisibilityZeroTrust', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function classifyLegalRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/classifyLegalRequest', payload); return res.data;
+}
+
+export async function cloneTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/cloneTemplate', payload); return res.data;
+}
+
+export async function closeFounderLegalRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/closeFounderLegalRequest', payload); return res.data;
+}
+
+export async function compileNERISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/compileNERISPack', payload); return res.data;
+}
+
+export async function completeLegalUpload(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/completeLegalUpload', payload); return res.data;
+}
+
+export async function completeTenantNERISOnboardingStep(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/completeTenantNERISOnboardingStep', payload); return res.data;
+}
+
+export async function createCopilotSession(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createCopilotSession', payload); return res.data;
+}
+
+export async function createCrewlinkAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createCrewlinkAlert', payload); return res.data;
+}
+
+export async function createDEAEvidenceBundle(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDEAEvidenceBundle', payload); return res.data;
+}
+
+export async function createDatasetAIExpression(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDatasetAIExpression', payload); return res.data;
+}
+
+export async function createDispatchRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDispatchRequest', payload); return res.data;
+}
+
+export async function createDispatchRequestPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createDispatchRequestPortal', payload); return res.data;
+}
+
+export async function createExpenseEntry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createExpenseEntry', payload); return res.data;
+}
+
+export async function createFireValidationIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createFireValidationIncident', payload); return res.data;
+}
+
+export async function createFounderLegalDeliveryLink(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createFounderLegalDeliveryLink', payload); return res.data;
+}
+
+export async function createInvoice(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createInvoice', payload); return res.data;
+}
+
+export async function createLegalPaymentCheckout(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createLegalPaymentCheckout', payload); return res.data;
+}
+
+export async function createLegalRequestIntake(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createLegalRequestIntake', payload); return res.data;
+}
+
+export async function createLegalUploadPresign(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createLegalUploadPresign', payload); return res.data;
+}
+
+export async function createNEMSISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createNEMSISPack', payload); return res.data;
+}
+
+export async function createPolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPolicy', payload); return res.data;
+}
+
+export async function createPortalCase(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalCase', payload); return res.data;
+}
+
+export async function createPortalFireIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalFireIncident', payload); return res.data;
+}
+
+export async function createPortalFleetInspectionTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalFleetInspectionTemplate', payload); return res.data;
+}
+
+export async function createPortalFleetWorkOrder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalFleetWorkOrder', payload); return res.data;
+}
+
+export async function createPortalSupportThread(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalSupportThread', payload); return res.data;
+}
+
+export async function createPortalSupportThreadMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPortalSupportThreadMessage', payload); return res.data;
+}
+
+export async function createPricebookEntry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPricebookEntry', payload); return res.data;
+}
+
+export async function createPublicOnboardingLegalPacket<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createPublicOnboardingLegalPacket', payload); return res.data as T;
+}
+
+export async function createRoleAssignment(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createRoleAssignment', payload); return res.data;
+}
+
+export async function createTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createTemplate', payload); return res.data;
+}
+
+export async function createVisibilityRule(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/createVisibilityRule', payload); return res.data;
+}
+
+export async function deidentifyVisibilityRecord<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/deidentifyVisibilityRecord', payload); return res.data as T;
+}
+
+export async function deletePolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deletePolicy', { data: payload }); return res.data;
+}
+
+export async function deleteRoleAssignment(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deleteRoleAssignment', { data: payload }); return res.data;
+}
+
+export async function deleteTelnyxCNAM(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deleteTelnyxCNAM', { data: payload }); return res.data;
+}
+
+export async function deleteVisibilityRule(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/deleteVisibilityRule', { data: payload }); return res.data;
+}
+
+export async function detachFaxMatch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/detachFaxMatch', payload); return res.data;
+}
+
+export async function escalateCrewlinkAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/escalateCrewlinkAlert', payload); return res.data;
+}
+
+export async function evaluatePortalCaseCMSGate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/evaluatePortalCaseCMSGate', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function evaluateVisibilityContext<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/evaluateVisibilityContext', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function executeCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/executeCopilotRun', payload); return res.data;
+}
+
+export async function explainPortalEDIClaim(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/explainPortalEDIClaim', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function exportPortalNerisIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/exportPortalNerisIncident', payload); return res.data;
+}
+
+export async function flagCrewFatigue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/flagCrewFatigue', payload); return res.data;
+}
+
+export async function generatePatchTasksFromResult(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/generatePatchTasksFromResult', payload); return res.data;
+}
+
+export async function generatePortalEDIBatch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/generatePortalEDIBatch', payload); return res.data;
+}
+
+export async function generateTRIPExport(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/generateTRIPExport', payload); return res.data;
+}
+
+export async function getARConcentrationRisk(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getARConcentrationRisk', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getActiveCrewPages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getActiveCrewPages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getActiveNEMSISPacks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getActiveNEMSISPacks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getActivePricebook(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getActivePricebook', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getAgentStreamUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getAgentStreamUrl', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBackupsStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBackupsStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingCommandDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingCommandDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingExecutiveSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingExecutiveSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingHealth(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingHealth', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getBillingKPIs(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getBillingKPIs', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCMSGateAuditHistory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCMSGateAuditHistory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCMSGateAuditSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCMSGateAuditSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getChurnRisk(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getChurnRisk', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getClaimThroughput(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getClaimThroughput', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getComplianceCommandSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getComplianceCommandSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getComplianceCommandSummaryPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getComplianceCommandSummaryPortal', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCopilotMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCopilotMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCopilotRun', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCopilotSessions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCopilotSessions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCostBudget(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCostBudget', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCostByTenant(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCostByTenant', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCrewAvailability(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCrewAvailability', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCrewQualifications(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCrewQualifications', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getCrewlinkAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getCrewlinkAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDEAEvidenceBundleDetail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDEAEvidenceBundleDetail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDEAEvidenceBundlesHistory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDEAEvidenceBundlesHistory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDEANarcoticsAuditHistory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDEANarcoticsAuditHistory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDatasetActiveDevices(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDatasetActiveDevices', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDatasetExports(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDatasetExports', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDatasetStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDatasetStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDenialHeatmap(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDenialHeatmap', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDispatchMissions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDispatchMissions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDocument', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getDocumentUploadUrl(...args: unknown[]): Promise<{ upload_url?: string; document_id?: string; s3_key?: string }> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getDocumentUploadUrl', { params: params as Record<string, string> ?? undefined }); return res.data as { upload_url?: string; document_id?: string; s3_key?: string };
+}
+
+export async function getEDIBatchDownloadUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getEDIBatchDownloadUrl', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getEventsFeed(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getEventsFeed', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getEventsUnreadCount(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getEventsUnreadCount', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExpenseLedger(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExpenseLedger', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExpiringCredentials(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExpiringCredentials', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportLatency(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportLatency', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportPendingApproval(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportPendingApproval', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportPerformanceScore(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportPerformanceScore', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportQueue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportQueue', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getExportRejectionAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getExportRejectionAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export function getFaxDownloadUrl(...args: unknown[]): string {
+  // Synchronous URL builder — used directly as href in anchor tags
+  const fax_id = args[0] as string;
+  return `/api/v1/faxes/${fax_id}/download`;
+}
+
+export function getFaxPreviewUrl(...args: unknown[]): string {
+  // Synchronous URL builder — used directly as href in anchor tags
+  const fax_id = args[0] as string;
+  return `/api/v1/faxes/${fax_id}/preview`;
+}
+
+export async function getFleetDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFleetDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFleetIntelligenceReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFleetIntelligenceReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderBillingVoiceConfig(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderBillingVoiceConfig', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderBillingVoiceSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderBillingVoiceSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderContracts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderContracts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderLegalQueue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderLegalQueue', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderLegalRequestDetail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderLegalRequestDetail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderLegalSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderLegalSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFounderReports(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFounderReports', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getFraudAnomalies(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getFraudAnomalies', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGovernanceInteropReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGovernanceInteropReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGovernanceSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGovernanceSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphDriveFolder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphDriveFolder', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphDriveItemDownloadUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphDriveItemDownloadUrl', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphDriveRoot(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphDriveRoot', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphMail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphMail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphMailAttachments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphMailAttachments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getGraphMailMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getGraphMailMessage', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getInvoiceSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getInvoiceSettings', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getInvoices(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getInvoices', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getMarginRiskByTenant(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getMarginRiskByTenant', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNEMSISCertificationChecklist(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNEMSISCertificationChecklist', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNEMSISPatchTasks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNEMSISPatchTasks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNEMSISScenarios(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNEMSISScenarios', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getNERISPackDetail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getNERISPackDetail', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOnboardingApplications(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOnboardingApplications', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOnboardingSignEvents(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOnboardingSignEvents', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOpsCommand(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOpsCommand', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOpsDeploymentRunSteps(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOpsDeploymentRunSteps', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getOpsDeploymentRuns(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getOpsDeploymentRuns', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPatientStatements(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPatientStatements', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPayerPerformance(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPayerPerformance', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPolicyVersions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPolicyVersions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalActivity(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalActivity', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalAgencyMetrics(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalAgencyMetrics', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalBillingSummary(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalBillingSummary', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalDocuments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalDocuments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalFirePackRules(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalFirePackRules', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalFleetReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalFleetReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalFleetUnitReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalFleetUnitReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalHemsChecklistTemplate(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalHemsChecklistTemplate', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalHemsSafetyTimeline(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalHemsSafetyTimeline', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalNerisOnboardingStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalNerisOnboardingStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalNotifications(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalNotifications', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalPaymentPlans(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalPaymentPlans', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalPayments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalPayments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalProfile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalProfile', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPortalStatements(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPortalStatements', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPricebookCatalog(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPricebookCatalog', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getPublicOnboardingStatus<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPublicOnboardingStatus', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function getPublicPricingCatalog<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getPublicPricingCatalog', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function getReleaseReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getReleaseReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getRevenueLeakage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getRevenueLeakage', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getRevenueTrend(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getRevenueTrend', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSSLExpiration(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSSLExpiration', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSchedulingAIDrafts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSchedulingAIDrafts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSchedulingCoverageDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSchedulingCoverageDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSchedulingFatigueReport(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSchedulingFatigueReport', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getStaffingAuditLog(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getStaffingAuditLog', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getStaffingReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getStaffingReadiness', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getStripeReconciliation(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getStripeReconciliation', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsCPU(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsCPU', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsErrors(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsErrors', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsLatency(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsLatency', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthMetricsMemory(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthMetricsMemory', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getSystemHealthServices(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getSystemHealthServices', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTRIPReconciliation(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTRIPReconciliation', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTRIPSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTRIPSettings', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTelnyxCNAMList(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTelnyxCNAMList', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTemplateVersions(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTemplateVersions', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTenantBillingRanking(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTenantBillingRanking', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getTenantNERISOnboardingStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getTenantNERISOnboardingStatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getUptimeSLA(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getUptimeSLA', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVisibilityDashboardBundle(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVisibilityDashboardBundle', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedAbTests(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedAbTests', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedCallbackSlots(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedCallbackSlots', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedDashboard(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedDashboard', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedImprovementTickets(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedImprovementTickets', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function getVoiceAdvancedReviewQueue(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/getVoiceAdvancedReviewQueue', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function importNERISPack(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/importNERISPack', payload); return res.data;
+}
+
+export async function ingestTelemetry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/ingestTelemetry', payload); return res.data;
+}
+
+export async function injectDispatchRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/injectDispatchRequest', payload); return res.data;
+}
+
+export async function injectDispatchRequestPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/injectDispatchRequestPortal', payload); return res.data;
+}
+
+export async function listDispatchRequestsPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listDispatchRequestsPortal', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listEPCRCharts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listEPCRCharts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFaxEvents(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFaxEvents', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFaxInbox(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFaxInbox', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFounderBillingVoiceCallbacks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFounderBillingVoiceCallbacks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFounderBillingVoiceEscalations(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFounderBillingVoiceEscalations', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listFounderBillingVoiceVoicemails(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listFounderBillingVoiceVoicemails', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listNERISPacksAll(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listNERISPacksAll', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPatientPortalStatementsForInvoiceLookup(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPatientPortalStatementsForInvoiceLookup', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPolicies(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPolicies', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalCases(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalCases', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalEDIBatches(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalEDIBatches', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFireDepartmentApparatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFireDepartmentApparatus', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFireIncidents(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFireIncidents', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFleetAlerts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFleetAlerts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFleetInspectionTemplates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFleetInspectionTemplates', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalFleetWorkOrders(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalFleetWorkOrders', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalSupportThreadMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalSupportThreadMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPortalSupportThreads(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPortalSupportThreads', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPricebookEntries(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPricebookEntries', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPricebooks(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPricebooks', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listPublicSystems<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listPublicSystems', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function listRoleAssignments(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listRoleAssignments', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listRoles(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listRoles', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listSchedulingSwaps(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listSchedulingSwaps', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listSupportInboxThreads(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listSupportInboxThreads', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listSupportThreadMessages(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listSupportThreadMessages', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTRIPDebts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTRIPDebts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTRIPExports(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTRIPExports', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTemplates(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTemplates', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function listTransportLinkFacilitySchedule(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/listTransportLinkFacilitySchedule', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function lookupPublicOnboardingNpi<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/lookupPublicOnboardingNpi', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function manualProvisionApplication(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/manualProvisionApplication', payload); return res.data;
+}
+
+export async function markEventRead(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markEventRead', payload); return res.data;
+}
+
+export async function markInvoicePaid(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markInvoicePaid', payload); return res.data;
+}
+
+export async function markPortalNotificationRead(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markPortalNotificationRead', payload); return res.data;
+}
+
+export async function markPortalNotificationsRead(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/markPortalNotificationsRead', payload); return res.data;
+}
+
+export async function mergeCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/mergeCopilotRun', payload); return res.data;
+}
+
+export async function nemsisCopilotExplain(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/nemsisCopilotExplain', payload); return res.data;
+}
+
+export async function nemsisStudioAiExplain(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/nemsisStudioAiExplain', payload); return res.data;
+}
+
+export async function nerisCopilotExplain(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/nerisCopilotExplain', payload); return res.data;
+}
+
+export async function payStatement(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/payStatement', payload); return res.data;
+}
+
+export async function postPortalHemsMissionAction(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/postPortalHemsMissionAction', payload); return res.data;
+}
+
+export async function previewLegalPricingQuote(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/previewLegalPricingQuote', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function previewVisibilityRedaction<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/previewVisibilityRedaction', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function processDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/processDocument', payload); return res.data;
+}
+
+export async function proposeCopilotRun(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/proposeCopilotRun', payload); return res.data;
+}
+
+export async function pushCrewPage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/pushCrewPage', payload); return res.data;
+}
+
+export async function registerAuthRep(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/registerAuthRep', payload); return res.data;
+}
+
+export async function registerTelnyxCNAM(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/registerTelnyxCNAM', payload); return res.data;
+}
+
+export async function renderFounderBillingVoicePrompts(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/renderFounderBillingVoicePrompts', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function replyGraphMail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/replyGraphMail', payload); return res.data;
+}
+
+export async function requestPolicyApproval(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/requestPolicyApproval', payload); return res.data;
+}
+
+export async function requestPortalPaymentPlan(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/requestPortalPaymentPlan', payload); return res.data;
+}
+
+export async function requestSchedulingAIDraft(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/requestSchedulingAIDraft', payload); return res.data;
+}
+
+export async function resendOnboardingCheckout(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resendOnboardingCheckout', payload); return res.data;
+}
+
+export async function resendOnboardingLegal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resendOnboardingLegal', payload); return res.data;
+}
+
+export async function resolvePortalFleetAlert(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resolvePortalFleetAlert', payload); return res.data;
+}
+
+export async function resolveSupportInboxThread(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/resolveSupportInboxThread', payload); return res.data;
+}
+
+export async function retryExportJob(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/retryExportJob', payload); return res.data;
+}
+
+export async function reviewFounderLegalRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/reviewFounderLegalRequest', payload); return res.data;
+}
+
+export async function revokeOnboardingApplication(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.delete('/api/v1/revokeOnboardingApplication', { data: payload }); return res.data;
+}
+
+export async function rollbackPolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/rollbackPolicy', payload); return res.data;
+}
+
+export async function runDEANarcoticsAudit(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/runDEANarcoticsAudit', payload); return res.data;
+}
+
+export async function runNEMSISScenario(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/runNEMSISScenario', payload); return res.data;
+}
+
+export async function sandboxTestVisibilityRule<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sandboxTestVisibilityRule', payload); return res.data as T;
+}
+
+export async function saveTRIPSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/saveTRIPSettings', payload); return res.data;
+}
+
+export async function searchAuditLogs(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/searchAuditLogs', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function sendAgentCommand(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendAgentCommand', payload); return res.data;
+}
+
+export async function sendCopilotMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendCopilotMessage', payload); return res.data;
+}
+
+export async function sendFounderCopilotCommand(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendFounderCopilotCommand', payload); return res.data;
+}
+
+export async function sendGraphMail(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendGraphMail', payload); return res.data;
+}
+
+export async function sendInvoiceReminder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendInvoiceReminder', payload); return res.data;
+}
+
+export async function sendPatientPortalBillingChatMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendPatientPortalBillingChatMessage', payload); return res.data;
+}
+
+export async function sendPortalMessage(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendPortalMessage', payload); return res.data;
+}
+
+export async function sendSupportInboxReply(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/sendSupportInboxReply', payload); return res.data;
+}
+
+export async function setPortalHemsAircraftReadiness(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/setPortalHemsAircraftReadiness', payload); return res.data;
+}
+
+export async function setVisibilityKillSwitch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/setVisibilityKillSwitch', payload); return res.data;
+}
+
+export async function signAuthRep(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/signAuthRep', payload); return res.data;
+}
+
+export async function signPublicOnboardingLegalPacket(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/signPublicOnboardingLegalPacket', payload); return res.data;
+}
+
+export async function simulateVisibilityRole<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/simulateVisibilityRole', { params: params as Record<string, string> ?? undefined }); return res.data as T;
+}
+
+export async function simulateWisconsinNEMSIS(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/simulateWisconsinNEMSIS', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function startPublicOnboardingCheckout<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/startPublicOnboardingCheckout', payload); return res.data as T;
+}
+
+export async function startTenantNERISOnboarding(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/startTenantNERISOnboarding', payload); return res.data;
+}
+
+export async function submitEligibilityInquiry(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitEligibilityInquiry', payload); return res.data;
+}
+
+export async function submitPatientPortalSupportRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPatientPortalSupportRequest', payload); return res.data;
+}
+
+export async function submitPortalHemsMissionAcceptance(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPortalHemsMissionAcceptance', payload); return res.data;
+}
+
+export async function submitPortalHemsWeatherBrief(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPortalHemsWeatherBrief', payload); return res.data;
+}
+
+export async function submitPortalSupportRequest(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPortalSupportRequest', payload); return res.data;
+}
+
+export async function submitPublicOnboardingApplication<T = any>(...args: unknown[]): Promise<T> {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/submitPublicOnboardingApplication', payload); return res.data as T;
+}
+
+export async function summarizeSupportInboxThread(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/summarizeSupportInboxThread', payload); return res.data;
+}
+
+export async function takeoverFounderBillingVoiceEscalation(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/takeoverFounderBillingVoiceEscalation', payload); return res.data;
+}
+
+export async function transitionDispatchMission(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/transitionDispatchMission', payload); return res.data;
+}
+
+export async function triggerFaxMatch(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/triggerFaxMatch', payload); return res.data;
+}
+
+export async function updateCrewAvailability(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateCrewAvailability', payload); return res.data;
+}
+
+export async function updateFounderBillingVoiceConfig(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateFounderBillingVoiceConfig', payload); return res.data;
+}
+
+export async function updateInvoiceSettings(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateInvoiceSettings', payload); return res.data;
+}
+
+export async function updateMyCrewAvailability(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateMyCrewAvailability', payload); return res.data;
+}
+
+export async function updateNEMSISPatchTask(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updateNEMSISPatchTask', payload); return res.data;
+}
+
+export async function updatePolicy(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePolicy', payload); return res.data;
+}
+
+export async function updatePortalCaseStatus(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalCaseStatus', payload); return res.data;
+}
+
+export async function updatePortalFireIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalFireIncident', payload); return res.data;
+}
+
+export async function updatePortalFleetWorkOrder(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalFleetWorkOrder', payload); return res.data;
+}
+
+export async function updatePortalProfile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.patch('/api/v1/updatePortalProfile', payload); return res.data;
+}
+
+export async function uploadAuthRepDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadAuthRepDocument', payload); return res.data;
+}
+
+export async function uploadLegalDocumentToPresignedUrl(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadLegalDocumentToPresignedUrl', payload); return res.data;
+}
+
+export async function uploadNEMSISPackFile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadNEMSISPackFile', payload); return res.data;
+}
+
+export async function uploadNEMSISScenario(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadNEMSISScenario', payload); return res.data;
+}
+
+export async function uploadPortalDocument(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/uploadPortalDocument', payload); return res.data;
+}
+
+export async function validateDispatchRequestPortal(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateDispatchRequestPortal', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateFireValidationIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateFireValidationIncident', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateNEMSISRawXml(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateNEMSISRawXml', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateNEMSISStudioFile(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateNEMSISStudioFile', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validateNERISBundle(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validateNERISBundle', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function validatePortalFireIncident(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.get('/api/v1/validatePortalFireIncident', { params: params as Record<string, string> ?? undefined }); return res.data;
+}
+
+export async function verifyAuthRepOtp(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/verifyAuthRepOtp', payload); return res.data;
+}
+
+export async function verifyDEAEvidenceBundleHash(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void payload; void params;
+  const res = await API.post('/api/v1/verifyDEAEvidenceBundleHash', payload); return res.data;
+}
+
+export async function ingestPortalEDI277(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void params;
+  const res = await API.post('/api/v1/billing/edi/277/ingest', payload); return res.data;
+}
+
+export async function ingestPortalEDI835(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void params;
+  const res = await API.post('/api/v1/billing/edi/835/ingest', payload); return res.data;
+}
+
+export async function ingestPortalEDI999(...args: unknown[]) {
+  const [payload, params] = args as [unknown, unknown];
+  void params;
+  const res = await API.post('/api/v1/billing/edi/999/ingest', payload); return res.data;
+}
+
+export interface EdiBatchApi {
   id: string;
-  caller_phone_number: string | null;
-  received_at: string | null;
-  tenant_id: string | null;
-  statement_id: string | null;
-  account_id: string | null;
-  state: string;
-  urgency: string;
-  risk_level: string;
-  risk_score: number;
-  transcript_preview: string;
-  intent_code: string | null;
+  batch_type: string;
+  created_at: string;
+  file_name?: string;
+  record_count?: number;
+  [key: string]: unknown;
 }
 
-export interface FounderBillingVoiceCallbackApi {
+export interface EdiClaimExplanationApi {
+  claim_id: string;
+  explanation: string;
+  adjustment_codes?: { code: string; description: string }[];
+  [key: string]: unknown;
+}
+
+// ─── Missing API type exports ─────────────────────────────────────────────────
+
+export interface FaxItemApi {
   id: string;
-  voicemail_id: string | null;
-  tenant_id: string | null;
-  callback_phone: string | null;
-  callback_state: string;
-  sla_due_at: string | null;
-  priority: string;
-  reason: string | null;
-  created_at: string | null;
-  updated_at: string | null;
+  from_number?: string;
+  to_number?: string;
+  status?: string;
+  direction?: string;
+  received_at?: string;
+  created_at?: string;
+  pages?: number;
+  pdf_url?: string;
+  page_count?: number;
+  telnyx_fax_id?: string;
+  error?: string;
+  status_updated_at?: string;
+  document_match_status?: string;
+  data?: {
+    confidence?: number;
+    telnyx_fax_id?: string;
+    error?: string;
+    claim_id?: string;
+    patient_name?: string;
+    match_type?: string;
+    match_suggestions?: { claim_id?: string; patient_name?: string; match_type?: string; confidence?: number }[];
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 }
 
-export interface FounderBillingVoiceBoardResponseApi<T> {
-  items: T[];
+export interface FaxEventApi {
+  id: string;
+  event_type?: string;
+  fax_id?: string;
+  created_at?: string;
+  received_at?: string;
+  to_status?: string;
+  status?: string;
+  provider_event_type?: string;
+  [key: string]: unknown;
 }
 
-export async function getFounderBillingVoiceConfig(): Promise<FounderBillingVoiceConfigResponseApi> {
-  const res = await API.get('/api/v1/founder/billing-voice/config', { headers: csHeaders() });
-  return res.data as FounderBillingVoiceConfigResponseApi;
+export interface SupportThreadApi {
+  id: string;
+  subject?: string;
+  status?: string;
+  escalated?: boolean;
+  unread?: boolean;
+  updated_at?: string;
+  created_at?: string;
+  tenant_id?: string;
+  agency_name?: string;
+  data?: {
+    context?: { agency_name?: string;[key: string]: unknown };
+    title?: string;
+    last_message?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 }
 
-export async function updateFounderBillingVoiceConfig(
-  payload: FounderBillingVoiceConfigApi
-): Promise<FounderBillingVoiceConfigResponseApi> {
-  const res = await API.put('/api/v1/founder/billing-voice/config', payload, { headers: csHeaders() });
-  return res.data as FounderBillingVoiceConfigResponseApi;
+export interface SupportThreadMessageApi {
+  id: string;
+  content?: string;
+  sender_role?: string;
+  created_at?: string;
+  thread_id?: string;
+  [key: string]: unknown;
 }
 
-export async function renderFounderBillingVoicePrompts(payload: {
-  preferred_engine?: 'xtts' | 'piper' | string;
-}): Promise<FounderBillingVoiceConfigResponseApi> {
-  const res = await API.post('/api/v1/founder/billing-voice/config/render-prompts', payload, { headers: csHeaders() });
-  return res.data as FounderBillingVoiceConfigResponseApi;
+export interface LegalQueueItem {
+  id: string;
+  request_type?: string;
+  severity?: string;
+  status?: string;
+  created_at?: string;
+  agency_name?: string;
+  subject?: string;
+  requester_name?: string;
+  requesting_party?: string;
+  missing_count?: number;
+  deadline_risk?: string;
+  deadline_at?: string;
+  [key: string]: unknown;
 }
 
-export async function listFounderBillingVoiceVoicemails(
-  limit = 50
-): Promise<FounderBillingVoiceBoardResponseApi<FounderBillingVoiceVoicemailApi>> {
-  const res = await API.get('/api/v1/founder/billing-voice/voicemails', {
-    headers: csHeaders(),
-    params: { limit },
-  });
-  return res.data as FounderBillingVoiceBoardResponseApi<FounderBillingVoiceVoicemailApi>;
-}
-
-export async function listFounderBillingVoiceCallbacks(
-  limit = 50
-): Promise<FounderBillingVoiceBoardResponseApi<FounderBillingVoiceCallbackApi>> {
-  const res = await API.get('/api/v1/founder/billing-voice/callbacks', {
-    headers: csHeaders(),
-    params: { limit },
-  });
-  return res.data as FounderBillingVoiceBoardResponseApi<FounderBillingVoiceCallbackApi>;
-}
-
-export async function getBillingAlerts() {
-  const res = await API.get('/api/v1/billing-command/billing-alerts', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getPayerMix() {
-  const res = await API.get('/api/v1/billing-command/payer-mix', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getRevenueTrend() {
-  const res = await API.get('/api/v1/billing-command/revenue-trend', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getARConcentrationRisk() {
-  const res = await API.get('/api/v1/billing-command/ar-concentration-risk', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getClaimThroughput() {
-  const res = await API.get('/api/v1/billing-command/claim-throughput', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getAppealSuccessRate() {
-  const res = await API.get('/api/v1/billing-command/appeal-success', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getFraudAnomalies() {
-  const res = await API.get('/api/v1/billing-command/fraud-anomaly', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function batchResubmitClaims(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/billing-command/batch-resubmit', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function draftAppeal(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/billing-command/appeal-draft', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getDenialPredictor(payload: Record<string, unknown>) {
-  const res = await API.post('/api/v1/billing-command/denial-predictor', payload, { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getStripeReconciliation() {
-  const res = await API.get('/api/v1/billing-command/stripe-reconciliation', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getChurnRisk() {
-  const res = await API.get('/api/v1/billing-command/churn-risk', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getDuplicateDetection() {
-  const res = await API.get('/api/v1/billing-command/duplicate-detection', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getTenantBillingRanking() {
-  const res = await API.get('/api/v1/billing-command/tenant-billing-ranking', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getRevenueByServiceLevel() {
-  const res = await API.get('/api/v1/billing-command/revenue-by-service-level', { headers: csHeaders() });
-  return res.data;
-}
-
-export async function getModifierImpact() {
-  const res = await API.get('/api/v1/billing-command/modifier-impact', { headers: csHeaders() });
-  return res.data;
-}
-
-// ── Legal Requests Command ───────────────────────────────────────────────────
-
-export type LegalRequestType = 'hipaa_roi' | 'subpoena' | 'court_order';
-export type LegalRequestStatus =
-  | 'received'
-  | 'triage_complete'
-  | 'missing_docs'
-  | 'under_review'
-  | 'packet_building'
-  | 'delivered'
-  | 'closed';
-
-export interface LegalMissingItemCard {
-  code: string;
-  title: string;
-  detail: string;
-  severity: 'high' | 'medium' | 'low';
+export interface LegalSummary {
+  total?: number;
+  pending?: number;
+  resolved?: number;
+  avg_response_hours?: number;
+  total_open?: number;
+  urgent_deadlines?: number;
+  high_risk_requests?: number;
+  lane_counts?: Record<string, number>;
+  [key: string]: unknown;
 }
 
 export interface LegalChecklistItem {
-  code: string;
+  id: string;
   label: string;
-  required: boolean;
-  satisfied: boolean;
-}
-
-export interface LegalTriageSummary {
-  classification: LegalRequestType;
-  classification_confidence: number;
-  likely_invalid_or_incomplete: boolean;
-  urgency_level: 'low' | 'normal' | 'high' | 'critical';
-  deadline_risk: 'none' | 'watch' | 'high';
-  mismatch_signals: string[];
-  rationale: string;
+  code?: string;
+  completed?: boolean;
+  required?: boolean;
+  [key: string]: unknown;
 }
 
 export interface LegalIntakePayload {
-  request_type?: LegalRequestType;
-  requesting_party: string;
-  requester_name: string;
+  request_type: string;
+  requesting_party?: string;
+  requester_name?: string;
   requesting_entity?: string;
   requester_category?:
   | 'patient'
@@ -3476,28 +8852,32 @@ export interface LegalIntakePayload {
   date_range_start?: string;
   date_range_end?: string;
   request_documents?: string[];
-  delivery_preference?: 'secure_one_time_link' | 'encrypted_email' | 'manual_pickup';
   requested_page_count?: number;
   jurisdiction_state?: string;
   print_mail_requested?: boolean;
   rush_requested?: boolean;
+  delivery_preference?: string;
   deadline_at?: string;
   notes?: string;
+  subject?: string;
+  description?: string;
+  contact_email?: string;
+  [key: string]: unknown;
 }
 
 export interface LegalIntakeResponse {
-  request_id: string;
-  intake_token: string;
-  status: LegalRequestStatus;
-  request_type: LegalRequestType;
-  triage_summary: LegalTriageSummary;
-  missing_items: LegalMissingItemCard[];
-  required_document_checklist: LegalChecklistItem[];
-  workflow_state?: string;
-  payment_status?: string;
-  payment_required?: boolean;
-  margin_status?: string;
-  fee_quote?: Record<string, unknown>;
+  id: string;
+  request_id?: string;
+  status?: string;
+  created_at?: string;
+  triage_summary?: {
+    classification?: string;
+    urgency_level?: string;
+    [key: string]: unknown;
+  };
+  required_document_checklist?: LegalChecklistItem[];
+  missing_items?: string[];
+  [key: string]: unknown;
 }
 
 export interface LegalPricingQuoteResponse {
@@ -6376,125 +11756,104 @@ export interface CaseTimelineEventApi {
 }
 
 export interface CaseRecordApi {
-  case_id: string;
-  transport_mode: CaseTransportModeApi;
-  status: string;
-  priority: CasePriorityApi;
+  id: string;
+  case_number?: string;
+  status?: string;
+  priority?: string;
+  transport_mode?: string;
+  created_at?: string;
   patient_name?: string;
-  opened_at: string;
-  transport_request_id?: string;
-  cad_call_id?: string;
-  timeline?: CaseTimelineEventApi[];
   [key: string]: unknown;
 }
 
-export interface CaseCreatePayload {
-  transport_mode: CaseTransportModeApi;
-  priority: CasePriorityApi;
-  patient_name: string;
-  origin_address: string;
-  destination_address?: string;
-  transport_request_id?: string;
-  cad_call_id?: string;
-}
+export type CasePriorityApi = 'emergent' | 'urgent' | 'routine';
+export type CaseTransportModeApi = 'ground' | 'rotor' | 'fixed_wing';
 
 export interface CaseCMSGatePayload {
-  patient_condition: string;
-  transport_reason: string;
-  transport_level: 'BLS' | 'ALS' | 'SCT' | 'SPECIALTY';
-  origin_address: string;
-  destination_name: string;
-  pcs_on_file: boolean;
-  pcs_obtained: boolean;
-  medical_necessity_documented: boolean;
-  patient_signature: boolean;
-  signature_on_file: boolean;
-  primary_insurance_id: string;
-  medicare_id: string;
-  medicaid_id: string;
+  case_id?: string;
+  transport_mode?: string;
+  patient_condition?: string;
+  transport_reason?: string;
+  transport_level?: string;
+  origin_address?: string;
+  destination_name?: string;
+  pcs_on_file?: boolean;
+  pcs_obtained?: boolean;
+  medical_necessity_documented?: boolean;
+  patient_signature?: boolean;
+  signature_on_file?: boolean;
+  primary_insurance_id?: string;
+  medicare_id?: string;
+  medicaid_id?: string;
+  [key: string]: unknown;
 }
 
 export interface CaseCMSGateResultApi {
-  score: number;
-  passed: boolean;
-  hard_block?: boolean;
-  bs_flag?: boolean;
-  gates?: { name: string; passed: boolean; weight: number }[];
-  issues?: string[];
+  approved?: boolean;
+  reason?: string;
+  codes?: string[];
   [key: string]: unknown;
 }
 
-function normalizeCaseRecord(value: unknown): CaseRecordApi {
-  const row = asJsonObject(value);
-  const timelineRaw = Array.isArray(row.timeline) ? row.timeline : [];
-  const transportModeRaw = asString(row.transport_mode, 'ground').toLowerCase();
-  const priorityRaw = asString(row.priority, 'routine').toLowerCase();
-  const transport_mode: CaseTransportModeApi =
-    transportModeRaw === 'rotor' || transportModeRaw === 'fixed_wing' ? (transportModeRaw as CaseTransportModeApi) : 'ground';
-  const priority: CasePriorityApi =
-    priorityRaw === 'urgent' || priorityRaw === 'emergent' ? (priorityRaw as CasePriorityApi) : 'routine';
-
-  return {
-    ...(row as CaseRecordApi),
-    case_id: asString(row.case_id || row.id),
-    transport_mode,
-    status: asString(row.status),
-    priority,
-    patient_name: asString(row.patient_name) || undefined,
-    opened_at: asString(row.opened_at || row.created_at),
-    transport_request_id: asString(row.transport_request_id) || undefined,
-    cad_call_id: asString(row.cad_call_id) || undefined,
-    timeline: timelineRaw.map((event) => {
-      const item = asJsonObject(event);
-      return {
-        ...(item as CaseTimelineEventApi),
-        event: asString(item.event),
-        timestamp: asString(item.timestamp),
-      };
-    }),
-  };
+export interface DatasetActiveDeviceApi {
+  id: string;
+  device_name?: string;
+  device_type?: string;
+  ip?: string;
+  agency?: string;
+  user?: string;
+  status?: string;
+  last_seen?: string;
+  tenant_id?: string;
+  [key: string]: unknown;
 }
 
-export async function listPortalCases(): Promise<CaseRecordApi[]> {
-  const { data } = await API.get('/api/v1/cases/', {
-    headers: transportLinkHeaders(),
-  });
-  const rows = Array.isArray(data) ? data : Array.isArray(data?.cases) ? data.cases : [];
-  return rows.map((row: unknown) => normalizeCaseRecord(row));
+export interface DatasetAIExpressionApi {
+  expression_id?: string;
+  result?: Record<string, unknown>;
+  confidence?: number;
+  [key: string]: unknown;
 }
 
-export async function updatePortalCaseStatus(
-  caseId: string,
-  payload: { status: string },
-): Promise<Record<string, unknown>> {
-  const { data } = await API.patch(`/api/v1/cases/${caseId}/status`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data);
+export interface DatasetExportsApi {
+  exports?: { id: string; format: string; created_at: string }[];
+  total?: number;
+  total_today?: number;
+  successful?: number;
+  failed?: number;
+  in_queue?: number;
+  agencies?: { name: string; state: string; status: string; success_rate: number; failed_charts: number }[];
+  [key: string]: unknown;
 }
 
-export async function createPortalCase(payload: CaseCreatePayload): Promise<CaseRecordApi> {
-  const { data } = await API.post('/api/v1/cases/', payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return normalizeCaseRecord(data);
+export interface DatasetSystemStatusApi {
+  healthy?: boolean;
+  last_sync?: string;
+  record_count?: number;
+  nemsis?: { healthy?: boolean; last_sync?: string; record_count?: number; version?: string; last_update?: string };
+  neris?: { healthy?: boolean; last_sync?: string; record_count?: number; version?: string; last_update?: string };
+  rxnorm?: { healthy?: boolean; last_sync?: string; record_count?: number; term_count?: number };
+  snomed?: { healthy?: boolean; last_sync?: string; record_count?: number; term_count?: number };
+  icd10?: { healthy?: boolean; last_sync?: string; record_count?: number; version?: string };
+  facilities?: { total?: number; active?: number; last_state_sync?: string; active_count?: number };
+  [key: string]: unknown;
 }
 
-export async function evaluatePortalCaseCMSGate(
-  caseId: string,
-  payload: CaseCMSGatePayload,
-): Promise<CaseCMSGateResultApi> {
-  const { data } = await API.post(`/api/v1/cms-gate/cases/${caseId}/evaluate`, payload, {
-    headers: {
-      ...transportLinkHeaders(),
-      'Content-Type': 'application/json',
-    },
-  });
-  return asJsonObject(data) as CaseCMSGateResultApi;
+export interface DispatchRequestApi {
+  id: string;
+  request_type?: string;
+  status?: string;
+  priority?: string;
+  created_at?: string;
+  origin_address?: string;
+  destination_address?: string;
+  [key: string]: unknown;
+}
+
+export interface FounderBillingVoiceConfigApi {
+  enabled?: boolean;
+  phone_number?: string;
+  ivr_flow?: string;
+  escalation_threshold?: number;
+  [key: string]: unknown;
 }

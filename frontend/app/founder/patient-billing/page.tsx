@@ -69,7 +69,7 @@ const ROUTES = [
     href: '/patient-billing-login',
     title: 'Patient Billing Portal Entry',
     desc: 'Public patient billing experience for statement and payment access.',
-    color: '#FF4D00',
+    color: 'var(--q-orange)',
     tag: 'Portal',
   },
   {
@@ -88,8 +88,8 @@ export default function FounderPatientBillingCommandPage() {
 
       <div>
         <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">DOMAIN 2C · PATIENT BILLING COMMAND</div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Patient Billing Command</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">Balances · payment orchestration · support linkage · trust posture</p>
+        <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Patient Billing Command</h1>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Balances · payment orchestration · support linkage · trust posture</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <SeverityBadge severity="HIGH" size="sm" />
           <SeverityBadge severity="MEDIUM" size="sm" label="Patient Trust Sensitive" />
@@ -121,12 +121,12 @@ export default function FounderPatientBillingCommandPage() {
           <Link
             key={route.href}
             href={route.href}
-            className="bg-[#0A0A0B] border border-border-DEFAULT p-4 hover:border-brand-orange/[0.3] transition-colors"
+            className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 hover:border-brand-orange/[0.3] transition-colors"
             style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
           >
             <div className="text-micro uppercase tracking-wider font-semibold mb-1" style={{ color: route.color }}>{route.tag}</div>
-            <div className="text-sm font-bold text-zinc-100 mb-1">{route.title}</div>
-            <div className="text-xs text-zinc-500">{route.desc}</div>
+            <div className="text-sm font-bold text-[var(--color-text-primary)] mb-1">{route.title}</div>
+            <div className="text-xs text-[var(--color-text-muted)]">{route.desc}</div>
           </Link>
         ))}
       </div>

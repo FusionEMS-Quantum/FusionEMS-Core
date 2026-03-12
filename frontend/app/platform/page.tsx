@@ -38,10 +38,10 @@ export default function PlatformPage() {
           { label: 'Request Platform Briefing', href: '/contact' },
         ]}
       >
-        <div className="border border-border-default bg-[#0A0A0B] chamfer-8 p-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="border border-border-default bg-[var(--color-bg-panel)] chamfer-8 p-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-label uppercase tracking-widest text-zinc-500">Need a deployment sequence?</div>
-            <p className="text-body text-zinc-400 mt-1">Start with Billing Command activation and phase into full command surfaces by operational priority.</p>
+            <div className="text-label uppercase tracking-widest text-[var(--color-text-muted)]">Need a deployment sequence?</div>
+            <p className="text-body text-[var(--color-text-secondary)] mt-1">Start with Billing Command activation and phase into full command surfaces by operational priority.</p>
           </div>
           <Link href="/early-access" className="quantum-btn-primary">Join Deployment Cohort</Link>
         </div>

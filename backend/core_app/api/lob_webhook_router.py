@@ -39,7 +39,7 @@ LOB_HANDLED_EVENTS = frozenset(
 )
 
 
-@router.post("/webhooks/lob", include_in_schema=True)
+@router.post("/api/v1/webhooks/lob", include_in_schema=True)
 async def lob_webhook(
     request: Request,
     db: Session = Depends(db_session_dependency),

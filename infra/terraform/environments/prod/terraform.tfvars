@@ -37,6 +37,15 @@ redis_node_type   = "cache.t4g.medium"
 backend_image_tag  = "hc-20260305015136-eb18a434"
 frontend_image_tag = "hc-20260305012629-eb18a434"
 
+# ─── AI (Bedrock/OpenAI) ───────────────────────────────────────────────────
+# Non-secret configuration. Set a specific Bedrock model ID and scope IAM to that model ARN.
+ai_provider      = "bedrock"
+bedrock_model_id = "anthropic.claude-3-7-sonnet-20250219-v1:0"
+bedrock_model_arns = [
+  "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0",
+  "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0",
+]
+
 # ─── Monitoring ──────────────────────────────────────────────────────────────
 
 alert_email = "alerts@fusionemsquantum.com"

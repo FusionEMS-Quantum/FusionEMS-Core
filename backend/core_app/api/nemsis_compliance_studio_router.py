@@ -220,7 +220,7 @@ async def ai_explain(
 
     try:
         ai = AiService()
-        raw_response, meta = ai.chat(system=_AI_SYSTEM, user=user_prompt)
+        raw_response = ai.chat(system=_AI_SYSTEM, user=user_prompt).content
         explanation = json.loads(raw_response)
     except Exception:
         explanation = dict(_SAFE_AI_DEFAULT)
@@ -288,7 +288,7 @@ async def ai_explain_batch(
         )
         try:
             ai = AiService()
-            raw_response, _meta = ai.chat(system=_AI_SYSTEM, user=user_prompt)
+            raw_response = ai.chat(system=_AI_SYSTEM, user=user_prompt).content
             explanation = json.loads(raw_response)
         except Exception:
             explanation = dict(_SAFE_AI_DEFAULT)

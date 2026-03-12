@@ -12,10 +12,34 @@ from core_app.api.dependencies import (
     require_role,
 )
 from core_app.schemas.auth import CurrentUser
+from core_app.schemas.unit_locations import LatestUnitLocationsResponse
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher
+from core_app.services.unit_location_service import UnitLocationService
 
 router = APIRouter(prefix="/api/v1/cad", tags=["CAD"])
+
+
+@router.get(
+    "/units/locations/latest",
+    response_model=LatestUnitLocationsResponse,
+    dependencies=[
+        Depends(require_role("founder", "admin", "agency_admin", "dispatcher", "supervisor", "ems", "compliance"))
+    ],
+)
+async def get_latest_unit_locations(
+    request: Request,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(db_session_dependency),
+    limit: int = 500,
+):
+    svc = UnitLocationService(db)
+    return svc.get_latest_unit_locations(
+        tenant_id=current.tenant_id,
+        actor_user_id=current.user_id,
+        correlation_id=getattr(request.state, "correlation_id", None),
+        limit=limit,
+    )
 
 
 @router.post("/units", dependencies=[Depends(require_role("admin", "founder"))])

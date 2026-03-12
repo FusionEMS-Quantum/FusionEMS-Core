@@ -1,3 +1,5 @@
+# ruff: noqa: I001
+
 import logging
 import os
 
@@ -24,6 +26,7 @@ from core_app.observability.otel import configure_otel
 settings = get_settings()
 configure_logging("DEBUG" if settings.debug else "INFO")
 logger = logging.getLogger(__name__)
+logger.info("integration_state_table=%s", settings.integration_state_table())
 
 from core_app.api.accreditation_router import router as accreditation_router  # noqa: E402
 from core_app.api.ai_platform_router import router as ai_platform_router  # noqa: E402
@@ -52,6 +55,8 @@ from core_app.api.dataset_router import router as dataset_router  # noqa: E402
 from core_app.api.dea_compliance_router import router as dea_compliance_router  # noqa: E402
 from core_app.api.dispatch_router import router as dispatch_router  # noqa: E402
 from core_app.api.doc_kit_router import router as doc_kit_router  # noqa: E402
+from core_app.api.document_vault_router import router as document_vault_router
+from core_app.api.founder_communications_router import router as founder_comms_router
 from core_app.api.documents_router import router as documents_router  # noqa: E402
 from core_app.api.epcr_capture_router import router as epcr_capture_router  # noqa: E402
 from core_app.api.epcr_customization_router import router as epcr_customization_router  # noqa: E402
@@ -98,10 +103,13 @@ from core_app.api.founder_specialty_ops_command_router import (  # noqa: E402
 from core_app.api.founder_success_command_router import (
     router as founder_success_command_router,  # noqa: E402
 )
+from core_app.api.founder_tax_router import tax_advisor_router  # noqa: E402
+from core_app.api.founder_accounting_router import accounting_router  # noqa: E402
 from core_app.api.governance_router import router as governance_router  # noqa: E402
 from core_app.api.health_router import router as health_router  # noqa: E402
 from core_app.api.hems_router import router as hems_router  # noqa: E402
 from core_app.api.icd10_router import router as icd10_router  # noqa: E402
+from core_app.api.terminology_router import router as terminology_router  # noqa: E402
 from core_app.api.imports_router import router as imports_router  # noqa: E402
 from core_app.api.incident_router import router as incident_router  # noqa: E402
 from core_app.api.interop_router import router as interop_router  # noqa: E402
@@ -234,6 +242,8 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 
 # --- Routers with /api/v1 prefix ---
+app.include_router(document_vault_router)
+app.include_router(founder_comms_router)
 app.include_router(accreditation_router, prefix="/api/v1")
 app.include_router(audit_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
@@ -245,10 +255,10 @@ app.include_router(interop_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(incident_router, prefix="/api/v1")
 app.include_router(microsoft_auth_router, prefix="/api/v1")
-app.include_router(nemsis_router, prefix="/api/v1")
-app.include_router(neris_router, prefix="/api/v1")
+app.include_router(nemsis_router)
+app.include_router(neris_router)
 app.include_router(patient_router, prefix="/api/v1")
-app.include_router(payments_router, prefix="/api/v1")
+app.include_router(payments_router)
 app.include_router(realtime_router, prefix="/api/v1")
 app.include_router(roi_router, prefix="/api/v1")
 app.include_router(vital_router, prefix="/api/v1")
@@ -299,6 +309,7 @@ app.include_router(founder_integration_command_router)
 app.include_router(founder_ops_command_router)
 app.include_router(hems_router)
 app.include_router(icd10_router)
+app.include_router(terminology_router)
 app.include_router(imports_router)
 app.include_router(kitlink_compliance_router)
 app.include_router(kitlink_router)
@@ -365,9 +376,11 @@ app.include_router(relationship_command_router)
 # --- Customer Success Platform routers (self-prefixed) ---
 app.include_router(customer_success_router)
 app.include_router(founder_success_command_router)
-app.include_router(founder_copilot_router)
 
 # --- Platform Core Directive routers (self-prefixed) ---
+app.include_router(platform_core_router)
+app.include_router(tax_advisor_router, prefix="/api")
+app.include_router(accounting_router, prefix="/api")
 app.include_router(quantum_csv_router, prefix="/api")
 app.include_router(dataset_router)
 
@@ -416,7 +429,11 @@ async def healthz() -> JSONResponse:
     if not healthy:
         logger.error("HEALTHZ DEGRADED: checks=%s warnings=%s", checks, warnings)
 
-    content: dict[str, object] = {"status": "ok" if healthy else "degraded", "checks": checks}
+    content: dict[str, object] = {
+        "status": "ok" if healthy else "degraded",
+        "checks": checks,
+        "integrations": settings.integration_state_table(),
+    }
     if warnings:
         content["warnings"] = warnings
     return JSONResponse(
@@ -428,3 +445,19 @@ async def healthz() -> JSONResponse:
 @app.get("/api/healthz")
 async def api_healthz() -> JSONResponse:
     return await healthz()
+
+
+@app.on_event("startup")
+def _seed_document_vault_catalog() -> None:
+    """Idempotent vault catalog seed — runs once per process start."""
+    from core_app.db.session import SessionLocal  # noqa: PLC0415
+    from core_app.services.document_vault_service import DocumentVaultService  # noqa: PLC0415
+
+    db = SessionLocal()
+    try:
+        DocumentVaultService(db).seed_vault_catalog()
+        logger.info("vault.catalog.seeded")
+    except Exception as exc:  # pragma: no cover — seed failure must never crash startup
+        logger.error("vault.catalog.seed_failed error=%s", exc)
+    finally:
+        db.close()

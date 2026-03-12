@@ -36,6 +36,9 @@ async def run_worker() -> None:
         loop.add_signal_handler(sig, _signal_handler)
 
     from core_app.workers.epcr_retention_worker import _epcr_retention_loop
+    from core_app.workers.gps_retention_worker import _gps_retention_loop
+    from core_app.workers.nemsis_export_consumer import nemsis_export_consumer_loop
+    from core_app.workers.neris_export_consumer import neris_export_consumer_loop
 
     tasks = [
         asyncio.create_task(_heartbeat_loop(stop_event)),
@@ -44,6 +47,9 @@ async def run_worker() -> None:
         asyncio.create_task(_connector_sync_loop(stop_event)),
         asyncio.create_task(_dlq_processing_loop(stop_event)),
         asyncio.create_task(_epcr_retention_loop(stop_event)),
+        asyncio.create_task(_gps_retention_loop(stop_event)),
+        asyncio.create_task(neris_export_consumer_loop(stop_event)),
+        asyncio.create_task(nemsis_export_consumer_loop(stop_event)),
     ]
 
     await stop_event.wait()
@@ -147,10 +153,8 @@ async def _connector_sync_loop(stop: asyncio.Event) -> None:
 async def _generate_executive_briefing() -> None:
     logger.info("Generating daily executive briefing...")
     try:
-        from core_app.core.config import get_settings
         from core_app.services.event_publisher import get_event_publisher
 
-        settings = get_settings()
         publisher = get_event_publisher()
 
         briefing: dict = {
@@ -159,35 +163,27 @@ async def _generate_executive_briefing() -> None:
             "summary": "Daily executive briefing generated.",
         }
 
-        if settings.openai_api_key:
-            try:
-                import openai
+        from core_app.ai.service import AiService
 
-                client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
-                resp = await client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are the FusionEMS platform intelligence. "
-                                "Generate a concise daily executive briefing for the EMS agency operator. "
-                                "Focus on revenue cycle health, operational readiness, compliance status, "
-                                "and any AI-detected anomalies. Be factual, brief, and action-oriented."
-                            ),
-                        },
-                        {
-                            "role": "user",
-                            "content": f"Date: {datetime.now(UTC).strftime('%Y-%m-%d')}. Generate today's briefing.",
-                        },
-                    ],
+        if AiService.is_configured():
+            try:
+                svc = AiService()
+                _resp = svc.chat(
+                    system=(
+                        "You are the FusionEMS platform intelligence. "
+                        "Generate a concise daily executive briefing for the EMS agency operator. "
+                        "Focus on revenue cycle health, operational readiness, compliance status, "
+                        "and any AI-detected anomalies. Be factual, brief, and action-oriented."
+                    ),
+                    user=f"Date: {datetime.now(UTC).strftime('%Y-%m-%d')}. Generate today's briefing.",
                     max_tokens=512,
                     temperature=0.3,
                 )
-                briefing["summary"] = resp.choices[0].message.content or briefing["summary"]
-                briefing["model"] = resp.model
+                briefing["summary"] = _resp.content or briefing["summary"]
+                briefing["model"] = _resp.model
+                briefing["ai_provider"] = _resp.provider
             except Exception as ai_err:
-                logger.warning("OpenAI briefing generation failed: %s", ai_err)
+                logger.warning("AI briefing generation failed: %s", ai_err)
 
         await publisher.publish(
             "system.executive_briefing",

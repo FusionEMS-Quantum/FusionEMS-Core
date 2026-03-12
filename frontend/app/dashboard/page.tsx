@@ -1,7 +1,6 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import { MetricPlate, PlateCard } from '@/components/ui/PlateCard';
 import { StatusChip } from '@/components/ui/StatusChip';
@@ -47,7 +46,7 @@ function SkeletonPlate() {
       className="chamfer-8 border animate-pulse"
       style={{
         height:          96,
-        backgroundColor: '#0A0A0B',
+        backgroundColor: 'var(--color-bg-panel)',
         borderColor:     'var(--color-border-subtle)',
       }}
     />
@@ -89,23 +88,6 @@ function DashboardPageInner() {
     return () => { cancelled = true; };
   }, []);
 
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = searchParams.get('token');
-    const nextPath = searchParams.get('next');
-    if (token) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('qs_token', token);
-      localStorage.setItem('access_token', token);
-      const redirectTarget = nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//')
-        ? nextPath
-        : '/dashboard';
-      router.replace(redirectTarget);
-    }
-  }, [searchParams, router]);
-
   return (
     <AppShell>
       {/* ── Page header ────────────────────────────────────────────────── */}
@@ -140,7 +122,7 @@ function DashboardPageInner() {
         >
           <span
             className="micro-caps"
-            style={{ color: '#FF4D00' }}
+            style={{ color: 'var(--q-orange)' }}
           >
             Live
           </span>

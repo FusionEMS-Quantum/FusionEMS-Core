@@ -51,7 +51,7 @@ export default function CheckoutPage() {
 
   return (
     <div
-      className=" bg-zinc-950 border border-zinc-800 p-6 md:p-8"
+      className=" bg-[var(--color-bg-base)] border border-[var(--color-border-default)] p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Header */}
@@ -76,13 +76,13 @@ export default function CheckoutPage() {
         <div
           className="px-5 py-3 border-b"
           style={{
-            backgroundColor: 'rgba(255,107,26,0.08)',
-            borderColor: 'rgba(255,107,26,0.2)',
+            backgroundColor: 'rgba(255,106,0,0.08)',
+            borderColor: 'rgba(255,106,0,0.2)',
           }}
         >
           <span
             className="text-xs font-bold uppercase tracking-wider"
-            style={{ color: '#FF4D00' }}
+            style={{ color: 'var(--q-orange)' }}
           >
             Order Summary
           </span>
@@ -97,10 +97,10 @@ export default function CheckoutPage() {
             <div className="flex items-center gap-2 mb-0.5">
               {/* Hex icon */}
               <svg width="18" height="18" viewBox="0 0 36 36" fill="none">
-                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#FF4D00" />
+                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--q-orange)" />
                 <text x="18" y="23" textAnchor="middle" fill="black" fontSize="11" fontWeight="900" fontFamily="'Barlow Condensed', sans-serif">FQ</text>
               </svg>
-              <span className="text-sm font-bold text-zinc-100 tracking-wide">
+              <span className="text-sm font-bold text-[var(--color-text-primary)] tracking-wide">
                 FusionEMS Quantum
               </span>
             </div>
@@ -157,8 +157,8 @@ export default function CheckoutPage() {
       {status === 'loading' && (
         <div className="flex flex-col items-center justify-center py-10 gap-4">
           <svg className="animate-spin h-10 w-10" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="3" />
-            <path className="opacity-80" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
+            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="var(--q-orange)" strokeWidth="3" />
+            <path className="opacity-80" fill="var(--q-orange)" d="M4 12a8 8 0 018-8v8z" />
           </svg>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
             Preparing your checkout session…
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
             href={checkoutUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#FF4D00] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all  inline-block"
+            className="bg-[var(--q-orange)] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all  inline-block"
           >
             Continue to Stripe Checkout →
           </a>
@@ -241,7 +241,7 @@ export default function CheckoutPage() {
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="bg-[#FF4D00] text-black font-bold px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#FF6A1A] transition-colors "
+              className="bg-[var(--q-orange)] text-black font-bold px-4 py-2 text-sm uppercase tracking-wider hover:bg-[#FF6A1A] transition-colors "
             >
               Retry
             </button>

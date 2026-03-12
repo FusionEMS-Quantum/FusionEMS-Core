@@ -239,7 +239,7 @@ module "cloudtrail" {
 
 
 module "backup" {
-  source = "../../modules/backup"
+  source = "../../modules/aws_backup"
 
   environment          = var.environment
   project              = var.project
@@ -297,6 +297,7 @@ module "sqs" {
     neris-pack-import  = {}
     neris-pack-compile = {}
     neris-export       = {}
+    nemsis-export      = {}
   }
 }
 
@@ -327,12 +328,17 @@ module "backend_service" {
 
   environment_variables = [
     { name = "ENVIRONMENT", value = var.environment },
+    { name = "AUTH_MODE", value = "cognito" },
     { name = "AWS_DEFAULT_REGION", value = var.aws_region },
     { name = "COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
     { name = "COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
     { name = "S3_DOCS_BUCKET", value = module.s3.docs_bucket_name },
     { name = "S3_EXPORTS_BUCKET", value = module.s3.exports_bucket_name },
     { name = "S3_PROPOSALS_BUCKET", value = module.s3.proposals_bucket_name },
+    { name = "NERIS_PACK_IMPORT_QUEUE_URL", value = module.sqs.queue_urls["neris-pack-import"] },
+    { name = "NERIS_PACK_COMPILE_QUEUE_URL", value = module.sqs.queue_urls["neris-pack-compile"] },
+    { name = "NERIS_EXPORT_QUEUE_URL", value = module.sqs.queue_urls["neris-export"] },
+    { name = "NEMSIS_EXPORT_QUEUE_URL", value = module.sqs.queue_urls["nemsis-export"] },
   ]
 
   secrets = [

@@ -124,27 +124,27 @@ export default function SupportPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div
-          className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 mb-6"
+          className="inline-flex items-center justify-center w-16 h-16 bg-[var(--color-status-active)]/10 border border-emerald-500/20 mb-6"
           style={{ clipPath: clip10 }}
         >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-status-active)" strokeWidth="2.5" strokeLinecap="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
         <h2 className="text-xl font-black tracking-[0.12em] text-white uppercase mb-3">Request Received</h2>
-        <p className="text-sm text-zinc-400 mb-2">Your support request has been submitted and a ticket has been created.</p>
-        <p className="text-xs text-zinc-600 mb-8">A billing specialist will respond within 1 business day. You&apos;ll receive a notification when there&apos;s an update.</p>
+        <p className="text-sm text-[var(--color-text-secondary)] mb-2">Your support request has been submitted and a ticket has been created.</p>
+        <p className="text-xs text-[var(--color-text-muted)] mb-8">A billing specialist will respond within 1 business day. You&apos;ll receive a notification when there&apos;s an update.</p>
         <div className="flex items-center justify-center gap-3">
           <Link
             href="/portal/patient/messages"
-            className="h-9 px-5 bg-[#FF4D00] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors flex items-center"
+            className="h-9 px-5 bg-[var(--q-orange)] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors flex items-center"
             style={{ clipPath: clip6 }}
           >
             View Messages →
           </Link>
           <Link
             href="/portal/patient/home"
-            className="h-9 px-5 border border-zinc-700 text-zinc-400 text-[10px] font-bold tracking-widest uppercase hover:text-zinc-200 hover:border-zinc-500 transition-colors flex items-center"
+            className="h-9 px-5 border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] text-[10px] font-bold tracking-widest uppercase hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors flex items-center"
             style={{ clipPath: clip6 }}
           >
             Back to Home
@@ -159,10 +159,10 @@ export default function SupportPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-[3px] h-6 bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)]" />
+          <div className="w-[3px] h-6 bg-[var(--q-orange)] shadow-[0_0_8px_rgba(255,106,0,0.6)]" />
           <h1 className="text-xl font-black tracking-[0.12em] text-white uppercase">Billing Help</h1>
         </div>
-        <p className="text-sm text-zinc-500 ml-5">Get help with billing questions, payments, or account issues.</p>
+        <p className="text-sm text-[var(--color-text-muted)] ml-5">Get help with billing questions, payments, or account issues.</p>
       </div>
 
       {/* Contact method cards */}
@@ -172,19 +172,19 @@ export default function SupportPage() {
             key={card.title}
             href={card.href}
             onClick={card.href === '#chat' ? (e) => { e.preventDefault(); setActiveChat(true); } : undefined}
-            className={`block p-5 border transition-all group hover:border-[#FF4D00]/30 ${
+            className={`block p-5 border transition-all group hover:border-[var(--q-orange)]/30 ${
               card.highlight
-                ? 'bg-[#FF4D00]/5 border-[#FF4D00]/20'
-                : 'bg-[#0A0A0B] border-zinc-800'
+                ? 'bg-[var(--q-orange)]/5 border-[var(--q-orange)]/20'
+                : 'bg-[var(--color-bg-panel)] border-[var(--color-border-default)]'
             }`}
             style={{ clipPath: clip10 }}
           >
-            <div className={`mb-3 ${card.highlight ? 'text-[#FF4D00]' : 'text-zinc-500 group-hover:text-zinc-300'} transition-colors`}>
+            <div className={`mb-3 ${card.highlight ? 'text-[var(--q-orange)]' : 'text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)]'} transition-colors`}>
               <ContactIcon type={card.icon} />
             </div>
-            <div className="text-sm font-bold text-zinc-200 mb-1">{card.title}</div>
-            <p className="text-xs text-zinc-500 mb-3">{card.body}</p>
-            <span className={`text-[10px] font-bold tracking-widest uppercase ${card.highlight ? 'text-[#FF4D00]' : 'text-zinc-500 group-hover:text-zinc-300'} transition-colors`}>
+            <div className="text-sm font-bold text-[var(--color-text-primary)] mb-1">{card.title}</div>
+            <p className="text-xs text-[var(--color-text-muted)] mb-3">{card.body}</p>
+            <span className={`text-[10px] font-bold tracking-widest uppercase ${card.highlight ? 'text-[var(--q-orange)]' : 'text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)]'} transition-colors`}>
               {card.action} →
             </span>
           </a>
@@ -193,13 +193,13 @@ export default function SupportPage() {
 
       {/* AI Chat */}
       {activeChat && (
-        <div className="bg-[#0A0A0B] border border-zinc-800 mb-8" style={{ clipPath: clip10 }}>
-          <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-900">
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] mb-8" style={{ clipPath: clip10 }}>
+          <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--color-border-subtle)]">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-300 uppercase">AI Billing Assistant</span>
+              <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">AI Billing Assistant</span>
             </div>
-            <button onClick={() => setActiveChat(false)} className="text-zinc-600 hover:text-zinc-400 transition-colors">
+            <button onClick={() => setActiveChat(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
@@ -213,8 +213,8 @@ export default function SupportPage() {
                 <div
                   className={`max-w-[80%] px-4 py-2.5 text-sm ${
                     msg.role === 'user'
-                      ? 'bg-[#FF4D00]/15 border border-[#FF4D00]/25 text-zinc-200'
-                      : 'bg-zinc-900 border border-zinc-800 text-zinc-300'
+                      ? 'bg-[var(--q-orange)]/15 border border-[var(--q-orange)]/25 text-[var(--color-text-primary)]'
+                      : 'bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)]'
                   }`}
                   style={{ clipPath: clip6 }}
                 >
@@ -224,11 +224,11 @@ export default function SupportPage() {
             ))}
             {chatLoading && (
               <div className="flex justify-start">
-                <div className="bg-zinc-900 border border-zinc-800 px-4 py-2.5" style={{ clipPath: clip6 }}>
+                <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] px-4 py-2.5" style={{ clipPath: clip6 }}>
                   <div className="flex gap-1">
-                    <div className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-1.5 h-1.5 bg-[var(--color-bg-overlay)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 bg-[var(--color-bg-overlay)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 bg-[var(--color-bg-overlay)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -236,39 +236,39 @@ export default function SupportPage() {
           </div>
 
           {/* Chat input */}
-          <div className="border-t border-zinc-900 p-3 flex gap-2">
+          <div className="border-t border-[var(--color-border-subtle)] p-3 flex gap-2">
             <input
               type="text"
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleChatSend(); } }}
               placeholder="Ask about your balance, payments, or options..."
-              className="flex-1 bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm px-3 py-2 outline-none focus:border-[#FF4D00]/40 transition-colors"
+              className="flex-1 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-sm px-3 py-2 outline-none focus:border-[var(--q-orange)]/40 transition-colors"
               style={{ clipPath: clip6 }}
             />
             <button
               onClick={() => void handleChatSend()}
               disabled={chatLoading || !chatInput.trim()}
-              className="h-9 px-4 bg-[#FF4D00] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-40"
+              className="h-9 px-4 bg-[var(--q-orange)] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-40"
               style={{ clipPath: clip6 }}
             >
               Send
             </button>
           </div>
-          <div className="px-5 pb-3 text-[9px] text-zinc-700">AI assistant provides general guidance. For account-specific decisions, a specialist will review your case.</div>
+          <div className="px-5 pb-3 text-[9px] text-[var(--color-text-disabled)]">AI assistant provides general guidance. For account-specific decisions, a specialist will review your case.</div>
         </div>
       )}
 
       {/* Support form */}
-      <div id="form" className="bg-[#0A0A0B] border border-zinc-800" style={{ clipPath: clip10 }}>
-        <div className="px-5 py-3 border-b border-zinc-900">
-          <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase">Submit a Billing Request</span>
+      <div id="form" className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]" style={{ clipPath: clip10 }}>
+        <div className="px-5 py-3 border-b border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">Submit a Billing Request</span>
         </div>
 
         <form onSubmit={e => void handleSubmit(e)} className="p-5 space-y-5">
           {/* Category */}
           <div>
-            <label className="block text-[10px] font-bold tracking-[0.15em] text-zinc-500 uppercase mb-2">
+            <label className="block text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-muted)] uppercase mb-2">
               What do you need help with?
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -279,13 +279,13 @@ export default function SupportPage() {
                   onClick={() => handleFormChange('category', opt.value)}
                   className={`text-left p-3 border transition-colors ${
                     form.category === opt.value
-                      ? 'bg-[#FF4D00]/8 border-[#FF4D00]/35 text-zinc-200'
-                      : 'bg-zinc-900/30 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
+                      ? 'bg-[var(--q-orange)]/8 border-[var(--q-orange)]/35 text-[var(--color-text-primary)]'
+                      : 'bg-[var(--color-bg-panel)]/30 border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-secondary)]'
                   }`}
                   style={{ clipPath: clip6 }}
                 >
                   <div className="text-xs font-bold mb-0.5">{opt.label}</div>
-                  <div className="text-[10px] text-zinc-600">{opt.description}</div>
+                  <div className="text-[10px] text-[var(--color-text-muted)]">{opt.description}</div>
                 </button>
               ))}
             </div>
@@ -293,39 +293,39 @@ export default function SupportPage() {
 
           {/* Subject */}
           <div>
-            <label className="block text-[10px] font-bold tracking-[0.15em] text-zinc-500 uppercase mb-2">Subject</label>
+            <label className="block text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-muted)] uppercase mb-2">Subject</label>
             <input
               type="text"
               value={form.subject}
               onChange={e => handleFormChange('subject', e.target.value)}
               placeholder="Brief description of your question..."
               maxLength={200}
-              className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm px-3 py-2.5 outline-none focus:border-[#FF4D00]/40 transition-colors"
+              className="w-full bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-sm px-3 py-2.5 outline-none focus:border-[var(--q-orange)]/40 transition-colors"
               style={{ clipPath: clip6 }}
             />
           </div>
 
           {/* Message */}
           <div>
-            <label className="block text-[10px] font-bold tracking-[0.15em] text-zinc-500 uppercase mb-2">Message</label>
+            <label className="block text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-muted)] uppercase mb-2">Message</label>
             <textarea
               value={form.message}
               onChange={e => handleFormChange('message', e.target.value)}
               placeholder="Describe your billing question or issue in detail..."
               rows={5}
               maxLength={2000}
-              className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm px-3 py-2.5 outline-none focus:border-[#FF4D00]/40 transition-colors resize-none"
+              className="w-full bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-sm px-3 py-2.5 outline-none focus:border-[var(--q-orange)]/40 transition-colors resize-none"
               style={{ clipPath: clip6 }}
             />
-            <div className="text-[10px] text-zinc-700 text-right mt-1">{form.message.length}/2000</div>
+            <div className="text-[10px] text-[var(--color-text-disabled)] text-right mt-1">{form.message.length}/2000</div>
           </div>
 
           {/* Callback */}
-          <div className="border border-zinc-800 p-4" style={{ clipPath: clip10 }}>
+          <div className="border border-[var(--color-border-default)] p-4" style={{ clipPath: clip10 }}>
             <label className="flex items-start gap-3 cursor-pointer">
               <div
                 className={`mt-0.5 w-4 h-4 flex-shrink-0 flex items-center justify-center border transition-colors ${
-                  form.callback_requested ? 'bg-[#FF4D00] border-[#FF4D00]' : 'border-zinc-700 bg-transparent'
+                  form.callback_requested ? 'bg-[var(--q-orange)] border-[var(--q-orange)]' : 'border-[var(--color-border-strong)] bg-transparent'
                 }`}
                 style={{ clipPath: clip6 }}
               >
@@ -342,29 +342,29 @@ export default function SupportPage() {
                 className="sr-only"
               />
               <div>
-                <div className="text-sm font-semibold text-zinc-300">Request a Callback</div>
-                <div className="text-xs text-zinc-600 mt-0.5">Have a billing specialist call you back.</div>
+                <div className="text-sm font-semibold text-[var(--color-text-secondary)]">Request a Callback</div>
+                <div className="text-xs text-[var(--color-text-muted)] mt-0.5">Have a billing specialist call you back.</div>
               </div>
             </label>
             {form.callback_requested && (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-zinc-800">
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-[var(--color-border-default)]">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest text-zinc-600 uppercase mb-1.5">Phone Number</label>
+                  <label className="block text-[10px] font-bold tracking-widest text-[var(--color-text-muted)] uppercase mb-1.5">Phone Number</label>
                   <input
                     type="tel"
                     value={form.callback_phone}
                     onChange={e => handleFormChange('callback_phone', e.target.value)}
                     placeholder="(555) 000-0000"
-                    className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm px-3 py-2 outline-none focus:border-[#FF4D00]/40 transition-colors"
+                    className="w-full bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-sm px-3 py-2 outline-none focus:border-[var(--q-orange)]/40 transition-colors"
                     style={{ clipPath: clip6 }}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest text-zinc-600 uppercase mb-1.5">Preferred Time</label>
+                  <label className="block text-[10px] font-bold tracking-widest text-[var(--color-text-muted)] uppercase mb-1.5">Preferred Time</label>
                   <select
                     value={form.preferred_callback_time}
                     onChange={e => handleFormChange('preferred_callback_time', e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm px-3 py-2 outline-none focus:border-[#FF4D00]/40 transition-colors"
+                    className="w-full bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-sm px-3 py-2 outline-none focus:border-[var(--q-orange)]/40 transition-colors"
                     style={{ clipPath: clip6 }}
                   >
                     <option value="">Any time</option>
@@ -379,11 +379,11 @@ export default function SupportPage() {
 
           {/* Submit */}
           <div className="flex items-center justify-between pt-2">
-            <p className="text-[10px] text-zinc-600">We respond within 1 business day.</p>
+            <p className="text-[10px] text-[var(--color-text-muted)]">We respond within 1 business day.</p>
             <button
               type="submit"
               disabled={submitting || !form.category || !form.subject.trim() || !form.message.trim()}
-              className="flex items-center gap-2 h-10 px-6 bg-[#FF4D00] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(255,77,0,0.15)]"
+              className="flex items-center gap-2 h-10 px-6 bg-[var(--q-orange)] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(255,106,0,0.15)]"
               style={{ clipPath: clip6 }}
             >
               {submitting && <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />}
@@ -404,7 +404,7 @@ export default function SupportPage() {
           <Link
             key={link.href}
             href={link.href}
-            className="text-center py-2.5 border border-zinc-800 text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
+            className="text-center py-2.5 border border-[var(--color-border-default)] text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
             style={{ clipPath: clip6 }}
           >
             {link.label}

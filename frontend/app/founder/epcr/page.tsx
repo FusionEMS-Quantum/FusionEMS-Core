@@ -48,8 +48,8 @@ export default function EpcrPage() {
         <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           DOMAIN · ePCR & NEMSIS
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">ePCR &amp; NEMSIS</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">
+        <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">ePCR &amp; NEMSIS</h1>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
           Wisconsin-first charting, compliance, and certification
         </p>
       </div>
@@ -58,13 +58,13 @@ export default function EpcrPage() {
           <motion.div key={l.href} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <Link
               href={l.href}
-              className="block bg-[#0A0A0B] border border-border-DEFAULT p-5 hover:border-cyan-500/[0.3] transition-colors"
+              className="block bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5 hover:border-cyan-500/[0.3] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
             >
               <div className="text-sm font-bold mb-1" style={{ color: l.color }}>
                 {l.label}
               </div>
-              <div className="text-xs text-zinc-500">{l.desc}</div>
+              <div className="text-xs text-[var(--color-text-muted)]">{l.desc}</div>
             </Link>
           </motion.div>
         ))}

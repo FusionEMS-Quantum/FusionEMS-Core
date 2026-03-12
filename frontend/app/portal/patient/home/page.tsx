@@ -21,45 +21,31 @@ interface Payment {
   data?: { amount?: number; posted_at?: string; method?: string; status?: string };
 }
 
-const S: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)', position: 'relative' },
-  topBar: { background: 'var(--color-bg-surface)', borderBottom: '1px solid var(--color-border-default)', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky' as const, top: 0, zIndex: 10 },
-  topBarLeft: { display: 'flex', alignItems: 'center', gap: '12px' },
-  inner: { maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' },
-  gridRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '16px', marginBottom: '32px' },
-  statCard: { background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', padding: '20px 24px', clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' },
-  statLabel: { fontSize: '10px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '8px' },
-  statValue: { fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-text-primary)', lineHeight: 1 },
-  statSub: { fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '6px' },
-  twoCol: { display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' },
-  section: { background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', clipPath: 'polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)', overflow: 'hidden' },
-  sectionHead: { padding: '16px 20px', borderBottom: '1px solid var(--color-border-default)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  sectionTitle: { fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--color-text-primary)' },
-  sectionLink: { fontSize: '11px', fontWeight: 600, color: '#FF4D00', textDecoration: 'none', letterSpacing: '0.08em', textTransform: 'uppercase' },
-  row: { padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' },
-  rowLabel: { fontSize: '13px', color: 'var(--color-text-primary)', fontWeight: 500 },
-  rowSub: { fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' },
-  chip: { fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '3px 8px', clipPath: 'polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,0 100%)' },
-  quickActions: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '16px 20px' },
-  qaBtn: { padding: '12px', textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: 'var(--color-text-primary)', background: 'transparent', border: '1px solid var(--color-border-default)', display: 'block', clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)', lineHeight: 1.4 },
-  qaBtnPrimary: { background: 'rgba(255,77,0,0.08)', border: '1px solid rgba(255,77,0,0.25)', color: '#FF4D00' },
-  aiPanel: { background: 'rgba(255,77,0,0.04)', border: '1px solid rgba(255,77,0,0.15)', padding: '20px', clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)', marginTop: '24px' },
-};
-
 function fmt(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function statusChip(status?: string) {
-  const map: Record<string, { bg: string; border: string; color: string }> = {
-    paid: { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', color: '#10B981' },
-    pending: { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', color: '#F59E0B' },
-    overdue: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#EF4444' },
-  };
-  const cfg = map[status ?? 'pending'] ?? map.pending;
+function asNumberOrUndefined(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+}
+
+function asNumberOrZero(v: unknown): number {
+  return asNumberOrUndefined(v) ?? 0;
+}
+
+function fmtOrDash(cents?: number): string {
+  return typeof cents === 'number' && Number.isFinite(cents) ? fmt(cents) : '—';
+}
+
+function StatusChip({ status }: { status?: string }) {
+  const s = status ?? 'pending';
+  const color = s === 'paid' ? 'var(--color-status-active)' : s === 'overdue' ? 'var(--color-brand-red)' : 'var(--q-yellow)';
   return (
-    <span style={{ ...S.chip, background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>
-      {status?.toUpperCase() ?? 'PENDING'}
+    <span
+      className="text-micro font-label uppercase tracking-wider px-2 py-0.5 chamfer-4"
+      style={{ color, backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)` }}
+    >
+      {s.toUpperCase()}
     </span>
   );
 }
@@ -79,8 +65,8 @@ export default function PatientHomeDashboard() {
         ]) as [Statement[], Payment[]];
         setStatements(stmts);
         setPayments(pays);
-        const totalBalance = stmts.reduce((acc, s) => acc + (s.data?.amount_due_cents ?? 0), 0);
-        const totalPaid = pays.reduce((acc, p) => acc + ((p.data?.amount ?? 0) * 100), 0);
+        const totalBalance = stmts.reduce((acc, s) => acc + asNumberOrZero(s.data?.amount_due_cents), 0);
+        const totalPaid = pays.reduce((acc, p) => acc + (asNumberOrZero(p.data?.amount) * 100), 0);
         setSummary({ total_balance: totalBalance, payment_count: pays.length, statement_count: stmts.length, total_paid: totalPaid });
       } catch {
         // Non-fatal — render with empty state
@@ -94,119 +80,125 @@ export default function PatientHomeDashboard() {
   const hasBalance = (summary?.total_balance ?? 0) > 0;
 
   return (
-    <div style={S.page}>
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] font-sans relative">
       {/* Top bar */}
-      <div style={S.topBar}>
-        <div style={S.topBarLeft}>
+      <div className="bg-[var(--color-bg-surface)] border-b border-[var(--color-border-default)] px-6 h-14 flex items-center justify-between sticky top-0 z-10">
+        <div className="flex items-center gap-3">
           <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-            <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="#FF4D00" />
-            <text x="18" y="23" textAnchor="middle" fill="#050505" fontSize="10" fontWeight="900" fontFamily="sans-serif">FQ</text>
+            <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--q-orange)" />
+            <text x="18" y="23" textAnchor="middle" fill="var(--color-bg-base)" fontSize="10" fontWeight="900" fontFamily="sans-serif">FQ</text>
           </svg>
-          <div>
-            <span style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase' }}>FUSION<span style={{ color: '#FF4D00' }}>EMS</span></span>
-            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', letterSpacing: '0.2em', textTransform: 'uppercase', marginLeft: '10px' }}>MY ACCOUNT</span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-micro font-label font-black tracking-wider uppercase">FUSION<span className="text-[var(--q-orange)]">EMS</span></span>
+            <span className="text-micro text-[var(--color-text-muted)] tracking-wider uppercase ml-2">MY ACCOUNT</span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <Link href="/portal/patient/notifications" style={{ fontSize: '11px', color: 'var(--color-text-muted)', textDecoration: 'none', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Notifications</Link>
-          <Link href="/portal/patient" style={{ fontSize: '11px', color: 'var(--color-text-muted)', textDecoration: 'none', letterSpacing: '0.1em', textTransform: 'uppercase' }}>← Portal Home</Link>
+        <div className="flex gap-3 items-center">
+          <Link href="/portal/patient/notifications" className="text-micro text-[var(--color-text-muted)] no-underline tracking-wider uppercase hover:text-[var(--color-text-primary)] transition-colors">Notifications</Link>
+          <Link href="/portal/patient" className="text-micro text-[var(--color-text-muted)] no-underline tracking-wider uppercase hover:text-[var(--color-text-primary)] transition-colors">&larr; Portal Home</Link>
         </div>
       </div>
 
-      <div style={S.inner}>
+      <div className="max-w-[1200px] mx-auto px-6 py-8">
         {/* Page heading */}
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '6px' }}>ACCOUNT OVERVIEW</div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--color-text-primary)', margin: 0 }}>My Billing Account</h1>
+        <div className="mb-7">
+          <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--color-text-muted)] mb-1.5">ACCOUNT OVERVIEW</div>
+          <h1 className="text-h1 font-black text-[var(--color-text-primary)] m-0">My Billing Account</h1>
         </div>
 
         {/* Alert if balance due */}
         {!loading && hasBalance && (
-          <div style={{ background: 'rgba(255,77,0,0.06)', border: '1px solid rgba(255,77,0,0.2)', padding: '14px 20px', clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div className="bg-[var(--color-brand-orange-ghost)] border border-[color-mix(in_srgb,var(--q-orange)_20%,transparent)] chamfer-8 p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#FF4D00', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '4px' }}>Balance Due</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-text-primary)' }}>{fmt(summary?.total_balance ?? 0)}</div>
+              <div className="text-micro font-label font-bold text-[var(--q-orange)] tracking-wider uppercase mb-1">Balance Due</div>
+              <div className="text-h2 font-black text-[var(--color-text-primary)]">{fmtOrDash(summary?.total_balance)}</div>
             </div>
-            <Link href="/portal/patient/pay" style={{ padding: '10px 24px', background: '#FF4D00', color: '#000', fontWeight: 700, fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)', boxShadow: '0 0 20px rgba(255,77,0,0.2)', whiteSpace: 'nowrap' }}>
-              Pay Now →
+            <Link href="/portal/patient/pay" className="quantum-btn-primary px-6 py-2.5 no-underline whitespace-nowrap">
+              Pay Now &rarr;
             </Link>
           </div>
         )}
 
         {/* Stats row */}
-        <div style={S.gridRow}>
-          <div style={S.statCard}>
-            <div style={S.statLabel}>Current Balance</div>
-            <div style={{ ...S.statValue, color: hasBalance ? '#FF4D00' : '#10B981' }}>{loading ? '—' : fmt(summary?.total_balance ?? 0)}</div>
-            <div style={S.statSub}>{hasBalance ? 'Amount due now' : 'Account is current'}</div>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 mb-8">
+          <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-8 p-5">
+            <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--color-text-muted)] mb-2">Current Balance</div>
+            <div className={`text-h1 font-black leading-none ${hasBalance ? 'text-[var(--q-orange)]' : 'text-[var(--color-status-active)]'}`}>
+              {loading ? '—' : fmtOrDash(summary?.total_balance)}
+            </div>
+            <div className="text-micro text-[var(--color-text-muted)] mt-1.5">{hasBalance ? 'Amount due now' : 'Account is current'}</div>
           </div>
-          <div style={S.statCard}>
-            <div style={S.statLabel}>Total Paid</div>
-            <div style={S.statValue}>{loading ? '—' : fmt(summary?.total_paid ?? 0)}</div>
-            <div style={S.statSub}>{summary?.payment_count ?? 0} payment{(summary?.payment_count ?? 0) !== 1 ? 's' : ''} on record</div>
+          <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-8 p-5">
+            <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--color-text-muted)] mb-2">Total Paid</div>
+            <div className="text-h1 font-black text-[var(--color-text-primary)] leading-none">{loading ? '—' : fmtOrDash(summary?.total_paid)}</div>
+            <div className="text-micro text-[var(--color-text-muted)] mt-1.5">{typeof summary?.payment_count === 'number' ? summary.payment_count : '—'} payment{(summary?.payment_count ?? 0) !== 1 ? 's' : ''} on record</div>
           </div>
-          <div style={S.statCard}>
-            <div style={S.statLabel}>Statements</div>
-            <div style={S.statValue}>{loading ? '—' : (summary?.statement_count ?? 0)}</div>
-            <div style={S.statSub}>Total statements on file</div>
+          <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-8 p-5">
+            <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--color-text-muted)] mb-2">Statements</div>
+            <div className="text-h1 font-black text-[var(--color-text-primary)] leading-none">{loading ? '—' : (typeof summary?.statement_count === 'number' ? summary.statement_count : '—')}</div>
+            <div className="text-micro text-[var(--color-text-muted)] mt-1.5">Total statements on file</div>
           </div>
-          <div style={{ ...S.statCard, background: 'rgba(255,77,0,0.04)', border: '1px solid rgba(255,77,0,0.15)' }}>
-            <div style={S.statLabel}>Quick Actions</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-              <Link href="/portal/patient/pay" style={{ color: '#FF4D00', fontSize: '12px', fontWeight: 700, textDecoration: 'none' }}>→ Pay My Bill</Link>
-              <Link href="/portal/patient/support" style={{ color: 'var(--color-text-muted)', fontSize: '12px', textDecoration: 'none' }}>→ Get Billing Help</Link>
-              <Link href="/portal/patient/payment-plans" style={{ color: 'var(--color-text-muted)', fontSize: '12px', textDecoration: 'none' }}>→ Set Up Payment Plan</Link>
+          <div className="bg-[var(--color-brand-orange-ghost)] border border-[color-mix(in_srgb,var(--q-orange)_15%,transparent)] chamfer-8 p-5">
+            <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--color-text-muted)] mb-2">Quick Actions</div>
+            <div className="flex flex-col gap-2 mt-2">
+              <Link href="/portal/patient/pay" className="text-[var(--q-orange)] text-body font-bold no-underline hover:underline">&rarr; Pay My Bill</Link>
+              <Link href="/portal/patient/support" className="text-[var(--color-text-muted)] text-body no-underline hover:text-[var(--color-text-primary)]">&rarr; Get Billing Help</Link>
+              <Link href="/portal/patient/payment-plans" className="text-[var(--color-text-muted)] text-body no-underline hover:text-[var(--color-text-primary)]">&rarr; Set Up Payment Plan</Link>
             </div>
           </div>
         </div>
 
         {/* Main 2-col layout */}
-        <div style={{ ...S.twoCol, '@media (max-width:900px)': { gridTemplateColumns: '1fr' } } as React.CSSProperties}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
           <div>
             {/* Recent statements */}
-            <div style={{ ...S.section, marginBottom: '20px' }}>
-              <div style={S.sectionHead}>
-                <span style={S.sectionTitle}>Recent Statements</span>
-                <Link href="/portal/patient/invoices" style={S.sectionLink}>View All →</Link>
+            <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-12 overflow-hidden mb-5">
+              <div className="px-5 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between">
+                <span className="label-caps">Recent Statements</span>
+                <Link href="/portal/patient/invoices" className="text-micro font-label font-semibold text-[var(--q-orange)] no-underline tracking-wider uppercase hover:underline">View All &rarr;</Link>
               </div>
               {loading ? (
-                <div style={{ padding: '24px', color: 'var(--color-text-muted)', fontSize: '13px' }}>Loading…</div>
+                <div className="p-6 text-body text-[var(--color-text-muted)]">Loading&hellip;</div>
               ) : statements.length === 0 ? (
-                <div style={{ padding: '24px', color: 'var(--color-text-muted)', fontSize: '13px' }}>No statements found.</div>
-              ) : statements.slice(0, 4).map((s) => (
-                <Link key={s.id} href={`/portal/patient/invoices?id=${s.id}`} style={{ ...S.row, textDecoration: 'none', color: 'inherit' }}>
-                  <div>
-                    <div style={S.rowLabel}>Statement #{s.id.slice(-8).toUpperCase()}</div>
-                    <div style={S.rowSub}>{s.data?.incident_date ?? 'N/A'} · {s.data?.service_type ?? 'EMS Transport'}</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: (s.data?.amount_due_cents ?? 0) > 0 ? '#FF4D00' : '#10B981' }}>
-                      {fmt(s.data?.amount_due_cents ?? 0)}
-                    </span>
-                    {statusChip(s.data?.status)}
-                  </div>
-                </Link>
-              ))}
+                <div className="p-6 text-body text-[var(--color-text-muted)]">No statements found.</div>
+              ) : statements.slice(0, 4).map((s) => {
+                const dueCents = asNumberOrUndefined(s.data?.amount_due_cents);
+                const dueForCompare = dueCents ?? 0;
+                return (
+                  <Link key={s.id} href={`/portal/patient/invoices?id=${s.id}`} className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--color-border-subtle)] no-underline text-inherit hover:bg-[var(--color-bg-overlay)] transition-colors">
+                    <div>
+                      <div className="text-body font-medium text-[var(--color-text-primary)]">Statement #{s.id.slice(-8).toUpperCase()}</div>
+                      <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{s.data?.incident_date ?? 'N/A'} &middot; {s.data?.service_type ?? 'EMS Transport'}</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-body font-bold ${dueForCompare > 0 ? 'text-[var(--q-orange)]' : 'text-[var(--color-status-active)]'}`}>
+                        {fmtOrDash(dueCents)}
+                      </span>
+                      <StatusChip status={s.data?.status} />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Recent payments */}
-            <div style={S.section}>
-              <div style={S.sectionHead}>
-                <span style={S.sectionTitle}>Recent Payments</span>
-                <Link href="/portal/patient/payments" style={S.sectionLink}>View All →</Link>
+            <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-12 overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between">
+                <span className="label-caps">Recent Payments</span>
+                <Link href="/portal/patient/payments" className="text-micro font-label font-semibold text-[var(--q-orange)] no-underline tracking-wider uppercase hover:underline">View All &rarr;</Link>
               </div>
               {loading ? (
-                <div style={{ padding: '24px', color: 'var(--color-text-muted)', fontSize: '13px' }}>Loading…</div>
+                <div className="p-6 text-body text-[var(--color-text-muted)]">Loading&hellip;</div>
               ) : payments.length === 0 ? (
-                <div style={{ padding: '24px', color: 'var(--color-text-muted)', fontSize: '13px' }}>No payments on record.</div>
+                <div className="p-6 text-body text-[var(--color-text-muted)]">No payments on record.</div>
               ) : payments.slice(0, 4).map((p) => (
-                <div key={p.id} style={S.row}>
+                <div key={p.id} className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--color-border-subtle)]">
                   <div>
-                    <div style={S.rowLabel}>Payment · {p.data?.method ?? 'Online'}</div>
-                    <div style={S.rowSub}>{p.data?.posted_at ? new Date(p.data.posted_at).toLocaleDateString() : 'On file'}</div>
+                    <div className="text-body font-medium text-[var(--color-text-primary)]">Payment &middot; {p.data?.method ?? 'Online'}</div>
+                    <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{p.data?.posted_at ? new Date(p.data.posted_at).toLocaleDateString() : 'On file'}</div>
                   </div>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#10B981' }}>
-                    ${((p.data?.amount ?? 0)).toFixed(2)}
+                  <span className="text-body font-bold text-[var(--color-status-active)]">
+                    ${asNumberOrZero(p.data?.amount).toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -214,10 +206,12 @@ export default function PatientHomeDashboard() {
           </div>
 
           {/* Right panel */}
-          <div>
-            <div style={{ ...S.section, marginBottom: '20px' }}>
-              <div style={S.sectionHead}><span style={S.sectionTitle}>Quick Actions</span></div>
-              <div style={S.quickActions}>
+          <div className="space-y-5">
+            <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-12 overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-border-default)]">
+                <span className="label-caps">Quick Actions</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 p-4">
                 {[
                   { href: '/portal/patient/pay', label: 'Pay Online', primary: true },
                   { href: '/portal/patient/payment-plans', label: 'Payment Plan', primary: false },
@@ -228,7 +222,14 @@ export default function PatientHomeDashboard() {
                   { href: '/portal/patient/activity', label: 'Activity', primary: false },
                   { href: '/portal/patient/profile', label: 'Profile', primary: false },
                 ].map((a) => (
-                  <Link key={a.href} href={a.href} style={{ ...S.qaBtn, ...(a.primary ? S.qaBtnPrimary : {}) }}>
+                  <Link
+                    key={a.href} href={a.href}
+                    className={`p-3 text-center text-micro font-label font-bold tracking-wider uppercase no-underline chamfer-4 block leading-snug transition-colors ${
+                      a.primary
+                        ? 'bg-[var(--color-brand-orange-ghost)] border border-[color-mix(in_srgb,var(--q-orange)_25%,transparent)] text-[var(--q-orange)] hover:bg-[color-mix(in_srgb,var(--q-orange)_12%,transparent)]'
+                        : 'bg-transparent border border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-overlay)]'
+                    }`}
+                  >
                     {a.label}
                   </Link>
                 ))}
@@ -236,19 +237,24 @@ export default function PatientHomeDashboard() {
             </div>
 
             {/* AI Helper panel */}
-            <div style={S.aiPanel}>
-              <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FF4D00', marginBottom: '10px' }}>AI BILLING ASSISTANT</div>
-              <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '14px' }}>
+            <div className="bg-[var(--color-brand-orange-ghost)] border border-[color-mix(in_srgb,var(--q-orange)_15%,transparent)] chamfer-8 p-5">
+              <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--q-orange)] mb-2.5">AI BILLING ASSISTANT</div>
+              <div className="text-body text-[var(--color-text-muted)] leading-relaxed mb-3.5">
                 Have questions about your bill? Our AI assistant can explain your balance, guide you to receipts, or connect you with billing support.
               </div>
-              <Link href="/portal/patient/support?mode=ai" style={{ display: 'block', padding: '10px', background: 'rgba(255,77,0,0.12)', border: '1px solid rgba(255,77,0,0.25)', color: '#FF4D00', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center', clipPath: 'polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)' }}>
-                Ask AI Assistant →
+              <Link
+                href="/portal/patient/support?mode=ai"
+                className="block p-2.5 bg-[color-mix(in_srgb,var(--q-orange)_12%,transparent)] border border-[color-mix(in_srgb,var(--q-orange)_25%,transparent)] text-[var(--q-orange)] text-micro font-label font-bold tracking-wider uppercase no-underline text-center chamfer-4 hover:bg-[color-mix(in_srgb,var(--q-orange)_18%,transparent)] transition-colors"
+              >
+                Ask AI Assistant &rarr;
               </Link>
             </div>
 
             {/* Navigation */}
-            <div style={{ ...S.section, marginTop: '20px' }}>
-              <div style={S.sectionHead}><span style={S.sectionTitle}>Account Navigation</span></div>
+            <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-12 overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-border-default)]">
+                <span className="label-caps">Account Navigation</span>
+              </div>
               {[
                 { href: '/portal/patient/invoices', label: 'Invoices & Statements' },
                 { href: '/portal/patient/payments', label: 'Payment History' },
@@ -259,9 +265,9 @@ export default function PatientHomeDashboard() {
                 { href: '/portal/patient/notifications', label: 'Notifications' },
                 { href: '/portal/patient/profile', label: 'Profile & Preferences' },
               ].map((link) => (
-                <Link key={link.href} href={link.href} style={{ ...S.row, textDecoration: 'none', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                <Link key={link.href} href={link.href} className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--color-border-subtle)] no-underline text-body text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-primary)] transition-colors">
                   {link.label}
-                  <span style={{ color: 'var(--color-text-muted)', fontSize: '16px' }}>›</span>
+                  <span className="text-[var(--color-text-muted)]">&rsaquo;</span>
                 </Link>
               ))}
             </div>

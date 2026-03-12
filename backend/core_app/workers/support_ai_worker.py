@@ -123,7 +123,13 @@ def process_ai_reply(message: dict[str, Any]) -> None:
 
             try:
                 ai = AiService()
-                response_text, meta = ai.chat(system=SYSTEM_PROMPT, user=user_prompt)
+                response = ai.chat(system=SYSTEM_PROMPT, user=user_prompt)
+                response_text = response.content
+                meta = {
+                    "model": response.model,
+                    "provider": response.provider,
+                    "usage": response.usage,
+                }
             except Exception as exc:
                 logger.error(
                     "support_ai_reply_ai_failed thread_id=%s error=%s correlation_id=%s",
@@ -263,7 +269,7 @@ def process_ai_summarize(message: dict[str, Any]) -> None:
 
             try:
                 ai = AiService()
-                summary, _ = ai.chat(system=system, user=user_prompt)
+                summary = ai.chat(system=system, user=user_prompt).content
             except Exception as exc:
                 logger.error(
                     "support_ai_summarize_ai_failed thread_id=%s error=%s correlation_id=%s",
