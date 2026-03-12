@@ -1,0 +1,119 @@
+name: Frontend Hotfix Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Optional explicit image tag"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      AWS_ACCOUNT_ID: "793439286972"
+      ECR_REPO: fusionems-prod-frontend
+      ECS_CLUSTER: fusionems-prod-cluster
+      ECS_SERVICE: fusionems-prod-frontend
+      TASKDEF_FAMILY: fusionems-prod-frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::793439286972:role/GitHubTerraformRole
+          aws-region: us-east-1
+
+      - name: Verify caller identity
+        run: aws sts get-caller-identity
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute image tag
+        id: vars
+        run: |
+          if [[ -n "${{ github.event.inputs.image_tag }}" ]]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            SHORT_SHA="$(git rev-parse --short HEAD)"
+            TAG="hc-${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
+          fi
+          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${TAG}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+          echo "Using image: ${IMAGE_URI}"
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_BASE="https://api.fusionemsquantum.com" \
+            --build-arg NEXT_PUBLIC_WS_URL="wss://api.fusionemsquantum.com/api/v1/realtime/ws" \
+            --build-arg NEXT_PUBLIC_ROOT_DOMAIN="fusionemsquantum.com" \
+            --build-arg NEXT_PUBLIC_BILLING_PHONE="+18883650144" \
+            --build-arg NEXT_PUBLIC_CNAM_DISPLAY_NAME="FusionEMS" \
+            --build-arg NEXT_PUBLIC_BRAND_NAME="FusionEMS Quantum" \
+            --build-arg NEXT_PUBLIC_BRAND_DOMAIN="fusionemsquantum.com" \
+            --build-arg NEXT_PUBLIC_BRAND_SUPPORT_EMAIL="billing@fusionemsquantum.com" \
+            --build-arg NEXT_PUBLIC_BRAND_NOREPLY_EMAIL="noreply@fusionemsquantum.com" \
+            -t "${{ steps.vars.outputs.image_uri }}" \
+            ./frontend
+
+      - name: Push frontend image
+        run: docker push "${{ steps.vars.outputs.image_uri }}"
+
+      - name: Prepare new task definition
+        id: taskdef
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${TASKDEF_FAMILY}" \
+            --query taskDefinition > taskdef.json
+
+          jq --arg IMAGE "${{ steps.vars.outputs.image_uri }}" '
+            .containerDefinitions |= map(if .name == "frontend" then .image = $IMAGE else . end)
+            | del(
+                .taskDefinitionArn,
+                .revision,
+                .status,
+                .requiresAttributes,
+                .compatibilities,
+                .registeredAt,
+                .registeredBy
+              )
+          ' taskdef.json > taskdef-new.json
+
+          NEW_TD_ARN="$(aws ecs register-task-definition --cli-input-json file://taskdef-new.json --query 'taskDefinition.taskDefinitionArn' --output text)"
+          echo "taskdef_arn=${NEW_TD_ARN}" >> "$GITHUB_OUTPUT"
+          echo "Registered: ${NEW_TD_ARN}"
+
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster "${ECS_CLUSTER}" \
+            --service "${ECS_SERVICE}" \
+            --task-definition "${{ steps.taskdef.outputs.taskdef_arn }}" \
+            --force-new-deployment > /dev/null
+
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}"
+
+      - name: Output deployment summary
+        run: |
+          echo "Deployed image: ${{ steps.vars.outputs.image_uri }}"
+          aws ecs describe-services \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}" \
+            --query 'services[0].{taskDefinition:taskDefinition,runningCount:runningCount,pendingCount:pendingCount,status:status,deployments:deployments[*].{status:status,rolloutState:rolloutState,taskDefinition:taskDefinition}}' \
+            --output json
