@@ -315,7 +315,7 @@ function LoginPageInner() {
               {/* FOOTER */}
               <div className="mt-8 pt-6 border-t border-slate-800 space-y-3 text-center">
                 <p className="text-xs text-slate-500">
-                  Don't have access? <Link href="/early-access" className="text-quantum-orange font-bold hover:text-quantum-orange_light">Request access</Link>
+                  Don&apos;t have access? <Link href="/early-access" className="text-quantum-orange font-bold hover:text-quantum-orange_light">Request access</Link>
                 </p>
                 <p className="text-[0.7rem] text-slate-600">
                   Protected by enterprise security • <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import UUID
 
 revision = "20260316_0001"
 down_revision = "20260315_bank_connections"
