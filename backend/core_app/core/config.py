@@ -681,7 +681,7 @@ class Settings(BaseSettings):
             if str(self.auth_mode).lower() == "local":
                 raise ValueError(
                     f"AUTH_MODE is 'local' in environment '{env}'. "
-                    "Set AUTH_MODE=cognito for staging and production deployments."
+                    "Set AUTH_MODE=fusion_jwt for staging and production deployments."
                 )
         return self
 

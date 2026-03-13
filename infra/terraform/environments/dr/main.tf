@@ -333,8 +333,6 @@ module "backend_service" {
   environment_variables = [
     { name = "ENVIRONMENT", value = var.environment },
     { name = "AWS_DEFAULT_REGION", value = var.aws_region },
-    { name = "COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
-    { name = "COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
     { name = "S3_DOCS_BUCKET", value = module.s3.docs_bucket_name },
     { name = "S3_EXPORTS_BUCKET", value = module.s3.exports_bucket_name },
     { name = "S3_PROPOSALS_BUCKET", value = module.s3.proposals_bucket_name },
@@ -388,8 +386,6 @@ module "frontend_service" {
     { name = "BACKEND_URL", value = "https://${var.api_domain_name}" },
     { name = "NEXT_PUBLIC_WS_URL", value = "wss://${var.api_domain_name}/api/v1/realtime/ws" },
     { name = "NEXT_PUBLIC_API_URL", value = "https://${var.api_domain_name}" },
-    { name = "NEXT_PUBLIC_COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
-    { name = "NEXT_PUBLIC_COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
   ]
 
   secrets = []

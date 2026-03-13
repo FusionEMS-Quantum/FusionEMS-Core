@@ -203,8 +203,8 @@ function LoginPageInner() {
               </div>
 
               <div className="mb-6">
-                <h2 className="text-3xl font-black mb-2">Welcome</h2>
-                <p className="text-slate-400">Access your operational dashboard</p>
+                <h2 className="text-3xl font-black mb-2">Platform Login</h2>
+                <p className="text-slate-400">Secure access to the FusionEMS Quantum platform</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5" noValidate>

@@ -5,7 +5,7 @@ const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'fusionems_sessio
 const PUBLIC_EXACT_PATHS = new Set<string>([
   '/',
   '/login',
-  '/founder-login',
+  '/login',
   '/forgot-password',
   '/reset-password',
   '/terms',
@@ -100,7 +100,7 @@ function decodeSessionClaims(token: string): SessionClaims | null {
 }
 
 function redirectToLogin(request: NextRequest, founderIntent: boolean): NextResponse {
-  const target = new URL(founderIntent ? '/founder-login' : '/login', request.url);
+  const target = new URL('/login', request.url);
   target.searchParams.set('next', `${request.nextUrl.pathname}${request.nextUrl.search}`);
   return NextResponse.redirect(target);
 }
@@ -135,7 +135,7 @@ export function proxy(request: NextRequest): NextResponse {
     return redirectToLogin(request, startsWithAny(pathname, FOUNDER_PREFIX_PATHS));
   }
 
-  if (hasSession && (pathname === '/login' || pathname === '/founder-login')) {
+  if (hasSession && pathname === '/login') {
     const nextPath = request.nextUrl.searchParams.get('next');
     const destination =
       nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/dashboard';

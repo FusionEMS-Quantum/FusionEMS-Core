@@ -1009,7 +1009,7 @@ def _auth_health_snapshot() -> tuple[dict[str, object], list[str]]:
 
     auth_mode = str(settings.auth_mode or "").strip().lower()
     environment = str(settings.environment or "").strip().lower()
-    cognito_expected = environment in {"production", "prod", "staging"}
+    cognito_expected = False
     cognito_ready = auth_mode != "cognito" or all(
         [
             str(settings.cognito_region or "").strip(),
@@ -1030,8 +1030,8 @@ def _auth_health_snapshot() -> tuple[dict[str, object], list[str]]:
         )
     if not tenant_valid:
         blockers.append("Microsoft Entra tenant identifier is invalid")
-    if cognito_expected and auth_mode == "local":
-        blockers.append("AUTH_MODE is local in production/staging")
+    if auth_mode in {"", "local", "cognito"}:
+        blockers.append("AUTH_MODE must be set to fusion_jwt for browser sessions")
     if not cognito_ready:
         blockers.append("Cognito auth path is incomplete for configured auth mode")
 
@@ -1112,8 +1112,20 @@ def live_status(
             else:
                 required_missing.append(key)
 
+    telnyx_central_number = "+1-888-365-0144"
+    configured_number = str(settings.central_billing_phone_e164 or "").strip()
+    telnyx_blockers: list[str] = []
+    if configured_number != telnyx_central_number:
+        telnyx_blockers.append(f"Central billing number must be {telnyx_central_number}")
+    if not str(settings.telnyx_api_key or "").strip():
+        telnyx_blockers.append("TELNYX_API_KEY missing")
+    if not str(settings.telnyx_messaging_profile_id or "").strip():
+        telnyx_blockers.append("TELNYX_MESSAGING_PROFILE_ID missing")
+    telnyx_ready = len(telnyx_blockers) == 0
+
     release_blockers: list[str] = []
     release_blockers.extend(auth_blockers)
+    release_blockers.extend(telnyx_blockers)
     if not db_ok:
         release_blockers.append("Database health probe failed")
     if release.get("version") == "unknown":
@@ -1145,6 +1157,10 @@ def live_status(
             "service": "microsoft_signin",
             "status": "healthy" if bool(auth_snapshot["microsoft"]["healthy"]) else "degraded",
         },
+        {
+            "service": "telnyx_readiness",
+            "status": "healthy" if telnyx_ready else "degraded",
+        },
         {"service": "database", "status": "healthy" if db_ok else "degraded"},
         {"service": "redis", "status": redis_state},
     ]
@@ -1168,6 +1184,16 @@ def live_status(
         "degraded_services": degraded_services,
         "active_incidents": active_incidents,
         "auth": auth_snapshot,
+        "telnyx": {
+            "number": telnyx_central_number,
+            "configured_number": configured_number,
+            "voice_binding": configured_number == telnyx_central_number,
+            "messaging_profile": bool(str(settings.telnyx_messaging_profile_id or "").strip()),
+            "webhook_health": bool(str(settings.telnyx_api_key or "").strip()),
+            "stale_binding_detected": configured_number not in {"", telnyx_central_number},
+            "healthy": telnyx_ready,
+            "blockers": telnyx_blockers,
+        },
         "release": release,
         "release_blockers": release_blockers,
         "integration_state": integration_state,
@@ -1291,13 +1317,12 @@ def release_readiness_gate(
     except Exception:
         gates.append(_GateCheck("no_placeholder_tenants", True, "table_not_checked").to_dict())
 
-    # Gate 10: Cognito configured
-    cognito_pool = str(settings.cognito_user_pool_id or "")
-    cognito_mode_ok = str(settings.auth_mode or "").strip().lower() == "cognito"
+    # Gate 10: Browser auth mode is FusionEMS JWT
+    auth_mode = str(settings.auth_mode or "").strip().lower()
     gates.append(_GateCheck(
-        "cognito_configured",
-        bool(cognito_pool) and cognito_mode_ok,
-        "pool_id_present" if cognito_pool else "pool_id_missing",
+        "browser_auth_mode_fusion_jwt",
+        auth_mode == "fusion_jwt",
+        f"mode={auth_mode or 'unset'}",
     ).to_dict())
 
     # Gate 11: Microsoft Entra sign-in config valid and non-placeholder
