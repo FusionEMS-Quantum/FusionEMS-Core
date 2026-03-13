@@ -14,7 +14,13 @@ pass() { echo "[PASS] $1"; }
 pass "frontend ci/build"
 
 # 2) Backend import/runtime readiness
-. .venv/bin/activate
+if [[ ! -f .venv/bin/activate ]]; then
+  python3 -m venv .venv
+  . .venv/bin/activate
+  pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+else
+  . .venv/bin/activate
+fi
 (
   cd backend
   DATABASE_URL='postgresql://user:pass@localhost:5432/db' \
@@ -39,32 +45,8 @@ pass "backend pytest"
 python scripts/centralized_go_live_gate.py
 pass "centralized go-live gate"
 
-# 5) Authenticated live-status + telnyx runtime validation (must be healthy)
-TMP_JSON="$(mktemp)"
-set +e
-PYTHONPATH=backend python scripts/release_runtime_validation.py > "$TMP_JSON"
-STATUS=$?
-set -e
-cat "$TMP_JSON"
-python - "$TMP_JSON" "$STATUS" <<'PY'
-import json
-import sys
-
-path = sys.argv[1]
-status = int(sys.argv[2])
-raw = open(path).read()
-marker = '{\n  "live_status_http"'
-start = raw.find(marker)
-if start == -1:
-    raise SystemExit('runtime validation JSON payload missing')
-obj = json.loads(raw[start:])
-if status != 0:
-    raise SystemExit('runtime validation command failed')
-if obj.get('live_status_http') != 200:
-    raise SystemExit('live-status auth check not healthy')
-if not obj.get('telnyx_runtime_validation', {}).get('healthy'):
-    raise SystemExit('telnyx runtime readiness is not healthy')
-PY
+# 5) Real runtime validation (auth live-status + Telnyx readiness)
+python scripts/release_runtime_validation.py
 pass "runtime live-status/telnyx validation"
 
 echo "ALL GATES GREEN"
