@@ -2,24 +2,24 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 
 const MODULE_LINKS = [
-  { href: '/app/home', label: 'Home' },
-  { href: '/app/founder', label: 'Founder' },
-  { href: '/app/billing', label: 'Billing' },
-  { href: '/app/epcr', label: 'ePCR' },
-  { href: '/app/ops', label: 'Ops' },
-  { href: '/app/scheduling', label: 'Scheduling' },
-  { href: '/app/fleet', label: 'Fleet' },
-  { href: '/app/compliance', label: 'Compliance' },
-  { href: '/app/communications', label: 'Communications' },
-  { href: '/app/analytics', label: 'Analytics' },
-  { href: '/app/admin', label: 'Admin' },
+  { href: '/_legacy_app/home', label: 'Home' },
+  { href: '/_legacy_app/founder', label: 'Founder' },
+  { href: '/_legacy_app/billing', label: 'Billing' },
+  { href: '/_legacy_app/epcr', label: 'ePCR' },
+  { href: '/_legacy_app/ops', label: 'Ops' },
+  { href: '/_legacy_app/scheduling', label: 'Scheduling' },
+  { href: '/_legacy_app/fleet', label: 'Fleet' },
+  { href: '/_legacy_app/compliance', label: 'Compliance' },
+  { href: '/_legacy_app/communications', label: 'Communications' },
+  { href: '/_legacy_app/analytics', label: 'Analytics' },
+  { href: '/_legacy_app/admin', label: 'Admin' },
 ];
 
 export default function InternalAppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col">
       <header className="h-14 border-b border-border-default bg-[rgba(7,9,13,0.92)] backdrop-blur-sm flex items-center justify-between px-5">
-        <Link href="/app/home" className="flex items-center gap-2">
+        <Link href="/_legacy_app/home" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-brand-orange text-black flex items-center justify-center font-black chamfer-8">FQ</div>
           <span className="text-label uppercase tracking-[0.16em] text-zinc-400">Command Application</span>
         </Link>

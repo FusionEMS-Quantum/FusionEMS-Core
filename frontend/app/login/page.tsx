@@ -6,11 +6,11 @@ import { useSearchParams } from 'next/navigation';
 import { login } from '@/services/auth';
 
 function LoginPageInner() {
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const searchParams = useSearchParams();
 
@@ -19,29 +19,35 @@ function LoginPageInner() {
     if (!ssoError) return;
 
     const ssoErrorMessages: Record<string, string> = {
-      entra_denied: 'Microsoft login was denied. Contact your administrator.',
-      no_account: 'No FusionEMS account is linked to that Microsoft identity.',
-      entra_not_configured:
-        'Microsoft login is temporarily unavailable. Your administrator must complete Entra configuration.',
+      entra_denied: 'Microsoft access was denied. Contact your administrator.',
+      no_account: 'No FusionEMS account linked to your Microsoft identity.',
+      entra_not_configured: 'Microsoft authentication is temporarily unavailable.',
+      founder_role_denied: 'Founder access requires elevated permissions.',
+      founder_claim_denied: 'Access denied by group policy.',
+      missing_authorization_code: 'Authorization failed. Please try again.',
+      invalid_state: 'Session expired. Try signing in again.',
+      missing_id_token: 'Identity verification failed. Try again.',
+      missing_access_token: 'Authentication incomplete. Try again.',
+      no_email_claim: 'Email not provided. Contact your administrator.',
     };
 
     setError(
       ssoErrorMessages[ssoError] ??
-        'Microsoft login could not be completed. Please retry or contact your administrator.'
+      'Authentication failed. Please try again or contact support.'
     );
   }, [searchParams]);
 
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
       e?.preventDefault();
-      if (!email.trim()) { setError('Email address is required.'); return; }
-      if (!password.trim()) { setError('Password is required.'); return; }
+      if (!email.trim()) { setError('Email is required'); return; }
+      if (!password.trim()) { setError('Password is required'); return; }
       setError('');
       setLoading(true);
       try {
         await login(email.trim(), password);
       } catch {
-        setError('Authentication failed. Verify your credentials and try again.');
+        setError('Authentication failed. Check your credentials and try again.');
         setLoading(false);
       }
     },
@@ -49,128 +55,162 @@ function LoginPageInner() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0C0E] text-white overflow-hidden relative">
-
-      {/* PRECISION GRID */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden relative">
+      
+      {/* QUANTUM GRID BACKGROUND */}
       <div
-        className="fixed inset-0 pointer-events-none"
-        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none opacity-40"
         style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '80px 80px',
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(15, 207, 255, 0.3) 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
         }}
       />
 
-      {/* CHAMFER CORNER GEOMETRY */}
-      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute top-0 left-0 w-24 h-24" style={{
-          background: 'linear-gradient(135deg, rgba(243,106,33,0.18) 0%, transparent 60%)',
-          clipPath: 'polygon(0 0, 100% 0, 0 100%)',
-        }} />
-        <div className="absolute top-0 right-0 w-24 h-24" style={{
-          background: 'linear-gradient(225deg, rgba(243,106,33,0.10) 0%, transparent 60%)',
-          clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
-        }} />
-        <div className="absolute bottom-0 left-0 w-32 h-32" style={{
-          background: 'linear-gradient(45deg, rgba(243,106,33,0.08) 0%, transparent 60%)',
-          clipPath: 'polygon(0 0, 0 100%, 100% 100%)',
-        }} />
+      {/* ANIMATED QUANTUM ORBS */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(255, 107, 53, 0.8) 0%, transparent 70%)',
+            animation: 'pulse 8s ease-in-out infinite',
+          }}
+        />
+        
+        <div
+          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.8) 0%, transparent 70%)',
+            animation: 'pulse 10s ease-in-out infinite 1s',
+          }}
+        />
+        
+        <div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(220, 38, 38, 0.8) 0%, transparent 70%)',
+            animation: 'pulse 12s ease-in-out infinite 2s',
+          }}
+        />
+
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+          }
+        `}</style>
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.1fr_0.9fr]">
+      {/* MAIN CONTAINER */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
+        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
-        {/* ── BRAND COMMAND COLUMN (desktop) ── */}
-        <div className="hidden lg:flex flex-col justify-between px-12 py-14 xl:px-20 xl:py-16 border-r border-white/[0.04]">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]" />
-            <div className="text-[0.55rem] font-bold tracking-[0.2em] text-[#4E9F6E] uppercase">
-              Authentication Required
-            </div>
-            <div className="ml-4 text-[0.55rem] font-bold tracking-[0.15em] text-[#66707A] uppercase">
-              FusionEMS Quantum Platform
-            </div>
-          </div>
-
-          <div className="max-w-2xl">
-            <div className="mb-6">
-              <div className="text-[6rem] xl:text-[8rem] font-black leading-none tracking-[-0.04em] text-white">
-                FQ
+          {/* LEFT COLUMN - BRAND */}
+          <div className="hidden lg:flex flex-col justify-center space-y-12">
+            {/* LOGO & BRANDING */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-3 px-4 py-2 bg-quantum-orange/10 border border-quantum-orange/30 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-quantum-orange animate-pulse" />
+                <span className="text-sm font-bold tracking-widest text-quantum-orange uppercase">Quantum Command</span>
               </div>
-              <div className="mt-1 w-40 h-px bg-[#F36A21]" />
+
+              <div className="space-y-3">
+                <h1 className="text-7xl font-black tracking-tighter leading-none">
+                  <span className="text-quantum-orange">Fusion</span>
+                  <span className="text-white">EMS</span>
+                </h1>
+                <p className="text-4xl font-bold text-slate-400">Operational Control Redefined</p>
+              </div>
+
+              <div className="h-1 w-32 bg-gradient-to-r from-quantum-orange via-quantum-red to-transparent" />
             </div>
 
-            <h1 className="text-5xl xl:text-6xl font-black tracking-[0.08em] text-white leading-tight">
-              FUSIONEMS
-            </h1>
-            <div className="mt-3 flex items-center gap-4">
-              <div className="h-px flex-1 bg-[#F36A21]/40" />
-              <span className="text-[0.7rem] font-black tracking-[0.4em] text-[#F36A21] uppercase">QUANTUM</span>
-              <div className="h-px flex-1 bg-[#F36A21]/40" />
-            </div>
-
-            <p className="mt-10 max-w-xl text-base leading-7 text-[#8D98A3]">
-              Unified EMS scheduling, workforce coordination, and response intelligence
-              built for secure operational control.
-            </p>
-
-            <div className="mt-10 grid grid-cols-3 gap-3">
-              {([
-                ['24/7', 'System Uptime'],
-                ['SSO',  'Microsoft Identity'],
-                ['AES',  'Encrypted Access'],
-              ] as const).map(([value, label]) => (
-                <div
-                  key={label}
-                  className="border border-white/[0.06] bg-[#111417] px-5 py-4"
-                  style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))' }}
-                >
-                  <div className="text-xl font-black tracking-[0.05em] text-white">{value}</div>
-                  <div className="mt-1 text-[0.6rem] font-bold tracking-[0.15em] text-[#66707A] uppercase">{label}</div>
+            {/* CAPABILITIES */}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-quantum-orange/10 border border-quantum-orange/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-quantum-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-bold text-white">Real-Time Dispatch</p>
+                    <p className="text-sm text-slate-400">Live incident coordination and response</p>
+                  </div>
                 </div>
-              ))}
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-quantum-green/10 border border-quantum-green/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-quantum-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-bold text-white">Unified Operations</p>
+                    <p className="text-sm text-slate-400">EMS, HEMS, Fire coordination in one platform</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-quantum-red/10 border border-quantum-red/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-quantum-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-bold text-white">Enterprise Security</p>
+                    <p className="text-sm text-slate-400">HIPAA-compliant encryption and audit trails</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* STATS */}
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800">
+              <div>
+                <p className="text-3xl font-black text-quantum-orange">99.9%</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wide">Uptime SLA</p>
+              </div>
+              <div>
+                <p className="text-3xl font-black text-quantum-green">50M+</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wide">Incidents Managed</p>
+              </div>
+              <div>
+                <p className="text-3xl font-black text-quantum-blue">240+</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wide">Agencies</p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 text-[0.6rem] font-bold tracking-[0.15em] text-[#66707A] uppercase">
-            <span>Enterprise Access</span>
-            <span className="w-1 h-1 bg-[#66707A]" />
-            <span>Role-Based Permissions</span>
-            <span className="w-1 h-1 bg-[#66707A]" />
-            <span>Audit Ready</span>
-          </div>
-        </div>
+          {/* RIGHT COLUMN - LOGIN FORM */}
+          <div className="w-full max-w-md">
+            {/* MOBILE HEADER */}
+            <div className="mb-8 lg:hidden text-center">
+              <h1 className="text-5xl font-black tracking-tighter mb-2">
+                <span className="text-quantum-orange">Fusion</span>
+                <span className="text-white">EMS</span>
+              </h1>
+              <p className="text-slate-400 font-semibold">Operational Control Redefined</p>
+            </div>
 
-        {/* ── LOGIN FORM COLUMN ── */}
-        <div className="flex flex-col items-center justify-center px-5 py-8 sm:px-8 lg:px-10 xl:px-14">
-          <div className="w-full max-w-lg">
-            <div
-              className="border border-white/[0.08] bg-[#111417] p-7 sm:p-9"
-              style={{ clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))' }}
-            >
-              {/* Mobile brand mark */}
-              <div className="mb-8 lg:hidden text-center">
-                <div className="text-6xl font-black leading-none tracking-[-0.04em] text-white">FQ</div>
-                <div className="mt-2 w-20 h-px bg-[#F36A21] mx-auto" />
-                <div className="mt-4 text-2xl font-black tracking-[0.15em] text-white">FUSIONEMS</div>
-                <div className="mt-1 text-xs font-black tracking-[0.4em] text-[#F36A21]">QUANTUM</div>
+            {/* LOGIN CARD */}
+            <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-sm border border-quantum-orange/20 rounded-2xl p-8 shadow-2xl">
+              
+              {/* STATUS INDICATOR */}
+              <div className="mb-8 flex items-center gap-3 p-3 bg-quantum-green/10 border border-quantum-green/30 rounded-lg">
+                <div className="w-2.5 h-2.5 rounded-full bg-quantum-green animate-pulse" />
+                <span className="text-sm font-bold text-quantum-green uppercase tracking-wide">System Operational</span>
               </div>
 
-              {/* Status badge */}
-              <div className="mb-6 flex items-center gap-2">
-                <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]" />
-                <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#4E9F6E] uppercase">Protected Session Entry</span>
+              <div className="mb-6">
+                <h2 className="text-3xl font-black mb-2">Welcome</h2>
+                <p className="text-slate-400">Access your operational dashboard</p>
               </div>
-
-              <h2 className="mb-2 text-2xl font-black tracking-[0.02em] text-white">
-                Welcome Back
-              </h2>
-              <p className="mb-7 text-sm text-[#8D98A3]">
-                Sign in to access scheduling, operations, and workforce tools.
-              </p>
 
               <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                {/* EMAIL */}
                 <div>
-                  <label htmlFor="email" className="mb-2 block text-[0.65rem] font-bold tracking-[0.15em] text-[#8D98A3] uppercase">
+                  <label htmlFor="email" className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
                     Work Email
                   </label>
                   <input
@@ -181,23 +221,21 @@ function LoginPageInner() {
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(''); }}
                     disabled={loading}
-                    className="w-full border border-white/[0.08] bg-[#0A0C0E] px-4 py-3 text-white placeholder:text-[#66707A] text-sm outline-none transition duration-200 focus:border-[#F36A21]/50 focus:ring-1 focus:ring-[#F36A21]/20 disabled:opacity-50"
-                    style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))' }}
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-500 text-sm outline-none transition duration-200 focus:border-quantum-orange focus:ring-2 focus:ring-quantum-orange/30 disabled:opacity-50"
                   />
                 </div>
 
+                {/* PASSWORD */}
                 <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <label htmlFor="password" className="block text-[0.65rem] font-bold tracking-[0.15em] text-[#8D98A3] uppercase">
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="password" className="block text-xs font-bold text-slate-400 uppercase tracking-wide">
                       Password
                     </label>
                     <Link
                       href="/forgot-password"
-                      tabIndex={loading ? -1 : 0}
-                      onClick={(e) => { if (loading) e.preventDefault(); }}
-                      className="text-[0.6rem] font-bold tracking-[0.12em] text-[#F36A21] uppercase transition hover:text-[#FF7A2F]"
+                      className="text-xs font-bold text-quantum-orange hover:text-quantum-orange_light transition"
                     >
-                      Forgot Password?
+                      Forgot?
                     </Link>
                   </div>
                   <input
@@ -208,95 +246,84 @@ function LoginPageInner() {
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(''); }}
                     disabled={loading}
-                    className="w-full border border-white/[0.08] bg-[#0A0C0E] px-4 py-3 text-white placeholder:text-[#66707A] text-sm outline-none transition duration-200 focus:border-[#F36A21]/50 focus:ring-1 focus:ring-[#F36A21]/20 disabled:opacity-50"
-                    style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))' }}
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-500 text-sm outline-none transition duration-200 focus:border-quantum-orange focus:ring-2 focus:ring-quantum-orange/30 disabled:opacity-50"
                   />
                 </div>
 
+                {/* ERROR MESSAGE */}
                 {error && (
-                  <div role="alert" className="flex items-center gap-2 border border-[#C93B2C]/30 bg-[#2B1414] px-4 py-2.5">
-                    <div className="w-1 h-1 bg-[#C93B2C] flex-shrink-0" />
-                    <p className="text-[0.65rem] font-bold text-[#E14B3B]">{error}</p>
+                  <div className="p-4 bg-quantum-red/10 border border-quantum-red/30 rounded-lg flex items-start gap-3">
+                    <svg className="w-5 h-5 text-quantum-red flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm text-quantum-red font-medium">{error}</p>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2.5 text-[#8D98A3] cursor-pointer text-xs">
-                    <input
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                      className="h-3.5 w-3.5 border border-white/20 bg-[#0A0C0E] accent-[#F36A21]"
-                    />
-                    Keep me signed in
+                {/* REMEMBER ME */}
+                <div className="flex items-center gap-3">
+                  <input
+                    id="remember"
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-quantum-orange cursor-pointer"
+                  />
+                  <label htmlFor="remember" className="text-sm text-slate-400 cursor-pointer">
+                    Keep me signed in for 30 days
                   </label>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]" />
-                    <span className="text-[0.55rem] font-bold tracking-[0.15em] text-[#4E9F6E] uppercase">AES Encrypted</span>
-                  </div>
                 </div>
 
+                {/* SUBMIT BUTTON */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#F36A21] px-4 py-3.5 text-[0.7rem] font-black tracking-[0.2em] text-white uppercase transition duration-200 hover:bg-[#FF7A2F] disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))' }}
+                  className="w-full bg-gradient-to-r from-quantum-orange to-quantum-orange_light hover:from-quantum-orange_dark hover:to-quantum-orange text-white font-black uppercase tracking-wider py-4 rounded-xl transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
-                  {loading ? 'Authenticating…' : 'Authenticate'}
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Authenticating...
+                    </span>
+                  ) : (
+                    'Sign In'
+                  )}
                 </button>
               </form>
 
-              <div className="my-6 flex items-center gap-4">
-                <div className="h-px flex-1 bg-white/[0.06]" />
-                <span className="text-[0.5rem] font-bold tracking-[0.3em] text-[#66707A] uppercase">Or Continue With</span>
-                <div className="h-px flex-1 bg-white/[0.06]" />
+              {/* SSO DIVIDER */}
+              <div className="my-6 flex items-center gap-3">
+                <div className="flex-1 h-px bg-slate-700" />
+                <span className="text-xs text-slate-500 font-bold uppercase">Or</span>
+                <div className="flex-1 h-px bg-slate-700" />
               </div>
 
-              {/* Microsoft SSO — must be a full-page navigation, not a button */}
+              {/* MICROSOFT SSO */}
               <a
                 href="/api/v1/auth/microsoft/login"
-                className="flex w-full items-center justify-center gap-3 border border-white/[0.08] bg-[#0A0C0E] px-4 py-3 text-[0.65rem] font-bold tracking-[0.1em] text-[#C7CDD3] uppercase transition duration-200 hover:border-white/[0.15] hover:text-white"
-                style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))' }}
+                className="w-full flex items-center justify-center gap-3 bg-slate-800/50 border border-slate-700 hover:border-quantum-blue hover:bg-slate-800 text-white font-bold uppercase tracking-wide py-3.5 rounded-xl transition duration-200"
               >
-                <svg viewBox="0 0 24 24" className="h-4 w-4 flex-shrink-0" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
                   <path fill="#f25022" d="M1 1h10v10H1z" />
                   <path fill="#7fba00" d="M13 1h10v10H13z" />
                   <path fill="#00a4ef" d="M1 13h10v10H1z" />
                   <path fill="#ffb900" d="M13 13h10v10H13z" />
                 </svg>
-                Sign in with Microsoft
+                <span className="text-sm">Microsoft Account</span>
               </a>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  className="border border-white/[0.08] bg-[#111417] px-4 py-3 text-[0.6rem] font-bold tracking-[0.15em] text-[#8D98A3] uppercase transition hover:border-white/[0.15] hover:text-white"
-                  style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
-                >
-                  Request Access
-                </button>
-                <button
-                  type="button"
-                  className="border border-[#F36A21]/20 bg-[#F36A21]/[0.06] px-4 py-3 text-[0.6rem] font-bold tracking-[0.15em] text-[#F36A21] uppercase transition hover:bg-[#F36A21]/[0.12]"
-                  style={{ clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)' }}
-                >
-                  System Status
-                </button>
-              </div>
-
-              <div className="mt-6 border-t border-white/[0.04] pt-5">
-                <p className="text-center text-[0.5rem] font-bold tracking-[0.15em] text-[#66707A] uppercase">
-                  Secure Gateway &mdash; FusionEMS Quantum Platform
+              {/* FOOTER */}
+              <div className="mt-8 pt-6 border-t border-slate-800 space-y-3 text-center">
+                <p className="text-xs text-slate-500">
+                  Don't have access? <Link href="/early-access" className="text-quantum-orange font-bold hover:text-quantum-orange_light">Request access</Link>
                 </p>
-                <p className="mt-2 text-center text-[0.5rem] text-[#66707A] leading-relaxed">
-                  Access is monitored and protected by enterprise security controls.
+                <p className="text-[0.7rem] text-slate-600">
+                  Protected by enterprise security • <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
                 </p>
               </div>
-
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -304,7 +331,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
       <LoginPageInner />
     </Suspense>
   );

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function AppRootPage() {
-  redirect('/app/home');
+  redirect('/_legacy_app/home');
 }
