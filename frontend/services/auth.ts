@@ -1,23 +1,13 @@
 import axios from 'axios';
 import { API } from './api';
+import { clearSessionToken, getSessionToken, setSessionToken } from './session';
 
 type LoginOptions = {
   redirectTo?: string;
 };
 
-const TOKEN_STORAGE_KEYS = ['token', 'qs_token'] as const;
-
 export function getAccessToken(): string {
-  if (typeof window === 'undefined') return '';
-
-  for (const key of TOKEN_STORAGE_KEYS) {
-    const token = localStorage.getItem(key);
-    if (token && token.trim()) {
-      return token;
-    }
-  }
-
-  return '';
+  return getSessionToken();
 }
 
 export function getAuthHeaderValue(): string {
@@ -50,10 +40,7 @@ export async function login(email: string, password: string, options?: LoginOpti
     throw new Error('Authentication failed');
   }
 
-  // Canonical key
-  localStorage.setItem('token', token);
-  // Back-compat for older pages still reading this key
-  localStorage.setItem('qs_token', token);
+  setSessionToken(token);
 
   window.location.href = options?.redirectTo || '/dashboard';
 }

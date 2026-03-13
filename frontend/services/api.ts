@@ -1,4 +1,5 @@
 import axios, { AxiosHeaders } from 'axios';
+import { getSessionToken, setSessionToken } from './session';
 
 export const API = axios.create({
   baseURL:
@@ -14,7 +15,7 @@ API.interceptors.request.use((config) => {
     return config;
   }
 
-  const token = localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
+  const token = getSessionToken();
   const headers = config.headers instanceof AxiosHeaders
     ? config.headers
     : new AxiosHeaders(config.headers);
@@ -32,7 +33,7 @@ API.interceptors.request.use((config) => {
 export async function getExecutiveSummary() {
   const res = await API.get('/api/v1/founder/executive-summary', {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
+      Authorization: `Bearer ${getSessionToken()}`,
       'X-Tenant-ID': 'founder'
     }
   });
@@ -494,7 +495,7 @@ function normalizeEPCRChartRecord(value: unknown): EPCRChartApi {
 
 export function aiHeaders() {
   return {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    Authorization: `Bearer ${getSessionToken()}`,
   };
 }
 
@@ -502,7 +503,7 @@ function transportLinkHeaders(): Record<string, string> {
   if (typeof window === 'undefined') {
     return {};
   }
-  const qsToken = localStorage.getItem('qs_token') || '';
+  const qsToken = getSessionToken();
   if (!qsToken) {
     return {};
   }
@@ -1559,7 +1560,7 @@ function nemsisManagerHeaders(): Record<string, string> {
   if (typeof window === 'undefined') {
     return { 'Content-Type': 'application/json' };
   }
-  const token = localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
+  const token = getSessionToken();
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -2392,7 +2393,7 @@ export async function loginTransportLink(payload: { email: string; password: str
       throw new Error('Login succeeded but no token was returned. Contact support.');
     }
     if (typeof window !== 'undefined') {
-      localStorage.setItem('qs_token', token);
+      setSessionToken(token);
     }
     return token;
   } catch (error) {
@@ -2657,7 +2658,7 @@ function patientPortalQsAuthHeaders(): Record<string, string> {
   if (typeof window === 'undefined') {
     return { Authorization: 'Bearer ' };
   }
-  const token = localStorage.getItem('qs_token') || '';
+  const token = getSessionToken();
   return { Authorization: `Bearer ${token}` };
 }
 
@@ -5623,7 +5624,7 @@ export async function sendAgentCommand(payload: { command: string }) {
 }
 
 export function getAgentStreamUrl(): string {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('qs_token') ?? '' : '';
+  const token = typeof window !== 'undefined' ? getSessionToken() : '';
   return `${API.defaults.baseURL ?? ''}/api/v1/founder/agents/stream?token=${encodeURIComponent(token)}`;
 }
 

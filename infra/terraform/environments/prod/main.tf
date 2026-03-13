@@ -432,15 +432,13 @@ module "backend_service" {
 
   environment_variables = [
     { name = "ENVIRONMENT", value = var.environment },
-    # In staging/prod we require Cognito-based auth (the app refuses to boot with AUTH_MODE=local).
-    { name = "AUTH_MODE", value = "cognito" },
+    # Browser auth path standardized to Microsoft Entra -> FusionEMS JWT.
+    { name = "AUTH_MODE", value = "fusion_jwt" },
     { name = "AWS_DEFAULT_REGION", value = var.aws_region },
     # AI provider selection (Bedrock/OpenAI/disabled)
     { name = "AI_PROVIDER", value = var.ai_provider },
     # Non-secret Bedrock model ID (required when AI_PROVIDER=bedrock)
     { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
-    { name = "COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
-    { name = "COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
     { name = "S3_DOCS_BUCKET", value = module.s3.docs_bucket_name },
     { name = "S3_EXPORTS_BUCKET", value = module.s3.exports_bucket_name },
     { name = "S3_PROPOSALS_BUCKET", value = module.s3.proposals_bucket_name },
@@ -535,8 +533,6 @@ module "frontend_service" {
     { name = "NEXT_PUBLIC_WS_URL", value = "wss://${var.api_domain_name}/api/v1/realtime/ws" },
     # Backwards-compat for older callers
     { name = "NEXT_PUBLIC_API_URL", value = "https://${var.api_domain_name}" },
-    { name = "NEXT_PUBLIC_COGNITO_USER_POOL_ID", value = module.cognito.user_pool_id },
-    { name = "NEXT_PUBLIC_COGNITO_CLIENT_ID", value = module.cognito.user_pool_client_id },
     { name = "NEXT_PUBLIC_BILLING_PHONE", value = module.telnyx_central_billing_line.phone_e164 },
     { name = "NEXT_PUBLIC_CNAM_DISPLAY_NAME", value = module.telnyx_central_billing_line.cnam_display_name },
     { name = "NEXT_PUBLIC_BRAND_NAME", value = var.brand_display_name },

@@ -169,7 +169,7 @@ export default function SystemHealthPage() {
   return (
     <ModuleDashboardShell
       title="System Health + Self-Healing"
-      subtitle="100-Feature Infrastructure Command · ECS · RDS · Redis · CloudFront · Self-Healing Engine"
+      subtitle="100-Feature Infrastructure Command · Amplify · Route 53 · ACM · WAF · CloudWatch · Self-Healing Engine"
       accentColor="var(--color-system-system)"
       headerActions={
         <div className="flex items-center gap-2">
@@ -290,7 +290,7 @@ export default function SystemHealthPage() {
                     <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "unknown")}</div>
                   </div>
                   {String(d.status) === "active" && (
-                    <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-[var(--color-status-active)]/30 text-[var(--color-status-active)] chamfer-4 hover:bg-[var(--color-status-active)]/10 transition-colors flex-shrink-0">
+                    <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-[var(--color-status-active)]/30 text-[var(--color-status-warning)] chamfer-4 hover:bg-[var(--color-status-active)]/10 transition-colors flex-shrink-0">
                       Resolve
                     </button>
                   )}
@@ -299,8 +299,8 @@ export default function SystemHealthPage() {
             })}
             {!alerts.alerts?.length && (
               <div className="flex items-center gap-2 py-3">
-                <span className="w-2 h-2  bg-status-active" />
-                <span className="text-body text-[var(--color-status-active)] font-label">All Systems Operational</span>
+                <span className="w-2 h-2  bg-status-warning" />
+                <span className="text-body text-[var(--color-status-active)] font-label">No active alerts reported (verify data source health)</span>
               </div>
             )}
           </div>
@@ -384,7 +384,7 @@ export default function SystemHealthPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
             {FEATURES.map(f => (
               <div key={f} className="flex items-center gap-1.5 text-micro text-[var(--color-text-muted)]">
-                <span className="w-1 h-1  bg-status-active flex-shrink-0" />
+                <span className="w-1 h-1  bg-status-warning flex-shrink-0" />
                 <span className="truncate">{f}</span>
               </div>
             ))}

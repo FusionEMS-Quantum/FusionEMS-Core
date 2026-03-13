@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { clearSessionToken, getSessionToken, SESSION_TOKEN_KEY } from '@/services/session';
 
 export interface AuthUser {
   userId: string;
@@ -52,8 +53,7 @@ function buildAuthUser(token: string): AuthUser | null {
 }
 
 function readTokenFromStorage(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem('token') || localStorage.getItem('qs_token') || '';
+  return getSessionToken();
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Keep context in sync if another tab/page writes the token.
     function onStorage(e: StorageEvent) {
-      if (e.key === 'token' || e.key === 'qs_token') {
+      if (e.key === SESSION_TOKEN_KEY || e.key === 'token' || e.key === 'qs_token') {
         const updated = readTokenFromStorage();
         setUser(buildAuthUser(updated));
       }
@@ -78,8 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   function signOut() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('qs_token');
+    clearSessionToken();
     setUser(null);
     window.location.href = '/login';
   }

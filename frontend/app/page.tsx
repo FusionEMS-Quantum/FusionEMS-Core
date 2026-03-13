@@ -138,10 +138,10 @@ export default function LandingPage() {
             </Link>
 
             <Link
-              href="/founder-login"
+              href="/login"
               className="text-[0.7rem] font-bold tracking-[0.15em] uppercase px-6 py-3 rounded-none border border-orange bg-[var(--q-orange)]/10 hover:bg-[var(--q-orange)] hover:text-black transition-all text-[var(--q-orange)] shadow-[0_0_15px_rgba(255,100,0,0.15)] flex items-center gap-2"
             >
-              Founder Login <TerminalSquare className="w-4 h-4" />
+              Platform Login <TerminalSquare className="w-4 h-4" />
             </Link>
           </div>
         </div>

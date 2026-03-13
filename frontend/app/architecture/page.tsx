@@ -4,11 +4,11 @@ import MarketingPageTemplate from '@/components/marketing/MarketingPageTemplate'
 const LAYERS = [
   {
     title: 'Edge and Access Boundary',
-    description: 'CloudFront + WAF perimeter with strict ingress policy and route segmentation between public, access, and internal surfaces.',
+    description: 'Amplify Hosting + WAF perimeter with strict ingress policy and route segmentation between public, access, and internal surfaces.',
   },
   {
     title: 'Application Runtime',
-    description: 'Horizontally scalable ECS services for API, worker, and real-time workloads with deterministic health and failure behavior.',
+    description: 'Amplify-hosted frontend with scalable API, worker, and real-time workloads and deterministic health behavior.',
   },
   {
     title: 'Authoritative Data Plane',

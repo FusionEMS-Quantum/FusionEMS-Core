@@ -33,7 +33,7 @@ function HeaderPortalButtons() {
     <div className="hidden xl:flex items-center gap-2">
       <Link href="/patient-billing-login" className="quantum-btn-sm">Patient Bill Pay</Link>
       <Link href="/facility-transport-login" className="quantum-btn-sm">Facility Login</Link>
-      <Link href="/founder-login" className="quantum-btn-primary">Founder Login</Link>
+      <Link href="/login" className="quantum-btn-primary">Platform Login</Link>
     </div>
   );
 }
@@ -114,7 +114,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
                 <Link href="/patient-billing-login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Patient Bill Pay</Link>
                 <Link href="/facility-transport-login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Facility Login</Link>
                 <Link href="/login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Staff Login</Link>
-                <Link href="/founder-login" className="quantum-btn-primary" onClick={() => setMobileNavOpen(false)}>Founder Login</Link>
+                <Link href="/login" className="quantum-btn-primary" onClick={() => setMobileNavOpen(false)}>Platform Login</Link>
               </div>
             </div>
           </div>
