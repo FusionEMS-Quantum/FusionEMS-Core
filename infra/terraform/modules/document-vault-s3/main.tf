@@ -227,6 +227,18 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
       expired_object_delete_marker = true
     }
   }
+
+  # Abort incomplete multipart uploads to reduce orphaned object risk.
+  rule {
+    id     = "abort-multipart-uploads"
+    status = "Enabled"
+    filter {
+      prefix = ""
+    }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 }
 
 # ── Exports bucket ────────────────────────────────────────────────────────────
@@ -324,6 +336,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "exports" {
     }
     noncurrent_version_expiration {
       noncurrent_days = 2
+    }
+  }
+
+  rule {
+    id     = "abort-multipart-uploads"
+    status = "Enabled"
+    filter {
+      prefix = ""
+    }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
     }
   }
 }
