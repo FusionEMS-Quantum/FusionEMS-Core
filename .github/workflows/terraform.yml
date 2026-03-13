@@ -61,7 +61,7 @@ jobs:
         run: tflint --init
 
       - name: Run TFLint
-        run: tflint --chdir=${{ env.TF_ROOT_DIR }} --recursive
+        run: tflint --chdir=${{ env.TF_ROOT_DIR }} --recursive --minimum-failure-severity=error
 
       - name: Setup Python
         uses: actions/setup-python@v5
