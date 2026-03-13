@@ -1,10 +1,9 @@
-from functools import lru_cache
 import re
 import uuid
+from functools import lru_cache
 
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 _PLACEHOLDER_CONFIG_PATTERN = re.compile(
     r"(?:placeholder(?:_rotate)?_[a-z0-9_]+|replace_with_[a-z0-9_]+|change[-_ ]?me|todo_secret)",
@@ -576,7 +575,7 @@ class Settings(BaseSettings):
 
     def _is_credential_placeholder(self, value: str) -> bool:
         """Check if a credential value is a placeholder that must never reach production.
-        
+
         This catches various placeholder patterns used during development that will
         cause authentication failures if deployed to production. This includes secret
         rotation patterns like 'placeholder_rotate_*' which are intermediate values
@@ -647,7 +646,7 @@ class Settings(BaseSettings):
                     f"for environment '{env}': {', '.join(missing)}. "
                     "All secrets must be injected from AWS Secrets Manager via the ECS task definition."
                 )
-            
+
             # Check for placeholder credentials that would cause authentication failures in production
             # This is critical for Microsoft Graph (which produces AADSTS900023 errors), Stripe, and other integrations
             _CREDENTIAL_FIELDS: list[tuple[str, str]] = [
@@ -669,7 +668,7 @@ class Settings(BaseSettings):
                         f"You must update this value in AWS Secrets Manager with the actual credential. "
                         f"Pattern detected: {str(value)[:60]}"
                     )
-            
+
             if self.jwt_secret_key in ("change-me", "changeme", "secret"):
                 raise ValueError(
                     "JWT_SECRET_KEY is set to a known insecure default value. "

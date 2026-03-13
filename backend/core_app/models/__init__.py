@@ -255,16 +255,6 @@ from .integration_connectors import (
 )
 from .patient import Patient
 
-# ── Terminology Service Models ───────────────────────────────────────────────
-from .terminology import (
-    TerminologyCodeSystem,
-    TerminologyConcept,
-    TerminologyDatasetVersion,
-    TerminologyMapping,
-    TerminologyRefreshSchedule,
-    TerminologySynonym,
-)
-
 # Patient Identity + CRM Models
 from .patient_identity import (
     PatientAlias,
@@ -421,5 +411,15 @@ from .state_debt_setoff import (
     StateDebtSetoffProfile,
 )
 from .tenant import Tenant
+
+# ── Terminology Service Models ───────────────────────────────────────────────
+from .terminology import (
+    TerminologyCodeSystem,
+    TerminologyConcept,
+    TerminologyDatasetVersion,
+    TerminologyMapping,
+    TerminologyRefreshSchedule,
+    TerminologySynonym,
+)
 from .user import User
 from .vital import Vital

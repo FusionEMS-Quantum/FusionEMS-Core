@@ -1077,14 +1077,12 @@ def live_status(
     except Exception:
         db_ok = False
 
-    redis_ok = False
     redis_state = "not_configured"
     if str(settings.redis_url or "").strip():
         try:
             import redis
 
             redis.from_url(settings.redis_url, socket_connect_timeout=2).ping()
-            redis_ok = True
             redis_state = "healthy"
         except Exception:
             redis_state = "degraded"

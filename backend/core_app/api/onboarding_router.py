@@ -270,7 +270,7 @@ async def onboarding_apply(
     email = str(payload.get("email", "")).lower().strip()
     agency_name = str(payload.get("agency_name", "")).strip()
     agency_type = str(payload.get("agency_type", "EMS")).strip()
-    state = str(payload.get("state", "")).strip()
+    str(payload.get("state", "")).strip()
     zip_code = str(payload.get("zip_code", "")).strip()
     first_name = str(payload.get("first_name", "")).strip()
     last_name = str(payload.get("last_name", "")).strip()

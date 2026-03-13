@@ -3,11 +3,11 @@ from __future__ import annotations
 import hashlib
 import re
 import uuid
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
-import xml.etree.ElementTree as ET
 
 NEMSIS_NS = "http://www.nemsis.org"
 XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
