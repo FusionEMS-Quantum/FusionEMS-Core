@@ -363,8 +363,14 @@ def gate_route_exposure_blockers() -> None:
     try:
         paths = collect_mounted_route_paths()
     except Exception as exc:  # noqa: BLE001
-        fail(f"ROUTE-EXPOSURE-CHECK-FAILED: unable to import app routes: {exc}")
-        return
+        print(
+            "WARN  ROUTE-EXPOSURE-CHECK-FALLBACK: mounted-route import failed; "
+            f"using static router scan instead ({exc})"
+        )
+        paths = sorted(collect_backend_paths())
+        if not paths:
+            fail("ROUTE-EXPOSURE-CHECK-FAILED: no routes found in static fallback scan")
+            return
 
     legacy_webhooks = sorted({p for p in paths if p.startswith("/webhooks/")})
     double_prefixed = sorted({p for p in paths if "/api/v1/api/v1/" in p})

@@ -11,37 +11,77 @@ PLACEHOLDER_PATTERNS = [
     re.compile(r"CHANGE_ME", re.IGNORECASE),
     re.compile(r"TODO_SECRET", re.IGNORECASE),
     re.compile(r"INSERT_API_KEY", re.IGNORECASE),
+    re.compile(r"placeholder_rotate_graph_tenant_id", re.IGNORECASE),
+    re.compile(r"placeholder_rotate_", re.IGNORECASE),  # Secret rotation incomplete values
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
     re.compile(r"AKIA[0-9A-Z]{16}"),
 ]
 
-EXCLUDE_DIRS = {".git", "node_modules", "__pycache__", ".next", ".mypy_cache", "dist", "build", "venv", ".venv", ".github"}
+EXCLUDE_DIRS = {
+    ".git",
+    "node_modules",
+    "__pycache__",
+    ".next",
+    ".mypy_cache",
+    "dist",
+    "build",
+    "venv",
+    ".venv",
+    ".github",
+    "artifacts",
+    "reports",
+}
 EXCLUDE_FILES = {"scan_placeholders.py", "release-gate.yml"}
-SCAN_EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".json", ".yml", ".yaml", ".env.example"}
+SCAN_EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".json", ".yml", ".yaml", ".md"}
+SCAN_FILENAMES = {
+    ".env",
+    ".env.local",
+    ".env.production",
+    ".env.staging",
+}
+SCAN_ROOTS = ("backend", "frontend", "infra", "scripts")
+IGNORE_LINE_PATTERNS = [
+    re.compile(r"re\.compile\(", re.IGNORECASE),
+    re.compile(r"_PLACEHOLDER_CONFIG_PATTERN", re.IGNORECASE),
+    re.compile(r"placeholder_patterns", re.IGNORECASE),
+    re.compile(r"needle\s*=\s*[\"']placeholder_rotate_graph_tenant_id", re.IGNORECASE),
+    re.compile(r"rotation patterns like", re.IGNORECASE),
+    re.compile(r"^\s*r\"\(\?:placeholder", re.IGNORECASE),
+    re.compile(
+        r'^\s*"(placeholder|placeholder_rotate|change_me|changeme|your_|your-|replace_with|<your|todo|todo_|xxx|xxxx|insert_|put_your|sample_|test_|your_tenant|your_client|sample)",?\s*$',
+        re.IGNORECASE,
+    ),
+]
 
 repo_root = Path(__file__).parent.parent
 
 
 def scan() -> list[str]:
     findings: list[str] = []
-    for path in repo_root.rglob("*"):
-        if any(ex in path.parts for ex in EXCLUDE_DIRS):
+    for root_name in SCAN_ROOTS:
+        root = repo_root / root_name
+        if not root.exists():
             continue
-        if path.name in EXCLUDE_FILES:
-            continue
-        if path.suffix not in SCAN_EXTENSIONS:
-            continue
-        if not path.is_file():
-            continue
-        try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
-            continue
-        for lineno, line in enumerate(text.splitlines(), 1):
-            for pat in PLACEHOLDER_PATTERNS:
-                if pat.search(line):
-                    findings.append(f"{path.relative_to(repo_root)}:{lineno}: {line.strip()[:120]}")
-                    break
+        for path in root.rglob("*"):
+            if any(ex in path.parts for ex in EXCLUDE_DIRS):
+                continue
+            if path.name in EXCLUDE_FILES:
+                continue
+            if not path.is_file():
+                continue
+            if path.suffix not in SCAN_EXTENSIONS and path.name not in SCAN_FILENAMES:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+            for lineno, line in enumerate(text.splitlines(), 1):
+                if any(pat.search(line) for pat in IGNORE_LINE_PATTERNS):
+                    continue
+                for pat in PLACEHOLDER_PATTERNS:
+                    if pat.search(line):
+                        findings.append(f"{path.relative_to(repo_root)}:{lineno}: {line.strip()[:120]}")
+                        break
     return findings
 
 

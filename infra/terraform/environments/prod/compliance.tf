@@ -45,6 +45,6 @@ module "prod_backups" {
 module "prod_waf" {
   source      = "../../modules/network"
   environment = var.environment
-  vpc_id      = module.networking.vpc_id                        # Assumes a networking module output
-  subnet_ids  = module.networking.public_subnet_ids             # Assumes networking module public subnets
+  vpc_id      = module.networking.vpc_id            # Assumes a networking module output
+  subnet_ids  = module.networking.public_subnet_ids # Assumes networking module public subnets
 }

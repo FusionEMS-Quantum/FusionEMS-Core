@@ -7,7 +7,7 @@ resource "aws_wafv2_web_acl" "main" {
   default_action {
     allow {}
   }
-  
+
   rule {
     name     = "AWSManagedRulesCommonRuleSet"
     priority = 1

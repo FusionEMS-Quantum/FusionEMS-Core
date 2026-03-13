@@ -71,29 +71,29 @@ function truncateId(id: string): string {
 }
 
 const TRANSPORT_STYLE: Record<TransportMode, { label: string; color: string; bg: string }> = {
-  ground:    { label: 'GROUND',     color: 'var(--color-status-info)', bg: 'rgba(66,165,245,0.12)'   },
-  rotor:     { label: 'ROTOR',      color: 'var(--q-orange)', bg: 'rgba(255,106,0,0.12)'   },
-  fixed_wing:{ label: 'FIXED WING', color: 'var(--color-system-compliance)', bg: 'rgba(206,147,216,0.12)'  },
+  ground: { label: 'GROUND', color: 'var(--color-status-info)', bg: 'rgba(66,165,245,0.12)' },
+  rotor: { label: 'ROTOR', color: 'var(--q-orange)', bg: 'rgba(255,106,0,0.12)' },
+  fixed_wing: { label: 'FIXED WING', color: 'var(--color-system-compliance)', bg: 'rgba(206,147,216,0.12)' },
 };
 
 const STATUS_FLOW: Record<string, string> = {
-  created:    'assigned',
-  assigned:   'en_route',
-  en_route:   'on_scene',
-  on_scene:   'transporting',
-  transporting:'arrived',
-  arrived:    'completed',
+  created: 'assigned',
+  assigned: 'en_route',
+  en_route: 'on_scene',
+  on_scene: 'transporting',
+  transporting: 'arrived',
+  arrived: 'completed',
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  created:     'rgba(255,255,255,0.5)',
-  assigned:    'var(--color-status-info)',
-  en_route:    'var(--color-status-warning)',
-  on_scene:    'var(--q-orange)',
-  transporting:'var(--color-system-compliance)',
-  arrived:     'var(--color-status-info)',
-  completed:   'var(--color-status-active)',
-  cancelled:   'var(--color-brand-red)',
+  created: 'rgba(255,255,255,0.5)',
+  assigned: 'var(--color-status-info)',
+  en_route: 'var(--color-status-warning)',
+  on_scene: 'var(--q-orange)',
+  transporting: 'var(--color-system-compliance)',
+  arrived: 'var(--color-status-info)',
+  completed: 'var(--color-status-active)',
+  cancelled: 'var(--color-brand-red)',
 };
 
 const CASE_STATUS_VARIANT_MAP: Record<string, StatusVariant> = {
@@ -123,6 +123,20 @@ function statusVariant(s: string): StatusVariant {
 
 function prioritySeverity(p: CasePriority): SeverityLevel {
   return CASE_PRIORITY_SEVERITY_MAP[p] ?? 'INFORMATIONAL';
+}
+
+function normalizeTransportMode(value: string): TransportMode {
+  if (value === 'ground' || value === 'rotor' || value === 'fixed_wing') {
+    return value;
+  }
+  return 'ground';
+}
+
+function normalizeCasePriority(value: string): CasePriority {
+  if (value === 'routine' || value === 'urgent' || value === 'emergent') {
+    return value;
+  }
+  return 'routine';
 }
 
 function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
@@ -266,8 +280,8 @@ export default function CasesPage() {
 
   const TABS: { id: TabId; label: string }[] = [
     { id: 'active', label: 'Active Cases' },
-    { id: 'new',    label: 'New Case'     },
-    { id: 'cms',    label: 'CMS Gate'     },
+    { id: 'new', label: 'New Case' },
+    { id: 'cms', label: 'CMS Gate' },
   ];
 
   // ── CMS form shared renderer ──
@@ -277,13 +291,13 @@ export default function CasesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(
             [
-              { key: 'patient_condition',   label: 'Patient Condition',   type: 'text' },
-              { key: 'transport_reason',    label: 'Transport Reason',    type: 'text' },
-              { key: 'origin_address',      label: 'Origin Address',      type: 'text' },
-              { key: 'destination_name',    label: 'Destination Name',    type: 'text' },
-              { key: 'primary_insurance_id',label: 'Primary Insurance ID',type: 'text' },
-              { key: 'medicare_id',         label: 'Medicare ID',         type: 'text' },
-              { key: 'medicaid_id',         label: 'Medicaid ID',         type: 'text' },
+              { key: 'patient_condition', label: 'Patient Condition', type: 'text' },
+              { key: 'transport_reason', label: 'Transport Reason', type: 'text' },
+              { key: 'origin_address', label: 'Origin Address', type: 'text' },
+              { key: 'destination_name', label: 'Destination Name', type: 'text' },
+              { key: 'primary_insurance_id', label: 'Primary Insurance ID', type: 'text' },
+              { key: 'medicare_id', label: 'Medicare ID', type: 'text' },
+              { key: 'medicaid_id', label: 'Medicaid ID', type: 'text' },
             ] as { key: keyof CMSGate; label: string; type: string }[]
           ).map(({ key, label, type }) => (
             <div key={key} className="flex flex-col gap-1">
@@ -315,11 +329,11 @@ export default function CasesPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-4">
           {(
             [
-              { key: 'pcs_on_file',                   label: 'PCS on file'                   },
-              { key: 'pcs_obtained',                  label: 'PCS obtained'                  },
-              { key: 'medical_necessity_documented',  label: 'Medical necessity documented'  },
-              { key: 'patient_signature',             label: 'Patient signature'             },
-              { key: 'signature_on_file',             label: 'Signature on file'             },
+              { key: 'pcs_on_file', label: 'PCS on file' },
+              { key: 'pcs_obtained', label: 'PCS obtained' },
+              { key: 'medical_necessity_documented', label: 'Medical necessity documented' },
+              { key: 'patient_signature', label: 'Patient signature' },
+              { key: 'signature_on_file', label: 'Signature on file' },
             ] as { key: keyof CMSGate; label: string }[]
           ).map(({ key, label }) => (
             <label key={key} className="flex items-center gap-2 cursor-pointer">
@@ -346,244 +360,245 @@ export default function CasesPage() {
 
       <TabPanel tabId="active" activeTab={activeTab}>
         <div>
-            {casesBusy && cases.length === 0 && (
-              <div className="p-6"><QuantumCardSkeleton /></div>
-            )}
-            {!casesBusy && cases.length === 0 && (
-              <p className="text-body text-[var(--color-text-muted)]">No active cases.</p>
-            )}
-            <div className="space-y-2">
-              {cases.map((c) => {
-                const tm = TRANSPORT_STYLE[c.transport_mode] ?? TRANSPORT_STYLE.ground;
-                const nextStatus = STATUS_FLOW[c.status];
-                const isExpanded = expandedId === c.case_id;
+          {casesBusy && cases.length === 0 && (
+            <div className="p-6"><QuantumCardSkeleton /></div>
+          )}
+          {!casesBusy && cases.length === 0 && (
+            <p className="text-body text-[var(--color-text-muted)]">No active cases.</p>
+          )}
+          <div className="space-y-2">
+            {cases.map((c) => {
+              const tm = TRANSPORT_STYLE[normalizeTransportMode(c.transport_mode)] ?? TRANSPORT_STYLE.ground;
+              const priority = normalizeCasePriority(c.priority);
+              const nextStatus = STATUS_FLOW[c.status];
+              const isExpanded = expandedId === c.case_id;
 
-                return (
+              return (
+                <div
+                  key={c.case_id}
+                  className="chamfer-8 overflow-hidden border border-[var(--color-border-default)]"
+                >
+                  {/* Row */}
                   <div
-                    key={c.case_id}
-                    className="chamfer-8 overflow-hidden border border-[var(--color-border-default)]"
+                    className="px-3 py-2.5 flex flex-wrap items-center gap-2 cursor-pointer"
+                    style={{ background: 'var(--color-bg-base)' }}
+                    onClick={() => setExpandedId(isExpanded ? null : c.case_id)}
                   >
-                    {/* Row */}
-                    <div
-                      className="px-3 py-2.5 flex flex-wrap items-center gap-2 cursor-pointer"
-                      style={{ background: 'var(--color-bg-base)' }}
-                      onClick={() => setExpandedId(isExpanded ? null : c.case_id)}
+                    <span
+                      className="text-xs font-mono font-semibold"
+                      style={{ color: 'var(--q-orange)' }}
+                      title={c.case_id}
                     >
-                      <span
-                        className="text-xs font-mono font-semibold"
-                        style={{ color: 'var(--q-orange)' }}
-                        title={c.case_id}
-                      >
-                        {truncateId(c.case_id)}
-                      </span>
-                      <Badge label={tm.label} color={tm.color} bg={tm.bg} />
-                      <StatusChip status={statusVariant(c.status)} size="sm">
-                        {c.status.replace(/_/g, ' ').toUpperCase()}
-                      </StatusChip>
-                      <SeverityBadge severity={prioritySeverity(c.priority)} size="sm" label={c.priority.toUpperCase()} />
-                      <span className="text-body ml-1 text-[var(--color-text-secondary)]">
-                        {c.patient_name ?? '—'}
-                      </span>
-                      <span className="text-micro ml-auto text-[var(--color-text-muted)]">
-                        {fmtTs(c.opened_at)}
-                      </span>
-                    </div>
+                      {truncateId(c.case_id)}
+                    </span>
+                    <Badge label={tm.label} color={tm.color} bg={tm.bg} />
+                    <StatusChip status={statusVariant(c.status)} size="sm">
+                      {c.status.replace(/_/g, ' ').toUpperCase()}
+                    </StatusChip>
+                    <SeverityBadge severity={prioritySeverity(priority)} size="sm" label={priority.toUpperCase()} />
+                    <span className="text-body ml-1 text-[var(--color-text-secondary)]">
+                      {c.patient_name ?? '—'}
+                    </span>
+                    <span className="text-micro ml-auto text-[var(--color-text-muted)]">
+                      {c.opened_at ? fmtTs(c.opened_at) : '—'}
+                    </span>
+                  </div>
 
-                    {/* Expanded panel */}
-                    {isExpanded && (
-                      <div
-                        className="px-4 py-3 space-y-3"
-                        style={{ background: 'var(--color-bg-input)', borderTop: '1px solid var(--color-border-default)' }}
-                      >
-                        {/* Linked IDs */}
-                        <div className="flex flex-wrap gap-4">
-                          {c.transport_request_id && (
-                            <div>
-                              <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">Transport Request ID</p>
-                              <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.transport_request_id}</p>
-                            </div>
-                          )}
-                          {c.cad_call_id && (
-                            <div>
-                              <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">CAD Call ID</p>
-                              <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.cad_call_id}</p>
-                            </div>
-                          )}
+                  {/* Expanded panel */}
+                  {isExpanded && (
+                    <div
+                      className="px-4 py-3 space-y-3"
+                      style={{ background: 'var(--color-bg-input)', borderTop: '1px solid var(--color-border-default)' }}
+                    >
+                      {/* Linked IDs */}
+                      <div className="flex flex-wrap gap-4">
+                        {c.transport_request_id && (
                           <div>
-                              <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">Full Case ID</p>
-                              <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.case_id}</p>
+                            <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">Transport Request ID</p>
+                            <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.transport_request_id}</p>
+                          </div>
+                        )}
+                        {c.cad_call_id && (
+                          <div>
+                            <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">CAD Call ID</p>
+                            <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.cad_call_id}</p>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-micro mb-0.5 text-[var(--color-text-muted)]">Full Case ID</p>
+                          <p className="text-xs font-mono text-[var(--color-text-secondary)]">{c.case_id}</p>
+                        </div>
+                      </div>
+
+                      {/* Timeline */}
+                      {Array.isArray(c.timeline) && c.timeline.length > 0 && (
+                        <div>
+                          <p className="text-micro mb-1.5 font-label text-[var(--color-text-muted)]">
+                            Timeline
+                          </p>
+                          <div className="relative pl-4 space-y-2">
+                            <div
+                              className="absolute left-1 top-0 bottom-0 w-px bg-[var(--color-border-default)]"
+                            />
+                            {c.timeline.map((ev, i) => (
+                              <div key={i} className="relative">
+                                <div
+                                  className="absolute -left-[13px] top-1 w-2 h-2 "
+                                  style={{ background: 'var(--q-orange)' }}
+                                />
+                                <p className="text-micro text-[var(--color-text-muted)]">
+                                  {fmtTs(ev.timestamp)}
+                                </p>
+                                <p className="text-body text-[var(--color-text-secondary)]">{ev.event}</p>
+                              </div>
+                            ))}
                           </div>
                         </div>
+                      )}
 
-                        {/* Timeline */}
-                        {Array.isArray(c.timeline) && c.timeline.length > 0 && (
-                          <div>
-                            <p className="text-micro mb-1.5 font-label text-[var(--color-text-muted)]">
-                              Timeline
-                            </p>
-                            <div className="relative pl-4 space-y-2">
-                              <div
-                                className="absolute left-1 top-0 bottom-0 w-px bg-[var(--color-border-default)]"
-                              />
-                              {c.timeline.map((ev, i) => (
-                                <div key={i} className="relative">
-                                  <div
-                                    className="absolute -left-[13px] top-1 w-2 h-2 "
-                                    style={{ background: 'var(--q-orange)' }}
-                                  />
-                                  <p className="text-micro text-[var(--color-text-muted)]">
-                                    {fmtTs(ev.timestamp)}
-                                  </p>
-                                  <p className="text-body text-[var(--color-text-secondary)]">{ev.event}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Status transition */}
-                        {nextStatus && (
-                          <button
-                            onClick={() => transitionStatus(c.case_id, nextStatus)}
-                            className="px-3 py-1 text-xs font-semibold chamfer-4"
-                            style={{
-                              color: statusColor(nextStatus),
-                              background: `${statusColor(nextStatus)}18`,
-                              border: `1px solid ${statusColor(nextStatus)}33`,
-                            }}
-                          >
-                            Advance to {nextStatus.replace(/_/g, ' ').toUpperCase()}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      {/* Status transition */}
+                      {nextStatus && (
+                        <button
+                          onClick={() => transitionStatus(c.case_id, nextStatus)}
+                          className="px-3 py-1 text-xs font-semibold chamfer-4"
+                          style={{
+                            color: statusColor(nextStatus),
+                            background: `${statusColor(nextStatus)}18`,
+                            border: `1px solid ${statusColor(nextStatus)}33`,
+                          }}
+                        >
+                          Advance to {nextStatus.replace(/_/g, ' ').toUpperCase()}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        </div>
       </TabPanel>
 
       <TabPanel tabId="new" activeTab={activeTab}>
-          <div className="space-y-4">
-            <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
-              <p className="text-body font-label mb-3 text-[var(--color-text-secondary)]">
-                New Transport Case
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                <div className="flex flex-col gap-1">
+        <div className="space-y-4">
+          <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
+            <p className="text-body font-label mb-3 text-[var(--color-text-secondary)]">
+              New Transport Case
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div className="flex flex-col gap-1">
                 <label className="text-body text-[var(--color-text-muted)]">Transport Mode</label>
-                  <select
-                    className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
-                    value={newCase.transport_mode}
-                    onChange={(e) => setNewCase((p) => ({ ...p, transport_mode: e.target.value as TransportMode }))}
-                  >
-                    <option value="ground">Ground</option>
-                    <option value="rotor">Rotor</option>
-                    <option value="fixed_wing">Fixed Wing</option>
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                <label className="text-body text-[var(--color-text-muted)]">Priority</label>
-                  <select
-                    className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
-                    value={newCase.priority}
-                    onChange={(e) => setNewCase((p) => ({ ...p, priority: e.target.value as CasePriority }))}
-                  >
-                    <option value="routine">Routine</option>
-                    <option value="urgent">Urgent</option>
-                    <option value="emergent">Emergent</option>
-                  </select>
-                </div>
-                {(
-                  [
-                    { key: 'patient_name',          label: 'Patient Name'           },
-                    { key: 'origin_address',         label: 'Origin Address'         },
-                    { key: 'destination_address',    label: 'Destination Address'    },
-                    { key: 'transport_request_id',   label: 'Transport Request ID (optional)' },
-                    { key: 'cad_call_id',            label: 'CAD Call ID (optional)' },
-                  ] as { key: keyof typeof newCase; label: string }[]
-                ).map(({ key, label }) => (
-                  <div key={key} className="flex flex-col gap-1">
-                    <label className="text-body text-[var(--color-text-muted)]">{label}</label>
-                    <input
-                      type="text"
-                      className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
-                      value={newCase[key] as string}
-                      onChange={(e) => setNewCase((p) => ({ ...p, [key]: e.target.value }))}
-                    />
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={submitNewCase}
-                disabled={newCaseBusy}
-                className="px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
-                style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
-              >
-                {newCaseBusy ? 'Creating...' : 'Create Case'}
-              </button>
-            </div>
-
-            {/* CMS gate shown immediately after creation */}
-            {showCmsAfterNew && createdCaseId && (
-              <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-brand-orange/20">
-                <p className="text-body font-label mb-1 text-brand-orange">
-                  CMS Gate — Case {createdCaseId}
-                </p>
-                <p className="text-micro mb-3 text-[var(--color-text-muted)]">
-                  Complete and evaluate the CMS gate for the newly created case.
-                </p>
-                <CmsForm />
-                <button
-                  onClick={async () => {
-                    setCmsCaseId(createdCaseId);
-                    await evaluateCms();
-                  }}
-                  disabled={cmsBusy}
-                  className="mt-3 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
-                  style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
-                >
-                  {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
-                </button>
-                {cmsResult && <CmsResultPanel result={cmsResult} />}
-              </div>
-            )}
-          </div>
-      </TabPanel>
-
-      <TabPanel tabId="cms" activeTab={activeTab}>
-          <div className="space-y-4">
-            <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
-              <p className="text-body font-label mb-3 text-[var(--color-text-secondary)]">
-                CMS Gate Evaluation
-              </p>
-
-              <div className="flex flex-col gap-1 mb-4 max-w-xs">
-                <label className="text-body text-[var(--color-text-muted)]">Case ID</label>
-                <input
-                  type="text"
+                <select
                   className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
-                  placeholder="Enter case ID"
-                  value={cmsCaseId}
-                  onChange={(e) => setCmsCaseId(e.target.value)}
-                />
+                  value={newCase.transport_mode}
+                  onChange={(e) => setNewCase((p) => ({ ...p, transport_mode: e.target.value as TransportMode }))}
+                >
+                  <option value="ground">Ground</option>
+                  <option value="rotor">Rotor</option>
+                  <option value="fixed_wing">Fixed Wing</option>
+                </select>
               </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-body text-[var(--color-text-muted)]">Priority</label>
+                <select
+                  className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
+                  value={newCase.priority}
+                  onChange={(e) => setNewCase((p) => ({ ...p, priority: e.target.value as CasePriority }))}
+                >
+                  <option value="routine">Routine</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="emergent">Emergent</option>
+                </select>
+              </div>
+              {(
+                [
+                  { key: 'patient_name', label: 'Patient Name' },
+                  { key: 'origin_address', label: 'Origin Address' },
+                  { key: 'destination_address', label: 'Destination Address' },
+                  { key: 'transport_request_id', label: 'Transport Request ID (optional)' },
+                  { key: 'cad_call_id', label: 'CAD Call ID (optional)' },
+                ] as { key: keyof typeof newCase; label: string }[]
+              ).map(({ key, label }) => (
+                <div key={key} className="flex flex-col gap-1">
+                  <label className="text-body text-[var(--color-text-muted)]">{label}</label>
+                  <input
+                    type="text"
+                    className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
+                    value={newCase[key] as string}
+                    onChange={(e) => setNewCase((p) => ({ ...p, [key]: e.target.value }))}
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={submitNewCase}
+              disabled={newCaseBusy}
+              className="px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
+              style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
+            >
+              {newCaseBusy ? 'Creating...' : 'Create Case'}
+            </button>
+          </div>
 
+          {/* CMS gate shown immediately after creation */}
+          {showCmsAfterNew && createdCaseId && (
+            <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-brand-orange/20">
+              <p className="text-body font-label mb-1 text-brand-orange">
+                CMS Gate — Case {createdCaseId}
+              </p>
+              <p className="text-micro mb-3 text-[var(--color-text-muted)]">
+                Complete and evaluate the CMS gate for the newly created case.
+              </p>
               <CmsForm />
-
               <button
-                onClick={evaluateCms}
+                onClick={async () => {
+                  setCmsCaseId(createdCaseId);
+                  await evaluateCms();
+                }}
                 disabled={cmsBusy}
-                className="mt-4 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
+                className="mt-3 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
                 style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
               >
                 {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
               </button>
+              {cmsResult && <CmsResultPanel result={cmsResult} />}
+            </div>
+          )}
+        </div>
+      </TabPanel>
+
+      <TabPanel tabId="cms" activeTab={activeTab}>
+        <div className="space-y-4">
+          <div className="p-4 chamfer-8 bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]">
+            <p className="text-body font-label mb-3 text-[var(--color-text-secondary)]">
+              CMS Gate Evaluation
+            </p>
+
+            <div className="flex flex-col gap-1 mb-4 max-w-xs">
+              <label className="text-body text-[var(--color-text-muted)]">Case ID</label>
+              <input
+                type="text"
+                className="bg-[var(--color-bg-base)] chamfer-4 border border-[var(--color-border-default)] px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] outline-none"
+                placeholder="Enter case ID"
+                value={cmsCaseId}
+                onChange={(e) => setCmsCaseId(e.target.value)}
+              />
             </div>
 
-            {cmsResult && <CmsResultPanel result={cmsResult} />}
+            <CmsForm />
+
+            <button
+              onClick={evaluateCms}
+              disabled={cmsBusy}
+              className="mt-4 px-3 py-1.5 text-xs font-semibold chamfer-4 disabled:opacity-40"
+              style={{ background: 'var(--q-orange)', color: 'var(--color-text-primary)' }}
+            >
+              {cmsBusy ? 'Evaluating...' : 'Evaluate CMS Gate'}
+            </button>
           </div>
+
+          {cmsResult && <CmsResultPanel result={cmsResult} />}
+        </div>
       </TabPanel>
 
     </ModuleDashboardShell>

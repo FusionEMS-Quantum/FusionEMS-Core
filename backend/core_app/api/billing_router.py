@@ -490,17 +490,6 @@ async def create_payment_link(
     return {"payment_link": link_row, "stripe": sess}
 
 
-@router.post("/webhooks/stripe")
-async def stripe_webhook(
-    request: Request,
-    current: CurrentUser = Depends(
-        get_current_user
-    ),  # protected endpoint; public webhook should be separate path in pricing_router
-    db: Session = Depends(db_session_dependency),
-):
-    raise HTTPException(status_code=400, detail="Use /api/v1/webhooks/stripe")
-
-
 @router.get("/ar-aging")
 async def get_ar_aging(
     current: CurrentUser = Depends(get_current_user),

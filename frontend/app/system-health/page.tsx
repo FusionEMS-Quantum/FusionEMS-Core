@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ModuleDashboardShell } from "@/components/shells/PageShells";
 import { normalizeSeverity } from "@/lib/design-system/severity";
 import {
+  getPlatformLiveStatus,
   getStandaloneSystemHealthAlerts,
   getStandaloneSystemHealthBackupsStatus,
   getStandaloneSystemHealthDashboard,
@@ -55,31 +56,31 @@ function alertSeverityColor(rawSeverity: string): string {
 }
 
 const FEATURES = [
-  "ECS health monitor","Container restart tracker","CPU usage analytics","Memory usage analytics",
-  "RDS health monitor","Redis latency tracker","CloudFront status","API latency dashboard",
-  "Error rate tracker","AI GPU utilization","Auto-scaling threshold","Self-healing restart engine",
-  "Failed deployment rollback","Log anomaly detection","Security alert engine","Intrusion detection",
-  "IAM policy drift","SSL expiration monitor","Domain status tracker","DB replication monitor",
-  "Backup verification","Restore simulation","Export failure monitor","Stripe webhook health",
-  "Cognito auth failure","JWT validation errors","API rate limit monitor","Traffic spike detector",
-  "Cost anomaly detection","Infrastructure drift","Auto-scale optimizer","AI latency monitor",
-  "Error clustering engine","Crash recovery workflow","Health summary digest","Real-time alert routing",
-  "Founder push alerts","Incident escalation","Service dependency map","Microservice health graph",
-  "Self-healing threshold","Resource exhaustion predictor","Uptime SLA tracker","Service degradation",
-  "Failover readiness test","Disaster recovery checklist","Log retention policy","Compliance monitoring",
-  "Security vulnerability scanner","Dependency version alert","Encryption integrity","Key rotation tracker",
-  "API contract validation","Alert fatigue minimizer","Service restart automation","Load balancing health",
-  "Backup frequency monitor","Data corruption detection","CloudFormation drift","Multi-AZ health",
-  "Network latency analytics","Throttling alert system","Application error dashboard","DB connection pool",
-  "Resource usage forecast","Budget usage monitor","Cost by tenant","Infrastructure audit",
-  "Incident postmortem builder","Alert priority scoring","Service dependency chaining","Container image scan",
-  "Secrets rotation reminder","AI hallucination confidence","System-of-record validation","Cache hit ratio",
-  "Redundancy status tracker","Cloud resource inventory","Security patch tracker","System update scheduler",
-  "Service capacity planning","Latency heatmap","Health KPI trendline","SLA breach alert",
-  "Audit log integrity","Anomaly detection AI","RTO tracker","Health alert simulation",
-  "Tenant outage isolation","Service error forecasting","Root cause clustering","Automated RCA report",
-  "Emergency lock mode","Production change approval","Monitoring coverage %","Uptime executive report",
-  "Self-healing audit","Recovery confidence score","Real-time ops command","Enterprise resilience engine",
+  "ECS health monitor", "Container restart tracker", "CPU usage analytics", "Memory usage analytics",
+  "RDS health monitor", "Redis latency tracker", "CloudFront status", "API latency dashboard",
+  "Error rate tracker", "AI GPU utilization", "Auto-scaling threshold", "Self-healing restart engine",
+  "Failed deployment rollback", "Log anomaly detection", "Security alert engine", "Intrusion detection",
+  "IAM policy drift", "SSL expiration monitor", "Domain status tracker", "DB replication monitor",
+  "Backup verification", "Restore simulation", "Export failure monitor", "Stripe webhook health",
+  "Cognito auth failure", "JWT validation errors", "API rate limit monitor", "Traffic spike detector",
+  "Cost anomaly detection", "Infrastructure drift", "Auto-scale optimizer", "AI latency monitor",
+  "Error clustering engine", "Crash recovery workflow", "Health summary digest", "Real-time alert routing",
+  "Founder push alerts", "Incident escalation", "Service dependency map", "Microservice health graph",
+  "Self-healing threshold", "Resource exhaustion predictor", "Uptime SLA tracker", "Service degradation",
+  "Failover readiness test", "Disaster recovery checklist", "Log retention policy", "Compliance monitoring",
+  "Security vulnerability scanner", "Dependency version alert", "Encryption integrity", "Key rotation tracker",
+  "API contract validation", "Alert fatigue minimizer", "Service restart automation", "Load balancing health",
+  "Backup frequency monitor", "Data corruption detection", "CloudFormation drift", "Multi-AZ health",
+  "Network latency analytics", "Throttling alert system", "Application error dashboard", "DB connection pool",
+  "Resource usage forecast", "Budget usage monitor", "Cost by tenant", "Infrastructure audit",
+  "Incident postmortem builder", "Alert priority scoring", "Service dependency chaining", "Container image scan",
+  "Secrets rotation reminder", "AI hallucination confidence", "System-of-record validation", "Cache hit ratio",
+  "Redundancy status tracker", "Cloud resource inventory", "Security patch tracker", "System update scheduler",
+  "Service capacity planning", "Latency heatmap", "Health KPI trendline", "SLA breach alert",
+  "Audit log integrity", "Anomaly detection AI", "RTO tracker", "Health alert simulation",
+  "Tenant outage isolation", "Service error forecasting", "Root cause clustering", "Automated RCA report",
+  "Emergency lock mode", "Production change approval", "Monitoring coverage %", "Uptime executive report",
+  "Self-healing audit", "Recovery confidence score", "Real-time ops command", "Enterprise resilience engine",
 ];
 
 export default function SystemHealthPage() {
@@ -91,6 +92,7 @@ export default function SystemHealthPage() {
   const [ssl, setSsl] = useState<{ domains?: Array<{ domain: string; expires_in_days: number; status: string }> }>({});
   const [backups, setBackups] = useState<Record<string, unknown>>({});
   const [coverage, setCoverage] = useState<Record<string, unknown>>({});
+  const [liveStatus, setLiveStatus] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     void Promise.allSettled([
@@ -102,6 +104,7 @@ export default function SystemHealthPage() {
       getStandaloneSystemHealthSslExpiration(),
       getStandaloneSystemHealthBackupsStatus(),
       getStandaloneSystemHealthMonitoringCoverage(),
+      getPlatformLiveStatus(),
     ]).then((results) => {
       if (results[0].status === "fulfilled") setDash(results[0].value);
       if (results[1].status === "fulfilled") setServices(results[1].value);
@@ -111,6 +114,7 @@ export default function SystemHealthPage() {
       if (results[5].status === "fulfilled") setSsl(results[5].value as { domains?: Array<{ domain: string; expires_in_days: number; status: string }> });
       if (results[6].status === "fulfilled") setBackups(results[6].value);
       if (results[7].status === "fulfilled") setCoverage(results[7].value);
+      if (results[8].status === "fulfilled") setLiveStatus(results[8].value);
 
       results.forEach((result) => {
         if (result.status === "rejected") {
@@ -121,18 +125,41 @@ export default function SystemHealthPage() {
   }, []);
 
   const fmtN = (v: unknown) => typeof v === "number" ? v.toLocaleString() : (v != null ? String(v) : "—");
+  const asObj = (v: unknown): Record<string, unknown> => (
+    typeof v === "object" && v !== null && !Array.isArray(v)
+      ? (v as Record<string, unknown>)
+      : {}
+  );
   const overallStatus = dash.overall_status != null ? String(dash.overall_status) : "";
-  const overallColor = overallStatus === "healthy" ? "var(--color-status-active)" : overallStatus === "warning" ? "var(--color-status-warning)" : overallStatus === "degraded" ? "var(--color-brand-red)" : "var(--color-text-muted)";
+  const liveOverallStatus = String(liveStatus.overall_status ?? "");
+  const commandOverallStatus = liveOverallStatus || overallStatus;
+  const overallColor = commandOverallStatus === "healthy"
+    ? "var(--color-status-active)"
+    : commandOverallStatus === "warning"
+      ? "var(--color-status-warning)"
+      : commandOverallStatus === "degraded" || commandOverallStatus === "blocked"
+        ? "var(--color-brand-red)"
+        : "var(--color-text-muted)";
   const resScore = typeof resilience.resilience_score === "number" ? resilience.resilience_score : 0;
   const resGrade = String(resilience.grade ?? "—");
   const resColor = resScore >= 90 ? "var(--color-status-active)" : resScore >= 80 ? "var(--color-status-active)" : resScore >= 70 ? "var(--color-status-warning)" : "var(--color-brand-red)";
+  const auth = asObj(liveStatus.auth);
+  const microsoft = asObj(auth.microsoft);
+  const release = asObj(liveStatus.release);
+  const releaseBlockers = Array.isArray(liveStatus.release_blockers)
+    ? liveStatus.release_blockers.map((item) => String(item))
+    : [];
+  const authHealthy = releaseBlockers.length === 0;
+  const microsoftHealthy = Boolean(microsoft.healthy);
+  const rollbackReady = Boolean(release.rollback_ready);
+  const releaseVersion = String(release.version ?? "unknown");
 
   const handleResolveAlert = async (id: string) => {
     try {
       await resolveStandaloneSystemHealthAlert(id);
       setAlerts(prev => ({
         ...prev,
-        alerts: prev.alerts?.map(a => a.id === id ? { ...a, data: { ...(a.data as Record<string,unknown>), status: "resolved" } } : a),
+        alerts: prev.alerts?.map(a => a.id === id ? { ...a, data: { ...(a.data as Record<string, unknown>), status: "resolved" } } : a),
       }));
     } catch (err: unknown) {
       console.warn("[system-health]", err);
@@ -148,127 +175,204 @@ export default function SystemHealthPage() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 px-4 py-2 chamfer-4 border" style={{ borderColor: `color-mix(in srgb, ${overallColor} 27%, transparent)`, background: `color-mix(in srgb, ${overallColor} 7%, transparent)` }}>
             <span className="w-2 h-2  animate-pulse" style={{ background: overallColor }} />
-            <span className="text-body font-label uppercase tracking-wider" style={{ color: overallColor }}>{overallStatus || "Checking…"}</span>
+            <span className="text-body font-label uppercase tracking-wider" style={{ color: overallColor }}>{commandOverallStatus || "Checking…"}</span>
           </div>
         </div>
       }
     >
       <div className="space-y-6">
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-        <KpiCard label="Active Alerts" value={fmtN(dash.total_active_alerts)} color="var(--color-status-warning)" />
-        <KpiCard label="Critical" value={fmtN(dash.critical_alerts)} color="var(--color-brand-red)" />
-        <KpiCard label="Uptime SLA" value={uptime.estimated_uptime_pct != null ? `${uptime.estimated_uptime_pct}%` : "—"} color="var(--color-status-active)" sub={`Target: ${uptime.sla_target_pct ?? 99.9}%`} />
-        <KpiCard label="Resilience Score" value={resScore > 0 ? `${resScore}` : "—"} color={resColor} sub={`Grade: ${resGrade}`} />
-        <KpiCard label="Services Monitored" value={fmtN(dash.services_monitored ? (dash.services_monitored as string[]).length : 0)} />
-        <KpiCard label="Monitoring Coverage" value={coverage.coverage_pct != null ? `${coverage.coverage_pct}%` : "—"} color="var(--color-status-info)" />
-        <KpiCard label="SLA Breach" value={uptime.sla_breach ? "YES" : "NO"} color={uptime.sla_breach ? "var(--color-brand-red)" : "var(--color-status-active)"} />
-        <KpiCard label="Downtime Incidents" value={fmtN(uptime.downtime_incidents)} color={Number(uptime.downtime_incidents) > 0 ? "var(--color-brand-red)" : "var(--color-status-active)"} />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Service Health */}
-        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Service Health Status</div>
-          {services.map((svc, i) => (
-            <ServiceRow key={i} service={String(svc.service)} status={String(svc.status)} metric={String(svc.metric)} value={String(svc.value)} />
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+          <KpiCard label="Active Alerts" value={fmtN(dash.total_active_alerts)} color="var(--color-status-warning)" />
+          <KpiCard label="Critical" value={fmtN(dash.critical_alerts)} color="var(--color-brand-red)" />
+          <KpiCard label="Uptime SLA" value={uptime.estimated_uptime_pct != null ? `${uptime.estimated_uptime_pct}%` : "—"} color="var(--color-status-active)" sub={`Target: ${uptime.sla_target_pct ?? 99.9}%`} />
+          <KpiCard label="Resilience Score" value={resScore > 0 ? `${resScore}` : "—"} color={resColor} sub={`Grade: ${resGrade}`} />
+          <KpiCard label="Services Monitored" value={fmtN(dash.services_monitored ? (dash.services_monitored as string[]).length : 0)} />
+          <KpiCard label="Monitoring Coverage" value={coverage.coverage_pct != null ? `${coverage.coverage_pct}%` : "—"} color="var(--color-status-info)" />
+          <KpiCard label="SLA Breach" value={uptime.sla_breach ? "YES" : "NO"} color={uptime.sla_breach ? "var(--color-brand-red)" : "var(--color-status-active)"} />
+          <KpiCard label="Downtime Incidents" value={fmtN(uptime.downtime_incidents)} color={Number(uptime.downtime_incidents) > 0 ? "var(--color-brand-red)" : "var(--color-status-active)"} />
         </div>
 
-        {/* SSL & Backups */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+          <KpiCard
+            label="Live Status"
+            value={commandOverallStatus ? commandOverallStatus.toUpperCase() : "CHECKING"}
+            color={overallColor}
+            sub="Canonical platform trust state"
+          />
+          <KpiCard
+            label="Auth Path"
+            value={authHealthy ? "HEALTHY" : "BLOCKED"}
+            color={authHealthy ? "var(--color-status-active)" : "var(--color-brand-red)"}
+            sub={`Mode: ${String(auth.auth_mode ?? "unknown")}`}
+          />
+          <KpiCard
+            label="Microsoft Sign-In"
+            value={microsoftHealthy ? "HEALTHY" : "DEGRADED"}
+            color={microsoftHealthy ? "var(--color-status-active)" : "var(--color-brand-red)"}
+            sub={String(microsoft.tenant_valid) === "true" ? "Tenant validated" : "Tenant invalid or placeholder"}
+          />
+          <KpiCard
+            label="Release Version"
+            value={releaseVersion.toUpperCase()}
+            color={releaseVersion === "unknown" ? "var(--color-brand-red)" : "var(--color-status-info)"}
+            sub={`Deploy: ${String(release.deployment_id ?? "n/a")}`}
+          />
+          <KpiCard
+            label="Rollback Readiness"
+            value={rollbackReady ? "READY" : "NOT READY"}
+            color={rollbackReady ? "var(--color-status-active)" : "var(--color-brand-red)"}
+            sub="Required for release cutover"
+          />
+        </div>
+
+        {releaseBlockers.length > 0 && (
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-brand-red)]/35 chamfer-8 p-4">
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-brand-red)] mb-2">Release Block Reasons</div>
+            <div className="space-y-1.5">
+              {releaseBlockers.map((reason) => (
+                <div key={reason} className="text-body text-[var(--color-text-secondary)] border-b border-[var(--color-border-default)] last:border-0 py-1.5">
+                  {reason}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Service Health */}
           <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
-            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">SSL Certificate Status</div>
-            {ssl.domains?.map(d => (
-              <div key={d.domain} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
-                <span className="text-body text-[var(--color-text-secondary)] truncate">{d.domain}</span>
-                <span className="text-body font-label" style={{ color: d.expires_in_days < 30 ? "var(--color-brand-red)" : d.expires_in_days < 60 ? "var(--color-status-warning)" : "var(--color-status-active)" }}>
-                  {d.expires_in_days}d
-                </span>
-              </div>
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Service Health Status</div>
+            {services.map((svc, i) => (
+              <ServiceRow key={i} service={String(svc.service)} status={String(svc.status)} metric={String(svc.metric)} value={String(svc.value)} />
             ))}
           </div>
-          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
-            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Backup Status</div>
-            {["rds_backup", "s3_backup"].map(key => {
-              const b = (backups as Record<string, Record<string, unknown>>)[key];
-              return b ? (
-                <div key={key} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
-                  <span className="text-body text-[var(--color-text-secondary)] uppercase">{key.replace("_", " ")}</span>
-                  <span className="text-body font-bold" style={{ color: String(b.status) === "healthy" ? "var(--color-status-active)" : "var(--color-brand-red)" }}>{String(b.status)}</span>
+
+          {/* SSL & Backups */}
+          <div className="space-y-4">
+            <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+              <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">SSL Certificate Status</div>
+              {ssl.domains?.map(d => (
+                <div key={d.domain} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
+                  <span className="text-body text-[var(--color-text-secondary)] truncate">{d.domain}</span>
+                  <span className="text-body font-label" style={{ color: d.expires_in_days < 30 ? "var(--color-brand-red)" : d.expires_in_days < 60 ? "var(--color-status-warning)" : "var(--color-status-active)" }}>
+                    {d.expires_in_days}d
+                  </span>
                 </div>
-              ) : null;
+              ))}
+            </div>
+            <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+              <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Backup Status</div>
+              {["rds_backup", "s3_backup"].map(key => {
+                const b = (backups as Record<string, Record<string, unknown>>)[key];
+                return b ? (
+                  <div key={key} className="flex items-center justify-between py-1.5 border-b border-[var(--color-border-default)] last:border-0">
+                    <span className="text-body text-[var(--color-text-secondary)] uppercase">{key.replace("_", " ")}</span>
+                    <span className="text-body font-bold" style={{ color: String(b.status) === "healthy" ? "var(--color-status-active)" : "var(--color-brand-red)" }}>{String(b.status)}</span>
+                  </div>
+                ) : null;
+              })}
+            </div>
+          </div>
+
+          {/* Active Alerts */}
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Active Alerts · {fmtN(alerts.total)}</div>
+            {alerts.alerts?.slice(0, 8).map((alert, i) => {
+              const d = alert.data as Record<string, unknown>;
+              const alertSeverity = normalizeSeverity(String(d.severity ?? "LOW"));
+              const sevColor = alertSeverityColor(alertSeverity);
+              return (
+                <div key={i} className="flex items-start gap-2 py-2 border-b border-[var(--color-border-default)] last:border-0">
+                  <span className="w-1.5 h-1.5  mt-1 flex-shrink-0" style={{ background: sevColor }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-body text-[var(--color-text-secondary)] truncate">{String(d.message ?? d.service ?? "Alert")}</div>
+                    <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "unknown")}</div>
+                  </div>
+                  {String(d.status) === "active" && (
+                    <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-[var(--color-status-active)]/30 text-[var(--color-status-active)] chamfer-4 hover:bg-[var(--color-status-active)]/10 transition-colors flex-shrink-0">
+                      Resolve
+                    </button>
+                  )}
+                </div>
+              );
             })}
+            {!alerts.alerts?.length && (
+              <div className="flex items-center gap-2 py-3">
+                <span className="w-2 h-2  bg-status-active" />
+                <span className="text-body text-[var(--color-status-active)] font-label">All Systems Operational</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Active Alerts */}
-        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Active Alerts · {fmtN(alerts.total)}</div>
-          {alerts.alerts?.slice(0, 8).map((alert, i) => {
-            const d = alert.data as Record<string, unknown>;
-            const alertSeverity = normalizeSeverity(String(d.severity ?? "LOW"));
-            const sevColor = alertSeverityColor(alertSeverity);
-            return (
-              <div key={i} className="flex items-start gap-2 py-2 border-b border-[var(--color-border-default)] last:border-0">
-                <span className="w-1.5 h-1.5  mt-1 flex-shrink-0" style={{ background: sevColor }} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-body text-[var(--color-text-secondary)] truncate">{String(d.message ?? d.service ?? "Alert")}</div>
-                  <div className="text-micro" style={{ color: sevColor }}>{alertSeverity} · {String(d.service ?? "unknown")}</div>
+        {/* Resilience Score Meter */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5">
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-4">Enterprise Resilience Score</div>
+            <div className="flex items-center gap-6">
+              <div className="relative w-24 h-24 flex-shrink-0">
+                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+                  <motion.circle cx="50" cy="50" r="42" fill="none" stroke={resColor} strokeWidth="8"
+                    strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42}`}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - resScore / 100) }}
+                    transition={{ duration: 1.2, ease: "easeOut" }} />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-black" style={{ color: resColor }}>{resScore}</span>
+                  <span className="text-micro font-bold" style={{ color: resColor }}>{resGrade}</span>
                 </div>
-                {String(d.status) === "active" && (
-                  <button onClick={() => handleResolveAlert(String(alert.id))} className="text-micro px-1.5 py-0.5 border border-[var(--color-status-active)]/30 text-[var(--color-status-active)] chamfer-4 hover:bg-[var(--color-status-active)]/10 transition-colors flex-shrink-0">
-                    Resolve
-                  </button>
-                )}
               </div>
-            );
-          })}
-          {!alerts.alerts?.length && (
-            <div className="flex items-center gap-2 py-3">
-              <span className="w-2 h-2  bg-status-active" />
-              <span className="text-body text-[var(--color-status-active)] font-label">All Systems Operational</span>
+              <div className="flex-1 space-y-2">
+                {[
+                  { label: "Service Health", pct: 100 },
+                  { label: "Backup Coverage", pct: 100 },
+                  { label: "SSL Valid", pct: 100 },
+                  { label: "Alert Response", pct: Math.max(100 - (Number(dash.critical_alerts) * 15), 0) },
+                  { label: "Monitoring Coverage", pct: Number(coverage.coverage_pct ?? 0) },
+                ].map(item => (
+                  <div key={item.label}>
+                    <div className="flex justify-between text-micro mb-0.5">
+                      <span className="text-[var(--color-text-muted)]">{item.label}</span>
+                      <span className="text-[var(--color-text-primary)] font-label">{item.pct}%</span>
+                    </div>
+                    <div className="h-1 bg-[rgba(255,255,255,0.06)]  overflow-hidden">
+                      <motion.div className="h-full " style={{ background: item.pct >= 90 ? "var(--color-status-active)" : item.pct >= 70 ? "var(--color-status-warning)" : "var(--color-brand-red)" }}
+                        initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 0.8 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Resilience Score Meter */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5">
-          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-4">Enterprise Resilience Score</div>
-          <div className="flex items-center gap-6">
-            <div className="relative w-24 h-24 flex-shrink-0">
-              <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-                <motion.circle cx="50" cy="50" r="42" fill="none" stroke={resColor} strokeWidth="8"
-                  strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 42}`}
-                  initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
-                  animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - resScore / 100) }}
-                  transition={{ duration: 1.2, ease: "easeOut" }} />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-black" style={{ color: resColor }}>{resScore}</span>
-                <span className="text-micro font-bold" style={{ color: resColor }}>{resGrade}</span>
-              </div>
-            </div>
-            <div className="flex-1 space-y-2">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
+            <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Self-Healing Engine Status</div>
+            <div className="space-y-2">
               {[
-                { label: "Service Health", pct: 100 },
-                { label: "Backup Coverage", pct: 100 },
-                { label: "SSL Valid", pct: 100 },
-                { label: "Alert Response", pct: Math.max(100 - (Number(dash.critical_alerts) * 15), 0) },
-                { label: "Monitoring Coverage", pct: Number(coverage.coverage_pct ?? 0) },
+                { label: "Auto-restart on crash", status: "active" },
+                { label: "Failed deployment rollback", status: "active" },
+                { label: "Log anomaly detection", status: "active" },
+                { label: "Security alert engine", status: "active" },
+                { label: "IAM drift detection", status: "active" },
+                { label: "Traffic spike auto-scale", status: "active" },
+                { label: "Cost anomaly detection", status: "active" },
+                { label: "Root cause clustering", status: "active" },
+                { label: "Automated RCA reporting", status: "active" },
+                { label: "Emergency lock mode", status: "standby" },
               ].map(item => (
-                <div key={item.label}>
-                  <div className="flex justify-between text-micro mb-0.5">
-                    <span className="text-[var(--color-text-muted)]">{item.label}</span>
-                    <span className="text-[var(--color-text-primary)] font-label">{item.pct}%</span>
-                  </div>
-                  <div className="h-1 bg-[rgba(255,255,255,0.06)]  overflow-hidden">
-                    <motion.div className="h-full " style={{ background: item.pct >= 90 ? "var(--color-status-active)" : item.pct >= 70 ? "var(--color-status-warning)" : "var(--color-brand-red)" }}
-                      initial={{ width: 0 }} animate={{ width: `${item.pct}%` }} transition={{ duration: 0.8 }} />
-                  </div>
+                <div key={item.label} className="flex items-center justify-between py-1">
+                  <span className="text-body text-[var(--color-text-secondary)]">{item.label}</span>
+                  <span className="text-micro px-2 py-0.5 chamfer-4 font-bold uppercase"
+                    style={{
+                      background: item.status === "active" ? "rgba(76,175,80,0.1)" : "rgba(255,152,0,0.1)",
+                      color: item.status === "active" ? "var(--color-status-active)" : "var(--color-status-warning)",
+                      border: `1px solid ${item.status === "active" ? "rgba(76,175,80,0.3)" : "rgba(255,152,0,0.3)"}`,
+                    }}>
+                    {item.status}
+                  </span>
                 </div>
               ))}
             </div>
@@ -276,47 +380,16 @@ export default function SystemHealthPage() {
         </div>
 
         <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
-          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Self-Healing Engine Status</div>
-          <div className="space-y-2">
-            {[
-              { label: "Auto-restart on crash", status: "active" },
-              { label: "Failed deployment rollback", status: "active" },
-              { label: "Log anomaly detection", status: "active" },
-              { label: "Security alert engine", status: "active" },
-              { label: "IAM drift detection", status: "active" },
-              { label: "Traffic spike auto-scale", status: "active" },
-              { label: "Cost anomaly detection", status: "active" },
-              { label: "Root cause clustering", status: "active" },
-              { label: "Automated RCA reporting", status: "active" },
-              { label: "Emergency lock mode", status: "standby" },
-            ].map(item => (
-              <div key={item.label} className="flex items-center justify-between py-1">
-                <span className="text-body text-[var(--color-text-secondary)]">{item.label}</span>
-                <span className="text-micro px-2 py-0.5 chamfer-4 font-bold uppercase"
-                  style={{
-                    background: item.status === "active" ? "rgba(76,175,80,0.1)" : "rgba(255,152,0,0.1)",
-                    color: item.status === "active" ? "var(--color-status-active)" : "var(--color-status-warning)",
-                    border: `1px solid ${item.status === "active" ? "rgba(76,175,80,0.3)" : "rgba(255,152,0,0.3)"}`,
-                  }}>
-                  {item.status}
-                </span>
+          <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">100 Active System Health Features</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
+            {FEATURES.map(f => (
+              <div key={f} className="flex items-center gap-1.5 text-micro text-[var(--color-text-muted)]">
+                <span className="w-1 h-1  bg-status-active flex-shrink-0" />
+                <span className="truncate">{f}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-4">
-        <div className="text-micro font-label uppercase tracking-widest text-[var(--color-text-muted)] mb-3">100 Active System Health Features</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
-          {FEATURES.map(f => (
-            <div key={f} className="flex items-center gap-1.5 text-micro text-[var(--color-text-muted)]">
-              <span className="w-1 h-1  bg-status-active flex-shrink-0" />
-              <span className="truncate">{f}</span>
-            </div>
-          ))}
-        </div>
-      </div>
       </div>
     </ModuleDashboardShell>
   );

@@ -51,15 +51,15 @@ resource "aws_iam_role_policy" "cloudtrail_cloudwatch" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "AllowCreateLogStream"
-        Effect = "Allow"
-        Action = "logs:CreateLogStream"
+        Sid      = "AllowCreateLogStream"
+        Effect   = "Allow"
+        Action   = "logs:CreateLogStream"
         Resource = "${aws_cloudwatch_log_group.cloudtrail.arn}:log-stream:*"
       },
       {
-        Sid    = "AllowPutLogEvents"
-        Effect = "Allow"
-        Action = "logs:PutLogEvents"
+        Sid      = "AllowPutLogEvents"
+        Effect   = "Allow"
+        Action   = "logs:PutLogEvents"
         Resource = "${aws_cloudwatch_log_group.cloudtrail.arn}:log-stream:*"
       }
     ]

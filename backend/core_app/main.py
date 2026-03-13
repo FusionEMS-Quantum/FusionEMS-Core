@@ -149,6 +149,7 @@ from core_app.api.patient_portal_router import router as patient_portal_router  
 from core_app.api.patient_router import router as patient_router  # noqa: E402
 from core_app.api.payments_router import router as payments_router  # noqa: E402
 from core_app.api.platform_incidents_router import router as platform_incidents_router  # noqa: E402
+from core_app.api.platform_core_router import router as platform_core_router
 from core_app.api.policy_router import router as policy_router  # noqa: E402
 from core_app.api.portal_billing_router import router as portal_billing_router  # noqa: E402
 from core_app.api.pricebook_router import router as pricebook_router  # noqa: E402

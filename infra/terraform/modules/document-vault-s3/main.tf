@@ -179,7 +179,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
       storage_class = "GLACIER_IR"
     }
     noncurrent_version_expiration {
-      noncurrent_days           = 2555  # keep old versions for 7 years
+      noncurrent_days           = 2555 # keep old versions for 7 years
       newer_noncurrent_versions = 10
     }
   }
@@ -196,7 +196,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
       storage_class = "GLACIER_IR"
     }
     expiration {
-      days = 1278  # ~3.5 years with buffer
+      days = 1278 # ~3.5 years with buffer
     }
   }
 
@@ -212,7 +212,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
       storage_class = "GLACIER_IR"
     }
     expiration {
-      days = 2007  # ~5.5 years
+      days = 2007 # ~5.5 years
     }
   }
 

@@ -262,7 +262,7 @@ resource "aws_cloudwatch_log_group" "ecs" {
   retention_in_days = var.log_retention_days
   # Set optionally via module input to avoid applying a KMS association when
   # the alias/key does not exist in the target account/region.
-  kms_key_id        = var.cloudwatch_kms_key_id != "" ? var.cloudwatch_kms_key_id : null
+  kms_key_id = var.cloudwatch_kms_key_id != "" ? var.cloudwatch_kms_key_id : null
 
   tags = merge(local.common_tags, {
     Name = "/ecs/${local.name_prefix}"

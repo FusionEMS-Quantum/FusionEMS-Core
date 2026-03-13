@@ -146,12 +146,17 @@ export default function PublicLegalRequestIntakePage() {
       setError('Submit intake first before calculating pricing.');
       return;
     }
+    const intakeToken = intake.intake_token?.trim();
+    if (!intakeToken) {
+      setError('Intake token missing. Please resubmit the intake request.');
+      return;
+    }
     setQuoteLoading(true);
     setError(null);
     setNotice(null);
     try {
       const priced = await previewLegalPricingQuote(intake.request_id, {
-        intake_token: intake.intake_token,
+        intake_token: intakeToken,
         requested_page_count: Number(form.requested_page_count || 0),
         print_mail_requested: Boolean(form.print_mail_requested),
         rush_requested: Boolean(form.rush_requested),
@@ -170,12 +175,17 @@ export default function PublicLegalRequestIntakePage() {
       setError('Submit intake first before starting checkout.');
       return;
     }
+    const intakeToken = intake.intake_token?.trim();
+    if (!intakeToken) {
+      setError('Intake token missing. Please resubmit the intake request.');
+      return;
+    }
     setCheckoutLoading(true);
     setError(null);
     setNotice(null);
     try {
       const checkout = await createLegalPaymentCheckout(intake.request_id, {
-        intake_token: intake.intake_token,
+        intake_token: intakeToken,
       });
       const checkoutUrl = checkout.checkout_url?.trim();
       if (checkoutUrl) {
@@ -210,12 +220,17 @@ export default function PublicLegalRequestIntakePage() {
       setError('Submit intake first, then choose a document to upload.');
       return;
     }
+    const intakeToken = intake.intake_token?.trim();
+    if (!intakeToken) {
+      setError('Intake token missing. Please resubmit the intake request.');
+      return;
+    }
     setUploading(true);
     setError(null);
     setNotice(null);
     try {
       const presign = await createLegalUploadPresign(intake.request_id, {
-        intake_token: intake.intake_token,
+        intake_token: intakeToken,
         document_kind: uploadKind,
         file_name: uploadFile.name,
         content_type: uploadFile.type || 'application/octet-stream',
@@ -226,7 +241,7 @@ export default function PublicLegalRequestIntakePage() {
       }
 
       const completed = await completeLegalUpload(intake.request_id, {
-        intake_token: intake.intake_token,
+        intake_token: intakeToken,
         upload_id: presign.upload_id,
         byte_size: uploadFile.size,
       });

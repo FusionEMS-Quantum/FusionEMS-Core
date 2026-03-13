@@ -107,8 +107,43 @@ def _append_query_param(base_url: str, key: str, value: str) -> str:
 
 
 def _is_entra_configured() -> bool:
+    """Check if Microsoft Entra ID is fully configured with valid credentials.
+    
+    Returns False if:
+    - Any required credential is missing
+    - Any credential contains placeholder values (will cause AADSTS errors in Azure)
+    
+    This check MUST run before any auth redirect to prevent cryptic Azure errors.
+    """
     s = get_settings()
-    return bool(all([s.graph_tenant_id, s.graph_client_id, s.graph_client_secret]))
+    required = [s.graph_tenant_id, s.graph_client_id, s.graph_client_secret]
+    if not all(required):
+        logger.warning("entra_not_configured reason=missing_required_field")
+        return False
+    
+    # Detect placeholder values that would cause Azure AD to reject the request
+    # with cryptic error messages like AADSTS900023 or AADSTS5001
+    placeholder_patterns = (
+        "placeholder",
+        "placeholder_rotate",
+        "change_me",
+        "your_tenant",
+        "your_client",
+        "replace_with",
+        "todo",
+        "xxx",
+        "sample",
+    )
+    for value in required:
+        lower_value = str(value).lower()
+        if any(pattern in lower_value for pattern in placeholder_patterns):
+            logger.warning(
+                "entra_not_configured reason=placeholder_detected value_pattern=%.30s",
+                lower_value[:30],
+            )
+            return False
+    
+    return True
 
 
 def _oidc_cache_ttl() -> int:

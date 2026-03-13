@@ -1,7 +1,36 @@
 from functools import lru_cache
+import re
+import uuid
 
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+_PLACEHOLDER_CONFIG_PATTERN = re.compile(
+    r"(?:placeholder(?:_rotate)?_[a-z0-9_]+|replace_with_[a-z0-9_]+|change[-_ ]?me|todo_secret)",
+    re.IGNORECASE,
+)
+_ENTRA_TENANT_DOMAIN_PATTERN = re.compile(
+    r"^(?=.{1,255}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$"
+)
+
+
+def is_placeholder_config_value(value: str) -> bool:
+    normalized = str(value or "").strip()
+    if not normalized:
+        return False
+    return bool(_PLACEHOLDER_CONFIG_PATTERN.search(normalized))
+
+
+def is_valid_entra_tenant_identifier(value: str) -> bool:
+    normalized = str(value or "").strip()
+    if not normalized or is_placeholder_config_value(normalized):
+        return False
+    try:
+        uuid.UUID(normalized)
+        return True
+    except ValueError:
+        return bool(_ENTRA_TENANT_DOMAIN_PATTERN.fullmatch(normalized))
 
 
 class Settings(BaseSettings):
@@ -545,6 +574,38 @@ class Settings(BaseSettings):
             ),
         }
 
+    def _is_credential_placeholder(self, value: str) -> bool:
+        """Check if a credential value is a placeholder that must never reach production.
+        
+        This catches various placeholder patterns used during development that will
+        cause authentication failures if deployed to production. This includes secret
+        rotation patterns like 'placeholder_rotate_*' which are intermediate values
+        during credential rotation that should never be deployed.
+        """
+        if not value:
+            return False
+        lower = str(value).lower()
+        # Catch explicit placeholders and secret rotation patterns with incomplete values
+        patterns = (
+            "placeholder",
+            "placeholder_rotate",
+            "change_me",
+            "changeme",
+            "your_",
+            "your-",
+            "replace_with",
+            "<your",
+            "todo",
+            "todo_",
+            "xxx",
+            "xxxx",
+            "insert_",
+            "put_your",
+            "sample_",
+            "test_",
+        )
+        return any(pattern in lower for pattern in patterns)
+
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":
         env = str(self.environment).lower()
@@ -586,6 +647,29 @@ class Settings(BaseSettings):
                     f"for environment '{env}': {', '.join(missing)}. "
                     "All secrets must be injected from AWS Secrets Manager via the ECS task definition."
                 )
+            
+            # Check for placeholder credentials that would cause authentication failures in production
+            # This is critical for Microsoft Graph (which produces AADSTS900023 errors), Stripe, and other integrations
+            _CREDENTIAL_FIELDS: list[tuple[str, str]] = [
+                ("graph_tenant_id", "GRAPH_TENANT_ID"),
+                ("graph_client_id", "GRAPH_CLIENT_ID"),
+                ("graph_client_secret", "GRAPH_CLIENT_SECRET"),
+                ("stripe_secret_key", "STRIPE_SECRET_KEY"),
+                ("stripe_webhook_secret", "STRIPE_WEBHOOK_SECRET"),
+                ("jwt_secret_key", "JWT_SECRET_KEY"),
+                ("telnyx_api_key", "TELNYX_API_KEY"),
+                ("lob_api_key", "LOB_API_KEY"),
+            ]
+            for attr, env_name in _CREDENTIAL_FIELDS:
+                value = getattr(self, attr, "")
+                if value and self._is_credential_placeholder(value):
+                    raise ValueError(
+                        f"SECURITY VIOLATION — {env_name} contains a placeholder/incomplete credential "
+                        f"in {env} environment. This will cause authentication failures (e.g., AADSTS900023 from Microsoft). "
+                        f"You must update this value in AWS Secrets Manager with the actual credential. "
+                        f"Pattern detected: {str(value)[:60]}"
+                    )
+            
             if self.jwt_secret_key in ("change-me", "changeme", "secret"):
                 raise ValueError(
                     "JWT_SECRET_KEY is set to a known insecure default value. "

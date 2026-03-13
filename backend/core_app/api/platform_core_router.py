@@ -9,6 +9,8 @@ All endpoints use RBAC (require_role), tenant scoping, structured error response
 
 from __future__ import annotations
 
+import os
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -18,7 +20,11 @@ from core_app.api.dependencies import (
     db_session_dependency,
     require_role,
 )
-from core_app.core.config import get_settings
+from core_app.core.config import (
+    get_settings,
+    is_placeholder_config_value,
+    is_valid_entra_tenant_identifier,
+)
 from core_app.schemas.auth import CurrentUser
 from core_app.schemas.platform_core import (
     AgencyContractLinkRequest,
@@ -938,6 +944,238 @@ class _GateCheck:
         return {"name": self.name, "passed": self.passed, "detail": self.detail}
 
 
+def _env_bool(name: str, *, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _release_metadata() -> dict[str, object]:
+    version = (
+        os.getenv("RELEASE_VERSION")
+        or os.getenv("APP_VERSION")
+        or os.getenv("BUILD_VERSION")
+        or "unknown"
+    )
+    git_sha = (
+        os.getenv("RELEASE_GIT_SHA")
+        or os.getenv("GIT_SHA")
+        or os.getenv("COMMIT_SHA")
+        or ""
+    )
+    deployment_id = os.getenv("DEPLOYMENT_ID") or os.getenv("AMPLIFY_JOB_ID") or ""
+    last_successful_release = (
+        os.getenv("LAST_SUCCESSFUL_RELEASE_AT")
+        or os.getenv("LAST_SUCCESSFUL_RELEASE")
+        or ""
+    )
+    rollback_ready = _env_bool("ROLLBACK_READY", default=False)
+    return {
+        "version": version,
+        "git_sha": git_sha,
+        "deployment_id": deployment_id,
+        "last_successful_release": last_successful_release,
+        "rollback_ready": rollback_ready,
+    }
+
+
+def _auth_health_snapshot() -> tuple[dict[str, object], list[str]]:
+    settings = get_settings()
+
+    graph_required = {
+        "GRAPH_TENANT_ID": settings.graph_tenant_id,
+        "GRAPH_CLIENT_ID": settings.graph_client_id,
+        "GRAPH_CLIENT_SECRET": settings.graph_client_secret,
+        "MICROSOFT_REDIRECT_URI": settings.microsoft_redirect_uri,
+    }
+    missing_graph = [k for k, v in graph_required.items() if not str(v or "").strip()]
+    placeholder_graph = [
+        k for k, v in graph_required.items() if str(v or "").strip() and is_placeholder_config_value(str(v))
+    ]
+    tenant_valid = is_valid_entra_tenant_identifier(settings.graph_tenant_id)
+    authority_url = (
+        f"https://login.microsoftonline.com/{settings.graph_tenant_id}/v2.0/.well-known/openid-configuration"
+        if str(settings.graph_tenant_id or "").strip()
+        else ""
+    )
+
+    microsoft_signin_healthy = (
+        len(missing_graph) == 0
+        and len(placeholder_graph) == 0
+        and tenant_valid
+        and authority_url != ""
+    )
+
+    auth_mode = str(settings.auth_mode or "").strip().lower()
+    environment = str(settings.environment or "").strip().lower()
+    cognito_expected = environment in {"production", "prod", "staging"}
+    cognito_ready = auth_mode != "cognito" or all(
+        [
+            str(settings.cognito_region or "").strip(),
+            str(settings.cognito_user_pool_id or "").strip(),
+            str(settings.cognito_app_client_id or "").strip(),
+            str(settings.cognito_issuer or "").strip(),
+        ]
+    )
+
+    blockers: list[str] = []
+    if missing_graph:
+        blockers.append(
+            "Microsoft Entra auth missing required configuration: " + ", ".join(missing_graph)
+        )
+    if placeholder_graph:
+        blockers.append(
+            "Microsoft Entra auth contains placeholder values: " + ", ".join(placeholder_graph)
+        )
+    if not tenant_valid:
+        blockers.append("Microsoft Entra tenant identifier is invalid")
+    if cognito_expected and auth_mode == "local":
+        blockers.append("AUTH_MODE is local in production/staging")
+    if not cognito_ready:
+        blockers.append("Cognito auth path is incomplete for configured auth mode")
+
+    return (
+        {
+            "environment": environment,
+            "auth_mode": auth_mode,
+            "microsoft": {
+                "healthy": microsoft_signin_healthy,
+                "authority": authority_url,
+                "tenant_valid": tenant_valid,
+                "missing": missing_graph,
+                "placeholder_fields": placeholder_graph,
+            },
+            "cognito": {
+                "expected": cognito_expected,
+                "ready": bool(cognito_ready),
+                "user_pool_id_present": bool(str(settings.cognito_user_pool_id or "").strip()),
+                "client_id_present": bool(str(settings.cognito_app_client_id or "").strip()),
+                "issuer_present": bool(str(settings.cognito_issuer or "").strip()),
+            },
+        },
+        blockers,
+    )
+
+
+@router.get("/live-status")
+def live_status(
+    current: CurrentUser = Depends(require_role("founder", "admin", "agency_admin")),
+    db: Session = Depends(db_session_dependency),
+) -> dict[str, object]:
+    """Canonical NOC-style live status for command operations and release decisions."""
+    _ = current
+    from sqlalchemy import text as sa_text
+
+    settings = get_settings()
+    auth_snapshot, auth_blockers = _auth_health_snapshot()
+    release = _release_metadata()
+
+    db_ok = True
+    try:
+        db.execute(sa_text("SELECT 1"))
+    except Exception:
+        db_ok = False
+
+    redis_ok = False
+    redis_state = "not_configured"
+    if str(settings.redis_url or "").strip():
+        try:
+            import redis
+
+            redis.from_url(settings.redis_url, socket_connect_timeout=2).ping()
+            redis_ok = True
+            redis_state = "healthy"
+        except Exception:
+            redis_state = "degraded"
+
+    active_incidents = 0
+    try:
+        active_incidents = int(
+            db.execute(
+                sa_text(
+                    "SELECT count(*) FROM system_alerts "
+                    "WHERE data->>'status' = 'active' "
+                    "AND (data->>'severity' IN ('critical', 'error', 'high'))"
+                )
+            ).scalar()
+            or 0
+        )
+    except Exception:
+        active_incidents = 0
+
+    integration_state = settings.integration_state_table()
+    required_missing: list[str] = []
+    for key, state in integration_state.items():
+        if bool(state.get("required")) and not bool(state.get("configured")):
+            missing = state.get("missing")
+            if isinstance(missing, list):
+                required_missing.extend([f"{key}:{item}" for item in missing])
+            else:
+                required_missing.append(key)
+
+    release_blockers: list[str] = []
+    release_blockers.extend(auth_blockers)
+    if not db_ok:
+        release_blockers.append("Database health probe failed")
+    if release.get("version") == "unknown":
+        release_blockers.append("Release version metadata is missing")
+    if not bool(release.get("rollback_ready")):
+        release_blockers.append("Rollback readiness flag is not set")
+    if required_missing:
+        release_blockers.append(
+            "Required integration wiring missing: " + ", ".join(sorted(required_missing))
+        )
+
+    frontend_signal = str(os.getenv("FRONTEND_HEALTH", "unknown")).strip().lower()
+    frontend_status = (
+        "healthy"
+        if frontend_signal in {"healthy", "ok", "green"}
+        else "degraded"
+        if frontend_signal in {"degraded", "warn", "yellow", "red", "down"}
+        else "unknown"
+    )
+
+    services = [
+        {"service": "frontend", "status": frontend_status},
+        {"service": "backend", "status": "healthy" if db_ok else "degraded"},
+        {
+            "service": "auth",
+            "status": "healthy" if len(auth_blockers) == 0 else "degraded",
+        },
+        {
+            "service": "microsoft_signin",
+            "status": "healthy" if bool(auth_snapshot["microsoft"]["healthy"]) else "degraded",
+        },
+        {"service": "database", "status": "healthy" if db_ok else "degraded"},
+        {"service": "redis", "status": redis_state},
+    ]
+
+    degraded_services = [
+        s["service"]
+        for s in services
+        if s["status"] in {"degraded", "unreachable", "down", "red"}
+    ]
+
+    overall_status = "healthy"
+    if release_blockers:
+        overall_status = "blocked"
+    elif degraded_services:
+        overall_status = "degraded"
+
+    return {
+        "timestamp": datetime.now(UTC).isoformat(),
+        "overall_status": overall_status,
+        "services": services,
+        "degraded_services": degraded_services,
+        "active_incidents": active_incidents,
+        "auth": auth_snapshot,
+        "release": release,
+        "release_blockers": release_blockers,
+        "integration_state": integration_state,
+    }
+
+
 @router.get("/release-readiness")
 def release_readiness_gate(
     current: CurrentUser = Depends(require_role("founder")),
@@ -950,7 +1188,6 @@ def release_readiness_gate(
     Returns structured pass/fail gate report.
     """
     import importlib
-    import os
 
     from sqlalchemy import text as sa_text
 
@@ -994,9 +1231,12 @@ def release_readiness_gate(
         f"missing={missing_tables}" if missing_tables else "all_present",
     ).to_dict())
 
+    auth_snapshot, auth_blockers = _auth_health_snapshot()
+    release = _release_metadata()
+
     # Gate 4: Office Ally SFTP configured
     settings = get_settings()
-    oa_host = getattr(settings, "OFFICEALLY_SFTP_HOST", "")
+    oa_host = str(settings.officeally_sftp_host or "")
     gates.append(_GateCheck(
         "officeally_sftp_configured",
         bool(oa_host),
@@ -1004,7 +1244,7 @@ def release_readiness_gate(
     ).to_dict())
 
     # Gate 5: Stripe configured
-    stripe_key = getattr(settings, "STRIPE_SECRET_KEY", "")
+    stripe_key = str(settings.stripe_secret_key or "")
     gates.append(_GateCheck(
         "stripe_configured",
         bool(stripe_key),
@@ -1012,7 +1252,7 @@ def release_readiness_gate(
     ).to_dict())
 
     # Gate 6: Telnyx configured
-    telnyx_key = getattr(settings, "TELNYX_API_KEY", "")
+    telnyx_key = str(settings.telnyx_api_key or "")
     gates.append(_GateCheck(
         "telnyx_configured",
         bool(telnyx_key),
@@ -1030,7 +1270,7 @@ def release_readiness_gate(
     # Gate 8: Redis connectivity
     try:
         redis_mod = importlib.import_module("redis")
-        redis_url = getattr(settings, "REDIS_URL", "")
+        redis_url = str(settings.redis_url or "")
         if redis_url:
             r = redis_mod.from_url(redis_url, socket_connect_timeout=2)
             r.ping()
@@ -1054,11 +1294,45 @@ def release_readiness_gate(
         gates.append(_GateCheck("no_placeholder_tenants", True, "table_not_checked").to_dict())
 
     # Gate 10: Cognito configured
-    cognito_pool = getattr(settings, "COGNITO_USER_POOL_ID", "")
+    cognito_pool = str(settings.cognito_user_pool_id or "")
+    cognito_mode_ok = str(settings.auth_mode or "").strip().lower() == "cognito"
     gates.append(_GateCheck(
         "cognito_configured",
-        bool(cognito_pool),
+        bool(cognito_pool) and cognito_mode_ok,
         "pool_id_present" if cognito_pool else "pool_id_missing",
+    ).to_dict())
+
+    # Gate 11: Microsoft Entra sign-in config valid and non-placeholder
+    microsoft_healthy = bool(auth_snapshot["microsoft"]["healthy"])
+    gates.append(_GateCheck(
+        "microsoft_auth_config_valid",
+        microsoft_healthy,
+        "valid" if microsoft_healthy else "; ".join(auth_blockers) or "invalid",
+    ).to_dict())
+
+    # Gate 12: Microsoft tenant identifier valid format
+    tenant_value = str(settings.graph_tenant_id or "")
+    tenant_valid = is_valid_entra_tenant_identifier(tenant_value)
+    gates.append(_GateCheck(
+        "microsoft_tenant_identifier_valid",
+        tenant_valid,
+        "uuid_or_domain" if tenant_valid else "invalid_or_placeholder",
+    ).to_dict())
+
+    # Gate 13: Release metadata visible
+    release_version = str(release.get("version") or "")
+    gates.append(_GateCheck(
+        "release_metadata_visible",
+        bool(release_version) and release_version != "unknown",
+        f"version={release_version or 'unknown'}",
+    ).to_dict())
+
+    # Gate 14: Rollback readiness signal present
+    rollback_ready = bool(release.get("rollback_ready"))
+    gates.append(_GateCheck(
+        "rollback_readiness",
+        rollback_ready,
+        "ready" if rollback_ready else "not_ready",
     ).to_dict())
 
     passed = sum(1 for g in gates if g["passed"])
