@@ -1,30 +1,8 @@
 import './globals.css';
 import { ReactNode } from 'react';
-import { Barlow, Barlow_Condensed, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from '@/components/AuthProvider';
 import { WSBootstrap } from '@/components/WSBootstrap';
 import { Providers } from './providers';
-
-const barlow = Barlow({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '900'],
-  variable: '--font-sans',
-  display: 'swap',
-});
-
-const barlowCondensed = Barlow_Condensed({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '900'],
-  variable: '--font-label',
-  display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-mono',
-  display: 'swap',
-});
 
 export const metadata = {
   title: 'FusionEMS Quantum',
@@ -34,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${barlow.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable}`}>
+      <body>
         {/* Global ambient background — fixed, sits behind all page content */}
         <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
           <div className="absolute left-[-12%] top-[-10%] h-[500px] w-[500px] rounded-full bg-orange-500/[0.06] blur-3xl" />
