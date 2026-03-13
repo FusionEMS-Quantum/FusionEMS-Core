@@ -9,14 +9,11 @@ Provides HTTP endpoints for:
 
 from __future__ import annotations
 
-from typing import Optional
-
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from pydantic import BaseModel
-
 from core_app.api.auth import get_current_org_context
 from core_app.core.logging_context import CorrelationIdHandler
-from core_app.nemsis.models import NemsisDataSchema
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
+
 from core_app.nemsis.production_client import NEMSISClientError
 from core_app.nemsis.submission_service import NEMSISSubmissionService
 
@@ -32,14 +29,14 @@ class SubmitDataRequest(BaseModel):
     """Submit EMSDataSet or DEMDataSet."""
     schema_type: int  # 61=EMS, 62=DEM
     schema_version: str = "3.5.1"
-    additional_info: Optional[str] = None
+    additional_info: str | None = None
     national_only: bool = False
 
 
 class SubmitStateDataRequest(BaseModel):
     """Submit StateDataSet."""
     schema_version: str = "3.5.1"
-    additional_info: Optional[str] = None
+    additional_info: str | None = None
 
 
 class SubmitDataResponse(BaseModel):
@@ -76,17 +73,17 @@ async def submit_ems_data(
 ) -> SubmitDataResponse:
     """
     Submit EMS dataset (EMSDataSet).
-    
+
     - **file**: XML file containing EMSDataSet
     - **schema_version**: NEMSIS schema version (3.4.0, 3.5.0, 3.5.1)
     - **additional_info**: Optional notes/changelog
     - **national_only**: Submit only national-required elements
     """
     correlation_id = CorrelationIdHandler.get()
-    
+
     try:
         xml_bytes = await file.read()
-        
+
         result = await _submission_service.submit_ems_data(
             xml_bytes=xml_bytes,
             organization=org_context.organization_id,
@@ -97,7 +94,7 @@ async def submit_ems_data(
             national_only=national_only,
             correlation_id=correlation_id,
         )
-        
+
         return SubmitDataResponse(
             request_handle=result.request_handle,
             status_code=result.status_code,
@@ -105,7 +102,7 @@ async def submit_ems_data(
             is_async=result.is_async,
             correlation_id=correlation_id,
         )
-        
+
     except NEMSISClientError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
@@ -122,17 +119,17 @@ async def submit_dem_data(
 ) -> SubmitDataResponse:
     """
     Submit DEM (Demographic) dataset (DEMDataSet).
-    
+
     - **file**: XML file containing DEMDataSet
     - **schema_version**: NEMSIS schema version (3.4.0, 3.5.0, 3.5.1)
     - **additional_info**: Optional notes/changelog
     - **national_only**: Submit only national-required elements
     """
     correlation_id = CorrelationIdHandler.get()
-    
+
     try:
         xml_bytes = await file.read()
-        
+
         result = await _submission_service.submit_dem_data(
             xml_bytes=xml_bytes,
             organization=org_context.organization_id,
@@ -143,7 +140,7 @@ async def submit_dem_data(
             national_only=national_only,
             correlation_id=correlation_id,
         )
-        
+
         return SubmitDataResponse(
             request_handle=result.request_handle,
             status_code=result.status_code,
@@ -151,7 +148,7 @@ async def submit_dem_data(
             is_async=result.is_async,
             correlation_id=correlation_id,
         )
-        
+
     except NEMSISClientError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
@@ -167,16 +164,16 @@ async def submit_state_data(
 ) -> SubmitDataResponse:
     """
     Submit State dataset (StateDataSet).
-    
+
     - **file**: XML file containing StateDataSet
     - **schema_version**: NEMSIS schema version (3.5.0, 3.5.1)
     - **additional_info**: Optional notes/changelog
     """
     correlation_id = CorrelationIdHandler.get()
-    
+
     try:
         xml_bytes = await file.read()
-        
+
         result = await _submission_service.submit_state_data(
             xml_bytes=xml_bytes,
             organization=org_context.organization_id,
@@ -186,7 +183,7 @@ async def submit_state_data(
             additional_info=additional_info or "",
             correlation_id=correlation_id,
         )
-        
+
         return SubmitDataResponse(
             request_handle=result.request_handle,
             status_code=result.status_code,
@@ -194,7 +191,7 @@ async def submit_state_data(
             is_async=result.is_async,
             correlation_id=correlation_id,
         )
-        
+
     except NEMSISClientError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
@@ -208,11 +205,11 @@ async def get_submission_status(
 ) -> StatusResponse:
     """
     Retrieve status of async submission.
-    
+
     Use this endpoint to poll for results when initial submission returns is_async=true.
     """
     correlation_id = CorrelationIdHandler.get()
-    
+
     try:
         status = await _submission_service.retrieve_submission_status(
             request_handle=request.request_handle,
@@ -221,14 +218,14 @@ async def get_submission_status(
             password=org_context.nemsis_password,
             correlation_id=correlation_id,
         )
-        
+
         return StatusResponse(
             status_code=status["status_code"],
             request_handle=status["request_handle"],
             is_complete=status["is_complete"],
             correlation_id=correlation_id,
         )
-        
+
     except NEMSISClientError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
@@ -244,15 +241,15 @@ async def wait_for_submission(
 ) -> StatusResponse:
     """
     Wait for async submission to complete (blocking).
-    
+
     This endpoint will block until the submission is complete or timeout is reached.
-    
+
     - **request_handle**: Handle from submission response
     - **poll_interval_seconds**: Time between status checks (default 5s)
     - **max_wait_seconds**: Maximum wait time (default 1 hour)
     """
     correlation_id = CorrelationIdHandler.get()
-    
+
     try:
         status = await _submission_service.wait_for_submission(
             request_handle=request_handle,
@@ -263,14 +260,14 @@ async def wait_for_submission(
             max_wait_seconds=max_wait_seconds,
             correlation_id=correlation_id,
         )
-        
+
         return StatusResponse(
             status_code=status["status_code"],
             request_handle=status["request_handle"],
             is_complete=True,  # Always complete when this returns
             correlation_id=correlation_id,
         )
-        
+
     except NEMSISClientError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:

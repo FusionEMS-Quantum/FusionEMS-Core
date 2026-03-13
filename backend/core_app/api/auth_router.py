@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import db_session_dependency, get_current_user
 from core_app.core.config import get_settings
 from core_app.core.security import create_access_token
-from core_app.integrations.graph_service import GraphNotConfigured, GraphClient
+from core_app.integrations.graph_service import GraphClient, GraphNotConfigured
 from core_app.repositories.user_repository import UserRepository
 from core_app.schemas.auth import (
     CurrentUser,

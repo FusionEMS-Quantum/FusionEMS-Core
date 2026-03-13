@@ -180,11 +180,13 @@ jobs:
           DATABASE_URL: "postgresql+psycopg://test:test@localhost:5432/test"
           ENVIRONMENT: "test"
         run: |
-          alembic check 2>&1 || {
-            echo "ERROR: Alembic detects unapplied model changes."
-            echo "Run 'alembic revision --autogenerate -m <msg>' locally."
+          set -euo pipefail
+          current_rev="$(alembic current | awk 'NR==1 {print $1}')"
+          head_rev="$(alembic heads | awk 'NR==1 {print $1}')"
+          if [[ -z "$current_rev" || -z "$head_rev" || "$current_rev" != "$head_rev" ]]; then
+            echo "ERROR: Database revision is not at head (current=${current_rev}, head=${head_rev})."
             exit 1
-          }
+          fi
 
   frontend-test:
     name: Frontend Tests
