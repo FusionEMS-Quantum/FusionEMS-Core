@@ -8,7 +8,11 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from core_app.core.errors import AppError
-from core_app.models.terminology import TerminologyCodeSystem, TerminologyConcept, TerminologyMapping
+from core_app.models.terminology import (
+    TerminologyCodeSystem,
+    TerminologyConcept,
+    TerminologyMapping,
+)
 from core_app.repositories.terminology_repository import TerminologyRepository
 from core_app.schemas.terminology import (
     TerminologyCodeSystemCreate,

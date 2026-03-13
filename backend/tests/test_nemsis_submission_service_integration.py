@@ -13,13 +13,11 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
 from core_app.nemsis.production_client import NEMSISProductionClient
 from core_app.nemsis.submission_service import NEMSISSubmissionService
-from core_app.nemsis.models import NEMSISDataSchema
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +100,7 @@ class TestNEMSISSubmissionServiceIntegration:
     def sample_ems_xml(self) -> bytes:
         """Get sample EMS XML."""
         return b"""<?xml version="1.0" encoding="UTF-8"?>
-<EMSDataSet xmlns="http://www.nemsis.org" 
+<EMSDataSet xmlns="http://www.nemsis.org"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.nemsis.org http://www.nemsis.org/media/nemsis_v3/schema/NEMSIS_v3.5.1_EMSDataSet.xsd">
     <PatientCareReport>
@@ -163,7 +161,7 @@ class TestNEMSISSubmissionServiceIntegration:
     ) -> None:
         """Test DEM (Demographics) data submission."""
         dem_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
-<DEMDataSet xmlns="http://www.nemsis.org" 
+<DEMDataSet xmlns="http://www.nemsis.org"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.nemsis.org http://www.nemsis.org/media/nemsis_v3/schema/NEMSIS_v3.5.1_DEMDataSet.xsd">
     <Agency>
@@ -192,7 +190,7 @@ class TestNEMSISSubmissionServiceIntegration:
     ) -> None:
         """Test State data submission."""
         state_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
-<StateDataSet xmlns="http://www.nemsis.org" 
+<StateDataSet xmlns="http://www.nemsis.org"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://www.nemsis.org http://www.nemsis.org/media/nemsis_v3/schema/NEMSIS_v3.5.1_StateDataSet.xsd">
     <State_Agency />
@@ -276,7 +274,7 @@ class TestNEMSISSubmissionServiceIntegration:
     ) -> None:
         """Test service with actual pre-testing XML files if available."""
         pretest_dir = Path("/Users/joshuawendorf/Downloads/pretesting/xml")
-        
+
         if not pretest_dir.exists():
             pytest.skip("Pre-testing XML directory not available")
 

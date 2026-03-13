@@ -7,9 +7,10 @@ import json
 import os
 import sys
 import uuid
+from collections.abc import Callable, Sequence
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy import text
@@ -334,7 +335,12 @@ def _resolve_execution_credentials(payload: dict[str, Any]) -> dict[str, str]:
 
 async def _run_case_stateless_command(args: argparse.Namespace) -> dict[str, Any]:
     from core_app.nemsis.cta_cases import generate_cta_case_xml, get_cta_case
-    from core_app.nemsis.cta_soap_client import CTACredentials, NEMSISCTASoapClient, normalize_cta_state, translate_cta_code
+    from core_app.nemsis.cta_soap_client import (
+        CTACredentials,
+        NEMSISCTASoapClient,
+        normalize_cta_state,
+        translate_cta_code,
+    )
     from core_app.nemsis.validator import NEMSISValidator
 
     payload = _build_payload(args)

@@ -17,25 +17,17 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
-from core_app.nemsis.production_client import (
-    NEMSISAuthenticationError,
-    NEMSISClientError,
-    NEMSISProductionClient,
-    NEMSISServerError,
-    NEMSISTimeoutError,
-    NEMSISValidationError,
-)
 from core_app.nemsis.models import (
-    QueryLimitStatusCode,
-    SubmitDataStatusCode,
-    RetrieveStatusCode,
     NEMSISDataSchema,
+    QueryLimitStatusCode,
+    RetrieveStatusCode,
+)
+from core_app.nemsis.production_client import (
+    NEMSISProductionClient,
 )
 
 logger = logging.getLogger(__name__)
@@ -131,7 +123,7 @@ class TestNEMSISProductionClientQueryLimit:
 
         # Status 51 = SUCCESS per NEMSIS spec
         assert response.status_code == QueryLimitStatusCode.SUCCESS
-        
+
         logger.info(
             f"QueryLimit success: {response.limit}KB available, "
             f"status_code={response.status_code}"
@@ -180,17 +172,17 @@ class TestNEMSISProductionClientSubmission:
         """Load sample EMS XML from pre-testing directory."""
         # Try to load from pre-testing directory if available
         pretest_dir = Path("/Users/joshuawendorf/Downloads/pretesting/xml")
-        
+
         if pretest_dir.exists():
             # Find first XML file
             xml_files = list(pretest_dir.glob("*.xml"))
             if xml_files:
                 with open(xml_files[0], "rb") as f:
                     return f.read()
-        
+
         # Fallback: minimal valid NEMSIS EMS dataset
         minimal_ems = b"""<?xml version="1.0" encoding="UTF-8"?>
-<EMSDataSet xmlns="http://www.nemsis.org" 
+<EMSDataSet xmlns="http://www.nemsis.org"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.nemsis.org http://www.nemsis.org/media/nemsis_v3/schema/NEMSIS_v3.5.1_EMSDataSet.xsd">
     <PatientCareReport>
@@ -348,7 +340,7 @@ class TestNEMSISProductionClientEndToEnd:
     def sample_ems_xml(self) -> bytes:
         """Load sample EMS XML."""
         minimal_ems = b"""<?xml version="1.0" encoding="UTF-8"?>
-<EMSDataSet xmlns="http://www.nemsis.org" 
+<EMSDataSet xmlns="http://www.nemsis.org"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.nemsis.org http://www.nemsis.org/media/nemsis_v3/schema/NEMSIS_v3.5.1_EMSDataSet.xsd">
     <PatientCareReport>
@@ -398,23 +390,23 @@ class TestNEMSISProductionClientEndToEnd:
         # Step 2: If async, wait for results
         if submit_result.is_async:
             logger.info("Submission is async, polling for results...")
-            
+
             # Poll with timeout
             max_tries = 10
             for attempt in range(max_tries):
                 await asyncio.sleep(2)  # 2 second between polls
-                
+
                 status_response = await client.retrieve_status(
                     username=nemsis_credentials["username"],
                     password=nemsis_credentials["password"],
                     organization=nemsis_credentials["organization"],
                     request_handle=submit_result.request_handle,
                 )
-                
+
                 logger.info(
                     f"Poll attempt {attempt + 1}: status_code={status_response.status_code}"
                 )
-                
+
                 if status_response.status_code not in [
                     RetrieveStatusCode.PROCESSING_PENDING,
                 ]:

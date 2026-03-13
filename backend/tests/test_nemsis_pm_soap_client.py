@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-from core_app.nemsis.pm_soap_client import PMBenchmarkFilter, NEMSISPMSoapClient
+from core_app.nemsis.pm_soap_client import NEMSISPMSoapClient, PMBenchmarkFilter
 
 
 @pytest.mark.asyncio

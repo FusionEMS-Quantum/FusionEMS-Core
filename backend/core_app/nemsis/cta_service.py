@@ -10,8 +10,18 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from core_app.core.config import get_settings
-from core_app.nemsis.cta_cases import CTATestCase, generate_cta_case_xml, get_cta_case, list_cta_cases
-from core_app.nemsis.cta_soap_client import CTACredentials, NEMSISCTASoapClient, normalize_cta_state, translate_cta_code
+from core_app.nemsis.cta_cases import (
+    CTATestCase,
+    generate_cta_case_xml,
+    get_cta_case,
+    list_cta_cases,
+)
+from core_app.nemsis.cta_soap_client import (
+    CTACredentials,
+    NEMSISCTASoapClient,
+    normalize_cta_state,
+    translate_cta_code,
+)
 from core_app.nemsis.validator import NEMSISValidator
 from core_app.schemas.auth import CurrentUser
 
@@ -28,7 +38,7 @@ class CTAExecutionCredentials:
 
 
 class CTATestRunService:
-    def __init__(self, db: Session, svc: "DominationService") -> None:
+    def __init__(self, db: Session, svc: DominationService) -> None:
         self._db = db
         self._svc = svc
         self._validator = NEMSISValidator()

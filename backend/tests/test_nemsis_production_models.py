@@ -11,8 +11,8 @@ from core_app.nemsis.models import (
     NEMSISDataSchema,
     QueryLimitStatusCode,
     RetrieveStatusCode,
-    SubmitDataStatusCode,
     SubmitDataRequest,
+    SubmitDataStatusCode,
     SupportedSchemaVersion,
     XmlValidationErrorInfo,
 )

@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -52,7 +52,7 @@ class SubmitDataStatusCode(IntEnum):
     SUCCESS_WITH_BI_WARNING = 5
     PARTIALLY_SUCCESSFUL_WITH_ERRORS = 6
     PROCESSING_PENDING = 10
-    
+
     # Error codes
     DUPLICATE_FILE = -11
     XML_VALIDATION_FAILED = -12
@@ -61,7 +61,7 @@ class SubmitDataStatusCode(IntEnum):
     CRITICAL_ETL_VIOLATION = -15
     CRITICAL_BI_VIOLATION = -16
     MESSAGE_SIZE_EXCEEDED = -30
-    
+
     # Common errors (inherited)
     GENERIC_SERVER_ERROR = -20
     DATABASE_ERROR = -21
@@ -76,7 +76,7 @@ class SubmitDataStatusCode(IntEnum):
 class RetrieveStatusCode(IntEnum):
     """RetrieveStatus operation response codes."""
     PROCESSING_PENDING = 0
-    
+
     # Error codes
     STATUS_UNAVAILABLE = -40
     STATUS_EXPIRED = -41
@@ -95,7 +95,7 @@ class PrivilegeCredentials(BaseModel):
 # Data Payload Models
 class PayloadOfXmlElement(BaseModel):
     """XML element wrapper for data payload."""
-    
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -125,7 +125,7 @@ class SubmitDataRequest(BaseModel):
     password: str = Field(..., min_length=1, max_length=250)
     organization: str = Field(..., min_length=1, max_length=100)
     request_type: str = Field(default="SubmitData")
-    
+
     submit_payload: DataPayload
     request_data_schema: int = Field(
         ...,
@@ -165,13 +165,13 @@ class RetrieveStatusRequest(BaseModel):
     password: str = Field(..., min_length=1, max_length=250)
     organization: str = Field(..., min_length=1, max_length=100)
     request_type: str = Field(default="RetrieveStatus")
-    
+
     request_handle: str = Field(..., description="Handle from prior submission")
     original_request_type: str = Field(default="SubmitData")
     additional_info: str = Field(default="")
 
 
-# Response Models  
+# Response Models
 class QueryLimitResponse(BaseModel):
     """QueryLimit SOAP response."""
     request_type: str
@@ -183,11 +183,11 @@ class QueryLimitResponse(BaseModel):
 
 class XmlValidationErrorInfo(BaseModel):
     """Single XML validation error detail."""
-    element_name: Optional[str] = None
-    line: Optional[int] = None
-    column: Optional[int] = None
-    xpath_location: Optional[str] = None
-    value: Optional[str] = None
+    element_name: str | None = None
+    line: int | None = None
+    column: int | None = None
+    xpath_location: str | None = None
+    value: str | None = None
     description: str = Field(...)
 
 
@@ -202,7 +202,7 @@ class SchematronErrorInfo(BaseModel):
     rule_id: str
     severity: str = Field(description="[FATAL], [ERROR], [WARNING]")
     message: str
-    xpath_location: Optional[str] = None
+    xpath_location: str | None = None
 
 
 class SchematronReport(BaseModel):
@@ -213,7 +213,7 @@ class SchematronReport(BaseModel):
 class SubmitDataReport(BaseModel):
     """Complete submission validation and processing report."""
     xml_validation_report: XmlValidationErrorReport
-    schematron_report: Optional[SchematronReport] = None
+    schematron_report: SchematronReport | None = None
     custom_reports: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -222,7 +222,7 @@ class SubmitDataResponse(BaseModel):
     request_type: str
     request_handle: str = Field(description="Unique transaction ID")
     status_code: int
-    reports: Optional[SubmitDataReport] = None
+    reports: SubmitDataReport | None = None
 
 
 class RetrieveStatusResponse(BaseModel):
@@ -230,8 +230,8 @@ class RetrieveStatusResponse(BaseModel):
     request_type: str
     status_code: int
     request_handle: str
-    original_request_type: Optional[str] = None
-    retrieve_result: Optional[SubmitDataReport] = None
+    original_request_type: str | None = None
+    retrieve_result: SubmitDataReport | None = None
 
 
 # Domain Models for Service Layer
@@ -246,7 +246,7 @@ class SubmissionMetadata:
     submitted_at: datetime
     submission_type: str = "full"  # full or national_only
     additional_info: str = ""
-    
+
     def is_processing(self) -> bool:
         """True if submission is still pending."""
         return self.status_code in {0, 10}
@@ -259,13 +259,13 @@ class SubmissionResult:
     status_code: int
     status_message: str
     is_async: bool
-    reports: Optional[SubmitDataReport] = None
-    submitted_at: Optional[datetime] = None
-    
+    reports: SubmitDataReport | None = None
+    submitted_at: datetime | None = None
+
     def is_successful(self) -> bool:
         """True if submission was accepted (sync or async)."""
         return self.status_code >= 0
-    
+
     def is_pending(self) -> bool:
         """True if results not yet available."""
         return self.status_code in {0, 10}

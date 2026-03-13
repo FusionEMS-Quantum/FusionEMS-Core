@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Iterable
+from collections.abc import Iterable
 
 from sqlalchemy import Select, and_, case, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
