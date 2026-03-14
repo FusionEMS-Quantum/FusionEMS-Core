@@ -123,7 +123,7 @@ export default function LandingPage() {
               href="/patient-billing-login"
               className="group hidden sm:flex items-center gap-3 px-4 py-2.5 bg-[var(--color-bg-base)]/[0.02] border border-white/10 hover:border-orange/40 hover:bg-[var(--q-orange)]/5 transition-all shadow-inner"
             >
-              <div className="w-2 h-2  bg-[var(--color-status-active)] animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+              <div className="w-2 h-2  bg-[var(--q-orange)] shadow-[0_0_8px_rgba(243,106,33,0.5)]"></div>
               <div className="flex flex-col text-left">
                 <span className="text-[0.5rem] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em] leading-none mb-0.5">Secure Gateway</span>
                 <span className="text-[0.7rem] font-bold tracking-[0.1em] text-gray-300 uppercase leading-none group-hover:text-white">Patient Bill Pay Login</span>
@@ -381,8 +381,8 @@ export default function LandingPage() {
                   Platform Modules
                 </div>
                 <div className="hidden md:flex items-center gap-3 text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
-                  <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]"></div>
-                  <span>8 Modules Active</span>
+                  <div className="w-1 h-1 bg-[#F36A21] shadow-[0_0_4px_#F36A21]"></div>
+                  <span>8 Modules</span>
                   <span className="text-white/10">|</span>
                   <span>Quantum Build 2.0</span>
                 </div>
@@ -604,11 +604,11 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Operational status */}
+              {/* Brand identity */}
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]" />
-                <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#4E9F6E] uppercase">
-                  Enterprise Ready
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F36A21] shadow-[0_0_6px_#F36A21]" />
+                <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#F36A21] uppercase">
+                  Quantum Platform
                 </span>
               </div>
 
