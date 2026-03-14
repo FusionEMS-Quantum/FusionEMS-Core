@@ -112,7 +112,8 @@ def request_s3_upload(
     doc_type: TaxDocumentType = Query(TaxDocumentType.RECEIPT),
     bucket: TaxEntityBucket = Query(TaxEntityBucket.BUSINESS),
     tax_year: int = Query(None, description="Defaults to current year if omitted"),
-    vault: S3DocumentVaultService = Depends(get_s3_vault_service)
+    current: CurrentUser = Depends(require_founder_only_audited()),
+    vault: S3DocumentVaultService = Depends(get_s3_vault_service),
 ) -> dict:
     """
     Get a secure presigned token to bypass the backend and upload W-2s, 1099s, or receipts
@@ -124,7 +125,8 @@ def request_s3_upload(
 
 @tax_advisor_router.get("/strategies/domination")
 async def get_domination_strategies(
-    ai_advisor: AIReceiptTaxAdvisor = Depends()
+    current: CurrentUser = Depends(require_founder_only_audited()),
+    ai_advisor: AIReceiptTaxAdvisor = Depends(),
 ) -> dict:
     """
     AI fetches extreme optimization loopholes (e.g., Augusta Rule, Family Hiring).
@@ -144,7 +146,8 @@ async def realtime_efile_tracking(
 @tax_advisor_router.post("/receipts/scan")
 async def scan_android_receipt(
     receipt_image: UploadFile = File(...),
-    ai_advisor: AIReceiptTaxAdvisor = Depends()
+    current: CurrentUser = Depends(require_founder_only_audited()),
+    ai_advisor: AIReceiptTaxAdvisor = Depends(),
 ) -> dict:
     """
     AI Android Receipt Scanner Endpoint.
