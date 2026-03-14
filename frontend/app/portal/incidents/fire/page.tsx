@@ -167,9 +167,9 @@ function IncidentTypeBadge({ code }: { code: string }) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,107,26,0.35)] placeholder:text-[rgba(255,255,255,0.2)]";
-const inputErrorClass = "w-full bg-[rgba(229,57,53,0.05)] border border-[rgba(229,57,53,0.4)] text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-[rgba(229,57,53,0.6)] placeholder:text-[rgba(255,255,255,0.2)]";
-const labelClass = "block text-micro uppercase tracking-wider text-zinc-500 mb-1";
+const inputClass = "w-full bg-[rgba(255,255,255,0.04)] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-[rgba(255,106,0,0.35)] placeholder:text-[rgba(255,255,255,0.2)]";
+const inputErrorClass = "w-full bg-[rgba(229,57,53,0.05)] border border-[rgba(229,57,53,0.4)] text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-[rgba(229,57,53,0.6)] placeholder:text-[rgba(255,255,255,0.2)]";
+const labelClass = "block text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1";
 
 function makeEmptyForm(): IncidentForm {
   return {
@@ -225,13 +225,13 @@ function IncidentList({
       {/* Header */}
       <div className="px-4 py-3 border-b border-border-DEFAULT flex items-center justify-between">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70">Portal</p>
-          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-100">Fire Incidents</h2>
+          <p className="text-[9px] uppercase tracking-[0.18em] text-[var(--q-orange)]/70">Portal</p>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--color-text-primary)]">Fire Incidents</h2>
         </div>
         <button
           onClick={onNew}
           className="h-7 px-3 text-micro font-bold uppercase tracking-wider chamfer-4"
-          style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
+          style={{ background: 'rgba(255,106,0,0.18)', border: '1px solid rgba(255,106,0,0.35)', color: 'var(--q-orange)' }}
         >
           + New
         </button>
@@ -244,7 +244,7 @@ function IncidentList({
             onClick={() => onFilterChange(f.value)}
             className="h-6 px-2 text-[9px] font-semibold uppercase tracking-wider chamfer-4 transition-colors"
             style={statusFilter === f.value
-              ? { background: 'rgba(255,107,26,0.2)', color: '#FF4D00', border: '1px solid rgba(255,107,26,0.35)' }
+              ? { background: 'rgba(255,106,0,0.2)', color: 'var(--q-orange)', border: '1px solid rgba(255,106,0,0.35)' }
               : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.07)' }
             }
           >
@@ -255,24 +255,24 @@ function IncidentList({
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading && (
-          <div className="py-8 text-center text-body text-zinc-500">Loading…</div>
+          <div className="py-8 text-center text-body text-[var(--color-text-muted)]">Loading…</div>
         )}
         {!loading && incidents.length === 0 && (
-          <div className="py-8 text-center text-body text-zinc-500">No incidents found</div>
+          <div className="py-8 text-center text-body text-[var(--color-text-muted)]">No incidents found</div>
         )}
         {!loading && incidents.map((inc) => (
           <button
             key={inc.id}
             onClick={() => onSelect(inc)}
             className="w-full text-left px-4 py-3 border-b border-border-subtle hover:bg-[rgba(255,255,255,0.03)] transition-colors"
-            style={selectedId === inc.id ? { background: 'rgba(255,107,26,0.07)' } : undefined}
+            style={selectedId === inc.id ? { background: 'rgba(255,106,0,0.07)' } : undefined}
           >
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <span className="text-xs font-semibold text-[rgba(255,255,255,0.85)] font-mono truncate">{inc.incident_number}</span>
               <IncidentStatusBadge status={inc.status} />
             </div>
             <IncidentTypeBadge code={inc.incident_type_code} />
-            <p className="text-micro text-zinc-500 mt-1 font-mono">
+            <p className="text-micro text-[var(--color-text-muted)] mt-1 font-mono">
               {inc.start_datetime ? new Date(inc.start_datetime).toLocaleString() : '—'}
             </p>
           </button>
@@ -296,7 +296,7 @@ function FormSection({
   const [open, setOpen] = useState(true);
   return (
     <div
-      className="bg-[#050505] border chamfer-4 overflow-hidden"
+      className="bg-[var(--color-bg-base)] border chamfer-4 overflow-hidden"
       style={{ borderColor: errorCount > 0 ? 'rgba(229,57,53,0.35)' : 'rgba(255,255,255,0.08)' }}
     >
       <button
@@ -311,7 +311,7 @@ function FormSection({
             </span>
           )}
         </div>
-        <span className="text-zinc-500 text-sm">{open ? '▾' : '▸'}</span>
+        <span className="text-[var(--color-text-muted)] text-sm">{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)]">
@@ -339,7 +339,7 @@ function FormField({
     <div>
       <label className={labelClass}>
         {label}
-        {required && <span className="ml-1" style={{ color: '#FF4D00' }}>*</span>}
+        {required && <span className="ml-1" style={{ color: 'var(--q-orange)' }}>*</span>}
       </label>
       {children}
       {error && <p className="text-micro text-red mt-0.5">{error}</p>}
@@ -487,7 +487,11 @@ function IncidentForm({
       const json = await validatePortalFireIncident(currentId);
       setValidationResult(json);
       if (json.valid) pushToast('Validation passed', 'success');
-      else pushToast(`${json.issues?.filter((i: ValidationIssue) => i.severity === 'error').length ?? 0} errors found`, 'error');
+      else {
+        const issues = Array.isArray(json.issues) ? (json.issues as ValidationIssue[]) : null;
+        const errorCount = issues ? issues.filter((i: ValidationIssue) => i.severity === 'error').length : null;
+        pushToast(errorCount != null ? `${errorCount} errors found` : 'Validation failed (issue details unavailable)', 'error');
+      }
     } catch (e: unknown) {
       pushToast(e instanceof Error ? e.message : 'Validation failed', 'error');
     } finally {
@@ -521,7 +525,10 @@ function IncidentForm({
 
   // Section error counts
   const sectionErrors = (sectionId: string) => issuesForSection(sectionId).filter((i) => i.severity === 'error').length;
-  const totalErrors = validationResult?.issues.filter((i) => i.severity === 'error').length ?? 0;
+  const hasValidationIssueDetails = Array.isArray(validationResult?.issues);
+  const totalErrors = hasValidationIssueDetails
+    ? (validationResult!.issues as ValidationIssue[]).filter((i) => i.severity === 'error').length
+    : 0;
 
   function getInputClass(path: string) {
     return fieldError(path) ? inputErrorClass : inputClass;
@@ -532,8 +539,8 @@ function IncidentForm({
       {/* Form header */}
       <div className="px-5 py-3 border-b border-border-DEFAULT flex items-center justify-between flex-shrink-0">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70">{currentId ? 'Edit Incident' : 'New Incident'}</p>
-          <h3 className="text-sm font-bold text-zinc-100">
+          <p className="text-[9px] uppercase tracking-[0.18em] text-[var(--q-orange)]/70">{currentId ? 'Edit Incident' : 'New Incident'}</p>
+          <h3 className="text-sm font-bold text-[var(--color-text-primary)]">
             {form.incident_number || (currentId ? 'Incident' : 'New Fire Incident')}
           </h3>
         </div>
@@ -545,7 +552,11 @@ function IncidentForm({
                 ? { color: 'var(--q-green)', background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)' }
                 : { color: 'var(--q-red)', background: 'rgba(229,57,53,0.12)', border: '1px solid rgba(229,57,53,0.25)' }}
             >
-              {validationResult.valid ? 'VALID' : `${totalErrors} ERROR${totalErrors !== 1 ? 'S' : ''}`}
+              {validationResult.valid
+                ? 'VALID'
+                : hasValidationIssueDetails
+                  ? `${totalErrors} ERROR${totalErrors !== 1 ? 'S' : ''}`
+                  : 'INVALID'}
             </span>
           </div>
         )}
@@ -571,9 +582,9 @@ function IncidentForm({
                 value={form.incident_type_code}
                 onChange={(e) => update('incident_type_code', e.target.value)}
                 className={getInputClass('incident_type_code')}
-                style={{ background: '#050505' }}
+                style={{ background: 'var(--color-bg-base)' }}
               >
-                <option value="" className="bg-[#050505]">— Select —</option>
+                <option value="" className="bg-[var(--color-bg-base)]">— Select —</option>
                 {(incidentTypeValues.length > 0
                   ? incidentTypeValues.map((v) => ({ code: v, label: v }))
                   : [
@@ -591,7 +602,7 @@ function IncidentForm({
                       { code: 'UNK', label: 'Unknown' },
                     ]
                 ).map((v) => (
-                  <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
+                  <option key={v.code} value={v.code} className="bg-[var(--color-bg-base)]">{v.label}</option>
                 ))}
               </select>
             </FormField>
@@ -646,9 +657,9 @@ function IncidentForm({
                 value={form.property_use_code}
                 onChange={(e) => update('property_use_code', e.target.value)}
                 className={getInputClass('property_use_code')}
-                style={{ background: '#050505' }}
+                style={{ background: 'var(--color-bg-base)' }}
               >
-                <option value="" className="bg-[#050505]">— Select —</option>
+                <option value="" className="bg-[var(--color-bg-base)]">— Select —</option>
                 {(propertyUseValues.length > 0
                   ? propertyUseValues.map((v) => ({ code: v, label: v }))
                   : [
@@ -666,7 +677,7 @@ function IncidentForm({
                       { code: 'NNN', label: 'None/Not applicable' },
                     ]
                 ).map((v) => (
-                  <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
+                  <option key={v.code} value={v.code} className="bg-[var(--color-bg-base)]">{v.label}</option>
                 ))}
               </select>
             </FormField>
@@ -688,7 +699,7 @@ function IncidentForm({
             {form.units.map((unit, i) => (
               <div key={i} className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] chamfer-4 p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] uppercase tracking-wider text-[rgba(255,107,26,0.7)]">Unit {i + 1}</span>
+                  <span className="text-[9px] uppercase tracking-wider text-[rgba(255,106,0,0.7)]">Unit {i + 1}</span>
                   {form.units.length > 1 && (
                     <button
                       onClick={() => update('units', form.units.filter((_, idx) => idx !== i))}
@@ -708,11 +719,11 @@ function IncidentForm({
                         update('units', updated);
                       }}
                       className={inputClass}
-                      style={{ background: '#050505' }}
+                      style={{ background: 'var(--color-bg-base)' }}
                     >
-                      <option value="" className="bg-[#050505]">— Select —</option>
+                      <option value="" className="bg-[var(--color-bg-base)]">— Select —</option>
                       {apparatus.map((a) => (
-                        <option key={a.id} value={a.id} className="bg-[#050505]">{a.unit_id} ({a.unit_type_code})</option>
+                        <option key={a.id} value={a.id} className="bg-[var(--color-bg-base)]">{a.unit_id} ({a.unit_type_code})</option>
                       ))}
                     </select>
                   </FormField>
@@ -768,9 +779,9 @@ function IncidentForm({
                         update('actions', updated);
                       }}
                       className={inputClass}
-                      style={{ background: '#050505' }}
+                      style={{ background: 'var(--color-bg-base)' }}
                     >
-                      <option value="" className="bg-[#050505]">— Select —</option>
+                      <option value="" className="bg-[var(--color-bg-base)]">— Select —</option>
                       {(actionTakenValues.length > 0
                         ? actionTakenValues.map((v) => ({ code: v, label: v }))
                         : [
@@ -786,7 +797,7 @@ function IncidentForm({
                             { code: '93', label: 'Cancelled en route' },
                           ]
                       ).map((v) => (
-                        <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
+                        <option key={v.code} value={v.code} className="bg-[var(--color-bg-base)]">{v.label}</option>
                       ))}
                     </select>
                   </FormField>
@@ -854,13 +865,13 @@ function IncidentForm({
       {/* ── Action Bar ── */}
       <div
         className="flex-shrink-0 px-5 py-3 border-t border-border-DEFAULT flex items-center gap-3 flex-wrap"
-        style={{ background: '#050505' }}
+        style={{ background: 'var(--color-bg-base)' }}
       >
         <button
           onClick={saveDraft}
           disabled={savingDraft}
           className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 transition-all hover:brightness-110 disabled:opacity-40"
-          style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
+          style={{ background: 'rgba(255,106,0,0.18)', border: '1px solid rgba(255,106,0,0.35)', color: 'var(--q-orange)' }}
         >
           {savingDraft ? 'Saving…' : 'Save Draft'}
         </button>
@@ -981,7 +992,7 @@ export default function FireIncidentsPage() {
   const showForm = isNew || selectedIncident !== null;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col" style={{ height: '100vh' }}>
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex flex-col" style={{ height: '100vh' }}>
       <Toast items={toasts} />
       <div className="flex flex-1 min-h-0">
         <IncidentList
@@ -1007,11 +1018,11 @@ export default function FireIncidentsPage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-3">
                 <div className="text-4xl opacity-20">🔥</div>
-                <p className="text-sm text-zinc-500">Select an incident or create a new one.</p>
+                <p className="text-sm text-[var(--color-text-muted)]">Select an incident or create a new one.</p>
                 <button
                   onClick={handleNew}
                   className="h-8 px-4 text-micro font-bold uppercase tracking-wider chamfer-4"
-                  style={{ background: 'rgba(255,107,26,0.18)', border: '1px solid rgba(255,107,26,0.35)', color: '#FF4D00' }}
+                  style={{ background: 'rgba(255,106,0,0.18)', border: '1px solid rgba(255,106,0,0.35)', color: 'var(--q-orange)' }}
                 >
                   + New Incident
                 </button>

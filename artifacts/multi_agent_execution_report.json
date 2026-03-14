@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-03-11T00:32:14.985188+00:00",
+    "started_at_utc": "2026-03-11T00:27:15.711353+00:00",
+    "finished_at_utc": "2026-03-11T00:32:14.985188+00:00",
+    "duration_seconds": 299.274,
+    "mode": "validate",
+    "allow_apply": false,
+    "git_sha": "679aedef9f5872686d21de35166c7d76def403a3",
+    "contract_path": "ops/multi_agent_execution_contract.json",
+    "execution_environment": "OpenAI Codex",
+    "aws_profile": "fusion",
+    "default_models": {
+      "orchestration": "gpt-5.4",
+      "platform_core": "gpt-5-codex",
+      "frontend_command_surface": "claude-opus",
+      "auth_access_control": "gpt-5.4",
+      "data_persistence": "gpt-5-codex",
+      "interoperability": "gpt-5-codex",
+      "aws_terraform": "gpt-5-codex",
+      "security_compliance": "gpt-5.4",
+      "observability_reliability": "claude-opus",
+      "qa_release": "gemini-2.5-pro"
+    }
+  },
+  "status": "failed",
+  "lanes": [
+    {
+      "lane_id": "agent-02-platform-core",
+      "agent_label": "Platform Core Agent",
+      "model": "gpt-5-codex",
+      "purpose": "Backend domain logic, API integrity, critical regression confidence",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.813890+00:00",
+      "finished_at_utc": "2026-03-11T00:27:32.148854+00:00",
+      "duration_seconds": 16.335,
+      "log_file": "artifacts/multi-agent-logs/agent-02-platform-core.log",
+      "commands": [
+        {
+          "name": "route-matrix-gate",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python scripts/ci_gate_route_matrix.py",
+          "exit_code": 0,
+          "duration_seconds": 0.264,
+          "required": true
+        },
+        {
+          "name": "backend-critical-regression",
+          "command": "cd backend && /workspaces/FusionEMS-Core/.venv/bin/python -m pytest tests/test_billing_directive_gap.py tests/test_compliance_command.py tests/test_founder_command_domain_service.py tests/test_founder_integration_command_router.py tests/test_margin_risk_analytics.py -q",
+          "exit_code": 0,
+          "duration_seconds": 16.07,
+          "required": true
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-03-frontend-command-surface",
+      "agent_label": "Frontend Command Surface Agent",
+      "model": "claude-opus",
+      "purpose": "Frontend command-surface build correctness and runtime safety",
+      "status": "failed",
+      "started_at_utc": "2026-03-11T00:32:07.671713+00:00",
+      "finished_at_utc": "2026-03-11T00:32:14.985024+00:00",
+      "duration_seconds": 7.313,
+      "log_file": "artifacts/multi-agent-logs/agent-03-frontend-command-surface.log",
+      "commands": [
+        {
+          "name": "frontend-no-crash-fallbacks",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python scripts/ci_gate_no_frontend_crash_fallbacks.py",
+          "exit_code": 0,
+          "duration_seconds": 0.546,
+          "required": true
+        },
+        {
+          "name": "frontend-typecheck",
+          "command": "cd frontend && npm run clean:next && npx tsc --noEmit",
+          "exit_code": 2,
+          "duration_seconds": 6.766,
+          "required": true
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-04-auth-access-control",
+      "agent_label": "Authentication and Access Control Agent",
+      "model": "gpt-5.4",
+      "purpose": "Auth surface integrity, production fail-closed validation",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.814690+00:00",
+      "finished_at_utc": "2026-03-11T00:27:27.594176+00:00",
+      "duration_seconds": 11.779,
+      "log_file": "artifacts/multi-agent-logs/agent-04-auth-access-control.log",
+      "commands": [
+        {
+          "name": "auth-surface-validation",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python scripts/validate_auth_surface.py",
+          "exit_code": 0,
+          "duration_seconds": 11.779,
+          "required": true
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-05-data-persistence",
+      "agent_label": "Data and Persistence Agent",
+      "model": "gpt-5-codex",
+      "purpose": "Migration graph and data-path integrity validation",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.815368+00:00",
+      "finished_at_utc": "2026-03-11T00:27:21.315879+00:00",
+      "duration_seconds": 5.501,
+      "log_file": "artifacts/multi-agent-logs/agent-05-data-persistence.log",
+      "commands": [
+        {
+          "name": "migration-graph-check",
+          "command": "cd backend && alembic history -r-3:",
+          "exit_code": 0,
+          "duration_seconds": 4.183,
+          "required": true
+        },
+        {
+          "name": "repo-import-sanity",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python backend/test_repo.py",
+          "exit_code": 0,
+          "duration_seconds": 1.317,
+          "required": true
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-06-nemsis-neris-interoperability",
+      "agent_label": "NEMSIS and NERIS Interoperability Agent",
+      "model": "gpt-5-codex",
+      "purpose": "Interoperability readiness and schema compliance checks",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.816508+00:00",
+      "finished_at_utc": "2026-03-11T00:27:16.533793+00:00",
+      "duration_seconds": 0.717,
+      "log_file": "artifacts/multi-agent-logs/agent-06-nemsis-neris-interoperability.log",
+      "commands": [
+        {
+          "name": "nemsis-ci-validate",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python -m backend.compliance.nemsis.ci_validate",
+          "exit_code": 0,
+          "duration_seconds": 0.581,
+          "required": true
+        },
+        {
+          "name": "neris-ci-validate",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python -m backend.compliance.neris.ci_validate",
+          "exit_code": 0,
+          "duration_seconds": 0.135,
+          "required": true
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-07-aws-infra-terraform",
+      "agent_label": "AWS Infrastructure and Terraform Agent",
+      "model": "gpt-5-codex",
+      "purpose": "Terraform static validation, module integrity, and IaC safety gates",
+      "status": "warning",
+      "started_at_utc": "2026-03-11T00:27:15.819255+00:00",
+      "finished_at_utc": "2026-03-11T00:28:08.972202+00:00",
+      "duration_seconds": 53.153,
+      "log_file": "artifacts/multi-agent-logs/agent-07-aws-infra-terraform.log",
+      "commands": [
+        {
+          "name": "terraform-fmt-check",
+          "command": "terraform fmt -check -recursive infra/terraform",
+          "exit_code": 3,
+          "duration_seconds": 5.974,
+          "required": false
+        },
+        {
+          "name": "terraform-validate-prod",
+          "command": "TMP_TF_DATA_DIR=\"$(mktemp -d)\" && TF_DATA_DIR=\"$TMP_TF_DATA_DIR\" terraform -chdir=infra/terraform/environments/prod init -backend=false -reconfigure && TF_DATA_DIR=\"$TMP_TF_DATA_DIR\" terraform -chdir=infra/terraform/environments/prod validate",
+          "exit_code": 0,
+          "duration_seconds": 24.985,
+          "required": true
+        },
+        {
+          "name": "checkov-scan",
+          "command": "checkov -d infra/terraform --config-file checkov.yml --quiet",
+          "exit_code": 1,
+          "duration_seconds": 22.095,
+          "required": false
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-08-security-compliance-audit",
+      "agent_label": "Security, Compliance, and Audit Agent",
+      "model": "gpt-5.4",
+      "purpose": "Control evidence, placeholder/secrets scanning, compliance gate",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.822403+00:00",
+      "finished_at_utc": "2026-03-11T00:27:31.683333+00:00",
+      "duration_seconds": 15.861,
+      "log_file": "artifacts/multi-agent-logs/agent-08-security-compliance-audit.log",
+      "commands": [
+        {
+          "name": "compliance-program-validation",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python scripts/validate_compliance_program.py",
+          "exit_code": 0,
+          "duration_seconds": 0.117,
+          "required": true
+        },
+        {
+          "name": "placeholder-secret-scan",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python scripts/scan_placeholders.py",
+          "exit_code": 0,
+          "duration_seconds": 15.743,
+          "required": true
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-09-observability-reliability-ops",
+      "agent_label": "Observability, Reliability, and Operations Agent",
+      "model": "claude-opus",
+      "purpose": "Orchestration telemetry visibility and frontend wiring integrity",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.823792+00:00",
+      "finished_at_utc": "2026-03-11T00:27:30.376168+00:00",
+      "duration_seconds": 14.552,
+      "log_file": "artifacts/multi-agent-logs/agent-09-observability-reliability-ops.log",
+      "commands": [
+        {
+          "name": "founder-multi-agent-status-tests",
+          "command": "cd backend && /workspaces/FusionEMS-Core/.venv/bin/python -m pytest tests/test_founder_multi_agent_status_router.py -q",
+          "exit_code": 0,
+          "duration_seconds": 14.079,
+          "required": true
+        },
+        {
+          "name": "frontend-wiring-verification",
+          "command": "/workspaces/FusionEMS-Core/.venv/bin/python scripts/verify_frontend_wiring.py",
+          "exit_code": 0,
+          "duration_seconds": 0.45,
+          "required": false
+        }
+      ]
+    },
+    {
+      "lane_id": "agent-10-qa-validation-release",
+      "agent_label": "QA, Validation, Deployment, and Release Agent",
+      "model": "gemini-2.5-pro",
+      "purpose": "Cross-stack release confidence and deploy gating",
+      "status": "passed",
+      "started_at_utc": "2026-03-11T00:27:15.826660+00:00",
+      "finished_at_utc": "2026-03-11T00:32:07.671399+00:00",
+      "duration_seconds": 291.845,
+      "log_file": "artifacts/multi-agent-logs/agent-10-qa-validation-release.log",
+      "commands": [
+        {
+          "name": "docker-build-backend",
+          "command": "docker build -t fusionems-backend:multi-agent ./backend",
+          "exit_code": 0,
+          "duration_seconds": 8.024,
+          "required": false
+        },
+        {
+          "name": "docker-build-frontend",
+          "command": "docker build -t fusionems-frontend:multi-agent ./frontend",
+          "exit_code": 0,
+          "duration_seconds": 283.818,
+          "required": false
+        }
+      ]
+    }
+  ]
+}

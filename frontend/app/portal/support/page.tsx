@@ -74,7 +74,7 @@ function StatusBadge({ status }: { status: ThreadStatus }) {
       </span>
     );
   return (
-    <span className="text-micro px-1.5 py-0.5 chamfer-4 border border-[var(--color-border-default)] text-zinc-500 bg-zinc-950/[0.04]">
+    <span className="text-micro px-1.5 py-0.5 chamfer-4 border border-[var(--color-border-default)] text-[var(--color-text-muted)] bg-[var(--color-bg-base)]/[0.04]">
       resolved
     </span>
   );
@@ -118,22 +118,22 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#050505] border border-border-DEFAULT chamfer-8 w-full max-w-md mx-4 p-6">
-        <h2 className="text-sm font-semibold text-zinc-100 tracking-widest uppercase mb-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg-base)]/60 backdrop-blur-sm">
+      <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-8 w-full max-w-md mx-4 p-6">
+        <h2 className="text-sm font-semibold text-[var(--color-text-primary)] tracking-widest uppercase mb-5">
           New Conversation
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Type */}
           <div>
-            <label className="block text-body text-zinc-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-body text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">
               Type
             </label>
             <select
               value={threadType}
               onChange={(e) => setThreadType(e.target.value as ThreadType)}
-              className="w-full bg-black border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 px-3 py-2 focus:outline-none focus:border-brand-orange/40"
+              className="w-full bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] px-3 py-2 focus:outline-none focus:border-brand-orange/40"
             >
               {THREAD_TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -145,7 +145,7 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
 
           {/* Title */}
           <div>
-            <label className="block text-body text-zinc-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-body text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">
               Subject
             </label>
             <input
@@ -153,13 +153,13 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Brief description of your issue"
-              className="w-full bg-black border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 px-3 py-2 placeholder-text-zinc-500 focus:outline-none focus:border-brand-orange/40"
+              className="w-full bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] px-3 py-2 placeholder-text-[var(--color-text-muted)] focus:outline-none focus:border-brand-orange/40"
             />
           </div>
 
           {/* Initial message */}
           <div>
-            <label className="block text-body text-zinc-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-body text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">
               Message
             </label>
             <textarea
@@ -167,7 +167,7 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
               value={initialMessage}
               onChange={(e) => setInitialMessage(e.target.value)}
               placeholder="Describe your issue in detail…"
-              className="w-full bg-black border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 px-3 py-2 placeholder-text-zinc-500 focus:outline-none focus:border-brand-orange/40 resize-none"
+              className="w-full bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] px-3 py-2 placeholder-text-[var(--color-text-muted)] focus:outline-none focus:border-brand-orange/40 resize-none"
             />
           </div>
 
@@ -179,14 +179,14 @@ function NewThreadModal({ onClose, onCreate }: NewThreadModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="text-sm px-4 py-2 chamfer-4 border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 transition-colors"
+              className="text-sm px-4 py-2 chamfer-4 border border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="text-sm px-4 py-2 chamfer-4 bg-[#FF4D00] text-zinc-100 font-medium hover:bg-[#CC3D00] transition-colors disabled:opacity-50"
+              className="text-sm px-4 py-2 chamfer-4 bg-[var(--q-orange)] text-[var(--color-text-primary)] font-medium hover:bg-[#CC3D00] transition-colors disabled:opacity-50"
             >
               {loading ? 'Creating…' : 'Start Conversation'}
             </button>
@@ -323,12 +323,12 @@ export default function AgencySupportPage() {
       >
         {/* Header */}
         <div className="px-4 pt-5 pb-3 border-b border-border-DEFAULT">
-          <p className="text-body font-label tracking-widest text-zinc-500 uppercase mb-3">
+          <p className="text-body font-label tracking-widest text-[var(--color-text-muted)] uppercase mb-3">
             Support
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="w-full text-sm py-2 chamfer-4 bg-[#FF4D00] text-zinc-100 font-medium hover:bg-[#CC3D00] transition-colors"
+            className="w-full text-sm py-2 chamfer-4 bg-[var(--q-orange)] text-[var(--color-text-primary)] font-medium hover:bg-[#CC3D00] transition-colors"
           >
             + New Conversation
           </button>
@@ -339,7 +339,7 @@ export default function AgencySupportPage() {
           {THREAD_TYPES.map((t) => (
             <p
               key={t}
-              className="text-body text-zinc-500 py-0.5"
+              className="text-body text-[var(--color-text-muted)] py-0.5"
             >
               {t}
             </p>
@@ -349,12 +349,12 @@ export default function AgencySupportPage() {
         {/* Thread list */}
         <div className="flex-1 overflow-y-auto">
           {loadingThreads && (
-            <p className="text-body text-zinc-500 px-4 py-3">
+            <p className="text-body text-[var(--color-text-muted)] px-4 py-3">
               Loading…
             </p>
           )}
           {!loadingThreads && threads.length === 0 && (
-            <p className="text-body text-zinc-500 px-4 py-3">
+            <p className="text-body text-[var(--color-text-muted)] px-4 py-3">
               No conversations yet.
             </p>
           )}
@@ -366,23 +366,23 @@ export default function AgencySupportPage() {
                 onClick={() => handleSelectThread(t)}
                 className={`w-full text-left px-4 py-3 border-b border-[var(--color-border-default)] transition-colors ${
                   active
-                    ? 'bg-[rgba(255,77,0,0.12)]'
+                    ? 'bg-[rgba(255,106,0,0.12)]'
                     : 'hover:bg-[rgba(255,255,255,0.03)]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-1 mb-0.5">
                   <span
-                    className="text-xs font-medium text-zinc-100 truncate"
+                    className="text-xs font-medium text-[var(--color-text-primary)] truncate"
                     style={{ maxWidth: 140 }}
                   >
                     {t.title}
                   </span>
                   <StatusBadge status={t.status} />
                 </div>
-                <p className="text-body text-zinc-500 truncate mb-1">
+                <p className="text-body text-[var(--color-text-muted)] truncate mb-1">
                   {t.last_message_preview}
                 </p>
-                <p className="text-micro text-zinc-500">
+                <p className="text-micro text-[var(--color-text-muted)]">
                   {formatTime(t.last_message_at)}
                 </p>
               </button>
@@ -396,7 +396,7 @@ export default function AgencySupportPage() {
         {!selectedThread ? (
           // Empty state
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-[var(--color-text-muted)]">
               Select a conversation or start a new one
             </p>
           </div>
@@ -404,10 +404,10 @@ export default function AgencySupportPage() {
           <>
             {/* Thread header */}
             <div className="px-6 py-4 border-b border-border-DEFAULT flex items-center gap-3 shrink-0">
-              <span className="text-sm font-semibold text-zinc-100">
+              <span className="text-sm font-semibold text-[var(--color-text-primary)]">
                 {selectedThread.title}
               </span>
-              <span className="text-body text-zinc-500">
+              <span className="text-body text-[var(--color-text-muted)]">
                 {selectedThread.thread_type}
               </span>
               <div className="ml-auto">
@@ -426,12 +426,12 @@ export default function AgencySupportPage() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-2">
               {loadingMessages && (
-                <p className="text-body text-zinc-500 text-center py-6">
+                <p className="text-body text-[var(--color-text-muted)] text-center py-6">
                   Loading messages…
                 </p>
               )}
               {!loadingMessages && messages.length === 0 && (
-                <p className="text-body text-zinc-500 text-center py-6">
+                <p className="text-body text-[var(--color-text-muted)] text-center py-6">
                   No messages yet.
                 </p>
               )}
@@ -451,7 +451,7 @@ export default function AgencySupportPage() {
                         isAgency ? 'flex-row-reverse' : ''
                       }`}
                     >
-                      <span className="text-micro text-zinc-500">
+                      <span className="text-micro text-[var(--color-text-muted)]">
                         {msg.sender_label}
                       </span>
                       {isAI && (
@@ -462,16 +462,16 @@ export default function AgencySupportPage() {
                     </div>
                     {/* Bubble */}
                     <div
-                      className={`px-3 py-2 chamfer-4 text-sm text-zinc-100 max-w-[70%] ${
+                      className={`px-3 py-2 chamfer-4 text-sm text-[var(--color-text-primary)] max-w-[70%] ${
                         isAgency
                           ? 'bg-brand-orange/15 border border-brand-orange/20'
-                          : 'bg-zinc-950/5 border border-border-DEFAULT'
+                          : 'bg-[var(--color-bg-base)]/5 border border-border-DEFAULT'
                       }`}
                     >
                       {msg.content}
                     </div>
                     {/* Timestamp */}
-                    <span className="text-micro text-zinc-500">
+                    <span className="text-micro text-[var(--color-text-muted)]">
                       {formatTime(msg.created_at)}
                     </span>
                   </div>
@@ -487,7 +487,7 @@ export default function AgencySupportPage() {
                 <button
                   type="button"
                   title="Attach file"
-                  className="shrink-0 mb-0.5 p-2 chamfer-4 border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 hover:border-[var(--color-border-default)] transition-colors"
+                  className="shrink-0 mb-0.5 p-2 chamfer-4 border border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-default)] transition-colors"
                 >
                   <svg
                     width="16"
@@ -510,19 +510,19 @@ export default function AgencySupportPage() {
                   onKeyDown={handleKeyDown}
                   placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
                   disabled={selectedThread.status === 'resolved'}
-                  className="flex-1 bg-[#050505] border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 px-3 py-2 placeholder-text-zinc-500 focus:outline-none focus:border-brand-orange/40 resize-none disabled:opacity-40"
+                  className="flex-1 bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] px-3 py-2 placeholder-text-[var(--color-text-muted)] focus:outline-none focus:border-brand-orange/40 resize-none disabled:opacity-40"
                 />
 
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || sending || selectedThread.status === 'resolved'}
-                  className="shrink-0 mb-0.5 px-4 py-2 chamfer-4 bg-[#FF4D00] text-zinc-100 text-sm font-medium hover:bg-[#CC3D00] transition-colors disabled:opacity-40"
+                  className="shrink-0 mb-0.5 px-4 py-2 chamfer-4 bg-[var(--q-orange)] text-[var(--color-text-primary)] text-sm font-medium hover:bg-[#CC3D00] transition-colors disabled:opacity-40"
                 >
                   {sending ? '…' : 'Send'}
                 </button>
               </div>
               {selectedThread.status === 'resolved' && (
-                <p className="text-body text-zinc-500 mt-1.5">
+                <p className="text-body text-[var(--color-text-muted)] mt-1.5">
                   This conversation is resolved. Start a new one if you need
                   further assistance.
                 </p>

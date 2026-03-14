@@ -16,12 +16,12 @@ interface Notification {
 }
 
 const TYPE_CONFIG: Record<string, { color: string; bg: string; border: string; icon: string }> = {
-  payment:   { color: '#10B981', bg: 'rgba(16,185,129,0.06)',  border: 'rgba(16,185,129,0.2)',  icon: 'pay' },
+  payment:   { color: 'var(--color-status-active)', bg: 'rgba(16,185,129,0.06)',  border: 'rgba(16,185,129,0.2)',  icon: 'pay' },
   statement: { color: '#818CF8', bg: 'rgba(129,140,248,0.06)', border: 'rgba(129,140,248,0.2)', icon: 'doc' },
-  plan:      { color: '#F59E0B', bg: 'rgba(245,158,11,0.06)',  border: 'rgba(245,158,11,0.2)',  icon: 'plan' },
+  plan:      { color: 'var(--q-yellow)', bg: 'rgba(245,158,11,0.06)',  border: 'rgba(245,158,11,0.2)',  icon: 'plan' },
   message:   { color: '#A78BFA', bg: 'rgba(167,139,250,0.06)', border: 'rgba(167,139,250,0.2)', icon: 'msg' },
   support:   { color: '#60A5FA', bg: 'rgba(96,165,250,0.06)',  border: 'rgba(96,165,250,0.2)',  icon: 'support' },
-  system:    { color: '#FF4D00', bg: 'rgba(255,77,0,0.06)',    border: 'rgba(255,77,0,0.2)',    icon: 'system' },
+  system:    { color: 'var(--q-orange)', bg: 'rgba(255,106,0,0.06)',    border: 'rgba(255,106,0,0.2)',    icon: 'system' },
 };
 
 function NIcon({ type }: { type: string }) {
@@ -84,20 +84,20 @@ export default function NotificationsPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-[3px] h-6 bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)]" />
+            <div className="w-[3px] h-6 bg-[var(--q-orange)] shadow-[0_0_8px_rgba(255,106,0,0.6)]" />
             <h1 className="text-xl font-black tracking-[0.12em] text-white uppercase">Notifications</h1>
             {unreadCount > 0 && (
-              <span className="text-[9px] font-black px-1.5 py-0.5 bg-[#FF4D00] text-black">
+              <span className="text-[9px] font-black px-1.5 py-0.5 bg-[var(--q-orange)] text-black">
                 {unreadCount}
               </span>
             )}
           </div>
-          <p className="text-sm text-zinc-500 ml-5">Billing alerts, payment confirmations, and account updates.</p>
+          <p className="text-sm text-[var(--color-text-muted)] ml-5">Billing alerts, payment confirmations, and account updates.</p>
         </div>
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
-            className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-zinc-300 transition-colors border border-zinc-800 hover:border-zinc-600 px-3 py-1.5"
+            className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] px-3 py-1.5"
             style={{ clipPath: clip6 }}
           >
             Mark All Read
@@ -113,8 +113,8 @@ export default function NotificationsPage() {
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase border transition-colors ${
               filter === f
-                ? 'bg-[#FF4D00]/10 border-[#FF4D00]/40 text-[#FF4D00]'
-                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                ? 'bg-[var(--q-orange)]/10 border-[var(--q-orange)]/40 text-[var(--q-orange)]'
+                : 'border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-secondary)]'
             }`}
             style={{ clipPath: clip6 }}
           >
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
 
       {/* Notifications */}
       {fetchError && (
-        <div className="mb-4 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+        <div className="mb-4 px-4 py-3 bg-[var(--color-brand-red)]/8 border border-[var(--color-brand-red)]/20 text-sm text-[var(--color-brand-red)]" style={{ clipPath: clip6 }}>
           Unable to load notifications. Please refresh the page or contact billing support.
         </div>
       )}
@@ -133,13 +133,13 @@ export default function NotificationsPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-[#0A0A0B] border border-zinc-900 h-20 animate-pulse" style={{ clipPath: clip10 }} />
+            <div key={i} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-subtle)] h-20 animate-pulse" style={{ clipPath: clip10 }} />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0A0A0B] border border-zinc-800 py-16 text-center" style={{ clipPath: clip10 }}>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] py-16 text-center" style={{ clipPath: clip10 }}>
           <div className="text-2xl mb-3 opacity-20">🔔</div>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-[var(--color-text-muted)]">
             {filter === 'unread' ? 'No unread notifications.' : 'No notifications yet.'}
           </p>
         </div>
@@ -152,8 +152,8 @@ export default function NotificationsPage() {
                 key={n.id}
                 className={`border p-4 transition-all cursor-default ${
                   n.read
-                    ? 'bg-[#0A0A0B] border-zinc-900'
-                    : 'bg-[#0A0A0B] border-zinc-800'
+                    ? 'bg-[var(--color-bg-panel)] border-[var(--color-border-subtle)]'
+                    : 'bg-[var(--color-bg-panel)] border-[var(--color-border-default)]'
                 }`}
                 style={{ clipPath: clip10, borderLeftColor: n.read ? undefined : cfg.color }}
                 onClick={() => markRead(n.id)}
@@ -170,19 +170,19 @@ export default function NotificationsPage() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm font-semibold ${n.read ? 'text-zinc-400' : 'text-zinc-100'}`}>
+                      <p className={`text-sm font-semibold ${n.read ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-primary)]'}`}>
                         {n.title}
                         {!n.read && (
-                          <span className="inline-block ml-2 w-1.5 h-1.5 bg-[#FF4D00] rounded-full align-middle" />
+                          <span className="inline-block ml-2 w-1.5 h-1.5 bg-[var(--q-orange)] rounded-full align-middle" />
                         )}
                       </p>
-                      <span className="flex-shrink-0 text-[10px] text-zinc-600">{fmtRelative(n.created_at)}</span>
+                      <span className="flex-shrink-0 text-[10px] text-[var(--color-text-muted)]">{fmtRelative(n.created_at)}</span>
                     </div>
-                    <p className={`text-xs mt-1 ${n.read ? 'text-zinc-600' : 'text-zinc-400'}`}>{n.body}</p>
+                    <p className={`text-xs mt-1 ${n.read ? 'text-[var(--color-text-muted)]' : 'text-[var(--color-text-secondary)]'}`}>{n.body}</p>
                     {n.action_href && (
                       <Link
                         href={n.action_href}
-                        className="inline-block mt-2 text-[10px] font-bold tracking-widest uppercase text-[#FF4D00] hover:underline"
+                        className="inline-block mt-2 text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)] hover:underline"
                         onClick={e => { e.stopPropagation(); markRead(n.id); }}
                       >
                         {n.action_label ?? 'View'} →
@@ -198,7 +198,7 @@ export default function NotificationsPage() {
 
       {/* Notification preferences link */}
       <div className="mt-8 text-center">
-        <Link href="/portal/patient/preferences" className="text-[10px] font-bold tracking-widest uppercase text-zinc-600 hover:text-zinc-400 transition-colors">
+        <Link href="/portal/patient/preferences" className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
           Manage Notification Preferences →
         </Link>
       </div>

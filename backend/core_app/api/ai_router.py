@@ -25,11 +25,16 @@ def chat(
     prompt = str(payload.get("prompt", "")).strip()
     if not prompt:
         raise HTTPException(status_code=400, detail="prompt required")
-    svc = AiService()
-    content, meta = svc.chat(
+    try:
+        svc = AiService()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"ai_not_configured: {exc}") from exc
+    _resp = svc.chat(
         system="You are FusionEMS Quantum assistant. Be concise and compliant.",
         user=prompt,
     )
+    content = _resp.content
+    meta = {"model": _resp.model, "provider": _resp.provider, "usage": _resp.usage}
     from core_app.ai.guardrails import validate_ai_output
 
     try:
@@ -38,7 +43,7 @@ def chat(
         )
         content = validated.content
     except ValueError as guard_err:
-        raise HTTPException(status_code=422, detail=f"AI guardrail: {guard_err}")
+        raise HTTPException(status_code=422, detail=f"AI guardrail: {guard_err}") from guard_err
     # store ai run (best effort)
     try:
         db.execute(

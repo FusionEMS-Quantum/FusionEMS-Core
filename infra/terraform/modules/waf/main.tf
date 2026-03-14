@@ -130,11 +130,44 @@ resource "aws_wafv2_web_acl" "this" {
     }
   }
 
-  # ── Priority 3: Block non-allowlisted webhook traffic ────────────────────
+  # ── Priority 3: Allow Lob webhooks ───────────────────────────────────────
+
+  rule {
+    name     = "AllowLobWebhooks"
+    priority = 3
+
+    action {
+      allow {}
+    }
+
+    statement {
+      byte_match_statement {
+        search_string         = "/api/v1/webhooks/lob"
+        positional_constraint = "STARTS_WITH"
+
+        field_to_match {
+          uri_path {}
+        }
+
+        text_transformation {
+          priority = 0
+          type     = "NONE"
+        }
+      }
+    }
+
+    visibility_config {
+      sampled_requests_enabled   = true
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AllowLobWebhooks"
+    }
+  }
+
+  # ── Priority 4: Block non-allowlisted webhook traffic ────────────────────
 
   rule {
     name     = "BlockNonAllowlistedWebhookTraffic"
-    priority = 3
+    priority = 4
 
     action {
       block {}

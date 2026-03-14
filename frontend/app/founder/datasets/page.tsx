@@ -113,7 +113,7 @@ export default function GodModeDatasets() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090D] text-white selection:bg-[#FF4D00] selection:text-black font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#07090D] text-white selection:bg-[var(--q-orange)] selection:text-black font-sans relative overflow-hidden">
       {/* Background Effect */}
       <div className="fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-yellow-900/20 via-black to-black opacity-90 pointer-events-none" />
 
@@ -124,7 +124,7 @@ export default function GodModeDatasets() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+            className="fixed inset-0 z-50 bg-[var(--color-bg-base)]/80 backdrop-blur-sm flex items-center justify-center p-6"
           >
             <motion.div 
               initial={{ scale: 0.95, y: 20 }}
@@ -132,22 +132,22 @@ export default function GodModeDatasets() {
               exit={{ scale: 0.95, y: 20 }}
               className="bg-[#0f1115] border border-orange-500/30  w-full max-w-4xl shadow-[0_0_15px_rgba(0,0,0,0.6)] overflow-hidden shadow-orange-900/20"
             >
-              <div className="bg-[rgba(255,77,0,0.10)] border-b border-orange-500/20 p-4 flex justify-between items-center">
+              <div className="bg-[rgba(255,106,0,0.10)] border-b border-orange-500/20 p-4 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <Ghost className="w-6 h-6 text-[#FF4D00] animate-pulse" />
+                  <Ghost className="w-6 h-6 text-[var(--q-orange)] animate-pulse" />
                   <div>
-                    <h3 className="text-[#FF4D00] font-bold tracking-widest uppercase">GHOST MODE : ACTIVE SESSIONS</h3>
-                    <p className="text-[rgba(255,77,0,0.60)] text-xs font-mono">Intercepting live tenant websockets for remote assist...</p>
+                    <h3 className="text-[var(--q-orange)] font-bold tracking-widest uppercase">GHOST MODE : ACTIVE SESSIONS</h3>
+                    <p className="text-[rgba(255,106,0,0.60)] text-xs font-mono">Intercepting live tenant websockets for remote assist...</p>
                   </div>
                 </div>
-                <button onClick={() => setShowGhostMode(false)} className="text-zinc-500 hover:text-white transition-colors">
+                <button onClick={() => setShowGhostMode(false)} className="text-[var(--color-text-muted)] hover:text-white transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
               <div className="p-6">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-800 text-xs text-zinc-500 uppercase tracking-wider font-mono">
+                    <tr className="border-b border-gray-800 text-xs text-[var(--color-text-muted)] uppercase tracking-wider font-mono">
                       <th className="pb-3">Device ID / IP</th>
                       <th className="pb-3">Agency</th>
                       <th className="pb-3">User (Active)</th>
@@ -157,22 +157,22 @@ export default function GodModeDatasets() {
                   </thead>
                   <tbody className="text-sm">
                     {activeDevices.map(dev => (
-                      <tr key={dev.id} className="border-b border-gray-800/50 hover:bg-zinc-950/5 transition-colors">
-                        <td className="py-4 font-mono text-zinc-500">
-                          <span className="text-[#FF4D00]">{dev.device_type}</span><br/>
+                      <tr key={dev.id} className="border-b border-gray-800/50 hover:bg-[var(--color-bg-base)]/5 transition-colors">
+                        <td className="py-4 font-mono text-[var(--color-text-muted)]">
+                          <span className="text-[var(--q-orange)]">{dev.device_type}</span><br/>
                           <span className="text-xs">{dev.ip}</span>
                         </td>
                         <td className="py-4 text-gray-300">{dev.agency}</td>
                         <td className="py-4 text-gray-300">{dev.user}</td>
                         <td className="py-4">
-                          <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs  border border-green-500/20">
+                          <span className="px-2 py-1 bg-[var(--color-status-active)]/10 text-[var(--color-status-active)] text-xs  border border-[var(--color-status-active)]/20">
                             {dev.status}
                           </span>
                         </td>
                         <td className="py-4 text-right">
                           <button
                             onClick={() => startInfiltration(dev)}
-                            className="bg-[#E64500] hover:bg-[#FF4D00] text-black font-bold text-xs px-4 py-2  shadow shrink-0"
+                            className="bg-[#E64500] hover:bg-[var(--q-orange)] text-black font-bold text-xs px-4 py-2  shadow shrink-0"
                           >
                             INFILTRATE
                           </button>
@@ -183,8 +183,8 @@ export default function GodModeDatasets() {
                 </table>
 
                 {infiltratedDevice && (
-                  <div className="mt-6 border border-orange-500/20  p-4 bg-black/40">
-                    <p className="text-xs font-mono text-[#FF4D00] mb-2">
+                  <div className="mt-6 border border-orange-500/20  p-4 bg-[var(--color-bg-base)]/40">
+                    <p className="text-xs font-mono text-[var(--q-orange)] mb-2">
                       Active Session: {infiltratedDevice.user} · {infiltratedDevice.ip}
                     </p>
                     <div className="space-y-1 max-h-36 overflow-y-auto">
@@ -212,36 +212,36 @@ export default function GodModeDatasets() {
         >
           <div>
             <h1 className="text-4xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-600 drop-shadow-[0_0_15px_rgba(0,0,0,0.6)] flex items-center gap-4">
-              <Database className="w-9 h-9 text-yellow-400" />
+              <Database className="w-9 h-9 text-[var(--q-yellow)]" />
               Sovereign Operations Command
             </h1>
-            <p className="text-zinc-500 mt-2 text-sm max-w-2xl">
+            <p className="text-[var(--color-text-muted)] mt-2 text-sm max-w-2xl">
               God Mode Dataset Manager. Track Schematron expressions, manage lexicons, build templates, monitor export queues, and access Remote Assist.
             </p>
           </div>
           <div className="flex gap-4">
             <div 
               onClick={() => setShowGhostMode(true)}
-              className="px-4 py-2  bg-[rgba(255,77,0,0.10)] border border-orange-500/30 flex items-center gap-2 cursor-pointer hover:bg-[rgba(255,77,0,0.20)] transition-colors shadow-[0_0_15px_rgba(249,115,22,0.2)]"
+              className="px-4 py-2  bg-[rgba(255,106,0,0.10)] border border-orange-500/30 flex items-center gap-2 cursor-pointer hover:bg-[rgba(255,106,0,0.20)] transition-colors shadow-[0_0_15px_rgba(249,115,22,0.2)]"
             >
-              <Ghost className="w-4 h-4 text-[#FF4D00]" />
-              <span className="text-[#FF4D00] font-mono text-sm tracking-wide">GHOST MODE</span>
+              <Ghost className="w-4 h-4 text-[var(--q-orange)]" />
+              <span className="text-[var(--q-orange)] font-mono text-sm tracking-wide">GHOST MODE</span>
             </div>
           </div>
         </motion.div>
 
         {/* Tab Navigation */}
         <div className="flex gap-6 border-b border-gray-800">
-          <button onClick={() => setActiveTab('status')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'status' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-zinc-500 hover:text-gray-300'}`}>
+          <button onClick={() => setActiveTab('status')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'status' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-[var(--color-text-muted)] hover:text-gray-300'}`}>
             <Database className="w-4 h-4" /> Lexicons & Facilities
           </button>
-          <button onClick={() => setActiveTab('templates')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'templates' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-zinc-500 hover:text-gray-300'}`}>
+          <button onClick={() => setActiveTab('templates')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'templates' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-[var(--color-text-muted)] hover:text-gray-300'}`}>
             <Layers className="w-4 h-4" /> Template Builder
           </button>
-          <button onClick={() => setActiveTab('nemsis_ai')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'nemsis_ai' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-zinc-500 hover:text-gray-300'}`}>
+          <button onClick={() => setActiveTab('nemsis_ai')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'nemsis_ai' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-[var(--color-text-muted)] hover:text-gray-300'}`}>
             <Bot className="w-4 h-4" /> AI NEMSIS Engine
           </button>
-          <button onClick={() => setActiveTab('exports')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'exports' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-zinc-500 hover:text-gray-300'}`}>
+          <button onClick={() => setActiveTab('exports')} className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${activeTab === 'exports' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-[var(--color-text-muted)] hover:text-gray-300'}`}>
             <Server className="w-4 h-4" /> Global Export Status
           </button>
         </div>
@@ -249,57 +249,57 @@ export default function GodModeDatasets() {
         {/* VIEW: STATUS / LEXICONS */}
         {activeTab === 'status' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-black/40 border border-white/10  p-6 backdrop-blur-md">
+            <div className="bg-[var(--color-bg-base)]/40 border border-white/10  p-6 backdrop-blur-md">
               <div className="flex items-center gap-3 mb-4">
-                <ShieldCheck className="w-6 h-6 text-blue-400" />
+                <ShieldCheck className="w-6 h-6 text-[var(--color-status-info)]" />
                 <h3 className="text-lg font-bold text-gray-100">NEMSIS Core</h3>
               </div>
               {systemStatus ? (
                 <div className="space-y-3 font-mono text-xs">
-                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-zinc-500">Version</span><span className="text-blue-300">v{systemStatus.nemsis.version}</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-zinc-500">Last Database Sync</span><span className="text-gray-300">{systemStatus.nemsis.last_update}</span></div>
-                  <div className="flex justify-between pb-2"><span className="text-zinc-500">Schematron Target</span><span className="text-green-400">ACTIVE</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-[var(--color-text-muted)]">Version</span><span className="text-[var(--color-status-info)]">v{systemStatus.nemsis.version}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-[var(--color-text-muted)]">Last Database Sync</span><span className="text-gray-300">{systemStatus.nemsis.last_update}</span></div>
+                  <div className="flex justify-between pb-2"><span className="text-[var(--color-text-muted)]">Schematron Target</span><span className="text-[var(--color-status-active)]">ACTIVE</span></div>
                 </div>
-              ) : <Loader2 className="w-5 h-5 animate-spin text-blue-400" />}
+              ) : <Loader2 className="w-5 h-5 animate-spin text-[var(--color-status-info)]" />}
             </div>
 
-            <div className="bg-black/40 border border-white/10  p-6 backdrop-blur-md">
+            <div className="bg-[var(--color-bg-base)]/40 border border-white/10  p-6 backdrop-blur-md">
               <div className="flex items-center gap-3 mb-4">
-                <Activity className="w-6 h-6 text-red-500" />
+                <Activity className="w-6 h-6 text-[var(--color-brand-red)]" />
                 <h3 className="text-lg font-bold text-gray-100">NERIS Fire Sync</h3>
               </div>
               {systemStatus ? (
                 <div className="space-y-3 font-mono text-xs">
-                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-zinc-500">Standard</span><span className="text-red-300">v{systemStatus.neris.version}</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-zinc-500">Last Block Push</span><span className="text-gray-300">{systemStatus.neris.last_update}</span></div>
-                  <div className="flex justify-between pb-2"><span className="text-zinc-500">Validation DB</span><span className="text-green-400">SYNCED</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-[var(--color-text-muted)]">Standard</span><span className="text-[var(--color-brand-red)]">v{systemStatus.neris.version}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-[var(--color-text-muted)]">Last Block Push</span><span className="text-gray-300">{systemStatus.neris.last_update}</span></div>
+                  <div className="flex justify-between pb-2"><span className="text-[var(--color-text-muted)]">Validation DB</span><span className="text-[var(--color-status-active)]">SYNCED</span></div>
                 </div>
-              ) : <Loader2 className="w-5 h-5 animate-spin text-red-500" />}
+              ) : <Loader2 className="w-5 h-5 animate-spin text-[var(--color-brand-red)]" />}
             </div>
 
-            <div className="bg-black/40 border border-white/10  p-6 backdrop-blur-md">
+            <div className="bg-[var(--color-bg-base)]/40 border border-white/10  p-6 backdrop-blur-md">
               <div className="flex items-center gap-3 mb-4">
                 <Stethoscope className="w-6 h-6 text-purple-400" />
                 <h3 className="text-lg font-bold text-gray-100">Clinical Lexicons</h3>
               </div>
               {systemStatus ? (
                 <div className="space-y-3 font-mono text-xs">
-                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-zinc-500">RxNorm Set</span><span className="text-purple-300">{systemStatus.rxnorm.term_count.toLocaleString()} Terms</span></div>
-                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-zinc-500">SNOMED CT</span><span className="text-purple-300">{systemStatus.snomed.term_count.toLocaleString()} Terms</span></div>
-                  <div className="flex justify-between pb-2"><span className="text-zinc-500">ICD-10-CM</span><span className="text-purple-300">v{systemStatus.icd10.version}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-[var(--color-text-muted)]">RxNorm Set</span><span className="text-purple-300">{systemStatus.rxnorm.term_count.toLocaleString()} Terms</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-2"><span className="text-[var(--color-text-muted)]">SNOMED CT</span><span className="text-purple-300">{systemStatus.snomed.term_count.toLocaleString()} Terms</span></div>
+                  <div className="flex justify-between pb-2"><span className="text-[var(--color-text-muted)]">ICD-10-CM</span><span className="text-purple-300">v{systemStatus.icd10.version}</span></div>
                 </div>
               ) : <Loader2 className="w-5 h-5 animate-spin text-purple-400" />}
             </div>
 
-            <div className="bg-black/40 border border-white/10  p-6 backdrop-blur-md lg:col-span-3">
+            <div className="bg-[var(--color-bg-base)]/40 border border-white/10  p-6 backdrop-blur-md lg:col-span-3">
               <div className="flex items-center gap-3 mb-4 border-b border-white/5 pb-3">
-                <Building2 className="w-6 h-6 text-emerald-400" />
+                <Building2 className="w-6 h-6 text-[var(--color-status-active)]" />
                 <h3 className="text-lg font-bold text-gray-100 flex-1">Global Facility & Receiving Center Tracker</h3>
-                <span className="text-xs text-zinc-500 font-mono">Last State Sweep: {systemStatus?.facilities.last_state_sync || '...'}</span>
+                <span className="text-xs text-[var(--color-text-muted)] font-mono">Last State Sweep: {systemStatus?.facilities.last_state_sync || '...'}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <p className="text-zinc-500">Total Validated Hospitals/Destinations mapped for Tenant Agencies.</p>
-                <div className="text-2xl font-mono text-emerald-400 font-bold">{systemStatus ? systemStatus.facilities.active_count.toLocaleString() : '...'}</div>
+                <p className="text-[var(--color-text-muted)]">Total Validated Hospitals/Destinations mapped for Tenant Agencies.</p>
+                <div className="text-2xl font-mono text-[var(--color-status-active)] font-bold">{systemStatus ? systemStatus.facilities.active_count.toLocaleString() : '...'}</div>
               </div>
             </div>
           </motion.div>
@@ -308,8 +308,8 @@ export default function GodModeDatasets() {
         {/* VIEW: TEMPLATE BUILDER */}
         {activeTab === 'templates' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-3 gap-6 h-[600px]">
-            <div className="col-span-1 bg-black/40 border border-white/10  flex flex-col overflow-hidden">
-              <div className="p-4 border-b border-white/10 bg-zinc-950/5"><h3 className="font-bold text-yellow-500">Available NEMSIS Blocks</h3></div>
+            <div className="col-span-1 bg-[var(--color-bg-base)]/40 border border-white/10  flex flex-col overflow-hidden">
+              <div className="p-4 border-b border-white/10 bg-[var(--color-bg-base)]/5"><h3 className="font-bold text-yellow-500">Available NEMSIS Blocks</h3></div>
               <div className="p-4 space-y-3 overflow-y-auto flex-1">
                 {['eArrest Panel', 'eVitals Grid', 'eMeds Matrix', 'eProtocol Flow', 'eNarrative Advanced'].map(block => (
                   <div key={block} className="p-3 border border-white/10  bg-[#0d1017] flex justify-between items-center cursor-grab hover:border-yellow-500/50">
@@ -319,12 +319,12 @@ export default function GodModeDatasets() {
                 ))}
               </div>
             </div>
-            <div className="col-span-2 border-2 border-dashed border-yellow-500/20  bg-black/20 flex items-center justify-center relative overflow-hidden">
+            <div className="col-span-2 border-2 border-dashed border-yellow-500/20  bg-[var(--color-bg-base)]/20 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('/img/grid.svg')] bg-center opacity-10 pointer-events-none" />
               <div className="text-center w-full max-w-sm">
                 <FileJson className="w-16 h-16 text-yellow-500/20 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-zinc-500 mb-2">Drag NEMSIS Blocks Here</h3>
-                <p className="text-sm text-zinc-500">Build standard clinical forms for tenant Android Tablets visually based on the national v3.5.0 dataset layout.</p>
+                <h3 className="text-xl font-bold text-[var(--color-text-muted)] mb-2">Drag NEMSIS Blocks Here</h3>
+                <p className="text-sm text-[var(--color-text-muted)]">Build standard clinical forms for tenant Android Tablets visually based on the national v3.5.0 dataset layout.</p>
               </div>
             </div>
           </motion.div>
@@ -334,27 +334,27 @@ export default function GodModeDatasets() {
         {activeTab === 'exports' && exportData && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="grid grid-cols-4 gap-4">
-              <div className="bg-black/40 border border-t-yellow-500/50  p-6">
-                <p className="text-zinc-500 text-xs font-mono mb-1">Total Charts Attempted</p>
+              <div className="bg-[var(--color-bg-base)]/40 border border-t-yellow-500/50  p-6">
+                <p className="text-[var(--color-text-muted)] text-xs font-mono mb-1">Total Charts Attempted</p>
                 <p className="text-3xl font-bold text-white">{exportData.total_today.toLocaleString()}</p>
               </div>
               <div className="bg-green-900/10 border border-t-green-500/50  p-6">
-                <p className="text-zinc-500 text-xs font-mono mb-1 text-green-500/70">Successful Exports</p>
-                <p className="text-3xl font-bold text-green-400">{exportData.successful.toLocaleString()}</p>
+                <p className="text-[var(--color-text-muted)] text-xs font-mono mb-1 text-[var(--color-status-active)]/70">Successful Exports</p>
+                <p className="text-3xl font-bold text-[var(--color-status-active)]">{exportData.successful.toLocaleString()}</p>
               </div>
               <div className="bg-red-900/10 border border-t-red-500/50  p-6">
-                <p className="text-zinc-500 text-xs font-mono mb-1 text-red-500/70">Failed Validation</p>
-                <p className="text-3xl font-bold text-red-400">{exportData.failed}</p>
+                <p className="text-[var(--color-text-muted)] text-xs font-mono mb-1 text-[var(--color-brand-red)]/70">Failed Validation</p>
+                <p className="text-3xl font-bold text-[var(--color-brand-red)]">{exportData.failed}</p>
               </div>
               <div className="bg-blue-900/10 border border-t-blue-500/50  p-6">
-                <p className="text-zinc-500 text-xs font-mono mb-1 text-blue-500/70">In State Queue</p>
-                <p className="text-3xl font-bold text-blue-400">{exportData.in_queue}</p>
+                <p className="text-[var(--color-text-muted)] text-xs font-mono mb-1 text-[var(--color-status-info)]/70">In State Queue</p>
+                <p className="text-3xl font-bold text-[var(--color-status-info)]">{exportData.in_queue}</p>
               </div>
             </div>
             
-            <div className="bg-black/40 border border-white/10  overflow-hidden">
+            <div className="bg-[var(--color-bg-base)]/40 border border-white/10  overflow-hidden">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-950/5 border-b border-white/10 font-mono text-xs text-zinc-500">
+                <thead className="bg-[var(--color-bg-base)]/5 border-b border-white/10 font-mono text-xs text-[var(--color-text-muted)]">
                   <tr>
                     <th className="p-4">Tenant Agency</th>
                     <th className="p-4">Receiving Hub</th>
@@ -367,15 +367,15 @@ export default function GodModeDatasets() {
                   {exportData.agencies.map((agency, i: number) => (
                     <tr key={i} className="border-b border-white/5">
                       <td className="p-4 font-bold text-gray-200">{agency.name}</td>
-                      <td className="p-4 text-zinc-500">State HUB: {agency.state}</td>
+                      <td className="p-4 text-[var(--color-text-muted)]">State HUB: {agency.state}</td>
                       <td className="p-4">
                         {agency.status === 'Warning' 
-                          ? <span className="flex items-center gap-2 text-red-400"><AlertTriangle className="w-4 h-4"/> Validation Failures</span>
-                          : <span className="flex items-center gap-2 text-green-400"><CheckCircle2 className="w-4 h-4"/> Nominal</span>
+                          ? <span className="flex items-center gap-2 text-[var(--color-brand-red)]"><AlertTriangle className="w-4 h-4"/> Validation Failures</span>
+                          : <span className="flex items-center gap-2 text-[var(--color-status-active)]"><CheckCircle2 className="w-4 h-4"/> Nominal</span>
                         }
                       </td>
                       <td className="p-4 font-mono">{agency.success_rate}%</td>
-                      <td className="p-4 text-right text-red-400 font-mono">{agency.failed_charts > 0 ? agency.failed_charts : '-'}</td>
+                      <td className="p-4 text-right text-[var(--color-brand-red)] font-mono">{agency.failed_charts > 0 ? agency.failed_charts : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -391,7 +391,7 @@ export default function GodModeDatasets() {
               <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-500">
                 <Workflow className="w-5 h-5" /> Express Rule Generator
               </h2>
-              <p className="text-sm text-zinc-500">Type what NEMSIS or NERIS rule you want to enforce in natural language. The AI will translate it into a verified XPath Schema validation block.</p>
+              <p className="text-sm text-[var(--color-text-muted)]">Type what NEMSIS or NERIS rule you want to enforce in natural language. The AI will translate it into a verified XPath Schema validation block.</p>
               
               <div className="relative">
                 <textarea 
@@ -412,8 +412,8 @@ export default function GodModeDatasets() {
 
             <div className="bg-[#09090b]  border border-gray-800 shadow-[0_0_15px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col">
               <div className="bg-[#18181b] border-b border-gray-800 px-4 py-3 flex items-center gap-2">
-                <TerminalSquare className="w-4 h-4 text-zinc-500" />
-                <span className="text-xs font-mono text-zinc-500">nemsis_schematron_compiler.out</span>
+                <TerminalSquare className="w-4 h-4 text-[var(--color-text-muted)]" />
+                <span className="text-xs font-mono text-[var(--color-text-muted)]">nemsis_schematron_compiler.out</span>
               </div>
               <div className="p-6 flex-1 font-mono text-sm">
                 {!aiResult && !thinking && <p className="text-gray-600 italic">{"// Waiting for natural language input..."}</p>}
@@ -421,15 +421,15 @@ export default function GodModeDatasets() {
                 {aiResult && !thinking && (
                   <div className="space-y-6">
                     <div>
-                      <p className="text-zinc-500 text-xs mb-1">Generated XPath Target:</p>
-                      <div className="bg-black/50 p-3  text-blue-400 break-all">{aiResult.generated_xpath}</div>
+                      <p className="text-[var(--color-text-muted)] text-xs mb-1">Generated XPath Target:</p>
+                      <div className="bg-[var(--color-bg-base)]/50 p-3  text-[var(--color-status-info)] break-all">{aiResult.generated_xpath}</div>
                     </div>
                     <div>
-                      <p className="text-zinc-500 text-xs mb-1">Schematron Block:</p>
-                      <div className="bg-black/50 p-3  text-emerald-400 break-all whitespace-pre-wrap">{aiResult.schematron_rule}</div>
+                      <p className="text-[var(--color-text-muted)] text-xs mb-1">Schematron Block:</p>
+                      <div className="bg-[var(--color-bg-base)]/50 p-3  text-[var(--color-status-active)] break-all whitespace-pre-wrap">{aiResult.schematron_rule}</div>
                     </div>
                     <div>
-                      <p className="text-zinc-500 text-xs mb-1">AI Explanation:</p>
+                      <p className="text-[var(--color-text-muted)] text-xs mb-1">AI Explanation:</p>
                       <p className="text-gray-300 text-xs">{aiResult.human_readable}</p>
                     </div>
                   </div>

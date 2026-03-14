@@ -31,7 +31,7 @@ from core_app.services.founder_command_domain_service import FounderCommandDomai
 from core_app.services.founder_ops_service import FounderOpsService
 
 router = APIRouter(
-    prefix="/analytics",
+    prefix="/api/v1/analytics",
     tags=["analytics"],
     dependencies=[Depends(require_role("founder", "admin"))],
 )

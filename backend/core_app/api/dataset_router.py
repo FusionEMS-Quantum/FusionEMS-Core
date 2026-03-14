@@ -1,18 +1,100 @@
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from core_app.api.dependencies import db_session_dependency
+from core_app.epcr.completeness_engine import ELEMENT_FIELD_MAP
+from core_app.epcr.nemsis_exporter import NEMSIS_VERSION
+from core_app.services.clinical_open_data_service import (
+    OpenDataUnavailable,
+    build_dataset_status,
+    search_icd10_open,
+    search_npi_open,
+    search_rxnorm_open,
+    search_snomed_open,
+    verify_npi_open,
+)
 
 router = APIRouter(prefix="/api/datasets", tags=["Datasets"])
 
 @router.get("/status")
-async def get_dataset_status():
+async def get_dataset_status(
+    probe_external: bool = Query(default=False),
+    db: Session = Depends(db_session_dependency),
+):
+    return build_dataset_status(db, probe_external=probe_external)
+
+
+@router.get("/terminology/{system}/search")
+async def terminology_search(
+    system: str,
+    q: str = Query(..., min_length=1, max_length=120),
+    limit: int = Query(default=25, ge=1, le=100),
+):
+    normalized = system.strip().lower()
+    try:
+        if normalized == "icd10":
+            return {
+                "system": "icd10",
+                "query": q,
+                "results": search_icd10_open(query=q, limit=limit),
+            }
+        if normalized == "rxnorm":
+            return {
+                "system": "rxnorm",
+                "query": q,
+                "results": search_rxnorm_open(query=q, limit=limit),
+            }
+        if normalized == "snomed":
+            return {
+                "system": "snomed",
+                "query": q,
+                "results": search_snomed_open(query=q, limit=limit),
+            }
+    except OpenDataUnavailable as exc:
+        raise HTTPException(status_code=503, detail=f"open_data_unavailable:{exc}") from exc
+
+    raise HTTPException(status_code=422, detail="system must be one of: icd10|rxnorm|snomed")
+
+
+@router.get("/npi/search")
+async def npi_search(
+    q: str = Query(..., min_length=1, max_length=120),
+    limit: int = Query(default=10, ge=1, le=50),
+):
+    try:
+        return {
+            "query": q,
+            "results": search_npi_open(query=q, limit=limit),
+        }
+    except OpenDataUnavailable as exc:
+        raise HTTPException(status_code=503, detail=f"open_data_unavailable:{exc}") from exc
+
+
+@router.get("/npi/verify/{npi_number}")
+async def npi_verify(npi_number: str):
+    try:
+        return verify_npi_open(npi_number=npi_number)
+    except OpenDataUnavailable as exc:
+        raise HTTPException(status_code=503, detail=f"open_data_unavailable:{exc}") from exc
+
+
+@router.get("/nemsis/elements")
+async def nemsis_elements(section: str | None = Query(default=None)):
+    if section:
+        filtered = {
+            element_id: metadata
+            for element_id, metadata in ELEMENT_FIELD_MAP.items()
+            if str(metadata.get("section", "")).lower() == section.lower()
+        }
+    else:
+        filtered = ELEMENT_FIELD_MAP
+
     return {
-        "nemsis": {"version": "3.5.0", "last_update": "2026-03-01", "schematron_active": True},
-        "neris": {"version": "1.0", "last_update": "2025-11-15", "schematron_active": True},
-        "rxnorm": {"version": "2026.01", "last_update": "2026-01-05", "term_count": 348210},
-        "snomed": {"version": "2026.02", "last_update": "2026-02-15", "term_count": 482190},
-        "icd10": {"version": "2026", "last_update": "2025-10-01", "term_count": 72184},
-        "facilities": {"active_count": 14920, "last_state_sync": "2026-03-05"}
+        "version": NEMSIS_VERSION,
+        "element_count": len(filtered),
+        "elements": filtered,
     }
 
 class ExpressionRequest(BaseModel):

@@ -4,11 +4,11 @@ import MarketingPageTemplate from '@/components/marketing/MarketingPageTemplate'
 const LAYERS = [
   {
     title: 'Edge and Access Boundary',
-    description: 'CloudFront + WAF perimeter with strict ingress policy and route segmentation between public, access, and internal surfaces.',
+    description: 'Amplify Hosting + WAF perimeter with strict ingress policy and route segmentation between public, access, and internal surfaces.',
   },
   {
     title: 'Application Runtime',
-    description: 'Horizontally scalable ECS services for API, worker, and real-time workloads with deterministic health and failure behavior.',
+    description: 'Amplify-hosted frontend with scalable API, worker, and real-time workloads and deterministic health behavior.',
   },
   {
     title: 'Authoritative Data Plane',
@@ -54,11 +54,11 @@ export default function ArchitecturePage() {
           { label: 'Request Technical Briefing', href: '/contact' },
         ]}
       >
-        <div className="bg-[#0A0A0B] border border-border-default chamfer-8 p-5">
-          <div className="text-label uppercase tracking-widest text-zinc-500">Security posture controls</div>
+        <div className="bg-[var(--color-bg-panel)] border border-border-default chamfer-8 p-5">
+          <div className="text-label uppercase tracking-widest text-[var(--color-text-muted)]">Security posture controls</div>
           <div className="grid md:grid-cols-2 gap-2 mt-3">
             {SECURITY_CONTROLS.map((control) => (
-              <div key={control} className="text-body text-zinc-400 border border-border-subtle bg-[rgba(10,10,11,0.4)] chamfer-8 px-3 py-2">
+              <div key={control} className="text-body text-[var(--color-text-secondary)] border border-border-subtle bg-[rgba(10,10,11,0.4)] chamfer-8 px-3 py-2">
                 {control}
               </div>
             ))}

@@ -34,7 +34,7 @@ STRIPE_HANDLED_EVENTS = frozenset(
 )
 
 
-@router.post("/webhooks/stripe", include_in_schema=True)
+@router.post("/api/v1/webhooks/stripe", include_in_schema=True)
 async def stripe_webhook(
     request: Request,
     db: Session = Depends(db_session_dependency),

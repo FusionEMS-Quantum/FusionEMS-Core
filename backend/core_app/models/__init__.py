@@ -1,6 +1,7 @@
 # Core Models
 from . import (
     governance,  # noqa: F401  # ensure governance tables register with metadata
+    growth_models,  # noqa: F401
     legal_requests,  # noqa: F401  # ensure legal request tables register with metadata
 )
 from .agency import (
@@ -189,6 +190,16 @@ from .deployment import (
     RetrySchedule,
     WebhookEventLog,
 )
+from .document_vault import (  # noqa: F401 — register vault tables with metadata
+    DocumentRecord,
+    DocumentVersion,
+    ExportPackage,
+    PackageManifestItem,
+    SmartFolder,
+    VaultAuditEntry,
+    VaultDefinition,
+    VaultRetentionPolicy,
+)
 from .facility import (
     Facility,
     FacilityAuditEvent,
@@ -212,6 +223,17 @@ from .fire import (
     NERISIncidentType,
 )
 from .fire_rms import InspectionViolation
+from .founder_communications import (  # noqa: F401 — register founder comms tables
+    BAATemplate,
+    FounderAlertRecord,
+    FounderAudioAlertConfig,
+    FounderCallRecord,
+    FounderCommunicationTemplate,
+    FounderFaxRecord,
+    FounderPrintMailRecord,
+    FounderSMSThread,
+    WisconsinDocTemplate,
+)
 from .incident import Incident
 from .integration_connectors import (
     APIClientCredential,
@@ -389,5 +411,15 @@ from .state_debt_setoff import (
     StateDebtSetoffProfile,
 )
 from .tenant import Tenant
+
+# ── Terminology Service Models ───────────────────────────────────────────────
+from .terminology import (
+    TerminologyCodeSystem,
+    TerminologyConcept,
+    TerminologyDatasetVersion,
+    TerminologyMapping,
+    TerminologyRefreshSchedule,
+    TerminologySynonym,
+)
 from .user import User
 from .vital import Vital

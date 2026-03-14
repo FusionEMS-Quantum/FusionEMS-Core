@@ -1,12 +1,13 @@
 """Founder integration/connectors command center router."""
 from __future__ import annotations
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, require_role
+from core_app.api.dependencies import db_session_dependency, require_founder_only_audited
 from core_app.schemas.auth import CurrentUser
 from core_app.schemas.founder_command_domains import (
     ConnectorSyncJobCreateRequest,
@@ -19,17 +20,22 @@ from core_app.schemas.founder_command_domains import (
     SyncDeadLetterCreateRequest,
     SyncDeadLetterResponse,
 )
+from core_app.services.ai_growth_service import AIGrowthService
 from core_app.services.founder_command_domain_service import FounderCommandDomainService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/v1/founder/integration-command",
     tags=["Founder Integration Command"],
 )
 
+_FOUNDER = Depends(require_founder_only_audited())
+
 
 @router.get("/summary", response_model=IntegrationCommandSummary)
 def get_integration_command_summary(
-    _current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> IntegrationCommandSummary:
     svc = FounderCommandDomainService(db)
@@ -38,7 +44,7 @@ def get_integration_command_summary(
 
 @router.get("/growth-summary", response_model=FounderGrowthSummary)
 def get_growth_summary(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> FounderGrowthSummary:
     svc = FounderCommandDomainService(db)
@@ -47,7 +53,7 @@ def get_growth_summary(
 
 @router.get("/growth-setup-wizard", response_model=FounderGrowthSetupWizard)
 def get_growth_setup_wizard(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> FounderGrowthSetupWizard:
     svc = FounderCommandDomainService(db)
@@ -57,7 +63,7 @@ def get_growth_setup_wizard(
 @router.post("/launch-orchestrator/start", response_model=LaunchOrchestratorRunResponse)
 def start_launch_orchestrator(
     payload: LaunchOrchestratorStartRequest,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> LaunchOrchestratorRunResponse:
     svc = FounderCommandDomainService(db)
@@ -67,6 +73,32 @@ def start_launch_orchestrator(
         mode=payload.mode,
         auto_queue_sync_jobs=payload.auto_queue_sync_jobs,
     )
+
+    # AI Growth launch side effects must never block core orchestrator workflow.
+    growth_svc = AIGrowthService(db)
+    try:
+        campaign = growth_svc.create_campaign(
+            tenant_id=str(current.tenant_id),
+            name=f"Launch Burst - {payload.mode.upper()}",
+            objective="Drive signups and book demos via automated publishing",
+            audience={"target": "EMS Agency Directors", "region": "US"},
+        )
+        growth_svc.generate_demo_assets(
+            tenant_id=str(current.tenant_id),
+            campaign_id=campaign.id,
+            focus_area="Revenue Cycle Overhaul",
+        )
+    except Exception as exc:  # pragma: no cover - defensive isolation path
+        logger.warning(
+            "founder_launch_orchestrator_ai_growth_failed",
+            extra={
+                "tenant_id": str(current.tenant_id),
+                "actor_user_id": str(current.user_id),
+                "mode": payload.mode,
+                "error_type": type(exc).__name__,
+            },
+        )
+
     db.commit()
     return run
 
@@ -74,7 +106,7 @@ def start_launch_orchestrator(
 @router.get("/failed-sync-jobs", response_model=list[ConnectorSyncJobResponse])
 def list_failed_sync_jobs(
     limit: int = Query(default=50, ge=1, le=250),
-    _current: CurrentUser = Depends(require_role("founder")),
+    _current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[ConnectorSyncJobResponse]:
     svc = FounderCommandDomainService(db)
@@ -85,7 +117,7 @@ def list_failed_sync_jobs(
 @router.post("/sync-jobs", response_model=ConnectorSyncJobResponse, status_code=201)
 def create_sync_job(
     payload: ConnectorSyncJobCreateRequest,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> ConnectorSyncJobResponse:
     svc = FounderCommandDomainService(db)
@@ -109,7 +141,7 @@ def create_sync_job(
 def add_sync_dead_letter(
     sync_job_id: UUID,
     payload: SyncDeadLetterCreateRequest,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> SyncDeadLetterResponse:
     svc = FounderCommandDomainService(db)

@@ -267,13 +267,13 @@ const STEPS = [
 // ─────────────────────────────────────────────────────────────
 
 const CLIP = { clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' };
-const INPUT = 'w-full h-10 px-3 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors';
-const TEXTAREA = 'w-full px-3 py-2 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors resize-none';
+const INPUT = 'w-full h-10 px-3 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors';
+const TEXTAREA = 'w-full px-3 py-2 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors resize-none';
 
 function FL({ label, req, children }: { label: string; req?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
         {label}{req && <span className="text-red ml-1">*</span>}
       </label>
       {children}
@@ -297,13 +297,13 @@ function CheckRow({
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className={`flex-shrink-0 w-4 h-4 mt-0.5 border ${value ? 'bg-[#FF4D00]/20 border-orange' : 'bg-zinc-950/[0.04] border-white/[0.12]'} transition-colors flex items-center justify-center`}
+        className={`flex-shrink-0 w-4 h-4 mt-0.5 border ${value ? 'bg-[var(--q-orange)]/20 border-orange' : 'bg-[var(--color-bg-base)]/[0.04] border-white/[0.12]'} transition-colors flex items-center justify-center`}
         style={{ clipPath: 'polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 0 100%)' }}
       >
-        {value && <CheckCircle2 className="w-2.5 h-2.5 text-[#FF4D00]" />}
+        {value && <CheckCircle2 className="w-2.5 h-2.5 text-[var(--q-orange)]" />}
       </button>
       <div>
-        <span className={`text-[11px] font-medium ${value ? 'text-white' : 'text-zinc-400'} group-hover:text-zinc-100 transition-colors`}>
+        <span className={`text-[11px] font-medium ${value ? 'text-white' : 'text-[var(--color-text-secondary)]'} group-hover:text-[var(--color-text-primary)] transition-colors`}>
           {label}
         </span>
         {warning && value && (
@@ -410,39 +410,39 @@ function ReadinessPanel({ draft, ready }: { draft: RequestDraft; ready: boolean 
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
       <div className="px-4 py-3 border-b border-white/[0.05] bg-gradient-to-r from-orange/[0.06]">
-        <div className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF4D00]">Readiness Check</div>
-        <div className="text-[8px] text-zinc-500 mt-0.5">Required for CAD submission</div>
+        <div className="text-[9px] font-black uppercase tracking-[0.25em] text-[var(--q-orange)]">Readiness Check</div>
+        <div className="text-[8px] text-[var(--color-text-muted)] mt-0.5">Required for CAD submission</div>
       </div>
 
       <div className="p-3 space-y-1.5">
         {finalItems.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
             {item.complete && !item.warning ? (
-              <CheckCircle2 className="w-3 h-3 text-status-active flex-shrink-0" />
+              <CheckCircle2 className="w-3 h-3 text-[var(--color-status-active)] flex-shrink-0" />
             ) : item.warning ? (
               <AlertTriangle className="w-3 h-3 text-status-warning flex-shrink-0" />
             ) : (
-              <Circle className="w-3 h-3 text-zinc-500/30 flex-shrink-0" />
+              <Circle className="w-3 h-3 text-[var(--color-text-muted)]/30 flex-shrink-0" />
             )}
-            <span className={`text-[10px] ${item.complete && !item.warning ? 'text-zinc-400' : item.warning ? 'text-status-warning' : 'text-zinc-500'}`}>
+            <span className={`text-[10px] ${item.complete && !item.warning ? 'text-[var(--color-text-secondary)]' : item.warning ? 'text-status-warning' : 'text-[var(--color-text-muted)]'}`}>
               {item.label}
             </span>
           </div>
         ))}
       </div>
 
-      <div className={`mx-3 mb-3 p-2.5 border text-center ${ready ? 'border-status-active/25 bg-status-active/[0.06]' : 'border-white/[0.06] bg-zinc-950/[0.02]'}`}
+      <div className={`mx-3 mb-3 p-2.5 border text-center ${ready ? 'border-status-active/25 bg-status-active/[0.06]' : 'border-white/[0.06] bg-[var(--color-bg-base)]/[0.02]'}`}
         style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}>
-        <div className={`text-[10px] font-black uppercase tracking-widest ${ready ? 'text-status-active' : 'text-zinc-500'}`}>
+        <div className={`text-[10px] font-black uppercase tracking-widest ${ready ? 'text-[var(--color-status-active)]' : 'text-[var(--color-text-muted)]'}`}>
           {ready ? '✓ Ready for CAD' : 'Incomplete'}
         </div>
       </div>
 
       <div className="px-3 pb-3">
-        <div className="flex items-start gap-1.5 p-2.5 bg-[#FF4D00]/[0.04] border border-orange/10"
+        <div className="flex items-start gap-1.5 p-2.5 bg-[var(--q-orange)]/[0.04] border border-orange/10"
           style={{ clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%)' }}>
-          <Shield className="w-2.5 h-2.5 text-[#FF4D00] flex-shrink-0 mt-0.5" />
-          <span className="text-[9px] text-zinc-500 leading-relaxed">
+          <Shield className="w-2.5 h-2.5 text-[var(--q-orange)] flex-shrink-0 mt-0.5" />
+          <span className="text-[9px] text-[var(--color-text-muted)] leading-relaxed">
             CMS-aware · WI ForwardHealth · ABN logic active
           </span>
         </div>
@@ -559,7 +559,7 @@ function Step2({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
         style={CLIP}>
         <div className="flex items-start gap-2">
           <Info className="w-3.5 h-3.5 text-status-info flex-shrink-0 mt-0.5" />
-          <p className="text-[10px] text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed">
             MRN and CSN will carry forward to CAD, ePCR, and billing. Ensure these match the patient&apos;s EHR identifiers exactly.
           </p>
         </div>
@@ -573,8 +573,8 @@ function Step3({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5  bg-[#FF4D00]/15 border border-orange/25 flex items-center justify-center text-[9px] font-black text-[#FF4D00]">O</div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#FF4D00]">Origin</span>
+          <div className="w-5 h-5  bg-[var(--q-orange)]/15 border border-orange/25 flex items-center justify-center text-[9px] font-black text-[var(--q-orange)]">O</div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--q-orange)]">Origin</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FL label="Origin Facility Name" req>
@@ -644,7 +644,7 @@ function Step4({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
       <div className="p-3 bg-status-warning/[0.04] border border-status-warning/15" style={CLIP}>
         <div className="flex items-start gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-status-warning flex-shrink-0 mt-0.5" />
-          <p className="text-[10px] text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed">
             The clinical narrative must be based on the actual medical record. AI may assist with phrasing, but may not invent diagnoses, mental status findings, mobility limitations, or clinical facts not present in the record.
           </p>
         </div>
@@ -657,8 +657,8 @@ function Step5({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
   const mnResult = evaluateMNStatus(d);
 
   const MN_STATUS_STYLES: Record<string, { bg: string; border: string; text: string; icon: React.ElementType }> = {
-    MEDICAL_NECESSITY_SUPPORTED:        { bg: 'bg-status-active/[0.05]',  border: 'border-status-active/20',  text: 'text-status-active',  icon: CheckCircle2 },
-    WISCONSIN_MEDICAID_SUPPORT_PRESENT: { bg: 'bg-status-active/[0.05]',  border: 'border-status-active/20',  text: 'text-status-active',  icon: CheckCircle2 },
+    MEDICAL_NECESSITY_SUPPORTED:        { bg: 'bg-status-active/[0.05]',  border: 'border-status-active/20',  text: 'text-[var(--color-status-active)]',  icon: CheckCircle2 },
+    WISCONSIN_MEDICAID_SUPPORT_PRESENT: { bg: 'bg-status-active/[0.05]',  border: 'border-status-active/20',  text: 'text-[var(--color-status-active)]',  icon: CheckCircle2 },
     MEDICAL_NECESSITY_INSUFFICIENT:     { bg: 'bg-status-warning/[0.05]', border: 'border-status-warning/20', text: 'text-status-warning', icon: AlertTriangle },
     LIKELY_NOT_MEDICALLY_NECESSARY:     { bg: 'bg-red/[0.05]',            border: 'border-red/20',            text: 'text-red',            icon: XCircle },
     LEVEL_OF_CARE_NOT_SUPPORTED:        { bg: 'bg-red/[0.05]',            border: 'border-red/20',            text: 'text-red',            icon: XCircle },
@@ -672,8 +672,8 @@ function Step5({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
 
   return (
     <div className="space-y-5">
-      <div className="p-3 border border-white/[0.06] bg-zinc-950/[0.02]" style={CLIP}>
-        <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">
+      <div className="p-3 border border-white/[0.06] bg-[var(--color-bg-base)]/[0.02]" style={CLIP}>
+        <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-2">
           Select all applicable transport justifications
         </div>
         <div className="space-y-2">
@@ -685,7 +685,7 @@ function Step5({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
           <CheckRow label="IV infusion / medication administration required during transport" value={d.mn_reason_infusion} onChange={(v) => set('mn_reason_infusion', v)} />
           <CheckRow label="Ventilator management required during transport" value={d.mn_reason_vent} onChange={(v) => set('mn_reason_vent', v)} />
           <div className="border-t border-white/[0.06] pt-2 mt-1">
-            <div className="text-[9px] text-zinc-500 mb-2 uppercase tracking-widest font-bold">
+            <div className="text-[9px] text-[var(--color-text-muted)] mb-2 uppercase tracking-widest font-bold">
               Behavioral / cognitive factors (not stand-alone justifications)
             </div>
             <CheckRow
@@ -735,9 +735,9 @@ function Step5({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
             <MNIcon className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-[10px] font-black uppercase tracking-widest">{mnResult.status.replace(/_/g, ' ')}</span>
           </div>
-          <p className="text-[11px] text-zinc-400 leading-relaxed">{mnResult.explanation}</p>
+          <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">{mnResult.explanation}</p>
           {mnResult.policy && (
-            <p className="text-[9px] text-zinc-500 mt-1.5 font-medium">Policy basis: {mnResult.policy}</p>
+            <p className="text-[9px] text-[var(--color-text-muted)] mt-1.5 font-medium">Policy basis: {mnResult.policy}</p>
           )}
         </div>
       )}
@@ -774,7 +774,7 @@ function Step6({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
             <AlertTriangle className="w-3.5 h-3.5 text-status-warning flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-[11px] font-bold text-status-warning">Medical Necessity Not Yet Established</p>
-              <p className="text-[10px] text-zinc-400 mt-0.5 leading-relaxed">
+              <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5 leading-relaxed">
                 {d.mn_explanation || 'Complete Step 5 (Medical Necessity) before selecting a level of care. Level of care must be supported by the clinical documentation.'}
               </p>
             </div>
@@ -788,15 +788,15 @@ function Step6({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
             key={opt.value}
             type="button"
             onClick={() => set('requested_service_level', opt.value)}
-            className={`w-full text-left p-3 border transition-colors ${d.requested_service_level === opt.value ? 'border-orange/40 bg-[#FF4D00]/[0.06]' : 'border-white/[0.06] bg-zinc-950/[0.02] hover:border-white/[0.12] hover:bg-zinc-950/[0.04]'}`}
+            className={`w-full text-left p-3 border transition-colors ${d.requested_service_level === opt.value ? 'border-orange/40 bg-[var(--q-orange)]/[0.06]' : 'border-white/[0.06] bg-[var(--color-bg-base)]/[0.02] hover:border-white/[0.12] hover:bg-[var(--color-bg-base)]/[0.04]'}`}
             style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
           >
             <div className="flex items-center justify-between">
-              <span className={`text-[11px] font-black ${d.requested_service_level === opt.value ? 'text-[#FF4D00]' : 'text-zinc-100'}`}>{opt.label}</span>
-              {d.requested_service_level === opt.value && <CheckCircle2 className="w-3.5 h-3.5 text-[#FF4D00]" />}
+              <span className={`text-[11px] font-black ${d.requested_service_level === opt.value ? 'text-[var(--q-orange)]' : 'text-[var(--color-text-primary)]'}`}>{opt.label}</span>
+              {d.requested_service_level === opt.value && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--q-orange)]" />}
             </div>
-            <p className="text-[10px] text-zinc-500 mt-0.5">{opt.desc}</p>
-            <p className="text-[9px] text-zinc-500/60 mt-0.5 italic">{opt.requires}</p>
+            <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">{opt.desc}</p>
+            <p className="text-[9px] text-[var(--color-text-muted)]/60 mt-0.5 italic">{opt.requires}</p>
           </button>
         ))}
       </div>
@@ -827,8 +827,8 @@ function Step7({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
 
   return (
     <div className="space-y-5">
-      <div className="p-3 border border-white/[0.06] bg-zinc-950/[0.02]" style={CLIP}>
-        <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-3">Document Status</div>
+      <div className="p-3 border border-white/[0.06] bg-[var(--color-bg-base)]/[0.02]" style={CLIP}>
+        <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Document Status</div>
         <div className="space-y-2">
           <CheckRow label="Physician Certification Statement (PCS) obtained" value={d.pcs_complete} onChange={() => toggle('pcs_complete')} />
           <CheckRow label="Authorization of Benefits (AOB) obtained" value={d.aob_complete} onChange={() => toggle('aob_complete')} />
@@ -841,12 +841,12 @@ function Step7({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
       {/* Upload area (visual - actual upload uses signed URL flow) */}
       <div className="border-2 border-dashed border-white/[0.1] p-6 text-center" style={CLIP}>
         <div className="flex flex-col items-center gap-2">
-          <Paperclip className="w-6 h-6 text-zinc-500/40" />
-          <p className="text-[11px] text-zinc-500">
+          <Paperclip className="w-6 h-6 text-[var(--color-text-muted)]/40" />
+          <p className="text-[11px] text-[var(--color-text-muted)]">
             Drag &amp; drop files here, or click to upload
           </p>
-          <p className="text-[9px] text-zinc-500/60">PDF, images, TIFF — max 50 MB per file</p>
-          <p className="text-[9px] text-zinc-500/40 mt-1">
+          <p className="text-[9px] text-[var(--color-text-muted)]/60">PDF, images, TIFF — max 50 MB per file</p>
+          <p className="text-[9px] text-[var(--color-text-muted)]/40 mt-1">
             OCR extraction will be run on uploaded documents to pre-populate request fields.
           </p>
         </div>
@@ -855,7 +855,7 @@ function Step7({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
       <div className="p-3 bg-status-info/[0.04] border border-status-info/15" style={CLIP}>
         <div className="flex items-start gap-2">
           <Info className="w-3.5 h-3.5 text-status-info flex-shrink-0 mt-0.5" />
-          <p className="text-[10px] text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed">
             Uploaded documents will be scanned with OCR. Extracted data will be presented as suggestions — you must review and confirm before it overwrites any field.
             OCR suggestions will not auto-populate silently.
           </p>
@@ -872,9 +872,9 @@ function Step8({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
   return (
     <div className="space-y-5">
       {/* Requestor attestation */}
-      <div className="p-4 border border-orange/15 bg-[#FF4D00]/[0.03]" style={CLIP}>
-        <div className="text-[9px] font-black uppercase tracking-widest text-[#FF4D00] mb-3">Requestor Attestation</div>
-        <div className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+      <div className="p-4 border border-orange/15 bg-[var(--q-orange)]/[0.03]" style={CLIP}>
+        <div className="text-[9px] font-black uppercase tracking-widest text-[var(--q-orange)] mb-3">Requestor Attestation</div>
+        <div className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed mb-3">
           By checking below, I attest that:
           <ul className="mt-2 space-y-1 list-disc list-inside text-[10px]">
             <li>The information provided in this request is accurate to the best of my knowledge.</li>
@@ -887,8 +887,8 @@ function Step8({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
       </div>
 
       {/* Form signatures */}
-      <div className="p-3 border border-white/[0.06] bg-zinc-950/[0.02]" style={CLIP}>
-        <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-3">Form Signatures</div>
+      <div className="p-3 border border-white/[0.06] bg-[var(--color-bg-base)]/[0.02]" style={CLIP}>
+        <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Form Signatures</div>
         <div className="space-y-2">
           <CheckRow label="PCS has been signed by the authorizing provider" value={d.pcs_signed} onChange={() => toggle('pcs_signed')} />
           <CheckRow label="AOB has been signed by the patient or authorized representative" value={d.aob_signed} onChange={() => toggle('aob_signed')} />
@@ -902,7 +902,7 @@ function Step8({ d, set }: { d: RequestDraft; set: (_f: keyof RequestDraft, _v: 
             <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
             <span className="text-[10px] font-black uppercase tracking-widest text-status-warning">ABN Review (Original Medicare)</span>
           </div>
-          <p className="text-[10px] text-zinc-400 leading-relaxed mb-3">
+          <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed mb-3">
             An Advance Beneficiary Notice of Noncoverage (ABN) must be issued when the service is usually covered by Original Medicare but may be denied in this specific case because medical necessity may not be met.
             The ABN must be reviewed with the beneficiary or representative <strong className="text-white">before</strong> transport, not used as a substitute for missing documentation.
           </p>
@@ -987,8 +987,8 @@ function Step9({ d }: { d: RequestDraft }) {
               <p className="text-[11px] font-bold text-red">Request is not ready for CAD submission</p>
               <div className="mt-1.5 space-y-0.5">
                 {readiness.filter((r) => !r.complete || r.warning).map((r) => (
-                  <div key={r.label} className="flex items-center gap-1.5 text-[10px] text-zinc-500">
-                    {r.warning ? <AlertTriangle className="w-2.5 h-2.5 text-status-warning flex-shrink-0" /> : <Circle className="w-2.5 h-2.5 text-zinc-500/30 flex-shrink-0" />}
+                  <div key={r.label} className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-muted)]">
+                    {r.warning ? <AlertTriangle className="w-2.5 h-2.5 text-status-warning flex-shrink-0" /> : <Circle className="w-2.5 h-2.5 text-[var(--color-text-muted)]/30 flex-shrink-0" />}
                     {r.label}
                   </div>
                 ))}
@@ -1000,14 +1000,14 @@ function Step9({ d }: { d: RequestDraft }) {
 
       {sections.map((sec) => (
         <div key={sec.label} className="border border-white/[0.06] bg-[#0D0D0F]" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
-          <div className="px-4 py-2 border-b border-white/[0.04] bg-zinc-950/[0.02]">
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#FF4D00]">{sec.label}</span>
+          <div className="px-4 py-2 border-b border-white/[0.04] bg-[var(--color-bg-base)]/[0.02]">
+            <span className="text-[9px] font-black uppercase tracking-widest text-[var(--q-orange)]">{sec.label}</span>
           </div>
           <div className="p-4 space-y-2">
             {sec.fields.map(({ k, v }) => v ? (
               <div key={k} className="flex gap-3">
-                <span className="text-[10px] text-zinc-500 w-36 flex-shrink-0">{k}</span>
-                <span className="text-[11px] text-zinc-100">{v}</span>
+                <span className="text-[10px] text-[var(--color-text-muted)] w-36 flex-shrink-0">{k}</span>
+                <span className="text-[11px] text-[var(--color-text-primary)]">{v}</span>
               </div>
             ) : null)}
           </div>
@@ -1020,8 +1020,8 @@ function Step9({ d }: { d: RequestDraft }) {
             ? 'border-status-active/20 bg-status-active/[0.04]'
             : 'border-status-warning/20 bg-status-warning/[0.04]'
         }`} style={CLIP}>
-          <div className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Medical Necessity Engine Assessment</div>
-          <p className="text-[11px] text-zinc-400">{mnResult.explanation}</p>
+          <div className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Medical Necessity Engine Assessment</div>
+          <p className="text-[11px] text-[var(--color-text-secondary)]">{mnResult.explanation}</p>
         </div>
       )}
     </div>
@@ -1092,9 +1092,9 @@ function NewRequestWizardInner() {
     <div className="p-5 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-5">
-        <div className="text-[9px] font-bold tracking-[0.3em] text-[#FF4D00] uppercase mb-1">TransportLink · New Request</div>
+        <div className="text-[9px] font-bold tracking-[0.3em] text-[var(--q-orange)] uppercase mb-1">TransportLink · New Request</div>
         <h1 className="text-h1 font-black text-white">Transport Request Wizard</h1>
-        <p className="text-[11px] text-zinc-500 mt-1">CMS-aware · Wisconsin-first · Medical necessity enforced · No incomplete submissions</p>
+        <p className="text-[11px] text-[var(--color-text-muted)] mt-1">CMS-aware · Wisconsin-first · Medical necessity enforced · No incomplete submissions</p>
       </div>
 
       {/* Step tabs */}
@@ -1108,7 +1108,7 @@ function NewRequestWizardInner() {
               type="button"
               onClick={() => setStep(id)}
               className={`flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider flex-shrink-0 transition-colors border
-                ${active ? 'text-white bg-[#FF4D00]/15 border-orange/30' : past ? 'text-status-active bg-status-active/[0.06] border-status-active/20 hover:bg-status-active/10' : 'text-zinc-500 bg-zinc-950/[0.02] border-white/[0.06] hover:text-zinc-100 hover:bg-zinc-950/[0.04]'}`}
+                ${active ? 'text-white bg-[var(--q-orange)]/15 border-orange/30' : past ? 'text-[var(--color-status-active)] bg-status-active/[0.06] border-status-active/20 hover:bg-status-active/10' : 'text-[var(--color-text-muted)] bg-[var(--color-bg-base)]/[0.02] border-white/[0.06] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-base)]/[0.04]'}`}
               style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
             >
               {past ? <CheckCircle2 className="w-3 h-3" /> : <Icon className="w-3 h-3" />}
@@ -1128,8 +1128,8 @@ function NewRequestWizardInner() {
           {/* Step header */}
           <div className="px-5 py-4 border-b border-white/[0.05] bg-gradient-to-r from-orange/[0.05]">
             <div className="flex items-center gap-2">
-              {React.createElement(STEPS[step - 1].icon, { className: 'w-4 h-4 text-[#FF4D00]' })}
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#FF4D00]">
+              {React.createElement(STEPS[step - 1].icon, { className: 'w-4 h-4 text-[var(--q-orange)]' })}
+              <span className="text-[11px] font-black uppercase tracking-wider text-[var(--q-orange)]">
                 Step {step} of {STEPS.length} — {STEPS[step - 1].label}
               </span>
             </div>
@@ -1182,7 +1182,7 @@ function NewRequestWizardInner() {
               type="button"
               onClick={() => setStep((s) => Math.max(1, s - 1))}
               disabled={step === 1}
-              className="flex items-center gap-1.5 h-9 px-4 text-[10px] font-bold uppercase tracking-wider border border-white/[0.08] text-zinc-500 hover:text-zinc-100 hover:border-white/[0.14] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 h-9 px-4 text-[10px] font-bold uppercase tracking-wider border border-white/[0.08] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-white/[0.14] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -1192,7 +1192,7 @@ function NewRequestWizardInner() {
               <button
                 type="button"
                 onClick={() => setStep((s) => Math.min(STEPS.length, s + 1))}
-                className="flex items-center gap-1.5 h-9 px-4 text-[10px] font-black uppercase tracking-wider bg-[#FF4D00] hover:bg-[#FF6A1A] text-white transition-colors"
+                className="flex items-center gap-1.5 h-9 px-4 text-[10px] font-black uppercase tracking-wider bg-[var(--q-orange)] hover:bg-[#FF6A1A] text-white transition-colors"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
               >
                 Next

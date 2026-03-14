@@ -122,6 +122,26 @@ variable "frontend_image_tag" {
   default     = "latest"
 }
 
+# ─── AI (Bedrock/OpenAI) ───────────────────────────────────────────────────
+
+variable "ai_provider" {
+  description = "AI provider selector for backend: bedrock|openai|disabled"
+  type        = string
+  default     = "bedrock"
+}
+
+variable "bedrock_model_id" {
+  description = "Amazon Bedrock model ID to use when ai_provider=bedrock"
+  type        = string
+  default     = ""
+}
+
+variable "bedrock_model_arns" {
+  description = "Bedrock model ARNs allowed for invocation (least privilege)"
+  type        = list(string)
+  default     = []
+}
+
 # ─── CI / CD ─────────────────────────────────────────────────────────────────
 
 variable "github_org" {

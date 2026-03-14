@@ -14,7 +14,7 @@ resource "aws_security_group" "alb" {
     # environment updates or manual console edits). We still create before
     # destroy to preserve stability on changes.
     create_before_destroy = true
-    ignore_changes = [description]
+    ignore_changes        = [description]
   }
 }
 
@@ -62,7 +62,7 @@ resource "aws_security_group" "ecs" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [description]
+    ignore_changes        = [description]
   }
 }
 
@@ -136,7 +136,7 @@ resource "aws_security_group" "rds" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [description]
+    ignore_changes        = [description]
   }
 }
 
@@ -166,7 +166,7 @@ resource "aws_security_group" "redis" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [description]
+    ignore_changes        = [description]
   }
 }
 

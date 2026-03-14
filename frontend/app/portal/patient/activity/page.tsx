@@ -15,18 +15,18 @@ interface ActivityEvent {
 const EVENT_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
   statement_created:     { label: 'Statement Created',          color: '#818CF8', icon: 'doc' },
   statement_sent:        { label: 'Statement Sent',             color: '#60A5FA', icon: 'mail' },
-  payment_initiated:     { label: 'Payment Initiated',          color: '#F59E0B', icon: 'pay' },
-  payment_posted:        { label: 'Payment Posted',             color: '#10B981', icon: 'check' },
+  payment_initiated:     { label: 'Payment Initiated',          color: 'var(--q-yellow)', icon: 'pay' },
+  payment_posted:        { label: 'Payment Posted',             color: 'var(--color-status-active)', icon: 'check' },
   payment_link_sent:     { label: 'Payment Link Sent',          color: '#60A5FA', icon: 'link' },
-  check_expected:        { label: 'Check Expected',             color: '#F59E0B', icon: 'check-mail' },
-  check_received:        { label: 'Check Received by Agency',   color: '#10B981', icon: 'check' },
-  check_cleared:         { label: 'Check Cleared',              color: '#10B981', icon: 'check' },
+  check_expected:        { label: 'Check Expected',             color: 'var(--q-yellow)', icon: 'check-mail' },
+  check_received:        { label: 'Check Received by Agency',   color: 'var(--color-status-active)', icon: 'check' },
+  check_cleared:         { label: 'Check Cleared',              color: 'var(--color-status-active)', icon: 'check' },
   support_opened:        { label: 'Support Request Opened',     color: '#A78BFA', icon: 'support' },
   message_sent:          { label: 'Message Sent',               color: '#A78BFA', icon: 'msg' },
   message_received:      { label: 'Message Received',           color: '#818CF8', icon: 'msg' },
-  plan_started:          { label: 'Payment Plan Started',       color: '#F59E0B', icon: 'plan' },
-  plan_payment:          { label: 'Plan Payment Made',          color: '#10B981', icon: 'check' },
-  receipt_generated:     { label: 'Receipt Generated',          color: '#10B981', icon: 'receipt' },
+  plan_started:          { label: 'Payment Plan Started',       color: 'var(--q-yellow)', icon: 'plan' },
+  plan_payment:          { label: 'Plan Payment Made',          color: 'var(--color-status-active)', icon: 'check' },
+  receipt_generated:     { label: 'Receipt Generated',          color: 'var(--color-status-active)', icon: 'receipt' },
   document_uploaded:     { label: 'Document Uploaded',          color: '#60A5FA', icon: 'doc' },
   insurance_submitted:   { label: 'Insurance Submitted',        color: '#818CF8', icon: 'ins' },
   portal_login:          { label: 'Portal Access',              color: '#52525B', icon: 'lock' },
@@ -93,14 +93,14 @@ export default function ActivityPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-[3px] h-6 bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)]" />
+          <div className="w-[3px] h-6 bg-[var(--q-orange)] shadow-[0_0_8px_rgba(255,106,0,0.6)]" />
           <h1 className="text-xl font-black tracking-[0.12em] text-white uppercase">Account Activity</h1>
         </div>
-        <p className="text-sm text-zinc-500 ml-5">Complete timeline of all activity on your billing account.</p>
+        <p className="text-sm text-[var(--color-text-muted)] ml-5">Complete timeline of all activity on your billing account.</p>
       </div>
 
       {fetchError && (
-        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
+        <div className="mb-6 px-4 py-3 bg-[var(--color-brand-red)]/8 border border-[var(--color-brand-red)]/20 text-sm text-[var(--color-brand-red)]" style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
           Unable to load account activity. Please refresh the page or contact billing support.
         </div>
       )}
@@ -108,13 +108,13 @@ export default function ActivityPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-[#0A0A0B] border border-zinc-900 h-16 animate-pulse" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }} />
+            <div key={i} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-subtle)] h-16 animate-pulse" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }} />
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="bg-[#0A0A0B] border border-zinc-800 py-16 text-center" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+        <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] py-16 text-center" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
           <div className="text-2xl mb-3 opacity-20">📋</div>
-          <p className="text-sm text-zinc-500">No account activity yet.</p>
+          <p className="text-sm text-[var(--color-text-muted)]">No account activity yet.</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -122,14 +122,14 @@ export default function ActivityPage() {
             <div key={group.date}>
               {/* Date header */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="text-[10px] font-bold tracking-[0.2em] text-zinc-600 uppercase">{group.date}</div>
-                <div className="flex-1 h-[1px] bg-zinc-900" />
+                <div className="text-[10px] font-bold tracking-[0.2em] text-[var(--color-text-muted)] uppercase">{group.date}</div>
+                <div className="flex-1 h-[1px] bg-[var(--color-bg-panel)]" />
               </div>
 
               {/* Events for this date */}
               <div className="relative pl-6">
                 {/* Timeline line */}
-                <div className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-zinc-900" />
+                <div className="absolute left-[7px] top-0 bottom-0 w-[1px] bg-[var(--color-bg-panel)]" />
 
                 <div className="space-y-4">
                   {group.events.map((ev, i) => {
@@ -147,7 +147,7 @@ export default function ActivityPage() {
                         </div>
 
                         {/* Content */}
-                        <div className={`flex-1 bg-[#0A0A0B] border border-zinc-900 p-3.5 ${!isLast ? 'mb-1' : ''}`}
+                        <div className={`flex-1 bg-[var(--color-bg-panel)] border border-[var(--color-border-subtle)] p-3.5 ${!isLast ? 'mb-1' : ''}`}
                           style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
                         >
                           <div className="flex items-start justify-between gap-2">
@@ -158,18 +158,18 @@ export default function ActivityPage() {
                               >
                                 {cfg.label}
                               </span>
-                              <p className="inline text-xs text-zinc-300">{ev.description}</p>
+                              <p className="inline text-xs text-[var(--color-text-secondary)]">{ev.description}</p>
                             </div>
                             <div className="flex-shrink-0 text-right">
-                              <div className="text-[10px] text-zinc-600">{ts.time}</div>
+                              <div className="text-[10px] text-[var(--color-text-muted)]">{ts.time}</div>
                             </div>
                           </div>
                           {ev.metadata && Object.keys(ev.metadata).length > 0 && (
                             <div className="mt-2 flex flex-wrap gap-2">
                               {Object.entries(ev.metadata).slice(0, 3).map(([k, v]) => (
                                 v !== null && v !== undefined && (
-                                  <span key={k} className="text-[9px] text-zinc-600 font-mono">
-                                    {k}: <span className="text-zinc-400">{String(v)}</span>
+                                  <span key={k} className="text-[9px] text-[var(--color-text-muted)] font-mono">
+                                    {k}: <span className="text-[var(--color-text-secondary)]">{String(v)}</span>
                                   </span>
                                 )
                               ))}
@@ -187,10 +187,10 @@ export default function ActivityPage() {
       )}
 
       {/* Footer note */}
-      <div className="mt-8 border-t border-zinc-900 pt-6 text-center">
-        <p className="text-[10px] text-zinc-700 font-mono">
+      <div className="mt-8 border-t border-[var(--color-border-subtle)] pt-6 text-center">
+        <p className="text-[10px] text-[var(--color-text-disabled)] font-mono">
           Activity log shows all billing events for your account. For questions, contact{' '}
-          <Link href="/portal/patient/support" className="text-zinc-500 hover:text-zinc-300 transition-colors underline">billing support</Link>.
+          <Link href="/portal/patient/support" className="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors underline">billing support</Link>.
         </p>
       </div>
     </div>

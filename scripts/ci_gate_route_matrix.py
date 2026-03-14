@@ -13,7 +13,6 @@ import ast
 import os
 import re
 import sys
-import json
 
 FRONTEND = os.path.join(os.path.dirname(__file__), "..", "frontend", "app")
 BACKEND_API = os.path.join(os.path.dirname(__file__), "..", "backend", "core_app", "api")
@@ -40,12 +39,10 @@ def iter_pages():
             if fname == "page.tsx":
                 fpath = os.path.join(root, fname)
                 rel = fpath.replace(FRONTEND, "").replace("/page.tsx", "") or "/"
-                with open(fpath, errors="replace") as f:
+                with open(fpath, encoding="utf-8", errors="replace") as f:
                     content = f.read()
                 yield rel, content
 
-
-# ─── Helper: collect all backend endpoint full paths ─────────────────────────
 
 def collect_backend_paths() -> set[str]:
     ROUTE_RE = re.compile(r'@router\.(get|post|put|patch|delete)\s*\(\s*["\']([^"\']+)["\']', re.MULTILINE)
@@ -56,12 +53,12 @@ def collect_backend_paths() -> set[str]:
     for api_dir in search_dirs:
         if not os.path.isdir(api_dir):
             continue
-        for root, dirs, files in os.walk(api_dir):
+        for root, _, files in os.walk(api_dir):
             for fname in files:
                 if not fname.endswith(".py"):
                     continue
                 fpath = os.path.join(root, fname)
-                with open(fpath, errors="replace") as f:
+                with open(fpath, encoding="utf-8", errors="replace") as f:
                     content = f.read()
                 pm = PREFIX_RE.search(content)
                 prefix = pm.group(1) if pm else ""
@@ -75,6 +72,30 @@ def norm(p: str) -> str:
     p = re.sub(r"\$\{[^}]+\}", "{}", p)
     p = re.sub(r"\{[^}]+\}", "{}", p)
     return p.rstrip("/")
+
+
+def collect_mounted_route_paths() -> list[str]:
+    """Collect mounted FastAPI APIRoute paths from core_app.main:app."""
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    backend_dir = os.path.join(repo_root, "backend")
+    if backend_dir not in sys.path:
+        sys.path.insert(0, backend_dir)
+
+    # core_app.db.session eagerly creates SQLAlchemy engines at import time.
+    # Provide a safe, non-secret, parseable URL so route introspection can run
+    # deterministically in CI/local without needing real infrastructure.
+    if not os.environ.get("DATABASE_URL"):
+        os.environ["DATABASE_URL"] = "postgresql+psycopg://localhost/postgres"
+
+    from fastapi.routing import APIRoute
+
+    from core_app.main import app  # type: ignore
+
+    paths: list[str] = []
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            paths.append(str(route.path))
+    return paths
 
 
 # ─── Gate 1: Known-broken path mismatches ────────────────────────────────────
@@ -147,7 +168,7 @@ def gate_hems_no_silent_catches() -> None:
     if not os.path.exists(HEMS_PAGE):
         fail("HEMS-PAGE-MISSING: portal/hems/page.tsx not found")
         return
-    with open(HEMS_PAGE, errors="replace") as f:
+    with open(HEMS_PAGE, encoding="utf-8", errors="replace") as f:
         content = f.read()
     matches = SILENT_CATCH_RE.findall(content)
     if matches:
@@ -166,7 +187,7 @@ def gate_hems_not_stub() -> None:
     if not os.path.exists(HEMS_ROUTER):
         fail("HEMS-ROUTER-MISSING: backend/core_app/api/hems_router.py not found")
         return
-    with open(HEMS_ROUTER, errors="replace") as f:
+    with open(HEMS_ROUTER, encoding="utf-8", errors="replace") as f:
         content = f.read()
     if BARE_PASS_RE.search(content):
         fail("HEMS-ROUTER-STUB: hems_router.py contains bare `pass` statement")
@@ -256,7 +277,7 @@ def gate_no_critical_stubs() -> None:
         fpath = os.path.join(BACKEND_API, fname)
         if not os.path.exists(fpath):
             continue
-        with open(fpath, errors='replace') as f:
+        with open(fpath, encoding="utf-8", errors="replace") as f:
             content = f.read()
         if _has_stub_only_handler(content):
             fail(f"STUB-ENDPOINT: {fname} has a route handler whose entire body is only `pass`")
@@ -272,7 +293,7 @@ def gate_fax_inbox_exists() -> None:
     if not os.path.exists(FAX_ROUTER):
         fail("FAX-ROUTER-MISSING")
         return
-    with open(FAX_ROUTER, errors="replace") as f:
+    with open(FAX_ROUTER, encoding="utf-8", errors="replace") as f:
         content = f.read()
     if '"/fax/inbox"' not in content and "'/fax/inbox'" not in content:
         fail("MISSING-ENDPOINT: GET /api/v1/fax/inbox not in fax_router.py (portal/fax-inbox is broken)")
@@ -289,7 +310,7 @@ def gate_auth_rep_paths() -> None:
     if not os.path.exists(AUTH_REP_ROUTER):
         fail("AUTH-REP-ROUTER-MISSING")
         return
-    with open(AUTH_REP_ROUTER, errors="replace") as f:
+    with open(AUTH_REP_ROUTER, encoding="utf-8", errors="replace") as f:
         content = f.read()
     for path in ["/register", "/verify-otp", "/sign", "/documents"]:
         if f'"{path}"' not in content and f"'{path}'" not in content:
@@ -307,7 +328,7 @@ def gate_hems_has_realtime() -> None:
     if not os.path.exists(HEMS_PAGE):
         fail("HEMS-PAGE-MISSING")
         return
-    with open(HEMS_PAGE, errors="replace") as f:
+    with open(HEMS_PAGE, encoding="utf-8", errors="replace") as f:
         content = f.read()
     if not SSE_RE.search(content):
         fail(
@@ -329,6 +350,48 @@ def gate_founder_compliance_status() -> None:
         ok("founder/compliance/status endpoint exists")
 
 
+# ─── Gate 11: Route exposure hard-fail checks ───────────────────────────────
+
+def gate_route_exposure_blockers() -> None:
+    """
+    Hard-fail route regressions that can bypass edge/WAF expectations.
+
+    Blockers:
+    - Any mounted route under /webhooks/*
+    - Any mounted route containing /api/v1/api/v1/
+    """
+    try:
+        paths = collect_mounted_route_paths()
+    except Exception as exc:  # noqa: BLE001
+        print(
+            "WARN  ROUTE-EXPOSURE-CHECK-FALLBACK: mounted-route import failed; "
+            f"using static router scan instead ({exc})"
+        )
+        paths = sorted(collect_backend_paths())
+        if not paths:
+            fail("ROUTE-EXPOSURE-CHECK-FAILED: no routes found in static fallback scan")
+            return
+
+    legacy_webhooks = sorted({p for p in paths if p.startswith("/webhooks/")})
+    double_prefixed = sorted({p for p in paths if "/api/v1/api/v1/" in p})
+
+    if legacy_webhooks:
+        fail(
+            "ROUTE-EXPOSURE-LEGACY-WEBHOOKS: mounted root webhook routes found: "
+            + ", ".join(legacy_webhooks)
+        )
+    else:
+        ok("No mounted legacy /webhooks/* routes")
+
+    if double_prefixed:
+        fail(
+            "ROUTE-EXPOSURE-DOUBLE-PREFIX: mounted /api/v1/api/v1 routes found: "
+            + ", ".join(double_prefixed)
+        )
+    else:
+        ok("No mounted /api/v1/api/v1/* routes")
+
+
 # ─── Run all gates ────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -346,6 +409,7 @@ if __name__ == "__main__":
     gate_auth_rep_paths()
     gate_hems_has_realtime()
     gate_founder_compliance_status()
+    gate_route_exposure_blockers()
 
     print()
     print("=" * 60)

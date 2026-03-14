@@ -12,7 +12,7 @@ const PANEL_STYLE = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-  background: '#FF4D00',
+  background: 'var(--q-orange)',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
   fontSize: '0.9375rem',
@@ -31,7 +31,6 @@ export default function RepVerifyPage() {
   const [digits, setDigits] = useState<string[]>(Array(DIGIT_COUNT).fill(''));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [hasError, setHasError] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(RESEND_SECONDS);
   const [resending, setResending] = useState(false);
@@ -62,7 +61,6 @@ export default function RepVerifyPage() {
           const detail: string = result.detail ?? `Verification failed (${result.status})`;
           const match = detail.match(/(\d+)\s*attempt/i);
           const parsedAttemptsLeft = match ? parseInt(match[1], 10) : null;
-          if (parsedAttemptsLeft !== null) setAttemptsLeft(parsedAttemptsLeft);
           setHasError(true);
           setError(
             parsedAttemptsLeft !== null
@@ -176,12 +174,12 @@ export default function RepVerifyPage() {
     fontWeight: 700,
     textAlign: 'center',
     outline: 'none',
-    caretColor: '#FF4D00',
+    caretColor: 'var(--q-orange)',
   };
 
   return (
     <div
-      style={{ background: 'var(--color-bg-base, #050505)', minHeight: '100vh' }}
+      style={{ background: 'var(--color-bg-base, var(--color-bg-base))', minHeight: '100vh' }}
       className="flex items-center justify-center px-4 py-12"
     >
       <div style={{ width: '100%', maxWidth: '460px' }}>
@@ -194,13 +192,13 @@ export default function RepVerifyPage() {
               justifyContent: 'center',
               width: '48px',
               height: '48px',
-              background: 'rgba(255,107,26,0.12)',
-              border: '1px solid rgba(255,107,26,0.3)',
+              background: 'rgba(255,106,0,0.12)',
+              border: '1px solid rgba(255,106,0,0.3)',
               clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
               marginBottom: '18px',
             }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF4D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--q-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="5" y="11" width="14" height="10" rx="1" />
               <path d="M8 11V7a4 4 0 0 1 8 0v4" />
             </svg>
@@ -279,7 +277,7 @@ export default function RepVerifyPage() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: resending ? 'rgba(255,255,255,0.3)' : 'rgba(255,107,26,0.8)',
+                  color: resending ? 'rgba(255,255,255,0.3)' : 'rgba(255,106,0,0.8)',
                   fontSize: '0.8125rem',
                   cursor: resending ? 'not-allowed' : 'pointer',
                   padding: 0,

@@ -88,19 +88,19 @@ export default function ConfigurationPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="hud-rail pb-2">
-        <h1 className="text-h1 font-bold text-zinc-100">System Configuration</h1>
-        <p className="text-body text-zinc-500 mt-1">Manage tenant and system-level configuration keys</p>
+        <h1 className="text-h1 font-bold text-[var(--color-text-primary)]">System Configuration</h1>
+        <p className="text-body text-[var(--color-text-muted)] mt-1">Manage tenant and system-level configuration keys</p>
       </div>
 
       {/* Tenant Config Loader */}
-      <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Tenant Configuration</h2>
+      <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)]">Tenant Configuration</h2>
         <div className="flex gap-2">
           <input
             value={tenantId}
             onChange={(e) => setTenantId(e.target.value)}
             placeholder="Enter tenant ID…"
-            className="flex-1 bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100"
+            className="flex-1 bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)]"
           />
           <button onClick={loadTenantData} disabled={loading || !tenantId}
             className="px-4 py-2 bg-brand-orange text-black text-sm font-semibold disabled:opacity-40">
@@ -109,12 +109,12 @@ export default function ConfigurationPage() {
         </div>
       </div>
 
-      {error && <div className="text-red-400 text-sm">{error}</div>}
+      {error && <div className="text-[var(--color-brand-red)] text-sm">{error}</div>}
 
       {/* Completeness Report */}
       {completeness && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0A0A0B] border border-border-DEFAULT p-4">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-3">Configuration Completeness</h3>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Configuration Completeness</h3>
           <div className="flex items-center gap-4 mb-2">
             <div className="flex-1 bg-bg-surface h-3  overflow-hidden">
               <div
@@ -126,15 +126,15 @@ export default function ConfigurationPage() {
                 }}
               />
             </div>
-            <span className="text-sm font-bold text-zinc-100">{completeness.completeness_pct}%</span>
+            <span className="text-sm font-bold text-[var(--color-text-primary)]">{completeness.completeness_pct}%</span>
           </div>
-          <div className="text-[10px] text-zinc-500">
+          <div className="text-[10px] text-[var(--color-text-muted)]">
             {completeness.total_present} / {completeness.total_required} keys set
           </div>
           {completeness.missing_keys.length > 0 && (
             <div className="mt-2">
-                <span className="text-[10px] text-[#FF4D00] font-semibold">Missing: </span>
-              <span className="text-[10px] text-zinc-500">{completeness.missing_keys.join(', ')}</span>
+                <span className="text-[10px] text-[var(--q-orange)] font-semibold">Missing: </span>
+              <span className="text-[10px] text-[var(--color-text-muted)]">{completeness.missing_keys.join(', ')}</span>
             </div>
           )}
         </motion.div>
@@ -143,14 +143,14 @@ export default function ConfigurationPage() {
       {/* Tenant Config Keys */}
       {tenantConfigs.length > 0 && (
         <div className="space-y-1">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-2">Tenant Keys</h3>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Tenant Keys</h3>
           {tenantConfigs.map((c) => (
-            <div key={c.id} className="bg-[#0A0A0B] border border-border-DEFAULT p-3 flex items-center justify-between">
+            <div key={c.id} className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3 flex items-center justify-between">
               <div>
-                <span className="text-xs font-mono font-semibold text-zinc-100">{c.config_key}</span>
-                <span className="text-xs text-zinc-500 ml-2">= {c.config_value}</span>
+                <span className="text-xs font-mono font-semibold text-[var(--color-text-primary)]">{c.config_key}</span>
+                <span className="text-xs text-[var(--color-text-muted)] ml-2">= {c.config_value}</span>
               </div>
-              <span className="text-[10px] text-zinc-500">{new Date(c.updated_at).toLocaleDateString()}</span>
+              <span className="text-[10px] text-[var(--color-text-muted)]">{new Date(c.updated_at).toLocaleDateString()}</span>
             </div>
           ))}
         </div>
@@ -158,15 +158,15 @@ export default function ConfigurationPage() {
 
       {/* Add Tenant Config */}
       {tenantId && (
-        <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Set Tenant Configuration</h3>
+        <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 space-y-3">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)]">Set Tenant Configuration</h3>
           <div className="grid grid-cols-3 gap-2">
             <input value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="Config key"
-              className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100" />
+              className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)]" />
             <input value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="Config value"
-              className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100" />
+              className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)]" />
             <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Description (optional)"
-              className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100" />
+              className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)]" />
           </div>
           <button onClick={handleSetConfig} disabled={!newKey || !newValue}
             className="px-4 py-2 bg-brand-orange text-black text-sm font-semibold disabled:opacity-40">
@@ -177,17 +177,17 @@ export default function ConfigurationPage() {
 
       {/* System Configurations */}
       <div className="space-y-1">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-2">System Configurations</h3>
-        {systemConfigs.length === 0 && <div className="text-xs text-zinc-500">No system configurations</div>}
+        <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">System Configurations</h3>
+        {systemConfigs.length === 0 && <div className="text-xs text-[var(--color-text-muted)]">No system configurations</div>}
         {systemConfigs.map((c) => (
-          <div key={c.id} className="bg-[#0A0A0B] border border-border-DEFAULT p-3 flex items-center justify-between">
+          <div key={c.id} className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3 flex items-center justify-between">
             <div>
-              <span className="text-xs font-mono font-semibold text-zinc-100">{c.config_key}</span>
-              <span className="text-xs text-zinc-500 ml-2">= {c.is_sensitive ? '••••••••' : c.config_value}</span>
+              <span className="text-xs font-mono font-semibold text-[var(--color-text-primary)]">{c.config_key}</span>
+              <span className="text-xs text-[var(--color-text-muted)] ml-2">= {c.is_sensitive ? '••••••••' : c.config_value}</span>
             </div>
             <div className="flex items-center gap-2">
-              {c.is_sensitive && <span className="text-[9px] px-1.5 py-0.5 bg-red-400/10 text-red-400 font-bold">SENSITIVE</span>}
-              <span className="text-[10px] text-zinc-500">{new Date(c.updated_at).toLocaleDateString()}</span>
+              {c.is_sensitive && <span className="text-[9px] px-1.5 py-0.5 bg-red-400/10 text-[var(--color-brand-red)] font-bold">SENSITIVE</span>}
+              <span className="text-[10px] text-[var(--color-text-muted)]">{new Date(c.updated_at).toLocaleDateString()}</span>
             </div>
           </div>
         ))}

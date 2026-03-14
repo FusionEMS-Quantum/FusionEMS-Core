@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import (
     db_session_dependency,
-    require_role,
+    require_founder_only_audited,
 )
 from core_app.schemas.auth import CurrentUser
 from core_app.schemas.customer_success import (
@@ -34,6 +34,8 @@ router = APIRouter(
     tags=["Founder Success Command Center"],
 )
 
+_FOUNDER = Depends(require_founder_only_audited())
+
 
 def _svc(db: Session) -> CustomerSuccessService:
     return CustomerSuccessService(db)
@@ -41,7 +43,7 @@ def _svc(db: Session) -> CustomerSuccessService:
 
 @router.get("/summary", response_model=FounderSuccessSummary)
 def founder_success_summary(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> FounderSuccessSummary:
     """Full aggregated success summary for the founder dashboard."""
@@ -50,7 +52,7 @@ def founder_success_summary(
     stalled = svc.get_stalled_implementations()
     high_sev = svc.get_high_severity_tickets()
     at_risk = svc.get_at_risk_accounts()
-    training_gaps = svc.get_training_gaps()
+    training_gap_items = svc.get_training_gaps()
     low_adoption = svc.get_low_adoption_modules()
     expansion_ready = svc.get_expansion_ready_signals()
 
@@ -83,7 +85,7 @@ def founder_success_summary(
             entity_id=snap.id,
         ))
 
-    for gap in training_gaps:
+    for gap in training_gap_items:
         actions.append(SuccessAction(
             domain="training",
             severity="medium",
@@ -108,7 +110,7 @@ def founder_success_summary(
         stalled_implementations=len(stalled),
         high_severity_tickets=len(high_sev),
         at_risk_accounts=len(at_risk),
-        training_gaps=len(training_gaps),
+        training_gaps=len(training_gap_items),
         low_adoption_modules=len(low_adoption),
         expansion_ready_signals=len(expansion_ready),
         top_actions=top_actions,
@@ -120,7 +122,7 @@ def founder_success_summary(
     response_model=list[ImplementationProjectResponse],
 )
 def stalled_implementations(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[ImplementationProjectResponse]:
     svc = _svc(db)
@@ -133,7 +135,7 @@ def stalled_implementations(
     response_model=list[SupportTicketResponse],
 )
 def high_severity_tickets(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[SupportTicketResponse]:
     svc = _svc(db)
@@ -146,7 +148,7 @@ def high_severity_tickets(
     response_model=list[AccountHealthSnapshotResponse],
 )
 def at_risk_accounts(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[AccountHealthSnapshotResponse]:
     svc = _svc(db)
@@ -159,7 +161,7 @@ def at_risk_accounts(
     response_model=list[TrainingAssignmentResponse],
 )
 def training_gaps(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[TrainingAssignmentResponse]:
     svc = _svc(db)
@@ -172,7 +174,7 @@ def training_gaps(
     response_model=list[AdoptionMetricResponse],
 )
 def low_adoption_modules(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[AdoptionMetricResponse]:
     svc = _svc(db)
@@ -185,7 +187,7 @@ def low_adoption_modules(
     response_model=list[ExpansionReadinessSignalResponse],
 )
 def expansion_readiness(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> list[ExpansionReadinessSignalResponse]:
     svc = _svc(db)
@@ -195,7 +197,7 @@ def expansion_readiness(
 
 @router.get("/implementation-health", response_model=ImplementationHealthScore)
 def implementation_health(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> ImplementationHealthScore:
     svc = _svc(db)
@@ -205,7 +207,7 @@ def implementation_health(
 
 @router.get("/support-queue-health", response_model=SupportQueueHealth)
 def support_queue_health(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> SupportQueueHealth:
     svc = _svc(db)
@@ -215,7 +217,7 @@ def support_queue_health(
 
 @router.get("/training-completion", response_model=TrainingCompletionSummary)
 def training_completion(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = _FOUNDER,
     db: Session = Depends(db_session_dependency),
 ) -> TrainingCompletionSummary:
     svc = _svc(db)

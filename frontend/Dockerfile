@@ -40,7 +40,7 @@ ENV NEXT_PUBLIC_BRAND_NOREPLY_EMAIL=$NEXT_PUBLIC_BRAND_NOREPLY_EMAIL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN npm run build
+RUN npm run audit:routes && npm run build
 
 
 FROM node:22-alpine3.22 AS runner

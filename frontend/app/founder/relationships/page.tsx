@@ -67,7 +67,7 @@ function severityColor(sev: string): string {
     case 'HIGH': return 'var(--color-signal-amber, #f59e0b)';
     case 'MEDIUM': return 'var(--color-signal-yellow, #eab308)';
     case 'GREEN': return 'var(--color-signal-green, #22c55e)';
-    default: return 'var(--color-text-muted, #6b7280)';
+    default: return 'var(--color-text-muted, var(--color-text-muted))';
   }
 }
 
@@ -76,6 +76,22 @@ function pctColor(value: number): string {
   if (value >= 70) return 'var(--color-signal-yellow, #eab308)';
   if (value >= 50) return 'var(--color-signal-amber, #f59e0b)';
   return 'var(--color-signal-red, #ef4444)';
+}
+
+function asFiniteNumberOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function fmtPct(value: number | null): string {
+  return value == null ? '—' : `${value}%`;
+}
+
+function fmtCount(value: number | null): string {
+  return value == null ? '—' : String(value);
+}
+
+function pctColorOrNeutral(value: number | null): string {
+  return value == null ? 'var(--color-text-muted, var(--color-text-muted))' : pctColor(value);
 }
 
 /* ── Components ───────────────────────────────────────────────────────── */
@@ -111,13 +127,13 @@ function KPICard({
   );
 }
 
-function ProgressBar({ pct, color }: { pct: number; color: string }) {
+function ProgressBar({ pct, color }: { pct: number | null; color: string }) {
   return (
     <div style={{ height: 6, borderRadius: 3, background: 'var(--color-bg-subtle, #27272a)', overflow: 'hidden' }}>
       <motion.div
         style={{ height: '100%', borderRadius: 3, background: color }}
         initial={{ width: 0 }}
-        animate={{ width: `${Math.min(pct, 100)}%` }}
+        animate={{ width: `${Math.min(pct ?? 0, 100)}%` }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
       />
     </div>
@@ -212,6 +228,18 @@ export default function FounderRelationshipsPage() {
   const fh = data?.facility_health;
   const cc = data?.communication_completeness;
 
+  const icConfidencePct = asFiniteNumberOrNull(ic?.confidence_pct);
+  const rpCompletionPct = asFiniteNumberOrNull(rp?.completion_pct);
+  const fhHealthPct = asFiniteNumberOrNull(fh?.health_pct);
+  const ccCompletenessPct = asFiniteNumberOrNull(cc?.completeness_pct);
+
+  const icVerifiedCount = asFiniteNumberOrNull(ic?.verified_count);
+  const icTotalPatients = asFiniteNumberOrNull(ic?.total_patients);
+  const rpDisputedCount = asFiniteNumberOrNull(rp?.disputed_count);
+  const fhHighFrictionCount = asFiniteNumberOrNull(fh?.high_friction_count);
+  const ccWithPrefs = asFiniteNumberOrNull(cc?.with_preferences);
+  const ccTotalPatients = asFiniteNumberOrNull(cc?.total_patients);
+
   return (
     <div style={{ minHeight: '100vh', padding: '2rem 2rem 4rem', maxWidth: 1200, margin: '0 auto' }}>
       {/* ── HEADER ──────────────────────────────────────────────────── */}
@@ -229,7 +257,7 @@ export default function FounderRelationshipsPage() {
             className="chamfer-4"
             style={{
               fontSize: 11, fontWeight: 600, padding: '6px 12px',
-              background: '#0A0A0B', border: '1px solid var(--color-border-default)',
+              background: 'var(--color-bg-panel)', border: '1px solid var(--color-border-default)',
               color: 'var(--color-text-primary)',
             }}
           >
@@ -251,27 +279,27 @@ export default function FounderRelationshipsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 24 }}>
         <KPICard
           label="Identity Confidence"
-          value={`${ic?.confidence_pct ?? 0}%`}
-          sub={`${ic?.verified_count ?? 0} / ${ic?.total_patients ?? 0} verified`}
-          color={pctColor(ic?.confidence_pct ?? 0)}
+          value={fmtPct(icConfidencePct)}
+          sub={`${fmtCount(icVerifiedCount)} / ${fmtCount(icTotalPatients)} verified`}
+          color={pctColorOrNeutral(icConfidencePct)}
         />
         <KPICard
           label="Responsible Party"
-          value={`${rp?.completion_pct ?? 0}%`}
-          sub={`${rp?.disputed_count ?? 0} disputed`}
-          color={pctColor(rp?.completion_pct ?? 0)}
+          value={fmtPct(rpCompletionPct)}
+          sub={rpDisputedCount == null ? '—' : `${rpDisputedCount} disputed`}
+          color={pctColorOrNeutral(rpCompletionPct)}
         />
         <KPICard
           label="Facility Health"
-          value={`${fh?.health_pct ?? 0}%`}
-          sub={`${fh?.high_friction_count ?? 0} high friction`}
-          color={pctColor(fh?.health_pct ?? 0)}
+          value={fmtPct(fhHealthPct)}
+          sub={fhHighFrictionCount == null ? '—' : `${fhHighFrictionCount} high friction`}
+          color={pctColorOrNeutral(fhHealthPct)}
         />
         <KPICard
           label="Comm Preferences"
-          value={`${cc?.completeness_pct ?? 0}%`}
-          sub={`${cc?.with_preferences ?? 0} / ${cc?.total_patients ?? 0}`}
-          color={pctColor(cc?.completeness_pct ?? 0)}
+          value={fmtPct(ccCompletenessPct)}
+          sub={`${fmtCount(ccWithPrefs)} / ${fmtCount(ccTotalPatients)}`}
+          color={pctColorOrNeutral(ccCompletenessPct)}
         />
       </div>
 
@@ -291,36 +319,36 @@ export default function FounderRelationshipsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Identity Confidence</span><span>{ic?.confidence_pct ?? 0}%</span>
+              <span>Identity Confidence</span><span>{fmtPct(icConfidencePct)}</span>
             </div>
-            <ProgressBar pct={ic?.confidence_pct ?? 0} color={pctColor(ic?.confidence_pct ?? 0)} />
+            <ProgressBar pct={icConfidencePct} color={pctColorOrNeutral(icConfidencePct)} />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Responsible Party</span><span>{rp?.completion_pct ?? 0}%</span>
+              <span>Responsible Party</span><span>{fmtPct(rpCompletionPct)}</span>
             </div>
-            <ProgressBar pct={rp?.completion_pct ?? 0} color={pctColor(rp?.completion_pct ?? 0)} />
+            <ProgressBar pct={rpCompletionPct} color={pctColorOrNeutral(rpCompletionPct)} />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Facility Health</span><span>{fh?.health_pct ?? 0}%</span>
+              <span>Facility Health</span><span>{fmtPct(fhHealthPct)}</span>
             </div>
-            <ProgressBar pct={fh?.health_pct ?? 0} color={pctColor(fh?.health_pct ?? 0)} />
+            <ProgressBar pct={fhHealthPct} color={pctColorOrNeutral(fhHealthPct)} />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-              <span>Communication Prefs</span><span>{cc?.completeness_pct ?? 0}%</span>
+              <span>Communication Prefs</span><span>{fmtPct(ccCompletenessPct)}</span>
             </div>
-            <ProgressBar pct={cc?.completeness_pct ?? 0} color={pctColor(cc?.completeness_pct ?? 0)} />
+            <ProgressBar pct={ccCompletenessPct} color={pctColorOrNeutral(ccCompletenessPct)} />
           </div>
         </div>
       </div>
 
       {/* ── SIGNAL METRICS ──────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
-        <KPICard label="Duplicate Queue" value={String(data?.duplicate_review_count ?? 0)} color="var(--color-signal-amber, #f59e0b)" />
-        <KPICard label="Facility Contact Gaps" value={String(data?.facility_contact_gaps ?? 0)} color="var(--color-signal-yellow, #eab308)" />
-        <KPICard label="Frequent Utilizers" value={String(data?.frequent_utilizer_count ?? 0)} color="var(--color-signal-red, #ef4444)" />
+        <KPICard label="Duplicate Queue" value={data?.duplicate_review_count != null ? String(data.duplicate_review_count) : '—'} color="var(--color-signal-amber, #f59e0b)" />
+        <KPICard label="Facility Contact Gaps" value={data?.facility_contact_gaps != null ? String(data.facility_contact_gaps) : '—'} color="var(--color-signal-yellow, #eab308)" />
+        <KPICard label="Frequent Utilizers" value={data?.frequent_utilizer_count != null ? String(data.frequent_utilizer_count) : '—'} color="var(--color-signal-red, #ef4444)" />
       </div>
 
       {/* ── TOP ACTIONS ─────────────────────────────────────────────── */}

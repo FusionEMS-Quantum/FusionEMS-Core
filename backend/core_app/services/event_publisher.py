@@ -5,6 +5,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
+from functools import lru_cache
 from typing import Any
 
 from core_app.core.config import get_settings
@@ -156,21 +157,22 @@ class RedisEventPublisher(EventPublisher):
             )
 
 
-_publisher_instance: EventPublisher | None = None
+@lru_cache(maxsize=1)
+def _build_event_publisher() -> EventPublisher:
+    settings = get_settings()
+    has_redis_url = bool(getattr(settings, "redis_url", None))
+    if has_redis_url and redis_async is not None:
+        return RedisEventPublisher()
+
+    logger.critical(
+        "event_publisher.fallback: Redis unavailable or not configured — "
+        "using NoOpEventPublisher; all events will be dropped. "
+        "Set REDIS_URL to enable real-time event streaming.",
+        extra={"redis_url_set": has_redis_url},
+    )
+    return NoOpEventPublisher()
 
 
 def get_event_publisher(db_session=None) -> EventPublisher:
-    global _publisher_instance
-    if _publisher_instance is None:
-        settings = get_settings()
-        if getattr(settings, "redis_url", None) and redis_async is not None:
-            _publisher_instance = RedisEventPublisher()
-        else:
-            logger.critical(
-                "event_publisher.fallback: Redis unavailable or not configured — "
-                "using NoOpEventPublisher; all events will be dropped. "
-                "Set REDIS_URL to enable real-time event streaming.",
-                extra={"redis_url_set": bool(getattr(settings, "redis_url", None))},
-            )
-            _publisher_instance = NoOpEventPublisher()
-    return _publisher_instance
+    del db_session  # compatibility with existing call sites
+    return _build_event_publisher()

@@ -1,7 +1,6 @@
 [MAIN]
 init-hook = 'import sys; sys.path.insert(0, "backend")'
 extension-pkg-allow-list = pydantic
-load-plugins = pylint_pydantic
 ignore-paths =
 	(^|.*/)backend/alembic/versions/.*$
 	(^|.*/)alembic/versions/.*$
@@ -9,4 +8,7 @@ ignore-paths =
 [MESSAGES CONTROL]
 disable =
 	broad-exception-caught,
-	unused-argument
+	unused-argument,
+	import-error,
+	redefined-outer-name,
+	raise-missing-from

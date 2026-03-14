@@ -58,36 +58,22 @@ def handle_ocr(record: dict) -> dict:
     obj = _s3.get_object(Bucket=BUCKET, Key=s3_key)
     image_bytes = obj["Body"].read()
 
-    import base64
+    from core_app.ai.service import AiService
 
-    import openai
-
-    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""))
-    b64 = base64.b64encode(image_bytes).decode()
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": (
-                            "You are an EMS supply inventory OCR assistant. "
-                            "Extract item names, quantities, lot numbers, and expiration dates from this image. "
-                            'Return a JSON array of objects: [{"name": str, "qty": int, "lot": str|null, "expiry": str|null}]. '
-                            "Return only valid JSON, no markdown."
-                        ),
-                    },
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
-                ],
-            }
-        ],
+    _ai_ocr = AiService()
+    _ocr_resp = _ai_ocr.chat_with_image(
+        system=(
+            "You are an EMS supply inventory OCR assistant. "
+            "Extract item names, quantities, lot numbers, and expiration dates from this image. "
+            'Return a JSON array of objects: [{"name": str, "qty": int, "lot": str|null, "expiry": str|null}]. '
+            "Return only valid JSON, no markdown."
+        ),
+        user_text="Extract inventory items from the image.",
+        image_bytes=image_bytes,
+        image_media_type="image/jpeg",
         max_tokens=1024,
     )
-
-    raw_text = response.choices[0].message.content or "[]"
+    raw_text = _ocr_resp.content or "[]"
     try:
         parsed = json.loads(raw_text)
     except json.JSONDecodeError:
@@ -303,26 +289,22 @@ def handle_anomaly(record: dict) -> dict:
         )
 
     if not flags:
-        import openai
+        from core_app.ai.service import AiService
 
-        client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY", ""))
-        prompt = (
-            "You are an EMS narcotics chain-of-custody anomaly detector. "
-            "Review this event and identify if anything needs human review. "
-            "Rules: only flag 'needs_review' if there is a genuine discrepancy. Never accuse. "
-            f"Event: {json.dumps(body)}. "
-            'Respond with JSON: {"flag": bool, "reason": str}.'
-        )
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=256,
-        )
+        _ai_anomaly = AiService()
         try:
-            ai_result = json.loads(resp.choices[0].message.content or "{}")
-            if ai_result.get("flag"):
+            ai_payload, _ai_meta = _ai_anomaly.chat_structured(
+                system=(
+                    "You are an EMS narcotics chain-of-custody anomaly detector. "
+                    "Review this event and identify if anything needs human review. "
+                    "Rules: only flag 'needs_review' if there is a genuine discrepancy. Never accuse."
+                ),
+                user=f'Event: {json.dumps(body)}. Respond with JSON: {{"flag": bool, "reason": str}}.',
+                max_tokens=256,
+            )
+            if ai_payload.get("flag"):
                 flags.append(
-                    {"rule": "AI_REVIEW", "severity": "info", "detail": ai_result.get("reason", "")}
+                    {"rule": "AI_REVIEW", "severity": "info", "detail": ai_payload.get("reason", "")}
                 )
         except Exception:
             pass

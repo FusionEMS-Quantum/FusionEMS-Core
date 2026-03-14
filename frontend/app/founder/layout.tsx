@@ -18,6 +18,7 @@ const NAV_DOMAINS = [
       { href: '/founder/executive/daily-brief', label: 'Daily AI Brief' },
       { href: '/founder/executive/risk-monitor', label: 'Risk Monitor' },
       { href: '/founder/executive/events-feed', label: 'Events Feed' },
+      { href: '/founder/documents', label: 'Document Vault' },
     ],
   },
   {
@@ -51,6 +52,7 @@ const NAV_DOMAINS = [
     icon: '◈',
     color: 'var(--q-green)',
     links: [
+      { href: '/founder/comms/command-center', label: 'Command Center' },
       { href: '/founder/comms/inbox', label: 'Support Inbox' },
       { href: '/founder/comms/phone-system', label: 'Phone System' },
       { href: '/founder/comms/script-builder', label: 'Script Builder' },
@@ -112,8 +114,19 @@ const NAV_DOMAINS = [
     ],
   },
   {
+    id: 'growth-engine',
+    label: '9 · AI Growth Engine',
+    icon: '◈',
+    color: '#FF4D00',
+    links: [
+      { href: '/founder/growth/publish', label: 'Publishing Control' },
+      { href: '/founder/growth/demo-engine', label: 'Demo Engine' },
+      { href: '/founder/growth/automations', label: 'Workflow Automations' },
+    ],
+  },
+  {
     id: 'pwa-mobile',
-    label: '9 · PWA & Mobile',
+    label: '10 · PWA & Mobile',
     icon: '◈',
     color: 'var(--color-system-fleet)',
     links: [
@@ -125,7 +138,7 @@ const NAV_DOMAINS = [
   },
   {
     id: 'infrastructure',
-    label: '10 · Infrastructure',
+    label: '11 · Infrastructure',
     icon: '◈',
     color: 'var(--color-text-muted)',
     links: [
@@ -138,7 +151,7 @@ const NAV_DOMAINS = [
   },
   {
     id: 'founder-tools',
-    label: '11 · Founder Tools',
+    label: '12 · Founder Tools',
     icon: '◈',
     color: '#FF4D00',
     links: [

@@ -453,14 +453,14 @@ class EDIService:
         cache_key = hashlib.sha256(status_summary.encode()).hexdigest()[:16]
 
         try:
-            explanation, _meta = ai_service.chat(
+            explanation = ai_service.chat(
                 system=(
                     "You are an EMS billing expert. Explain this claim status in plain language "
                     "for a billing coordinator. Be concise, actionable, and specific about what "
                     "next steps should be taken."
                 ),
                 user=status_summary,
-            )
+            ).content
         except Exception as exc:
             explanation = f"AI explanation unavailable: {exc}"
 

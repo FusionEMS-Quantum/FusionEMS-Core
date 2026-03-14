@@ -4,7 +4,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from core_app.core.config import get_settings
+from core_app.ai.service import AiService
 from core_app.services.governance_service import GovernanceService
 
 logger = logging.getLogger(__name__)
@@ -20,9 +20,8 @@ class ComplianceAssistant:
         AI Governance analysis of a security/compliance event.
         Calls LLM when configured; returns degraded response otherwise.
         """
-        settings = get_settings()
-        if not settings.openai_api_key:
-            logger.warning("Compliance LLM analysis unavailable — OpenAI API key not configured")
+        if not AiService.is_configured():
+            logger.warning("Compliance LLM analysis unavailable — AI provider not configured")
             return {
                 "status": "degraded",
                 "reason": "LLM API not configured",
@@ -31,9 +30,7 @@ class ComplianceAssistant:
             }
 
         try:
-            import openai
-
-            client = openai.OpenAI(api_key=settings.openai_api_key)
+            svc = AiService()
             prompt = (
                 f"You are a HIPAA compliance and security analyst for an EMS SaaS platform.\n"
                 f"Analyze this security/compliance event and return a JSON object with keys: "
@@ -42,16 +39,15 @@ class ComplianceAssistant:
                 f"Issue type: {issue_type}\n"
                 f"Context: {context}\n"
             )
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-                temperature=0.1,
-            )
             import json
 
-            content = response.choices[0].message.content or "{}"
-            return json.loads(content)
+            content = svc.chat(
+                system="Return ONLY valid JSON. No markdown.",
+                user=prompt,
+                temperature=0.1,
+                max_tokens=700,
+            ).content
+            return json.loads(content or "{}")
         except Exception:
             logger.exception("LLM compliance analysis failed, returning degraded response")
             return {

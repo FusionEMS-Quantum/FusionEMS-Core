@@ -1,0 +1,14 @@
+name: FusionEMS
+version: 0.0.1
+schema: v1
+
+models:
+  - name: DeepSeek Chat
+    provider: deepseek
+    model: deepseek-chat
+    apiKey: ${{ secrets.DEEPSEEK_API_KEY }}
+
+  - name: DeepSeek Reasoner
+    provider: deepseek
+    model: deepseek-reasoner
+    apiKey: ${{ secrets.DEEPSEEK_API_KEY }}

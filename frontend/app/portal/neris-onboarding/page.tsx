@@ -114,12 +114,12 @@ function Sidebar({
 }) {
   return (
     <div
-      className="bg-[#050505] border-r border-border-DEFAULT flex-shrink-0 overflow-y-auto"
+      className="bg-[var(--color-bg-base)] border-r border-border-DEFAULT flex-shrink-0 overflow-y-auto"
       style={{ width: 200 }}
     >
       <div className="p-4 border-b border-border-DEFAULT">
-        <p className="text-[9px] uppercase tracking-[0.2em] text-[#FF4D00]/70">NERIS Onboarding</p>
-        <p className="text-xs font-bold text-zinc-100 mt-0.5">Wisconsin</p>
+        <p className="text-[9px] uppercase tracking-[0.2em] text-[var(--q-orange)]/70">NERIS Onboarding</p>
+        <p className="text-xs font-bold text-[var(--color-text-primary)] mt-0.5">Wisconsin</p>
       </div>
       <div className="py-2">
         {steps.map((step, index) => {
@@ -128,21 +128,21 @@ function Sidebar({
             <button
               key={step.id}
               onClick={() => onStepClick(step.id)}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-zinc-950/[0.03]"
-              style={isActive ? { background: 'rgba(255,107,26,0.08)' } : undefined}  // data-driven: keep inline
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-[var(--color-bg-base)]/[0.03]"
+              style={isActive ? { background: 'rgba(255,106,0,0.08)' } : undefined}  // data-driven: keep inline
             >
               <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                 {step.status === 'complete' && (
-                  <div className="w-4 h-4  flex items-center justify-center bg-green-500/20 border border-green-500/40">
-                    <span className="text-micro text-status-active font-bold">✓</span>
+                  <div className="w-4 h-4  flex items-center justify-center bg-[var(--color-status-active)]/20 border border-[var(--color-status-active)]/40">
+                    <span className="text-micro text-[var(--color-status-active)] font-bold">✓</span>
                   </div>
                 )}
                 {step.status === 'in_progress' && (
-                  <div className="w-3.5 h-3.5  animate-pulse" style={{ background: '#FF4D00' }} />
+                  <div className="w-3.5 h-3.5  animate-pulse" style={{ background: 'var(--q-orange)' }} />
                 )}
                 {step.status === 'skipped' && (
-                  <div className="w-4 h-4  flex items-center justify-center bg-zinc-950/[0.06] border border-white/[0.12]">
-                    <span className="text-micro text-zinc-500">—</span>
+                  <div className="w-4 h-4  flex items-center justify-center bg-[var(--color-bg-base)]/[0.06] border border-white/[0.12]">
+                    <span className="text-micro text-[var(--color-text-muted)]">—</span>
                   </div>
                 )}
                 {step.status === 'pending' && (
@@ -150,11 +150,11 @@ function Sidebar({
                 )}
               </div>
               <div>
-                <span className="text-micro uppercase tracking-wider text-zinc-500 mr-1">
+                <span className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mr-1">
                   {index + 1}.
                 </span>
                 <span
-                  className={`text-body font-medium ${isActive ? 'text-zinc-100' : 'text-zinc-400'}`}
+                  className={`text-body font-medium ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}
                 >
                   {step.label}
                 </span>
@@ -169,8 +169,8 @@ function Sidebar({
 
 // ─── Field helper ─────────────────────────────────────────────────────────────
 
-const inputClass = "w-full bg-zinc-950/[0.04] border border-border-DEFAULT text-xs text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-zinc-500";
-const labelClass = "block text-micro uppercase tracking-wider text-zinc-500 mb-1";
+const inputClass = "w-full bg-[var(--color-bg-base)]/[0.04] border border-border-DEFAULT text-xs text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-brand-orange/40 placeholder:text-[var(--color-text-muted)]";
+const labelClass = "block text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-1";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -197,7 +197,7 @@ function SecondaryBtn({ onClick, children }: { onClick: () => void; children: Re
   return (
     <button
       onClick={onClick}
-      className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4 bg-zinc-950/[0.06] border border-white/10 text-zinc-500"
+      className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4 bg-[var(--color-bg-base)]/[0.06] border border-white/10 text-[var(--color-text-muted)]"
     >
       {children}
     </button>
@@ -221,7 +221,7 @@ function Step1({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
   return (
     <div className="space-y-4 max-w-lg">
-      <p className="text-xs text-zinc-500 leading-relaxed">
+      <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
         Enter your department&rsquo;s basic identity information. This will be used in all NERIS submissions.
       </p>
       <Field label="Department Name">
@@ -261,7 +261,7 @@ function Step2({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
     <div className="space-y-4 max-w-lg">
       <div className="p-4 chamfer-4 bg-cyan-500/[0.06] border border-cyan-500/20">
         <p className="text-micro uppercase tracking-[0.15em] text-system-billing font-semibold mb-2">RMS Reporting (No CAD Integration)</p>
-        <p className="text-xs text-zinc-400 leading-relaxed">
+        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
           Your department reports incidents directly through the Records Management System (RMS) without a Computer-Aided Dispatch (CAD) or 911 system integration.
           Incidents are manually entered by authorized personnel. This is the standard reporting mode for most Wisconsin fire departments using FusionEMS NERIS.
         </p>
@@ -277,14 +277,14 @@ function Step2({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
           <div
             className="w-4 h-4 chamfer-4 flex items-center justify-center transition-all"
             style={{
-              background: confirmed ? 'rgba(255,107,26,0.2)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${confirmed ? 'rgba(255,107,26,0.5)' : 'rgba(255,255,255,0.15)'}`,
+              background: confirmed ? 'rgba(255,106,0,0.2)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${confirmed ? 'rgba(255,106,0,0.5)' : 'rgba(255,255,255,0.15)'}`,
             }}
           >
-            {confirmed && <span className="text-[#FF4D00] text-micro font-bold">✓</span>}
+            {confirmed && <span className="text-[var(--q-orange)] text-micro font-bold">✓</span>}
           </div>
         </div>
-        <span className="text-xs text-zinc-100 leading-relaxed">
+        <span className="text-xs text-[var(--color-text-primary)] leading-relaxed">
           Confirm: This department uses RMS-only reporting without CAD/911 integration
         </span>
       </label>
@@ -336,15 +336,15 @@ function Step3({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <p className="text-xs text-zinc-500">Add all active fire stations for your department.</p>
+      <p className="text-xs text-[var(--color-text-muted)]">Add all active fire stations for your department.</p>
       {stations.map((station, i) => (
-        <div key={i} className="bg-zinc-950/[0.02] border border-border-subtle chamfer-4 p-4 space-y-3">
+        <div key={i} className="bg-[var(--color-bg-base)]/[0.02] border border-border-subtle chamfer-4 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-micro uppercase tracking-wider text-brand-orange font-semibold">Station {i + 1}</span>
             {stations.length > 1 && (
               <button
                 onClick={() => removeStation(i)}
-                className="text-micro text-red-500/70 hover:text-red transition-colors"
+                className="text-micro text-[var(--color-brand-red)]/70 hover:text-red transition-colors"
               >
                 Remove
               </button>
@@ -416,13 +416,13 @@ function Step4({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <p className="text-xs text-zinc-500">Enter all apparatus (fire vehicles/units) operated by your department.</p>
+      <p className="text-xs text-[var(--color-text-muted)]">Enter all apparatus (fire vehicles/units) operated by your department.</p>
       {apparatus.map((row, i) => (
-        <div key={i} className="bg-zinc-950/[0.02] border border-border-subtle chamfer-4 p-4">
+        <div key={i} className="bg-[var(--color-bg-base)]/[0.02] border border-border-subtle chamfer-4 p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-micro uppercase tracking-wider text-brand-orange font-semibold">Unit {i + 1}</span>
             {apparatus.length > 1 && (
-              <button onClick={() => removeRow(i)} className="text-micro text-red-500/70 hover:text-red transition-colors">Remove</button>
+              <button onClick={() => removeRow(i)} className="text-micro text-[var(--color-brand-red)]/70 hover:text-red transition-colors">Remove</button>
             )}
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -434,10 +434,10 @@ function Step4({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
                 value={row.unit_type_code}
                 onChange={(e) => updateRow(i, 'unit_type_code', e.target.value)}
                 className={inputClass}
-                style={{ background: '#050505' }}
+                style={{ background: 'var(--color-bg-base)' }}
               >
                 {UNIT_TYPES.map((t) => (
-                  <option key={t} value={t} className="bg-[#050505]">{t}</option>
+                  <option key={t} value={t} className="bg-[var(--color-bg-base)]">{t}</option>
                 ))}
               </select>
             </Field>
@@ -490,7 +490,7 @@ function Step5({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-[var(--color-text-muted)]">
         Optionally add personnel (firefighters, officers). You can skip this step and add personnel later.
       </p>
       {personnel.map((row, i) => (
@@ -506,7 +506,7 @@ function Step5({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
             </Field>
           </div>
           {personnel.length > 1 && (
-            <button onClick={() => removeRow(i)} className="mt-5 text-micro text-red-500/70 hover:text-red transition-colors">✕</button>
+            <button onClick={() => removeRow(i)} className="mt-5 text-micro text-[var(--color-brand-red)]/70 hover:text-red transition-colors">✕</button>
           )}
         </div>
       ))}
@@ -569,20 +569,20 @@ function Step6({
     <div className="space-y-4 max-w-lg">
       {loading && !done && (
         <div className="flex items-center gap-3 p-4 chamfer-4 bg-brand-orange/[0.06] border border-brand-orange/20">
-          <div className="w-4 h-4  animate-pulse" style={{ background: '#FF4D00' }} />
-          <span className="text-xs text-zinc-100">Auto-assigning active NERIS pack…</span>
+          <div className="w-4 h-4  animate-pulse" style={{ background: 'var(--q-orange)' }} />
+          <span className="text-xs text-[var(--color-text-primary)]">Auto-assigning active NERIS pack…</span>
         </div>
       )}
       {error && (
-        <div className="p-4 chamfer-4 bg-amber-500/[0.08] border border-amber-500/25">
+        <div className="p-4 chamfer-4 bg-[var(--q-yellow)]/[0.08] border border-amber-500/25">
           <p className="text-xs font-semibold" style={{ color: 'var(--q-yellow)' }}>Warning</p>
-          <p className="text-xs text-zinc-400 mt-1">{error}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-1">{error}</p>
         </div>
       )}
       {(done || assignedPackName) && packName && (
-        <div className="p-4 chamfer-4 bg-green-500/[0.08] border border-green-500/25">
-          <p className="text-xs font-semibold text-status-active">Pack Assigned Successfully</p>
-          <p className="text-xs text-zinc-400 mt-1 font-mono">{packName}</p>
+        <div className="p-4 chamfer-4 bg-[var(--color-status-active)]/[0.08] border border-[var(--color-status-active)]/25">
+          <p className="text-xs font-semibold text-[var(--color-status-active)]">Pack Assigned Successfully</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-1 font-mono">{packName}</p>
         </div>
       )}
       {(done || error) && (
@@ -681,7 +681,7 @@ function Step7({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
   return (
     <div className="space-y-4 max-w-xl">
-      <p className="text-xs text-zinc-500">Create a validation incident to verify your NERIS configuration. The incident must pass validation (0 errors) to continue.</p>
+      <p className="text-xs text-[var(--color-text-muted)]">Create a validation incident to verify your NERIS configuration. The incident must pass validation (0 errors) to continue.</p>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Incident Number">
           <input type="text" value={form.incident_number} onChange={(e) => update('incident_number', e.target.value)} className={inputClass} placeholder="2025-001" />
@@ -691,9 +691,9 @@ function Step7({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
         </Field>
       </div>
       <Field label="Incident Type">
-        <select value={form.incident_type_code} onChange={(e) => update('incident_type_code', e.target.value)} className={inputClass} style={{ background: '#050505' }}>
+        <select value={form.incident_type_code} onChange={(e) => update('incident_type_code', e.target.value)} className={inputClass} style={{ background: 'var(--color-bg-base)' }}>
           {INCIDENT_TYPE_VALUES.map((v) => (
-            <option key={v.code} value={v.code} className="bg-[#050505]">{v.label}</option>
+            <option key={v.code} value={v.code} className="bg-[var(--color-bg-base)]">{v.label}</option>
           ))}
         </select>
       </Field>
@@ -724,16 +724,16 @@ function Step7({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
       {validationDone && (
         <div className="space-y-3">
           {errorCount === 0 ? (
-            <div className="p-3 chamfer-4 bg-green-500/[0.08] border border-green-500/25">
-              <p className="text-xs font-semibold text-status-active">Validation Passed — 0 errors</p>
+            <div className="p-3 chamfer-4 bg-[var(--color-status-active)]/[0.08] border border-[var(--color-status-active)]/25">
+              <p className="text-xs font-semibold text-[var(--color-status-active)]">Validation Passed — 0 errors</p>
               {issues.length > 0 && (
-                <p className="text-body text-zinc-400 mt-0.5">{issues.filter((i) => i.severity === 'warning').length} warning(s)</p>
+                <p className="text-body text-[var(--color-text-secondary)] mt-0.5">{issues.filter((i) => i.severity === 'warning').length} warning(s)</p>
               )}
             </div>
           ) : (
-            <div className="p-3 chamfer-4 bg-red-500/[0.07] border border-red-500/20">
+            <div className="p-3 chamfer-4 bg-[var(--color-brand-red)]/[0.07] border border-[var(--color-brand-red)]/20">
               <p className="text-xs font-semibold text-red">{errorCount} validation error{errorCount !== 1 ? 's' : ''}</p>
-              <p className="text-body text-zinc-500 mt-1">Fix the errors below and re-validate.</p>
+              <p className="text-body text-[var(--color-text-muted)] mt-1">Fix the errors below and re-validate.</p>
             </div>
           )}
           {issues.length > 0 && (
@@ -750,9 +750,9 @@ function Step7({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
                   <span className="text-[9px] font-bold uppercase" style={{ color: issue.severity === 'error' ? 'var(--color-brand-red)' : 'var(--color-status-warning)' }}>
                     {issue.severity}
                   </span>
-                  {issue.field_label && <span className="ml-1.5 text-xs font-medium text-zinc-100">{issue.field_label}</span>}
-                  <p className="text-body text-zinc-400 mt-0.5">{issue.message}</p>
-                  {issue.suggested_fix && <p className="text-micro text-zinc-500 mt-0.5">{issue.suggested_fix}</p>}
+                  {issue.field_label && <span className="ml-1.5 text-xs font-medium text-[var(--color-text-primary)]">{issue.field_label}</span>}
+                  <p className="text-body text-[var(--color-text-secondary)] mt-0.5">{issue.message}</p>
+                  {issue.suggested_fix && <p className="text-micro text-[var(--color-text-muted)] mt-0.5">{issue.suggested_fix}</p>}
                 </div>
               ))}
             </div>
@@ -794,7 +794,7 @@ function Step8({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
   return (
     <div className="space-y-4 max-w-xl">
-      <p className="text-xs text-zinc-500">Review and confirm all Wisconsin DSPS go-live requirements.</p>
+      <p className="text-xs text-[var(--color-text-muted)]">Review and confirm all Wisconsin DSPS go-live requirements.</p>
       <div className="space-y-2">
         {WI_CHECKLIST_ITEMS.map((item) => (
           <label key={item.id} className="flex items-start gap-3 cursor-pointer group">
@@ -806,10 +806,10 @@ function Step8({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
                   border: `1px solid ${checked[item.id] ? 'rgba(76,175,80,0.5)' : 'rgba(255,255,255,0.15)'}`,
                 }}
               >
-                {checked[item.id] && <span className="text-status-active text-micro font-bold">✓</span>}
+                {checked[item.id] && <span className="text-[var(--color-status-active)] text-micro font-bold">✓</span>}
               </div>
             </div>
-            <span className="text-xs text-zinc-100 leading-relaxed">{item.label}</span>
+            <span className="text-xs text-[var(--color-text-primary)] leading-relaxed">{item.label}</span>
           </label>
         ))}
       </div>
@@ -819,12 +819,12 @@ function Step8({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
         </PrimaryBtn>
         <button
           onClick={() => window.print()}
-          className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4 bg-zinc-950/[0.06] border border-white/10 text-zinc-400"
+          className="h-9 px-4 text-body font-semibold uppercase tracking-wider chamfer-4 bg-[var(--color-bg-base)]/[0.06] border border-white/10 text-[var(--color-text-secondary)]"
         >
           Print
         </button>
         {!allChecked && (
-          <span className="text-micro text-zinc-500">Check all items to complete</span>
+          <span className="text-micro text-[var(--color-text-muted)]">Check all items to complete</span>
         )}
       </div>
     </div>
@@ -835,21 +835,21 @@ function Step8({ onComplete }: { onComplete: (_data: unknown) => Promise<void> }
 
 function CompleteBanner({ departmentName }: { departmentName?: string }) {
   return (
-    <div className="p-8 chamfer-4 text-center space-y-4 bg-green-500/[0.07] border border-green-500/30">
+    <div className="p-8 chamfer-4 text-center space-y-4 bg-[var(--color-status-active)]/[0.07] border border-[var(--color-status-active)]/30">
       <div className="text-4xl">🏆</div>
       <div>
-        <p className="text-micro uppercase tracking-[0.25em] text-status-active font-bold mb-1">NERIS Onboarding Complete</p>
-        <h2 className="text-xl font-black uppercase tracking-wider text-zinc-100">READY FOR PRODUCTION</h2>
+        <p className="text-micro uppercase tracking-[0.25em] text-[var(--color-status-active)] font-bold mb-1">NERIS Onboarding Complete</p>
+        <h2 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">READY FOR PRODUCTION</h2>
         {departmentName && (
-          <p className="text-sm text-zinc-400 mt-1">{departmentName}</p>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">{departmentName}</p>
         )}
       </div>
-      <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+      <p className="text-xs text-[var(--color-text-secondary)] max-w-sm mx-auto leading-relaxed">
         Your department has completed all Wisconsin NERIS onboarding steps and is authorized to begin production incident reporting.
       </p>
       <button
         onClick={() => window.print()}
-        className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 bg-green-500/20 border border-green-500/40 text-[var(--q-green)]"
+        className="h-9 px-5 text-body font-bold uppercase tracking-wider chamfer-4 bg-[var(--color-status-active)]/20 border border-[var(--color-status-active)]/40 text-[var(--q-green)]"
       >
         Print Summary
       </button>
@@ -951,20 +951,20 @@ export default function NerisOnboardingPage() {
 
   if (loadingStatus) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-zinc-500 text-sm">Loading onboarding status…</div>
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center">
+        <div className="text-[var(--color-text-muted)] text-sm">Loading onboarding status…</div>
       </div>
     );
   }
 
   if (notStarted) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-8 w-full max-w-md space-y-5">
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center p-6">
+        <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-8 w-full max-w-md space-y-5">
           <div>
-            <p className="text-[9px] uppercase tracking-[0.2em] text-[#FF4D00]/70 mb-1">Portal · NERIS</p>
-            <h1 className="text-lg font-black uppercase tracking-wider text-zinc-100">Start NERIS Onboarding</h1>
-            <p className="text-xs text-zinc-500 mt-1">Wisconsin RMS-Only · DSPS Fire Prevention</p>
+            <p className="text-[9px] uppercase tracking-[0.2em] text-[var(--q-orange)]/70 mb-1">Portal · NERIS</p>
+            <h1 className="text-lg font-black uppercase tracking-wider text-[var(--color-text-primary)]">Start NERIS Onboarding</h1>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">Wisconsin RMS-Only · DSPS Fire Prevention</p>
           </div>
           <Field label="Department Name">
             <input
@@ -984,16 +984,16 @@ export default function NerisOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex flex-col">
       {/* Header */}
-      <div className="bg-[#050505] border-b border-border-DEFAULT px-5 py-3 flex items-center gap-4 flex-shrink-0">
+      <div className="bg-[var(--color-bg-base)] border-b border-border-DEFAULT px-5 py-3 flex items-center gap-4 flex-shrink-0">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.2em] text-[#FF4D00]/70">Portal · NERIS Onboarding</p>
-          <h1 className="text-sm font-black uppercase tracking-wider text-zinc-100">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-[var(--q-orange)]/70">Portal · NERIS Onboarding</p>
+          <h1 className="text-sm font-black uppercase tracking-wider text-[var(--color-text-primary)]">
             {onboardingStatus?.department?.data?.name ?? 'NERIS Onboarding Wizard'}
           </h1>
         </div>
-        <span className="ml-auto text-micro text-zinc-500">Wisconsin RMS-Only</span>
+        <span className="ml-auto text-micro text-[var(--color-text-muted)]">Wisconsin RMS-Only</span>
       </div>
       {/* Body */}
       <div className="flex flex-1 min-h-0">
@@ -1009,10 +1009,10 @@ export default function NerisOnboardingPage() {
             <div>
               {/* Step header */}
               <div className="mb-5">
-                <div className="text-[9px] uppercase tracking-[0.18em] text-[#FF4D00]/70 mb-0.5">
+                <div className="text-[9px] uppercase tracking-[0.18em] text-[var(--q-orange)]/70 mb-0.5">
                   Step {STEP_DEFS.findIndex((d) => d.id === currentStepId) + 1} of {STEP_DEFS.length}
                 </div>
-                <h2 className="text-base font-bold uppercase tracking-wider text-zinc-100">
+                <h2 className="text-base font-bold uppercase tracking-wider text-[var(--color-text-primary)]">
                   {STEP_DEFS.find((d) => d.id === currentStepId)?.label}
                 </h2>
               </div>

@@ -34,3 +34,9 @@ email-validator==2.2.0
 pyyaml==6.0.2
 lxml==5.3.0
 GeoAlchemy2
+# ── Open source bank linking ─────────────────────────────────────────────────
+# ofxtools: OFX 1.x/2.x Direct Connect (MIT license)  — Chase, WF, USB, AmEx legacy
+ofxtools==0.9.5
+# plaid-python: optional commercial fallback for Novo + any uncovered institution
+# Activate only when PLAID_CLIENT_ID + PLAID_SECRET are configured
+plaid-python==38.4.0
