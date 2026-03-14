@@ -1,74 +1,47 @@
 import uuid
-from datetime import UTC, datetime
-from typing import Any
-
-from sqlalchemy import select
+from datetime import datetime, timezone
+from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
-
+from sqlalchemy import select
 from core_app.models.growth_models import (
-    ConversionEvent,
-    GrowthCampaign,
-    GrowthDemoAsset,
-    GrowthSocialPost,
-    LeadScore,
+    ConversionEvent, LeadScore, Proposal, GrowthCampaign,
+    GrowthSocialPost, GrowthDemoAsset, GrowthLandingPage, GrowthAutomation
 )
 
-
 def utc_now():
-    return datetime.now(UTC)
-
+    return datetime.now(timezone.utc)
 
 class AIGrowthService:
     def __init__(self, db: Session):
         self.db = db
 
-    def record_conversion_event(
-        self,
-        *,
-        tenant_id: str,
-        funnel_stage: str,
-        event_type: str,
-        session_id: str,
-        metadata: dict[str, Any],
-    ) -> ConversionEvent:
+    def record_conversion_event(self, funnel_stage: str, event_type: str, session_id: str, metadata: Dict[str, Any]) -> ConversionEvent:
         event = ConversionEvent(
             id=str(uuid.uuid4()),
-            tenant_id=tenant_id,
             funnel_stage=funnel_stage,
             event_type=event_type,
             session_id=session_id,
             event_metadata=metadata,
-            created_at=utc_now(),
+            created_at=utc_now()
         )
         self.db.add(event)
-        self.score_lead_pipeline(tenant_id=tenant_id, session_id=session_id, metadata=metadata, commit=False)
         self.db.commit()
         self.db.refresh(event)
+        self.score_lead_pipeline(session_id, metadata)
         return event
 
-    def score_lead_pipeline(
-        self,
-        *,
-        tenant_id: str,
-        session_id: str,
-        metadata: dict[str, Any],
-        commit: bool = True,
-    ) -> None:
+    def score_lead_pipeline(self, session_id: str, metadata: Dict[str, Any]):
         email = metadata.get("email")
         if not email:
             return
-
+        
         # Check if lead exists
-        stmt = select(LeadScore).where(
-            LeadScore.tenant_id == tenant_id,
-            LeadScore.contact_email == email,
-        )
+        stmt = select(LeadScore).where(LeadScore.contact_email == email)
         lead = self.db.execute(stmt).scalar_one_or_none()
-
+        
         if not lead:
             lead = LeadScore(
                 id=str(uuid.uuid4()),
-                tenant_id=tenant_id,
                 contact_email=email,
                 agency_name=metadata.get("agency_name", "Unknown Agency"),
                 zip_code=metadata.get("zip_code", ""),
@@ -76,7 +49,7 @@ class AIGrowthService:
                 score=10.0,
                 tier="low",
                 created_at=utc_now(),
-                updated_at=utc_now(),
+                updated_at=utc_now()
             )
             self.db.add(lead)
         else:
@@ -89,51 +62,45 @@ class AIGrowthService:
             else:
                 lead.tier = "low"
             lead.updated_at = utc_now()
+        
+        self.db.commit()
 
-        if commit:
-            self.db.commit()
-
-    def create_campaign(
-        self, *, tenant_id: str, name: str, objective: str, audience: dict[str, Any]
-    ) -> GrowthCampaign:
+    def create_campaign(self, name: str, objective: str, audience: Dict[str, Any]) -> GrowthCampaign:
         camp = GrowthCampaign(
             id=str(uuid.uuid4()),
-            tenant_id=tenant_id,
             name=name,
             status="draft",
             objective=objective,
             audience=audience,
             created_at=utc_now(),
-            updated_at=utc_now(),
+            updated_at=utc_now()
         )
         self.db.add(camp)
         self.db.commit()
         self.db.refresh(camp)
-        self.generate_content_for_campaign(tenant_id=tenant_id, campaign_id=camp.id)
+        self.generate_content_for_campaign(camp.id)
         return camp
 
-    def generate_content_for_campaign(self, *, tenant_id: str, campaign_id: str) -> None:
+    def generate_content_for_campaign(self, campaign_id: str):
         # AI Content Engine Mock/Stub logic mapped to DB
         platforms = ["LinkedIn", "X", "Email"]
         for p in platforms:
             post = GrowthSocialPost(
                 id=str(uuid.uuid4()),
-                tenant_id=tenant_id,
                 campaign_id=campaign_id,
                 platform=p,
                 content=f"Generated AI content for {p} promoting EMS platform reliability and billing automation.",
                 status="draft",
-                created_at=utc_now(),
+                created_at=utc_now()
             )
             self.db.add(post)
-
+        
         self.db.commit()
 
-    def generate_demo_assets(self, *, tenant_id: str, campaign_id: str, focus_area: str) -> None:
+    def generate_demo_assets(self, campaign_id: str, focus_area: str):
         # AI Demo Engine logic mapping
         asset = GrowthDemoAsset(
             id=str(uuid.uuid4()),
-            tenant_id=tenant_id,
             campaign_id=campaign_id,
             asset_type="script",
             content_url="",
@@ -142,15 +109,15 @@ class AIGrowthService:
                 "script": f"This 60-second clip shows the new {focus_area} flow in FusionEMS...",
                 "scenes": [
                     {"time": "0-10s", "visual": "Dashboard", "voiceover": "Welcome to FusionEMS."},
-                    {"time": "10-40s", "visual": "Action", "voiceover": f"Here is how you handle {focus_area}."},
-                ],
+                    {"time": "10-40s", "visual": "Action", "voiceover": f"Here is how you handle {focus_area}."}
+                ]
             },
-            created_at=utc_now(),
+            created_at=utc_now()
         )
         self.db.add(asset)
         self.db.commit()
 
-    def launch_orchestrator(self, mode: str) -> dict[str, Any]:
+    def launch_orchestrator(self, mode: str) -> Dict[str, Any]:
         return {
             "run_id": str(uuid.uuid4()),
             "mode": mode,

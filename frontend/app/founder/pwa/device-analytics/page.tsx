@@ -84,7 +84,7 @@ export default function DeviceAnalyticsPage() {
   const online = dashboard?.healthy ?? services.filter((s) => s.status === 'healthy').length;
   const degraded = dashboard?.degraded ?? services.filter((s) => s.status === 'degraded').length;
   const offline = dashboard?.down ?? services.filter((s) => s.status === 'down').length;
-  const errorRate = errorMetrics && typeof errorMetrics === 'object' ? (errorMetrics as Record<string, number>).rate ?? 0 : 0;
+  const errorRate = errorMetrics && typeof errorMetrics === 'object' ? (errorMetrics as Record<string, number>).rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })() : 0;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">

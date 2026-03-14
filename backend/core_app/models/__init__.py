@@ -3,6 +3,7 @@ from . import (
     governance,  # noqa: F401  # ensure governance tables register with metadata
     growth_models,  # noqa: F401
     legal_requests,  # noqa: F401  # ensure legal request tables register with metadata
+    growth_models, # noqa: F401
 )
 from .agency import (
     AgencyBillingPolicy,

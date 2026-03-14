@@ -15,9 +15,9 @@ from core_app.api.dependencies import (
 )
 from core_app.roi.engine import compute_roi
 from core_app.schemas.auth import CurrentUser
-from core_app.services.ai_growth_service import AIGrowthService
 from core_app.services.domination_service import DominationService
 from core_app.services.event_publisher import get_event_publisher
+from core_app.services.ai_growth_service import AIGrowthService
 
 router = APIRouter(prefix="/api/v1/roi-funnel", tags=["ROI + Self-Service Funnel"])
 
@@ -182,16 +182,15 @@ async def track_conversion_event(
 ):
     svc = DominationService(db, get_event_publisher())
     growth_svc = AIGrowthService(db)
-
+    
     # Map to real ORM layer
-    growth_svc.record_conversion_event(
-        tenant_id=str(current.tenant_id),
+    event = growth_svc.record_conversion_event(
         funnel_stage=body.funnel_stage,
         event_type=body.event_type,
         session_id=body.session_id,
-        metadata=body.metadata,
+        metadata=body.metadata
     )
-
+    
     # Store legacy fallback for compatibility
     record = await svc.create(
         table="conversion_events",

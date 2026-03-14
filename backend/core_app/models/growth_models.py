@@ -1,20 +1,18 @@
 import uuid
-from datetime import UTC, datetime
-
-from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Integer, String
-
+from datetime import datetime, timezone
+from sqlalchemy import Column, String, DateTime, JSON, Integer, Float, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
 from core_app.db.base import Base
 
-
 def utc_now():
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 def generate_uuid():
     return str(uuid.uuid4())
 
 class ROIFunnelScenario(Base):
     __tablename__ = "roi_funnel_scenarios"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     agency_name = Column(String, index=True)
@@ -25,7 +23,7 @@ class ROIFunnelScenario(Base):
 
 class ConversionEvent(Base):
     __tablename__ = "conversion_events"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     funnel_stage = Column(String, index=True)
@@ -36,7 +34,7 @@ class ConversionEvent(Base):
 
 class LeadScore(Base):
     __tablename__ = "lead_scores"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     agency_name = Column(String)
@@ -50,7 +48,7 @@ class LeadScore(Base):
 
 class Proposal(Base):
     __tablename__ = "proposals"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     roi_scenario_id = Column(String, index=True)
@@ -63,7 +61,7 @@ class Proposal(Base):
 
 class BAASignature(Base):
     __tablename__ = "baa_signatures"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     signer_name = Column(String)
@@ -74,7 +72,7 @@ class BAASignature(Base):
 
 class ROIShareLink(Base):
     __tablename__ = "roi_share_links"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     scenario_id = Column(String, index=True)
@@ -84,7 +82,7 @@ class ROIShareLink(Base):
 
 class GrowthCampaign(Base):
     __tablename__ = "growth_campaigns"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     name = Column(String, index=True)
@@ -96,7 +94,7 @@ class GrowthCampaign(Base):
 
 class GrowthSocialPost(Base):
     __tablename__ = "growth_social_posts"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     campaign_id = Column(String, ForeignKey("growth_campaigns.id"))
@@ -110,7 +108,7 @@ class GrowthSocialPost(Base):
 
 class GrowthDemoAsset(Base):
     __tablename__ = "growth_demo_assets"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     campaign_id = Column(String, ForeignKey("growth_campaigns.id"), nullable=True)
@@ -121,7 +119,7 @@ class GrowthDemoAsset(Base):
 
 class GrowthLandingPage(Base):
     __tablename__ = "growth_landing_pages"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     slug = Column(String, unique=True, index=True)
@@ -136,7 +134,7 @@ class GrowthLandingPage(Base):
 
 class GrowthAutomation(Base):
     __tablename__ = "growth_automations"
-
+    
     id = Column(String, primary_key=True, default=generate_uuid)
     tenant_id = Column(String, index=True, nullable=False)
     name = Column(String)
