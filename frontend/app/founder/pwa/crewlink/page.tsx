@@ -134,7 +134,7 @@ export default function CrewLinkPWAPage() {
         {[
           { label: 'Active Pages', value: pages.length, icon: Radio, color: 'orange' },
           { label: 'High Priority', value: highPriority, icon: Send, color: highPriority > 0 ? 'red' : 'green' },
-          { label: 'Connections', value: health?.active_connections ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), icon: Users, color: 'blue' },
+          { label: 'Connections', value: health?.active_connections ?? 0, icon: Users, color: 'blue' },
           { label: 'Link Status', value: connStatus, icon: Activity, color: connStatus === 'healthy' ? 'green' : 'yellow' },
         ].map((kpi) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-[var(--color-bg-raised)] border border-${kpi.color}-500/30 chamfer-8 p-4`}>
@@ -159,7 +159,7 @@ export default function CrewLinkPWAPage() {
               </div>
               <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
                 <span>{p.sent_at ? new Date(p.sent_at).toLocaleString() : '—'}</span>
-                <span>{p.responses?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} responses</span>
+                <span>{p.responses?.length ?? 0} responses</span>
               </div>
             </div>
           ))}

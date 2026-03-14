@@ -113,7 +113,7 @@ export default function FounderCompliancePacksPage() {
         body: JSON.stringify({ set_id: set.set_id }),
       });
       const result = await r.json();
-      addLog(`Done — ${result.packs_applied?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} packs active`);
+      addLog(`Done — ${result.packs_applied?.length ?? 0} packs active`);
       addLog("compliance.tenant.packset.applied");
     } catch (err: unknown) {
       console.warn("[compliance-packs]", err);

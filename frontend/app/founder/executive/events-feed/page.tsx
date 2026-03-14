@@ -298,7 +298,7 @@ export default function EventsFeedPage() {
   const fetchUnreadCount = useCallback(async () => {
     try {
       const data: { count: number } = await getEventsUnreadCount();
-      setUnreadCount(data.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })());
+      setUnreadCount(data.count ?? 0);
     } catch (err: unknown) {
       console.warn("[events-feed]", err);
     }

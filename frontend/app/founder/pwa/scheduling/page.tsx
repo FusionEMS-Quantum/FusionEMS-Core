@@ -101,7 +101,7 @@ export default function PWASchedulingPage() {
     );
   }
 
-  const pct = coverage?.coverage_percent ?? (coverage?.total_slots ? Math.round(((coverage.filled_slots ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / coverage.total_slots) * 100) : 0);
+  const pct = coverage?.coverage_percent ?? (coverage?.total_slots ? Math.round(((coverage.filled_slots ?? 0) / coverage.total_slots) * 100) : 0);
   const highFatigue = fatigue.filter((f) => f.fatigue_risk === 'high').length;
 
   return (
@@ -115,7 +115,7 @@ export default function PWASchedulingPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Coverage', value: `${pct}%`, icon: Users, color: pct >= 90 ? 'green' : pct >= 70 ? 'yellow' : 'red' },
-          { label: 'Open Slots', value: coverage?.open_slots ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), icon: Calendar, color: 'blue' },
+          { label: 'Open Slots', value: coverage?.open_slots ?? 0, icon: Calendar, color: 'blue' },
           { label: 'AI Drafts', value: drafts.length, icon: Clock, color: 'purple' },
           { label: 'Fatigue Alerts', value: highFatigue, icon: AlertTriangle, color: highFatigue > 0 ? 'red' : 'green' },
         ].map((kpi) => (

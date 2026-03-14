@@ -87,7 +87,7 @@ export default function PWADeploymentPage() {
   }
 
   const totalSvc = dashboard?.total_services ?? services.length;
-  const healthy = dashboard?.healthy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const healthy = dashboard?.healthy ?? false;
   const sslExpiry = ssl && typeof ssl === 'object' ? (ssl as Record<string, string>).expires_at ?? '—' : '—';
   const lastBackup = backups && typeof backups === 'object' ? (backups as Record<string, string>).last_backup_at ?? '—' : '—';
 

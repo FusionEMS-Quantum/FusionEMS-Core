@@ -128,7 +128,7 @@ export default function BillingDashboardPage() {
     { label: 'Collection Rate', value: collectionDisplay, sub: 'Net collection efficiency', accent: 'var(--color-status-info)' },
   ];
 
-  const totalArCents = aging?.buckets?.reduce((s, b) => s + b.total_cents, 0) ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const totalArCents = aging?.buckets?.reduce((s, b) => s + b.total_cents, 0) ?? 0;
 
   return (
     <AppShell>

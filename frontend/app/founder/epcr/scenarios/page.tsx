@@ -60,7 +60,7 @@ export default function ScenariosPage() {
     setRunningId(id);
     try {
       const data = await runNEMSISScenario(id);
-      setRunResults((prev) => ({ ...prev, [id]: { passed: data.passed, issue_count: data.issue_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), message: data.message } }));
+      setRunResults((prev) => ({ ...prev, [id]: { passed: data.passed, issue_count: data.issue_count ?? 0, message: data.message } }));
     } catch (e: unknown) {
       setRunResults((prev) => ({ ...prev, [id]: { passed: false, issue_count: 0, message: e instanceof Error ? e.message : String(e) } }));
     } finally {

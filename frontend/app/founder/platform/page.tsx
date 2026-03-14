@@ -147,7 +147,7 @@ export default function PlatformCommandCenterPage() {
       ]);
 
       const normalizedHealth: PlatformHealth = {
-        score: Number(healthData?.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
+        score: Number(healthData?.score ?? 0),
         status: String(healthData?.status ?? 'GRAY'),
         timestamp: String(healthData?.timestamp ?? ''),
         services: Array.isArray(healthData?.services) ? healthData.services : [],
