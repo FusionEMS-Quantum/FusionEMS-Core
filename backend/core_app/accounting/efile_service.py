@@ -616,9 +616,7 @@ class IRSFreeFileClient:
 
         filer = sub(hdr, "Filer")
         sub(filer, "PrimarySSN", ssn)  # Transmitted over TLS; never logged
-        name = sub(filer, "NameLine1Txt")
-        sub(name if False else filer, "PrimaryFirstNm", first_name)
-        # Correct structure: flat elements under Filer
+        sub(filer, "PrimaryFirstNm", first_name)
         sub(filer, "PrimaryLastNm", last_name)
         addr = sub(filer, "USAddress")
         sub(addr, "AddressLine1Txt", street)
@@ -773,8 +771,6 @@ class IRSFreeFileClient:
             raw_response={"body": resp.text[:300]},
         )
 
-
-# ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
 # E-file orchestrator — combined status + dispatch

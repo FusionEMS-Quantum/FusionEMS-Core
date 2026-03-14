@@ -77,24 +77,19 @@ export default function LandingPage() {
         <div className="absolute bottom-0 left-0 w-[1px] h-[120px] bg-gradient-to-t from-[#F36A21]/15 to-transparent" />
       </div>
 
-      {/* SYSTEM STATUS BAND */}
+      {/* PLATFORM IDENTITY BAND — no live status claimed here */}
       <div className="relative z-50 bg-[#0A0C0E] border-b border-white/[0.04]">
         <div className="max-w-[1600px] mx-auto px-6 py-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-4 text-[0.55rem] font-bold tracking-[0.2em] uppercase">
-            <div className="flex items-center gap-1.5">
-              <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]"></div>
-              <span className="text-[#4E9F6E]">Platform Operational</span>
-            </div>
-            <span className="text-[#66707A]">|</span>
-            <span className="text-[#66707A]">Billing</span>
-            <span className="text-[#66707A]">·</span>
-            <span className="text-[#66707A]">ePCR</span>
-            <span className="text-[#66707A]">·</span>
-            <span className="text-[#66707A]">Fleet</span>
-            <span className="text-[#66707A]">·</span>
-            <span className="text-[#66707A]">Comms</span>
-            <span className="text-[#66707A]">·</span>
-            <span className="text-[#66707A]">Compliance</span>
+          <div className="flex items-center gap-4 text-[0.55rem] font-bold tracking-[0.2em] uppercase text-[#66707A]">
+            <span>Billing</span>
+            <span className="text-white/10">·</span>
+            <span>ePCR</span>
+            <span className="text-white/10">·</span>
+            <span>Fleet</span>
+            <span className="text-white/10">·</span>
+            <span>Comms</span>
+            <span className="text-white/10">·</span>
+            <span>Compliance</span>
           </div>
           <div className="hidden md:flex items-center gap-2 text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
             <span>FusionEMS Quantum</span>
@@ -123,7 +118,6 @@ export default function LandingPage() {
               href="/patient-billing-login"
               className="group hidden sm:flex items-center gap-3 px-4 py-2.5 bg-[var(--color-bg-base)]/[0.02] border border-white/10 hover:border-orange/40 hover:bg-[var(--q-orange)]/5 transition-all shadow-inner"
             >
-              <div className="w-2 h-2  bg-[var(--color-status-active)] animate-pulse shadow-[0_0_8px_#22c55e]"></div>
               <div className="flex flex-col text-left">
                 <span className="text-[0.5rem] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em] leading-none mb-0.5">Secure Gateway</span>
                 <span className="text-[0.7rem] font-bold tracking-[0.1em] text-gray-300 uppercase leading-none group-hover:text-white">Patient Bill Pay Login</span>
@@ -163,11 +157,11 @@ export default function LandingPage() {
 
           <div className="max-w-[1400px] mx-auto px-6 relative z-20 text-center">
 
-            {/* Status badge */}
+            {/* Platform identity badge — not a live status indicator */}
             <div className="inline-flex items-center gap-3 px-5 py-2 border border-white/10 bg-white/[0.02] mb-10">
-              <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
+              <div className="w-3 h-[1px] bg-[#F36A21]"></div>
               <span className="text-[0.6rem] font-bold tracking-[0.25em] text-[#8D98A3] uppercase">MISSION-CRITICAL PUBLIC SAFETY SAAS — EMS / HEMS / FIRE / BILLING</span>
-              <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
+              <div className="w-3 h-[1px] bg-[#F36A21]"></div>
             </div>
 
             {/* Headline — hard command authority, no animation */}
@@ -381,8 +375,7 @@ export default function LandingPage() {
                   Platform Modules
                 </div>
                 <div className="hidden md:flex items-center gap-3 text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
-                  <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]"></div>
-                  <span>8 Modules Active</span>
+                  <span>8 Modules</span>
                   <span className="text-white/10">|</span>
                   <span>Quantum Build 2.0</span>
                 </div>
@@ -487,19 +480,19 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
               {/* TransportLink Patient Access */}
-              <div className="border border-[var(--color-status-active)]/30 bg-[var(--color-bg-base)] p-8 flex flex-col relative overflow-hidden group shadow-[0_0_20px_rgba(34,197,94,0.05)]">
-                <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent pointer-events-none"></div>
+              <div className="border border-[#F36A21]/25 bg-[var(--color-bg-base)] p-8 flex flex-col relative overflow-hidden group shadow-[0_0_20px_rgba(243,106,33,0.04)]">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#F36A21]/4 to-transparent pointer-events-none"></div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4 relative z-10">
                   <span className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5  bg-[var(--color-status-active)] shadow-[0_0_5px_#22c55e]"></div>
+                    <div className="w-3 h-[1px] bg-[#F36A21]"></div>
                     TransportLink™ Extranet
                   </span>
-                  <LockKeyhole className="w-4 h-4 text-[var(--color-status-active)]" />
+                  <LockKeyhole className="w-4 h-4 text-[#F36A21]" />
                 </h3>
                 <p className="text-sm text-[var(--color-text-muted)] mb-8 flex-1 relative z-10">
                   Bank-grade secure access for statement review, payment support, and guided billing communication. Built to convert, not to frustrate.
                 </p>
-                <Link href="/patient-billing-login" className="text-xs font-bold uppercase tracking-widest text-[var(--color-status-active)] hover:text-[var(--color-status-active)] transition-colors flex items-center gap-2 relative z-10">
+                <Link href="/patient-billing-login" className="text-xs font-bold uppercase tracking-widest text-[#F36A21] hover:text-white transition-colors flex items-center gap-2 relative z-10">
                   Patient Bill Pay Login <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -602,14 +595,6 @@ export default function LandingPage() {
                 <div className="text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
                   Mission-Critical Public Safety SaaS
                 </div>
-              </div>
-
-              {/* Operational status */}
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]" />
-                <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#4E9F6E] uppercase">
-                  Enterprise Ready
-                </span>
               </div>
 
               {/* Nav links */}

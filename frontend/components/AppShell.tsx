@@ -90,14 +90,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="relative z-40 border-b border-white/[0.06] bg-[var(--color-bg-base)]">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 bg-[var(--color-success)] shadow-[0_0_5px_#4E9F6E]" />
-            <span>Platform Operational</span>
-          </div>
+          <span>FusionEMS Quantum</span>
           <div className="hidden md:flex items-center gap-5">
-            <span>Stripe Enabled</span>
-            <span>NEMSIS Workflow Ready</span>
-            <span>Observability Active</span>
+            <span>Production Command Surface</span>
           </div>
         </div>
       </div>

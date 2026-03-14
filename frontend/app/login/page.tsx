@@ -196,12 +196,6 @@ function LoginPageInner() {
             {/* LOGIN CARD */}
             <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-sm border border-quantum-orange/20 rounded-2xl p-8 shadow-2xl">
               
-              {/* STATUS INDICATOR */}
-              <div className="mb-8 flex items-center gap-3 p-3 bg-quantum-green/10 border border-quantum-green/30 rounded-lg">
-                <div className="w-2.5 h-2.5 rounded-full bg-quantum-green animate-pulse" />
-                <span className="text-sm font-bold text-quantum-green uppercase tracking-wide">System Operational</span>
-              </div>
-
               <div className="mb-6">
                 <h2 className="text-3xl font-black mb-2">Platform Login</h2>
                 <p className="text-slate-400">Secure access to the FusionEMS Quantum platform</p>
