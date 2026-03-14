@@ -1,10 +1,10 @@
-import os
 import glob
 
+
 def patch_file(filepath):
-    with open(filepath, 'r') as f:
+    with open(filepath) as f:
         content = f.read()
-    
+
     if 'tflint --init' in content and 'GITHUB_TOKEN' not in content:
         # We need to add env: GITHUB_TOKEN to the Init TFLint step
         content = content.replace(
