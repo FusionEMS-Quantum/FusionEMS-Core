@@ -16,9 +16,28 @@ function statusColor(s: string): string {
   return 'var(--color-status-warning)';
 }
 
-function StatusDot({ status }: { status: string }) {
+function StatusIndicator({ status, size = 'sm' }: { status: string; size?: 'sm' | 'md' | 'lg' }) {
   const color = statusColor(status);
-  return <div className="w-2 h-2 flex-shrink-0" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }} />;
+  const px = size === 'lg' ? 10 : size === 'md' ? 6 : 5;
+  return (
+    <div className="relative flex-shrink-0" style={{ width: px, height: px }}>
+      <div className="absolute inset-0" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }} />
+    </div>
+  );
+}
+
+/* Shared panel styling for HUD-consistent cards */
+function HudPanel({ children, className = '', accent = false }: { children: React.ReactNode; className?: string; accent?: boolean }) {
+  return (
+    <div className={`chamfer-4 relative ${className}`}
+      style={{
+        background: 'var(--color-surface-primary)',
+        border: '1px solid var(--color-border-default)',
+      }}>
+      {accent && <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, var(--color-brand-orange), transparent)' }} />}
+      {children}
+    </div>
+  );
 }
 
 export default function LiveStatusPage() {
@@ -60,80 +79,142 @@ export default function LiveStatusPage() {
 
   return (
     <ModuleDashboardShell title="Live Status" subtitle="Canonical authenticated go-live readiness — runtime truth only" accentColor="var(--color-brand-orange)">
-      <div className="space-y-6">
-        {/* Overall Status */}
-        <div className="border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] p-6 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-2">Overall Platform Status</div>
-              <div className="flex items-center gap-3">
-                <StatusDot status={overallStatus} />
-                <div className="text-2xl font-black uppercase tracking-wider" style={{ color: statusColor(overallStatus) }}>{overallStatus}</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-[var(--color-text-muted)]">Release: {String(release.version ?? 'unknown')}</div>
-              <div className="text-xs text-[var(--color-text-muted)]">Last deploy: {String(release.last_successful_release ?? 'unknown')}</div>
-            </div>
-          </div>
-          {error && <div className="text-sm text-[var(--color-brand-red)] mt-3 p-3 bg-[var(--color-brand-red)]/10 border border-[var(--color-brand-red)]/30 rounded">{error}</div>}
-        </div>
+      <div className="space-y-5">
 
-        {/* Health Checks Grid */}
-        <div>
-          <div className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-3">System Health Checks</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {healthChecks.map((check) => (
-              <div key={check.label} className="border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] p-4 rounded-lg flex items-start gap-3">
-                <StatusDot status={check.status} />
-                <div className="min-w-0">
-                  <div className="text-sm font-bold text-[var(--color-text-primary)]">{check.label}</div>
-                  <div className="text-xs text-[var(--color-text-muted)] mt-0.5">{check.detail}</div>
+        {/* ── OVERALL STATUS ── */}
+        <HudPanel accent>
+          <div className="p-5 lg:p-6">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <div className="text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-3" style={{ color: 'var(--color-text-disabled)' }}>Overall Platform Status</div>
+                <div className="flex items-center gap-3">
+                  <StatusIndicator status={overallStatus} size="lg" />
+                  <div className="text-[1.6rem] font-black uppercase tracking-[0.08em]" style={{ color: statusColor(overallStatus) }}>{overallStatus}</div>
                 </div>
               </div>
+              <div className="text-right space-y-1">
+                <div className="text-[0.65rem] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--color-text-muted)' }}>
+                  Release <span style={{ color: 'var(--color-text-primary)' }}>{String(release.version ?? 'unknown')}</span>
+                </div>
+                <div className="text-[0.6rem]" style={{ color: 'var(--color-text-disabled)' }}>
+                  Last deploy: {String(release.last_successful_release ?? 'unknown')}
+                </div>
+              </div>
+            </div>
+            {error && (
+              <div className="chamfer-4 mt-4 p-3 text-sm font-medium"
+                style={{ background: 'var(--color-brand-red-ghost)', border: '1px solid rgba(201,59,44,0.3)', color: 'var(--color-brand-red)' }}>
+                {error}
+              </div>
+            )}
+          </div>
+        </HudPanel>
+
+        {/* ── HEALTH CHECKS GRID ── */}
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-6 h-[2px]" style={{ background: 'var(--color-brand-orange)' }} />
+            <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>System Health Checks</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {healthChecks.map((check) => (
+              <HudPanel key={check.label}>
+                <div className="p-3.5 flex items-center gap-3">
+                  <StatusIndicator status={check.status} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[0.75rem] font-bold" style={{ color: 'var(--color-text-primary)' }}>{check.label}</div>
+                    <div className="text-[0.65rem] mt-0.5" style={{ color: 'var(--color-text-disabled)' }}>{check.detail}</div>
+                  </div>
+                  <div className="text-[0.55rem] font-bold uppercase tracking-[0.15em] flex-shrink-0 px-2 py-0.5 chamfer-4"
+                    style={{
+                      color: statusColor(check.status),
+                      background: check.status === 'healthy' ? 'rgba(34,197,94,0.08)' : check.status === 'unknown' ? 'rgba(245,158,11,0.08)' : 'rgba(201,59,44,0.08)',
+                      border: `1px solid ${statusColor(check.status)}33`,
+                    }}>
+                    {check.status}
+                  </div>
+                </div>
+              </HudPanel>
             ))}
           </div>
         </div>
 
-        {/* Degraded Services */}
+        {/* ── DEGRADED SERVICES ── */}
         {degradedServices.length > 0 && (
-          <div className="border border-[var(--color-brand-red)]/30 bg-[var(--color-brand-red)]/5 p-4 rounded-lg">
-            <div className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-brand-red)] mb-2">Degraded / Unverified Services</div>
-            <ul className="space-y-1">
+          <div className="chamfer-4 p-4"
+            style={{ background: 'var(--color-dark-red-surface)', border: '1px solid rgba(201,59,44,0.25)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <StatusIndicator status="degraded" />
+              <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-brand-red)' }}>
+                Degraded / Unverified Services
+              </span>
+            </div>
+            <div className="space-y-1.5">
               {degradedServices.map((s) => (
-                <li key={s.label} className="text-sm text-[var(--color-text-primary)] flex items-center gap-2">
-                  <StatusDot status={s.status} />
-                  {s.label}: {s.detail}
-                </li>
+                <div key={s.label} className="flex items-center gap-2 text-[0.75rem]">
+                  <StatusIndicator status={s.status} />
+                  <span style={{ color: 'var(--color-text-primary)' }}>{s.label}</span>
+                  <span style={{ color: 'var(--color-text-disabled)' }}>— {s.detail}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
-        {/* Release Blockers */}
-        <div className="border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] p-4 rounded-lg">
-          <div className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-2">Release Blockers</div>
-          {blockers.length === 0 ? (
-            <div className="text-sm text-[var(--color-text-primary)]">No blockers reported.</div>
-          ) : (
-            <ul className="list-disc pl-5 text-sm space-y-1 text-[var(--color-brand-red)]">
-              {blockers.map((b) => <li key={b}>{b}</li>)}
-            </ul>
-          )}
-        </div>
-
-        {/* Telnyx Detail Panel */}
-        <div className="border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] p-4 rounded-lg">
-          <div className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-3">Telnyx Communications Detail</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-            <div>Number: {String(telnyx.number ?? '+1-888-365-0144')}</div>
-            <div>Configured: {String(telnyx.configured_number ?? 'unknown')}</div>
-            <div className="flex items-center gap-2"><StatusDot status={deriveStatus(telnyx.voice_binding)} /> Voice binding</div>
-            <div className="flex items-center gap-2"><StatusDot status={deriveStatus(telnyx.messaging_profile)} /> Messaging profile</div>
-            <div className="flex items-center gap-2"><StatusDot status={deriveStatus(telnyx.webhook_health)} /> Webhook reachability</div>
-            <div className="flex items-center gap-2"><StatusDot status={telnyx.stale_binding_detected ? 'degraded' : deriveStatus(!telnyx.stale_binding_detected)} /> Stale binding: {String(Boolean(telnyx.stale_binding_detected))}</div>
+        {/* ── RELEASE BLOCKERS ── */}
+        <HudPanel>
+          <div className="p-4">
+            <div className="text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--color-text-muted)' }}>Release Blockers</div>
+            {blockers.length === 0 ? (
+              <div className="flex items-center gap-2 text-[0.75rem]">
+                <StatusIndicator status="healthy" />
+                <span style={{ color: 'var(--color-text-primary)' }}>No blockers reported</span>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {blockers.map((b) => (
+                  <div key={b} className="flex items-center gap-2 text-[0.75rem]">
+                    <StatusIndicator status="blocked" />
+                    <span style={{ color: 'var(--color-brand-red)' }}>{b}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        </HudPanel>
+
+        {/* ── TELNYX COMMUNICATIONS DETAIL ── */}
+        <HudPanel accent>
+          <div className="p-4 lg:p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-6 h-[2px]" style={{ background: 'var(--color-brand-orange)' }} />
+              <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>Telnyx Communications Detail</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { label: 'Primary Number', value: String(telnyx.number ?? '+1-888-365-0144') },
+                { label: 'Configured', value: String(telnyx.configured_number ?? 'unknown') },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between py-2 px-3 chamfer-4" style={{ background: 'var(--color-surface-secondary)' }}>
+                  <span className="text-[0.65rem] uppercase tracking-[0.1em]" style={{ color: 'var(--color-text-disabled)' }}>{item.label}</span>
+                  <span className="text-[0.8rem] font-bold" style={{ color: 'var(--color-text-primary)' }}>{item.value}</span>
+                </div>
+              ))}
+              {[
+                { label: 'Voice binding', flag: telnyx.voice_binding },
+                { label: 'Messaging profile', flag: telnyx.messaging_profile },
+                { label: 'Webhook reachability', flag: telnyx.webhook_health },
+                { label: 'Stale binding', flag: !telnyx.stale_binding_detected, invert: true },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2 py-2 px-3 chamfer-4" style={{ background: 'var(--color-surface-secondary)' }}>
+                  <StatusIndicator status={item.invert ? deriveStatus(item.flag) : deriveStatus(item.flag)} />
+                  <span className="text-[0.7rem]" style={{ color: 'var(--color-text-muted)' }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </HudPanel>
+
       </div>
     </ModuleDashboardShell>
   );

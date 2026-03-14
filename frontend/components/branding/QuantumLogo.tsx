@@ -18,7 +18,7 @@ export default function QuantumLogo({ size = 'md', className, showWordmark = tru
   const spec = SIZE_MAP[size];
 
   return (
-    <div className={clsx('inline-flex items-center gap-2.5', className)}>
+    <div className={clsx('inline-flex items-center gap-3', className)}>
       <div className="relative flex items-center justify-center" style={{ width: spec.mark, height: spec.mark }}>
         <svg
           width={spec.mark}
@@ -27,60 +27,43 @@ export default function QuantumLogo({ size = 'md', className, showWordmark = tru
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
-          className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]"
         >
-          {/* Carbon/Graphite Outer Hexagon — sharp command authority */}
-          <path
-            d="M32 2L58 17V47L32 62L6 47V17L32 2Z"
-            fill="#0D1014"
-            stroke="#2A3036"
-            strokeWidth="1.5"
-          />
+          <defs>
+            <linearGradient id="q-orange-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#FF7A2F" />
+              <stop offset="1" stopColor="#F36A21" />
+            </linearGradient>
+            <filter id="q-glow">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
+            </filter>
+          </defs>
+
+          {/* Outer Hexagon — obsidian */}
+          <path d="M32 2L58 17V47L32 62L6 47V17L32 2Z" fill="#0A0C0E" stroke="#1D2227" strokeWidth="1" />
 
           {/* Inner hexagon — layered depth */}
-          <path
-            d="M32 8L52 20V44L32 56L12 44V20L32 8Z"
-            fill="none"
-            stroke="#1D2227"
-            strokeWidth="1"
-          />
+          <path d="M32 8L52 20V44L32 56L12 44V20L32 8Z" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.75" />
 
-          {/* Geometric F — bold structural letterform */}
-          <path
-            d="M22 20H42V26H30V30H38V36H30V44H22V20Z"
-            fill="#E8ECF0"
-          />
+          {/* Orange glow behind mark */}
+          <path d="M44 32A12 12 0 1 0 36 43" stroke="url(#q-orange-grad)" strokeWidth="3" fill="none" filter="url(#q-glow)" opacity="0.5" />
 
-          {/* Q tail — signature orange diagonal stroke */}
-          <path
-            d="M38 40L48 52"
-            stroke="#FF5500"
-            strokeWidth="4"
-            strokeLinecap="square"
-          />
+          {/* Geometric F — precision letterform */}
+          <path d="M23 19H41V24.5H29.5V29.5H37V35H29.5V45H23V19Z" fill="#E8ECF0" />
 
-          {/* Precision ring — partial arc for Q character */}
-          <path
-            d="M44 32A12 12 0 1 0 36 43"
-            stroke="#FF5500"
-            strokeWidth="2.5"
-            fill="none"
-          />
+          {/* Q arc — signature stroke */}
+          <path d="M44 32A12 12 0 1 0 36 43" stroke="url(#q-orange-grad)" strokeWidth="2.5" fill="none" strokeLinecap="square" />
+
+          {/* Q tail — diagonal brand mark */}
+          <path d="M38 40L49 53" stroke="url(#q-orange-grad)" strokeWidth="3.5" strokeLinecap="square" />
         </svg>
       </div>
 
       {showWordmark && (
         <div className="leading-none flex flex-col justify-center">
-          <div
-            className="font-black uppercase tracking-[0.25em] text-white"
-            style={{ fontSize: spec.title }}
-          >
+          <div className="font-black uppercase tracking-[0.3em]" style={{ fontSize: spec.title, color: 'var(--color-text-primary)' }}>
             FusionEMS
           </div>
-          <div
-            className="font-semibold uppercase tracking-[0.4em] text-[#FF5500] mt-1"
-            style={{ fontSize: spec.sub }}
-          >
+          <div className="font-bold uppercase tracking-[0.45em] mt-1" style={{ fontSize: spec.sub, color: 'var(--color-brand-orange)' }}>
             Quantum
           </div>
         </div>

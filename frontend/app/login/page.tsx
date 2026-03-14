@@ -4,6 +4,7 @@ import React, { Suspense, useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { login } from '@/services/auth';
+import QuantumLogo from '@/components/branding/QuantumLogo';
 
 function LoginPageInner() {
   const [email, setEmail] = useState('');
@@ -55,273 +56,238 @@ function LoginPageInner() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden relative">
-      
-      {/* QUANTUM GRID BACKGROUND */}
-      <div
-        className="fixed inset-0 pointer-events-none opacity-40"
+    <div className="min-h-screen text-[var(--color-text-primary)] overflow-hidden relative"
+      style={{ background: 'var(--color-bg-void)' }}>
+
+      {/* PRECISION GRID — token-driven */}
+      <div className="fixed inset-0 pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(15, 207, 255, 0.3) 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
         }}
       />
 
-      {/* ANIMATED QUANTUM ORBS */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(255, 107, 53, 0.8) 0%, transparent 70%)',
-            animation: 'pulse 8s ease-in-out infinite',
-          }}
-        />
-        
-        <div
-          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.8) 0%, transparent 70%)',
-            animation: 'pulse 10s ease-in-out infinite 1s',
-          }}
-        />
-        
-        <div
-          className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(220, 38, 38, 0.8) 0%, transparent 70%)',
-            animation: 'pulse 12s ease-in-out infinite 2s',
-          }}
-        />
-
-        <style>{`
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-          }
-        `}</style>
-      </div>
+      {/* SUBTLE ORANGE ACCENT GLOW — top-right corner */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 80% 10%, rgba(243,106,33,0.08), transparent 60%)' }}
+      />
+      {/* Corner chamfer accents */}
+      <div className="fixed top-0 right-0 w-[300px] h-[1px] pointer-events-none" style={{ background: 'linear-gradient(to left, rgba(243,106,33,0.3), transparent)' }} />
+      <div className="fixed top-0 right-0 h-[200px] w-[1px] pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(243,106,33,0.3), transparent)' }} />
 
       {/* MAIN CONTAINER */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
-        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="max-w-[1200px] w-full grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-20 items-center">
 
-          {/* LEFT COLUMN - BRAND */}
-          <div className="hidden lg:flex flex-col justify-center space-y-12">
-            {/* LOGO & BRANDING */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-3 px-4 py-2 bg-quantum-orange/10 border border-quantum-orange/30 rounded-full">
-                <div className="w-2 h-2 rounded-full bg-quantum-orange animate-pulse" />
-                <span className="text-sm font-bold tracking-widest text-quantum-orange uppercase">Quantum Command</span>
-              </div>
+          {/* LEFT COLUMN — BRAND AUTHORITY */}
+          <div className="hidden lg:flex flex-col justify-center">
 
-              <div className="space-y-3">
-                <h1 className="text-7xl font-black tracking-tighter leading-none">
-                  <span className="text-quantum-orange">Fusion</span>
-                  <span className="text-white">EMS</span>
-                </h1>
-                <p className="text-4xl font-bold text-slate-400">Operational Control Redefined</p>
-              </div>
-
-              <div className="h-1 w-32 bg-gradient-to-r from-quantum-orange via-quantum-red to-transparent" />
+            {/* LOGO */}
+            <div className="mb-10">
+              <QuantumLogo size="lg" />
             </div>
 
-            {/* CAPABILITIES */}
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-quantum-orange/10 border border-quantum-orange/30 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-quantum-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-white">Real-Time Dispatch</p>
-                    <p className="text-sm text-slate-400">Live incident coordination and response</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-quantum-green/10 border border-quantum-green/30 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-quantum-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-white">Unified Operations</p>
-                    <p className="text-sm text-slate-400">EMS, HEMS, Fire coordination in one platform</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-quantum-red/10 border border-quantum-red/30 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-quantum-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-white">Enterprise Security</p>
-                    <p className="text-sm text-slate-400">HIPAA-compliant encryption and audit trails</p>
-                  </div>
-                </div>
+            {/* TAGLINE */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-[2px]" style={{ background: 'var(--color-brand-orange)' }} />
+                <span className="text-[0.6rem] font-bold tracking-[0.25em] uppercase" style={{ color: 'var(--color-brand-orange)' }}>Command Platform</span>
               </div>
+              <h1 className="text-[3.2rem] font-black tracking-[-0.02em] leading-[1.05] mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                The Operating System<br />
+                for Modern EMS
+              </h1>
+              <p className="text-base leading-relaxed max-w-md" style={{ color: 'var(--color-text-muted)' }}>
+                Unified billing, ePCR, fleet, compliance, scheduling, and communications — engineered for mission-critical public safety operations.
+              </p>
             </div>
 
-            {/* STATS */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800">
-              <div>
-                <p className="text-3xl font-black text-quantum-orange">99.9%</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">Uptime SLA</p>
-              </div>
-              <div>
-                <p className="text-3xl font-black text-quantum-green">50M+</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">Incidents Managed</p>
-              </div>
-              <div>
-                <p className="text-3xl font-black text-quantum-blue">240+</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">Agencies</p>
-              </div>
+            {/* CAPABILITY TILES */}
+            <div className="grid grid-cols-3 gap-3 mb-10">
+              {[
+                { label: 'Billing', sub: 'Revenue capture' },
+                { label: 'ePCR', sub: 'Clinical docs' },
+                { label: 'Fleet', sub: 'Unit readiness' },
+                { label: 'Compliance', sub: 'NEMSIS · HIPAA' },
+                { label: 'Comms', sub: 'Voice · SMS' },
+                { label: 'Dispatch', sub: 'Real-time CAD' },
+              ].map((item) => (
+                <div key={item.label}
+                  className="chamfer-4 p-3"
+                  style={{
+                    background: 'var(--color-surface-primary)',
+                    border: '1px solid var(--color-border-default)',
+                  }}>
+                  <div className="text-[0.7rem] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--color-text-primary)' }}>{item.label}</div>
+                  <div className="text-[0.6rem] uppercase tracking-[0.1em] mt-0.5" style={{ color: 'var(--color-text-disabled)' }}>{item.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* TRUST BAR */}
+            <div className="flex items-center gap-6 pt-6" style={{ borderTop: '1px solid var(--color-border-default)' }}>
+              <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--color-text-disabled)' }}>HIPAA-Conscious</span>
+              <span style={{ color: 'var(--color-border-default)' }}>|</span>
+              <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--color-text-disabled)' }}>Multi-Tenant</span>
+              <span style={{ color: 'var(--color-border-default)' }}>|</span>
+              <span className="text-[0.55rem] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--color-text-disabled)' }}>AWS Multi-AZ</span>
             </div>
           </div>
 
-          {/* RIGHT COLUMN - LOGIN FORM */}
-          <div className="w-full max-w-md">
+          {/* RIGHT COLUMN — LOGIN PANEL */}
+          <div className="w-full max-w-[440px] lg:max-w-none">
             {/* MOBILE HEADER */}
-            <div className="mb-8 lg:hidden text-center">
-              <h1 className="text-5xl font-black tracking-tighter mb-2">
-                <span className="text-quantum-orange">Fusion</span>
-                <span className="text-white">EMS</span>
-              </h1>
-              <p className="text-slate-400 font-semibold">Operational Control Redefined</p>
+            <div className="mb-8 lg:hidden flex justify-center">
+              <QuantumLogo size="md" />
             </div>
 
-            {/* LOGIN CARD */}
-            <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-sm border border-quantum-orange/20 rounded-2xl p-8 shadow-2xl">
-              
-              {/* PLATFORM IDENTITY */}
-              <div className="mb-8 flex items-center gap-3 p-3 bg-[var(--color-brand-orange)]/10 border border-[var(--color-brand-orange)]/30 rounded-lg">
-                <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-brand-orange)]" />
-                <span className="text-sm font-bold text-[var(--color-brand-orange)] uppercase tracking-wide">Quantum Platform</span>
-              </div>
+            {/* LOGIN CARD — chamfered, token-driven */}
+            <div className="chamfer-8 relative"
+              style={{
+                background: 'var(--color-surface-primary)',
+                border: '1px solid var(--color-border-default)',
+                boxShadow: '0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px var(--color-border-default)',
+              }}>
 
-              <div className="mb-6">
-                <h2 className="text-3xl font-black mb-2">Platform Login</h2>
-                <p className="text-slate-400">Secure access to the FusionEMS Quantum platform</p>
-              </div>
+              {/* TOP ACCENT BAR */}
+              <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, var(--color-brand-orange), transparent)' }} />
 
-              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                {/* EMAIL */}
-                <div>
-                  <label htmlFor="email" className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
-                    Work Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="name@agency.gov"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                    disabled={loading}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-500 text-sm outline-none transition duration-200 focus:border-quantum-orange focus:ring-2 focus:ring-quantum-orange/30 disabled:opacity-50"
-                  />
+              <div className="p-8 lg:p-10">
+                {/* HEADER */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1.5 h-1.5" style={{ background: 'var(--color-brand-orange)', boxShadow: '0 0 6px var(--color-brand-orange)' }} />
+                    <span className="text-[0.6rem] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--color-brand-orange)' }}>Quantum Platform</span>
+                  </div>
+                  <h2 className="text-[1.6rem] font-black tracking-[-0.01em] mb-1" style={{ color: 'var(--color-text-primary)' }}>Platform Login</h2>
+                  <p className="text-[0.8rem]" style={{ color: 'var(--color-text-muted)' }}>Secure access to the FusionEMS Quantum platform</p>
                 </div>
 
-                {/* PASSWORD */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label htmlFor="password" className="block text-xs font-bold text-slate-400 uppercase tracking-wide">
-                      Password
+                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                  {/* EMAIL */}
+                  <div>
+                    <label htmlFor="email" className="block text-[0.65rem] font-bold uppercase tracking-[0.15em] mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                      Work Email
                     </label>
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs font-bold text-quantum-orange hover:text-quantum-orange_light transition"
-                    >
-                      Forgot?
-                    </Link>
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="name@agency.gov"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                      disabled={loading}
+                      className="w-full chamfer-4 px-4 py-3 text-sm outline-none transition-colors duration-150 disabled:opacity-50"
+                      style={{
+                        background: 'var(--color-surface-secondary)',
+                        border: '1px solid var(--color-border-default)',
+                        color: 'var(--color-text-primary)',
+                      }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-brand-orange)'; }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-default)'; }}
+                    />
                   </div>
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                    disabled={loading}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5 text-white placeholder:text-slate-500 text-sm outline-none transition duration-200 focus:border-quantum-orange focus:ring-2 focus:ring-quantum-orange/30 disabled:opacity-50"
-                  />
-                </div>
 
-                {/* ERROR MESSAGE */}
-                {error && (
-                  <div className="p-4 bg-quantum-red/10 border border-quantum-red/30 rounded-lg flex items-start gap-3">
-                    <svg className="w-5 h-5 text-quantum-red flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    <p className="text-sm text-quantum-red font-medium">{error}</p>
+                  {/* PASSWORD */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label htmlFor="password" className="block text-[0.65rem] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--color-text-muted)' }}>
+                        Password
+                      </label>
+                      <Link href="/forgot-password" className="text-[0.65rem] font-bold transition-colors" style={{ color: 'var(--color-brand-orange)' }}>
+                        Forgot?
+                      </Link>
+                    </div>
+                    <input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                      disabled={loading}
+                      className="w-full chamfer-4 px-4 py-3 text-sm outline-none transition-colors duration-150 disabled:opacity-50"
+                      style={{
+                        background: 'var(--color-surface-secondary)',
+                        border: '1px solid var(--color-border-default)',
+                        color: 'var(--color-text-primary)',
+                      }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-brand-orange)'; }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-default)'; }}
+                    />
                   </div>
-                )}
 
-                {/* REMEMBER ME */}
-                <div className="flex items-center gap-3">
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-quantum-orange cursor-pointer"
-                  />
-                  <label htmlFor="remember" className="text-sm text-slate-400 cursor-pointer">
-                    Keep me signed in for 30 days
-                  </label>
-                </div>
-
-                {/* SUBMIT BUTTON */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-quantum-orange to-quantum-orange_light hover:from-quantum-orange_dark hover:to-quantum-orange text-white font-black uppercase tracking-wider py-4 rounded-xl transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Authenticating...
-                    </span>
-                  ) : (
-                    'Sign In'
+                  {/* ERROR MESSAGE */}
+                  {error && (
+                    <div className="chamfer-4 p-3 flex items-start gap-3"
+                      style={{ background: 'var(--color-brand-red-ghost)', border: '1px solid rgba(201,59,44,0.3)' }}>
+                      <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" style={{ color: 'var(--color-brand-red)' }}>
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-sm font-medium" style={{ color: 'var(--color-brand-red)' }}>{error}</p>
+                    </div>
                   )}
-                </button>
-              </form>
 
-              {/* SSO DIVIDER */}
-              <div className="my-6 flex items-center gap-3">
-                <div className="flex-1 h-px bg-slate-700" />
-                <span className="text-xs text-slate-500 font-bold uppercase">Or</span>
-                <div className="flex-1 h-px bg-slate-700" />
-              </div>
+                  {/* REMEMBER ME */}
+                  <div className="flex items-center gap-2.5">
+                    <input
+                      id="remember" type="checkbox" checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="w-3.5 h-3.5 cursor-pointer accent-[var(--color-brand-orange)]"
+                      style={{ background: 'var(--color-surface-secondary)', border: '1px solid var(--color-border-default)' }}
+                    />
+                    <label htmlFor="remember" className="text-[0.75rem] cursor-pointer" style={{ color: 'var(--color-text-muted)' }}>
+                      Keep me signed in for 30 days
+                    </label>
+                  </div>
 
-              {/* MICROSOFT SSO PRIMARY */}
-              <a
-                href="/api/v1/auth/microsoft/login"
-                className="w-full flex items-center justify-center gap-3 bg-[#111417] border border-[#FF5500] hover:bg-[#FF5500]/10 text-white font-bold uppercase tracking-widest py-4 rounded shadow-[0_0_15px_rgba(255,85,0,0.2)] transition-all duration-300 relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+                  {/* SUBMIT */}
+                  <button type="submit" disabled={loading}
+                    className="quantum-btn-primary w-full py-3.5 text-[0.75rem]">
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                        Authenticating…
+                      </span>
+                    ) : 'Sign In'}
+                  </button>
+                </form>
 
-                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                  <path fill="#f25022" d="M1 1h10v10H1z" />
-                  <path fill="#7fba00" d="M13 1h10v10H13z" />
-                  <path fill="#00a4ef" d="M1 13h10v10H1z" />
-                  <path fill="#ffb900" d="M13 13h10v10H13z" />
-                </svg>
-                <span className="text-sm">Microsoft Login</span>
-              </a>
+                {/* SSO DIVIDER */}
+                <div className="my-6 flex items-center gap-3">
+                  <div className="flex-1 h-px" style={{ background: 'var(--color-border-default)' }} />
+                  <span className="text-[0.6rem] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--color-text-disabled)' }}>Or</span>
+                  <div className="flex-1 h-px" style={{ background: 'var(--color-border-default)' }} />
+                </div>
 
-              {/* FOOTER */}
-              <div className="mt-8 pt-6 border-t border-slate-800 space-y-3 text-center">
-                <p className="text-xs text-slate-500">
-                  Don&apos;t have access? <Link href="/early-access" className="text-quantum-orange font-bold hover:text-quantum-orange_light">Request access</Link>
-                </p>
-                <p className="text-[0.7rem] text-slate-600">
-                  Protected by enterprise security • <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
-                </p>
+                {/* MICROSOFT SSO */}
+                <a href="/api/v1/auth/microsoft/login"
+                  className="chamfer-8 w-full flex items-center justify-center gap-3 py-3.5 text-[0.75rem] font-bold uppercase tracking-[0.12em] transition-all duration-200 relative overflow-hidden"
+                  style={{
+                    background: 'var(--color-surface-secondary)',
+                    border: '1px solid var(--color-brand-orange)',
+                    color: 'var(--color-text-primary)',
+                    boxShadow: '0 0 20px rgba(243,106,33,0.15)',
+                  }}>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+                    <path fill="#f25022" d="M1 1h10v10H1z" />
+                    <path fill="#7fba00" d="M13 1h10v10H13z" />
+                    <path fill="#00a4ef" d="M1 13h10v10H1z" />
+                    <path fill="#ffb900" d="M13 13h10v10H13z" />
+                  </svg>
+                  Microsoft Login
+                </a>
+
+                {/* FOOTER */}
+                <div className="mt-8 pt-5 space-y-2.5 text-center" style={{ borderTop: '1px solid var(--color-border-default)' }}>
+                  <p className="text-[0.7rem]" style={{ color: 'var(--color-text-disabled)' }}>
+                    Don&apos;t have access?{' '}
+                    <Link href="/early-access" className="font-bold" style={{ color: 'var(--color-brand-orange)' }}>Request access</Link>
+                  </p>
+                  <p className="text-[0.6rem]" style={{ color: 'var(--color-text-disabled)' }}>
+                    Protected by enterprise security · <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -333,7 +299,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+    <Suspense fallback={<div className="min-h-screen" style={{ background: 'var(--color-bg-void)' }} />}>
       <LoginPageInner />
     </Suspense>
   );
