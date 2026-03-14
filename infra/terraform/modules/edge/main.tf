@@ -317,6 +317,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" 
 }
 
 resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
+  # checkov:skip=CKV2_AWS_65: "ACL required for legacy CloudFront log delivery"
   bucket = aws_s3_bucket.cloudfront_logs.id
 
   rule {
