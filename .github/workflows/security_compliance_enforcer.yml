@@ -36,6 +36,9 @@ jobs:
 
       - name: Run TFLint
         run: |
+          
+          # authenticate to github to avoid rate limiting
+          export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           tflint --init
           tflint --recursive --minimum-failure-severity=warning infra/terraform/
 
