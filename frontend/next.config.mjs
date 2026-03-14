@@ -28,7 +28,7 @@ const _isLocalHost = (hostname) =>
   hostname === "backend";
 
 const nextConfig = {
-  output: "standalone",
+  // output: "standalone", // Removed for AWS Amplify Hosting compatibility
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
