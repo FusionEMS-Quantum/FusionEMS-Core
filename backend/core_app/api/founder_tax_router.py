@@ -195,7 +195,79 @@ async def get_forward_looking_forecast(
     }
 
 
-class WisconsinEfileRequest(BaseModel):
+class FreeFile1040Request(BaseModel):
+    tax_year: int
+    filer_ssn: str  # Never logged; transmitted encrypted via TLS
+    first_name: str
+    last_name: str
+    street: str
+    city: str
+    state: str
+    zip_code: str
+    filing_status: str = "Single"
+    wages_salaries_tips: float = 0.0
+    taxable_interest: float = 0.0
+    ordinary_dividends: float = 0.0
+    business_income: float = 0.0
+    adjusted_gross_income: float = 0.0
+    standard_deduction: float = 14600.0
+    taxable_income: float = 0.0
+    total_tax: float = 0.0
+    federal_income_tax_withheld: float = 0.0
+    total_payments: float = 0.0
+    refund_amount: float = 0.0
+    balance_due: float = 0.0
+    correlation_id: str = ""
+
+
+@tax_advisor_router.post("/efile/transmit/free-file-1040")
+async def transmit_free_file_1040(
+    request: FreeFile1040Request,
+    current: CurrentUser = Depends(require_founder_only_audited()),
+) -> dict:
+    """Transmit Form 1040 via the IRS Free File open-source path.
+
+    This endpoint uses no EFIN, no commercial clearinghouse, and no
+    government-issued API key.  It builds a conformant IRS e-File XML
+    payload using Python's standard-library xml.etree.ElementTree and
+    submits directly to the IRS EFDS endpoint.
+
+    Reference: https://www.irs.gov/filing/free-file-do-your-federal-taxes-for-free
+    XML schema: IRS Publication 4164 (publicly available — open-source)
+    """
+    from core_app.accounting.efile_service import IRSFreeFileClient
+
+    if not request.correlation_id:
+        request.correlation_id = str(_uuid.uuid4())
+
+    client = IRSFreeFileClient()
+    result = await client.submit_1040(
+        tax_year=request.tax_year,
+        ssn=request.filer_ssn,
+        first_name=request.first_name,
+        last_name=request.last_name,
+        street=request.street,
+        city=request.city,
+        state=request.state,
+        zip_code=request.zip_code,
+        filing_status=request.filing_status,
+        wages_salaries_tips=request.wages_salaries_tips,
+        taxable_interest=request.taxable_interest,
+        ordinary_dividends=request.ordinary_dividends,
+        business_income=request.business_income,
+        adjusted_gross_income=request.adjusted_gross_income,
+        standard_deduction=request.standard_deduction,
+        taxable_income=request.taxable_income,
+        total_tax=request.total_tax,
+        federal_income_tax_withheld=request.federal_income_tax_withheld,
+        total_payments=request.total_payments,
+        refund_amount=request.refund_amount,
+        balance_due=request.balance_due,
+        correlation_id=request.correlation_id,
+    )
+    return result.to_dict()
+
+
     tax_year: int
     filer_ssn: str  # Never logged; transmitted encrypted via TLS
     first_name: str
