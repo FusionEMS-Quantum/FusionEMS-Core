@@ -112,10 +112,10 @@ export default function SoloFounderOS() {
                     { name: 'Terraform', status: 'Idempotent', color: 'success', sub: 'AWS US-East' }
                   ].map((sys) => (
                     <div key={sys.name} className="border border-white/[0.06] bg-[var(--color-surface-secondary)] p-5 relative overflow-hidden">
-                      <div className={`absolute top-0 right-0 w-2 h-full bg-[var(--color-${sys.color})]`} />
+                      <div className="absolute top-0 right-0 w-2 h-full" style={{ backgroundColor: `var(--color-${sys.color})` }} />
                       <div className="text-xs uppercase tracking-widest text-zinc-400">{sys.sub}</div>
                       <div className="text-xl font-bold mt-1 text-white">{sys.name}</div>
-                      <div className={`mt-3 text-xs font-black uppercase tracking-wider text-[var(--color-${sys.color})] bg-[var(--color-${sys.color})]/10 inline-block px-2 py-1`}>
+                      <div className="mt-3 text-xs font-black uppercase tracking-wider inline-block px-2 py-1" style={{ color: `var(--color-${sys.color})`, backgroundColor: `color-mix(in srgb, var(--color-${sys.color}) 10%, transparent)` }}>
                         {sys.status}
                       </div>
                     </div>
@@ -254,6 +254,7 @@ export default function SoloFounderOS() {
                          </button>
                        </div>
                      </div>
+                   </div>
                 </div>
               </motion.div>
             )}

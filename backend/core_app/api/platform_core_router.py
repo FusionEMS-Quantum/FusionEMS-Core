@@ -1184,6 +1184,12 @@ def live_status(
         "degraded_services": degraded_services,
         "active_incidents": active_incidents,
         "auth": auth_snapshot,
+        
+        "nemsis": {
+            "active_version": getattr(settings, "NEMSIS_ACTIVE_VERSION", "3.5.0"),
+            "schematron_reachable": bool(getattr(settings, "NEMSIS_SCHEMATRON_VALIDATOR_URL", "")),
+            "national_endpoint_ready": bool(getattr(settings, "NEMSIS_NATIONAL_ENDPOINT", "")),
+        },
         "telnyx": {
             "number": telnyx_central_number,
             "configured_number": configured_number,

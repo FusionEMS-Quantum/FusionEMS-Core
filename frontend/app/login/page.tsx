@@ -298,11 +298,13 @@ function LoginPageInner() {
                 <div className="flex-1 h-px bg-slate-700" />
               </div>
 
-              {/* MICROSOFT SSO */}
+              {/* MICROSOFT SSO PRIMARY */}
               <a
                 href="/api/v1/auth/microsoft/login"
-                className="w-full flex items-center justify-center gap-3 bg-slate-800/50 border border-slate-700 hover:border-quantum-blue hover:bg-slate-800 text-white font-bold uppercase tracking-wide py-3.5 rounded-xl transition duration-200"
+                className="w-full flex items-center justify-center gap-3 bg-[#111417] border border-[#FF5500] hover:bg-[#FF5500]/10 text-white font-bold uppercase tracking-widest py-4 rounded shadow-[0_0_15px_rgba(255,85,0,0.2)] transition-all duration-300 relative overflow-hidden"
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+
                 <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
                   <path fill="#f25022" d="M1 1h10v10H1z" />
                   <path fill="#7fba00" d="M13 1h10v10H13z" />

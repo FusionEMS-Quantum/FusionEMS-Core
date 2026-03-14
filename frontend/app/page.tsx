@@ -166,7 +166,7 @@ export default function LandingPage() {
             {/* Status badge */}
             <div className="inline-flex items-center gap-3 px-5 py-2 border border-white/10 bg-white/[0.02] mb-10">
               <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
-              <span className="text-[0.6rem] font-bold tracking-[0.25em] text-[#8D98A3] uppercase">All Systems Operational — EMS / HEMS / Fire / Billing</span>
+              <span className="text-[0.6rem] font-bold tracking-[0.25em] text-[#8D98A3] uppercase">MISSION-CRITICAL PUBLIC SAFETY SAAS — EMS / HEMS / FIRE / BILLING</span>
               <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
             </div>
 
@@ -232,7 +232,7 @@ export default function LandingPage() {
                 { label: 'Compliance', active: false },
                 { label: 'Comms', active: false },
                 { label: 'NEMSIS', active: false },
-                { label: 'Founder Command', active: false },
+                { label: 'System Command', active: false },
               ].map((item, i) => (
                 <div key={item.label} className="flex items-center">
                   {i > 0 && <div className="w-px h-4 bg-white/[0.08] mx-6" />}
@@ -347,7 +347,7 @@ export default function LandingPage() {
         <section className="py-24 relative z-20 border-b border-white/[0.04] bg-[#111417]">
           <div className="max-w-[1200px] mx-auto px-6 grid md:grid-cols-[1fr_2fr] gap-12">
             <div>
-              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[var(--q-orange)] uppercase mb-4">Founder’s Statement</div>
+              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[var(--q-orange)] uppercase mb-4">Platform Vision</div>
               <h2 className="text-3xl font-black tracking-tight text-white mb-6">Built from the field, not from assumptions</h2>
             </div>
             <div className="space-y-6 text-[var(--color-text-muted)] text-lg leading-relaxed border-l border-white/10 pl-8">
@@ -365,7 +365,7 @@ export default function LandingPage() {
               </p>
               <div className="pt-6">
                 <p className="text-white font-black tracking-wide">— Joshua Wendorf</p>
-                <p className="text-sm text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Founder, FusionEMS Quantum</p>
+                <p className="text-sm text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Architecture Team</p>
               </div>
             </div>
           </div>
@@ -459,10 +459,10 @@ export default function LandingPage() {
                 <p className="text-sm text-[#8D98A3] leading-relaxed">Operational visibility, workflow control, role-based command surfaces, and future-ready dispatch and mission coordination.</p>
               </Link>
 
-              <Link href="/founder-command" className="group bg-[#111417] p-8 flex flex-col justify-start hover:bg-[#171B1F] transition-colors relative overflow-hidden">
+              <Link href="/platform" className="group bg-[#111417] p-8 flex flex-col justify-start hover:bg-[#171B1F] transition-colors relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-white/[0.06]"></div>
                 <TechIcon icon={TerminalSquare} className="mb-6 z-10" />
-                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-white mb-3 z-10">Module 08 — Founder Command</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-white mb-3 z-10">Module 08 — System Command</h3>
                 <p className="text-sm text-[#8D98A3] leading-relaxed z-10">Cross-platform visibility into revenue, communications, workflow risk, and command-level decision support.</p>
               </Link>
 
@@ -575,7 +575,7 @@ export default function LandingPage() {
             </h2>
             <div className="text-xl text-[var(--color-text-muted)] leading-relaxed space-y-6 font-medium">
               <p>
-                FusionEMS Quantum begins with Billing Command, but the long-term vision is broader: a unified system that connects patient-facing revenue workflows, clinical documentation, operational oversight, fleet readiness, workforce scheduling, communications, compliance, and founder-level command into one modern platform.
+                FusionEMS Quantum begins with Billing Command, but the long-term vision is broader: a unified system that connects patient-facing revenue workflows, clinical documentation, operational oversight, fleet readiness, workforce scheduling, communications, compliance, and executive-level command into one modern platform.
               </p>
               <p className="text-white">
                 This is not a replacement for one small tool. It is an effort to replace the fragmentation that agencies have had to tolerate for years.
@@ -608,7 +608,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]" />
                 <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#4E9F6E] uppercase">
-                  All Systems Operational
+                  Enterprise Ready
                 </span>
               </div>
 

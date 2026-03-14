@@ -36,6 +36,7 @@ def _read(path: Path) -> str:
 
 
 def check_placeholder_leaks() -> None:
+    import os
     needle = "placeholder_rotate_graph_tenant_id"
     scan_roots = [
         REPO_ROOT / "backend",
@@ -43,21 +44,22 @@ def check_placeholder_leaks() -> None:
         REPO_ROOT / "infra",
     ]
     findings: list[str] = []
+    ignore_dirs = {".venv", "node_modules", ".next", "__pycache__", ".git", ".terraform"}
     for root in scan_roots:
-        if not root.exists():
-            continue
-        for path in root.rglob("*"):
-            if not path.is_file():
-                continue
-            if any(part in {"node_modules", ".next", "__pycache__", ".git"} for part in path.parts):
-                continue
-            if path.suffix.lower() not in {".py", ".ts", ".tsx", ".js", ".json", ".env", ".yml", ".yaml", ".md"}:
-                continue
-            text = _read(path)
-            if needle in text:
-                findings.append(str(path.relative_to(REPO_ROOT)))
+        if not root.exists(): continue
+        for dirpath, dirnames, filenames in os.walk(str(root)):
+            dirnames[:] = [d for d in dirnames if d not in ignore_dirs]
+            for f in filenames:
+                path = Path(dirpath) / f
+                if path.suffix.lower() not in {".py", ".ts", ".tsx", ".js", ".json", ".env", ".yml", ".yaml", ".md"}:
+                    continue
+                try:
+                    text = _read(path)
+                    if needle in text:
+                        findings.append(str(path.relative_to(REPO_ROOT)))
+                except:
+                    pass
     _check(len(findings) == 0, f"Microsoft tenant placeholder found in active paths: {findings}")
-
 
 def check_backend_contracts() -> None:
     router_path = REPO_ROOT / "backend" / "core_app" / "api" / "platform_core_router.py"

@@ -16,14 +16,11 @@ interface QuantumLogoProps {
 }
 
 export default function QuantumLogo({ size = 'md', className, showWordmark = true }: QuantumLogoProps) {
-  const gradientId = useId();
-  const edgeId = useId();
-  const glowId = useId();
   const spec = SIZE_MAP[size];
 
   return (
     <div className={clsx('inline-flex items-center gap-2.5', className)}>
-      <div className="relative" style={{ width: spec.mark, height: spec.mark }}>
+      <div className="relative flex items-center justify-center" style={{ width: spec.mark, height: spec.mark }}>
         <svg
           width={spec.mark}
           height={spec.mark}
@@ -31,53 +28,55 @@ export default function QuantumLogo({ size = 'md', className, showWordmark = tru
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
-          className="drop-shadow-[0_8px_20px_rgba(0,0,0,0.45)]"
+          className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]"
         >
-          <defs>
-            <linearGradient id={gradientId} x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#1E293B" />
-              <stop offset="0.5" stopColor="#334155" />
-              <stop offset="1" stopColor="#0F172A" />
-            </linearGradient>
-            <linearGradient id={edgeId} x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#FF8C33" />
-              <stop offset="1" stopColor="#FF6A00" />
-            </linearGradient>
-            <linearGradient id={glowId} x1="20" y1="16" x2="46" y2="48" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#FFD7B5" />
-              <stop offset="1" stopColor="#FF9A4A" />
-            </linearGradient>
-          </defs>
-
+          {/* Carbon/Graphite Outer Hexagon with sharp edges */}
           <path
-            d="M32 3L56 16.5V47.5L32 61L8 47.5V16.5L32 3Z"
-            fill={`url(#${gradientId})`}
-            stroke={`url(#${edgeId})`}
-            strokeWidth="1.6"
+            d="M32 2L58 17V47L32 62L6 47V17L32 2Z"
+            fill="#111417"
+            stroke="#2A3036"
+            strokeWidth="2"
           />
 
-          <path d="M19 18H39L36.5 24.5H26V30H34L31.5 36H26V46H19V18Z" fill="#F8FAFC" />
-          <path
-            d="M45 35.5C45 41.3 40.4 46 34.7 46C29 46 24.4 41.3 24.4 35.5C24.4 29.7 29 25 34.7 25C40.4 25 45 29.7 45 35.5Z"
-            stroke="#F8FAFC"
-            strokeWidth="2.6"
+          {/* Internal Geometric Mark - Sharp, layered F/Q */}
+          <path 
+            d="M20 20H44V26H28V32H38V38H28V44H20V20Z" 
+            fill="#E2E8F0" 
           />
-          <path d="M39.7 41.2L46.5 48" stroke={`url(#${glowId})`} strokeWidth="2.8" strokeLinecap="round" />
-          <path d="M18 46L48 18" stroke={`url(#${glowId})`} strokeWidth="1.6" strokeLinecap="round" opacity="0.9" />
+          <path 
+            d="M38 42L46 50" 
+            stroke="#FF5500" 
+            strokeWidth="4" 
+            strokeLinecap="square" 
+          />
+          <circle 
+            cx="37" cy="37" r="10" 
+            stroke="#FF5500" 
+            strokeWidth="3" 
+            fill="none" 
+            strokeDasharray="40 15" 
+          />
+          
+          {/* Accent slash */}
+          <path 
+            d="M48 18L18 52" 
+            stroke="#FF5500" 
+            strokeWidth="1.5" 
+            opacity="0.6" 
+          />
         </svg>
-        <div className="absolute inset-0  bg-[radial-gradient(circle,rgba(255,106,0,0.35),transparent_68%)] blur-md pointer-events-none" />
       </div>
 
       {showWordmark && (
-        <div className="leading-none">
+        <div className="leading-none flex flex-col justify-center">
           <div
-            className="font-black uppercase tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-b from-slate-100 to-slate-400"
+            className="font-black uppercase tracking-[0.25em] text-white"
             style={{ fontSize: spec.title }}
           >
             FusionEMS
           </div>
           <div
-            className="font-bold uppercase tracking-[0.34em] text-[#FF8C33] mt-1"
+            className="font-semibold uppercase tracking-[0.4em] text-[#FF5500] mt-1"
             style={{ fontSize: spec.sub }}
           >
             Quantum

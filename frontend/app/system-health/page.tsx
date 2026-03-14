@@ -84,15 +84,15 @@ const FEATURES = [
 ];
 
 export default function SystemHealthPage() {
-  const [dash, setDash] = useState<Record<string, unknown>>({});
+  const [dash, setDash] = useState<any>({});
   const [services, setServices] = useState<Array<Record<string, unknown>>>([]);
   const [alerts, setAlerts] = useState<{ alerts?: Array<Record<string, unknown>>; total?: number }>({});
-  const [uptime, setUptime] = useState<Record<string, unknown>>({});
-  const [resilience, setResilience] = useState<Record<string, unknown>>({});
+  const [uptime, setUptime] = useState<any>({});
+  const [resilience, setResilience] = useState<any>({});
   const [ssl, setSsl] = useState<{ domains?: Array<{ domain: string; expires_in_days: number; status: string }> }>({});
-  const [backups, setBackups] = useState<Record<string, unknown>>({});
-  const [coverage, setCoverage] = useState<Record<string, unknown>>({});
-  const [liveStatus, setLiveStatus] = useState<Record<string, unknown>>({});
+  const [backups, setBackups] = useState<any>({});
+  const [coverage, setCoverage] = useState<any>({});
+  const [liveStatus, setLiveStatus] = useState<any>({});
 
   useEffect(() => {
     void Promise.allSettled([
@@ -147,7 +147,7 @@ export default function SystemHealthPage() {
   const microsoft = asObj(auth.microsoft);
   const release = asObj(liveStatus.release);
   const releaseBlockers = Array.isArray(liveStatus.release_blockers)
-    ? liveStatus.release_blockers.map((item) => String(item))
+    ? liveStatus.release_blockers.map((item: any) => String(item))
     : [];
   const authHealthy = releaseBlockers.length === 0;
   const microsoftHealthy = Boolean(microsoft.healthy);
@@ -230,7 +230,7 @@ export default function SystemHealthPage() {
           <div className="bg-[var(--color-bg-panel)] border border-[var(--color-brand-red)]/35 chamfer-8 p-4">
             <div className="text-micro font-label uppercase tracking-widest text-[var(--color-brand-red)] mb-2">Release Block Reasons</div>
             <div className="space-y-1.5">
-              {releaseBlockers.map((reason) => (
+              {releaseBlockers.map((reason: any) => (
                 <div key={reason} className="text-body text-[var(--color-text-secondary)] border-b border-[var(--color-border-default)] last:border-0 py-1.5">
                   {reason}
                 </div>

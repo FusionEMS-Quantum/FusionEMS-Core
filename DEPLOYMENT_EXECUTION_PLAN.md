@@ -223,3 +223,16 @@ aws ecs update-service \
 **READY FOR DEPLOYMENT**
 
 All systems validated. Execute deployment when ready.
+
+## Frontend Deployment Posture (Amplify-First)
+The platform is deployed Amplify-first. Target architecture for frontend delivery is exclusively:
+- Route 53
+- Amplify Hosting
+- ACM
+- WAF
+- CloudWatch
+- S3
+- Secrets Manager
+
+Older ECS / CloudFront / Cognito-first frontend delivery assumptions must be removed or marked deprecated.
+Cognito remains an option for specific internal identity providers, but Microsoft Entra is the primary IdP.
