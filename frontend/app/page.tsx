@@ -77,13 +77,13 @@ export default function LandingPage() {
         <div className="absolute bottom-0 left-0 w-[1px] h-[120px] bg-gradient-to-t from-[#F36A21]/15 to-transparent" />
       </div>
 
-      {/* SYSTEM STATUS BAND */}
+      {/* SYSTEM IDENTITY BAND */}
       <div className="relative z-50 bg-[#0A0C0E] border-b border-white/[0.04]">
         <div className="max-w-[1600px] mx-auto px-6 py-1.5 flex items-center justify-between">
           <div className="flex items-center gap-4 text-[0.55rem] font-bold tracking-[0.2em] uppercase">
             <div className="flex items-center gap-1.5">
-              <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]"></div>
-              <span className="text-[#4E9F6E]">Platform Operational</span>
+              <div className="w-1 h-1 bg-[#F36A21] shadow-[0_0_4px_#F36A21]"></div>
+              <span className="text-[#F36A21]">Quantum Platform</span>
             </div>
             <span className="text-[#66707A]">|</span>
             <span className="text-[#66707A]">Billing</span>
@@ -165,9 +165,9 @@ export default function LandingPage() {
 
             {/* Status badge */}
             <div className="inline-flex items-center gap-3 px-5 py-2 border border-white/10 bg-white/[0.02] mb-10">
-              <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
+              <div className="w-1.5 h-1.5 bg-[#F36A21] shadow-[0_0_6px_#F36A21]"></div>
               <span className="text-[0.6rem] font-bold tracking-[0.25em] text-[#8D98A3] uppercase">MISSION-CRITICAL PUBLIC SAFETY SAAS — EMS / HEMS / FIRE / BILLING</span>
-              <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
+              <div className="w-1.5 h-1.5 bg-[#F36A21] shadow-[0_0_6px_#F36A21]"></div>
             </div>
 
             {/* Headline — hard command authority, no animation */}
@@ -343,7 +343,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FOUNDER STATEMENT SECTION */}
+        {/* PLATFORM ORIGIN SECTION */}
         <section className="py-24 relative z-20 border-b border-white/[0.04] bg-[#111417]">
           <div className="max-w-[1200px] mx-auto px-6 grid md:grid-cols-[1fr_2fr] gap-12">
             <div>
@@ -352,20 +352,20 @@ export default function LandingPage() {
             </div>
             <div className="space-y-6 text-[var(--color-text-muted)] text-lg leading-relaxed border-l border-white/10 pl-8">
               <p>
-                As a paramedic, I saw firsthand how often public safety agencies are forced to operate on systems that are slow, fragmented, unreliable, and overly dependent on ideal conditions. In the environments where this work actually happens, connectivity is not always stable, time is limited, and every layer of friction carries operational consequences.
+                Public safety agencies have long been forced to operate on systems that are slow, fragmented, unreliable, and overly dependent on ideal conditions. In the environments where this work actually happens, connectivity is not always stable, time is limited, and every layer of friction carries operational consequences.
               </p>
               <p>
-                That experience led me to build FusionEMS Quantum.
+                That reality led to FusionEMS Quantum.
               </p>
               <p>
-                I designed, engineered, and built FusionEMS Quantum to deliver a modern platform that is faster, more intuitive, and more resilient than the legacy systems agencies have historically been forced to tolerate. The goal is straightforward: unify billing, operations, compliance, communication, scheduling, fleet, and clinical workflows into a single platform that performs reliably in real-world conditions and scales with the demands of modern public safety organizations.
+                FusionEMS Quantum was engineered to deliver a modern platform that is faster, more intuitive, and more resilient than the legacy systems agencies have historically been forced to tolerate. The goal is straightforward: unify billing, operations, compliance, communication, scheduling, fleet, and clinical workflows into a single platform that performs reliably in real-world conditions and scales with the demands of modern public safety organizations.
               </p>
               <p className="font-bold text-gray-300">
-                FusionEMS Quantum represents my belief that mission-critical agencies deserve mission-critical infrastructure.
+                Mission-critical agencies deserve mission-critical infrastructure.
               </p>
               <div className="pt-6">
-                <p className="text-white font-black tracking-wide">— Joshua Wendorf</p>
-                <p className="text-sm text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Architecture Team</p>
+                <p className="text-white font-black tracking-wide">— FusionEMS Engineering</p>
+                <p className="text-sm text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Platform Architecture Team</p>
               </div>
             </div>
           </div>

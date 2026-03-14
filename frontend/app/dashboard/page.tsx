@@ -101,7 +101,7 @@ function DashboardPageInner() {
         </span>
         <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-brand-orange)]">
           <span className="h-1.5 w-1.5 bg-[var(--color-brand-orange)] shadow-[0_0_5px_#F36A21]" />
-          Founder visibility online
+          Platform command active
         </span>
       </div>
 

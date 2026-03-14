@@ -16,7 +16,7 @@ const NAV_LINKS = [
   { href: '/communications', label: 'Communications' },
   { href: '/compliance', label: 'Compliance' },
   { href: '/roi', label: 'ROI' },
-  { href: '/founder-command', label: 'Founder' },
+  { href: '/live-status', label: 'Status' },
 ];
 
 const FOOTER_LINKS = [

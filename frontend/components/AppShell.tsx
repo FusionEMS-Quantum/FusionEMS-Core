@@ -64,7 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: "/billing", label: "Billing" },
     { href: "/compliance", label: "Compliance" },
     { href: "/systems", label: "Systems" },
-    { href: "/founder-command", label: "Founder" },
+    { href: "/live-status", label: "Status" },
     { href: "/nemsis-manager", label: "NEMSIS" },
   ];
 
@@ -74,7 +74,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: "/compliance", label: "Compliance Command" },
     { href: "/system-health", label: "System Health" },
     { href: "/transportlink/dashboard", label: "TransportLink" },
-    { href: "/founder", label: "Founder Workspace" },
+    { href: "/communications", label: "Communications" },
   ];
 
   return (
@@ -91,13 +91,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="relative z-40 border-b border-white/[0.06] bg-[var(--color-bg-base)]">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 bg-[var(--color-success)] shadow-[0_0_5px_#4E9F6E]" />
-            <span>Platform Operational</span>
+            <span className="h-1.5 w-1.5 bg-[var(--color-brand-orange)]" />
+            <span>FusionEMS Quantum Platform</span>
           </div>
           <div className="hidden md:flex items-center gap-5">
-            <span>Stripe Enabled</span>
-            <span>NEMSIS Workflow Ready</span>
-            <span>Observability Active</span>
+            <span>Billing · Compliance · Fleet · Comms · NEMSIS</span>
           </div>
         </div>
       </div>
@@ -133,10 +131,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               Billing Login
             </Link>
             <Link
-              href="/founder-command"
+              href="/live-status"
               className="inline-flex items-center gap-2 bg-[var(--color-brand-orange)] px-4 py-2 text-xs font-black tracking-[0.14em] uppercase text-black hover:bg-[var(--color-orange-hover)] transition-colors"
             >
-              Founder Command
+              Command Center
             </Link>
           </div>
         </div>
@@ -169,8 +167,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="uppercase tracking-[0.16em] text-[rgba(255,255,255,0.45)]">FusionEMS Quantum Platform</div>
             <div>Deterministic workflows • auditable actions • integrated agency operations</div>
           </div>
-          <Link href="/founder-command" className="inline-flex items-center gap-2 text-[rgba(255,255,255,0.78)] hover:text-white transition-colors uppercase tracking-[0.14em]">
-            Founder Command
+          <Link href="/live-status" className="inline-flex items-center gap-2 text-[rgba(255,255,255,0.78)] hover:text-white transition-colors uppercase tracking-[0.14em]">
+            Platform Status
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>

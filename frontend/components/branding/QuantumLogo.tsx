@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import { useId } from 'react';
 
 type QuantumLogoSize = 'sm' | 'md' | 'lg';
 
@@ -30,39 +29,42 @@ export default function QuantumLogo({ size = 'md', className, showWordmark = tru
           aria-hidden="true"
           className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]"
         >
-          {/* Carbon/Graphite Outer Hexagon with sharp edges */}
+          {/* Carbon/Graphite Outer Hexagon — sharp command authority */}
           <path
             d="M32 2L58 17V47L32 62L6 47V17L32 2Z"
-            fill="#111417"
+            fill="#0D1014"
             stroke="#2A3036"
-            strokeWidth="2"
+            strokeWidth="1.5"
           />
 
-          {/* Internal Geometric Mark - Sharp, layered F/Q */}
-          <path 
-            d="M20 20H44V26H28V32H38V38H28V44H20V20Z" 
-            fill="#E2E8F0" 
+          {/* Inner hexagon — layered depth */}
+          <path
+            d="M32 8L52 20V44L32 56L12 44V20L32 8Z"
+            fill="none"
+            stroke="#1D2227"
+            strokeWidth="1"
           />
-          <path 
-            d="M38 42L46 50" 
-            stroke="#FF5500" 
-            strokeWidth="4" 
-            strokeLinecap="square" 
+
+          {/* Geometric F — bold structural letterform */}
+          <path
+            d="M22 20H42V26H30V30H38V36H30V44H22V20Z"
+            fill="#E8ECF0"
           />
-          <circle 
-            cx="37" cy="37" r="10" 
-            stroke="#FF5500" 
-            strokeWidth="3" 
-            fill="none" 
-            strokeDasharray="40 15" 
+
+          {/* Q tail — signature orange diagonal stroke */}
+          <path
+            d="M38 40L48 52"
+            stroke="#FF5500"
+            strokeWidth="4"
+            strokeLinecap="square"
           />
-          
-          {/* Accent slash */}
-          <path 
-            d="M48 18L18 52" 
-            stroke="#FF5500" 
-            strokeWidth="1.5" 
-            opacity="0.6" 
+
+          {/* Precision ring — partial arc for Q character */}
+          <path
+            d="M44 32A12 12 0 1 0 36 43"
+            stroke="#FF5500"
+            strokeWidth="2.5"
+            fill="none"
           />
         </svg>
       </div>

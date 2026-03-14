@@ -24,6 +24,8 @@ class IRSFilingForm(StrEnum):
     QUARTERLY_ESTIMATED = "1040_ES"
     FORM_1040_INDIVIDUAL = "1040_INDIVIDUAL"
     SCHEDULE_A_ITEMIZED = "1040_SCHEDULE_A"
+    # Open-source free-file path — no EFIN or commercial clearinghouse required
+    FREE_FILE_1040 = "FREE_FILE_1040"
 
 class ExpensePaymentSource(StrEnum):
     BUSINESS_CHECKING = "BUSINESS_CHECKING"

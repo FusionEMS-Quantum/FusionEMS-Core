@@ -196,10 +196,10 @@ function LoginPageInner() {
             {/* LOGIN CARD */}
             <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-sm border border-quantum-orange/20 rounded-2xl p-8 shadow-2xl">
               
-              {/* STATUS INDICATOR */}
-              <div className="mb-8 flex items-center gap-3 p-3 bg-quantum-green/10 border border-quantum-green/30 rounded-lg">
-                <div className="w-2.5 h-2.5 rounded-full bg-quantum-green animate-pulse" />
-                <span className="text-sm font-bold text-quantum-green uppercase tracking-wide">System Operational</span>
+              {/* PLATFORM IDENTITY */}
+              <div className="mb-8 flex items-center gap-3 p-3 bg-[var(--color-brand-orange)]/10 border border-[var(--color-brand-orange)]/30 rounded-lg">
+                <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-brand-orange)]" />
+                <span className="text-sm font-bold text-[var(--color-brand-orange)] uppercase tracking-wide">Quantum Platform</span>
               </div>
 
               <div className="mb-6">
@@ -311,7 +311,7 @@ function LoginPageInner() {
                   <path fill="#00a4ef" d="M1 13h10v10H1z" />
                   <path fill="#ffb900" d="M13 13h10v10H13z" />
                 </svg>
-                <span className="text-sm">Microsoft Account</span>
+                <span className="text-sm">Microsoft Login</span>
               </a>
 
               {/* FOOTER */}
