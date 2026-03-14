@@ -26,12 +26,14 @@ export default function SoloFounderOS() {
     setTimeout(() => setTransmitLog(prev => [...prev, "[EXPENSE] Deducting Telnyx/Lob/OfficeAlly API costs... -$43,810.22"]), 1600);
     setTimeout(() => setTransmitLog(prev => [...prev, "[CRYPTO] Signing JSON payload with platform RSA key... OK"]), 2400);
     setTimeout(() => setTransmitLog(prev => [...prev, "[NETWORK] Establishing TLS 1.3 pipe to IRS FIRE endpoint..."]), 3200);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[IRS-FIRE] 1099-K & Form 1120-S Schema Validated."]), 4000);
+    setTimeout(() => setTransmitLog(prev => [...prev, "[IRS-FIRE] 1099-K & Form 1120-S Schema Validated. (Federal)"]), 4000);
+    setTimeout(() => setTransmitLog(prev => [...prev, "[STATE-WIDOR] Forking payload via WI MyTax Account API..."]), 4800);
+    setTimeout(() => setTransmitLog(prev => [...prev, "[STATE-WIDOR] Wisconsin Pass-Through Entity & Sales Tax XML Validated."]), 5600);
     setTimeout(() => {
-        setTransmitLog(prev => [...prev, "[SUCCESS] Transmission Accepted. Ack ID: IRS-994-FEMS-01"]);
+        setTransmitLog(prev => [...prev, "[SUCCESS] Federal & Wisconsin Transmission Accepted. Ack ID: WI-994-FEMS-01"]);
         setIsTransmitting(false);
         setEfileStatus("ACCEPTED");
-    }, 5000);
+    }, 6600);
   };
   const [agentInput, setAgentInput] = useState("");
   const [chatLog, setChatLog] = useState<{ role: "user" | "agent"; text: string }[]>([
@@ -163,7 +165,7 @@ export default function SoloFounderOS() {
                      <div className="p-4 border border-zinc-800 bg-black/50 flex flex-col justify-between">
                        <div>
                          <h4 className="flex items-center text-[#00D1FF] font-black uppercase tracking-widest text-xs mb-3"><FileDigit className="mr-2 h-4 w-4" /> E-File Matrix</h4>
-                         <p className="text-sm text-zinc-400 font-mono mb-4">Direct IRS/State 1099-K & W-2 schema compilation. Encrypted JSON payload ready.</p>
+                         <p className="text-sm text-zinc-400 font-mono mb-4">Direct IRS (Federal) & Wisconsin Dept. of Revenue (MyTax) native connection. Encrypted XML/JSON payloads.</p>
                          <div className="space-y-2 mb-6">
                            <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
                              <span className="text-zinc-500">2026 1099-K Volume</span>
@@ -177,7 +179,7 @@ export default function SoloFounderOS() {
                        </div>
                        
                        {!isTransmitting && efileStatus === "DRAFT" ? (
-                           <button onClick={startEfileTransmission} className="w-full bg-[#00D1FF] hover:bg-[#00D1FF]/80 text-black text-[10px] font-bold py-3 uppercase tracking-widest transition-colors">Sign & Transmit Direct to IRS</button>
+                           <button onClick={startEfileTransmission} className="w-full bg-[#00D1FF] hover:bg-[#00D1FF]/80 text-black text-[10px] font-bold py-3 uppercase tracking-widest transition-colors">Sign & Transmit Federal + Wisconsin</button>
                        ) : (
                            <div className="w-full bg-black border border-[#00D1FF]/50 p-3 h-32 overflow-y-auto font-mono text-[10px] text-[#00D1FF] space-y-1">
                                {transmitLog.map((log, i) => (
