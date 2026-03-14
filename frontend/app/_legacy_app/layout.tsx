@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { FQMark } from '@/components/branding/QuantumLogo';
 
 const MODULE_LINKS = [
   { href: '/_legacy_app/home', label: 'Home' },
@@ -20,7 +21,7 @@ export default function InternalAppLayout({ children }: { children: ReactNode })
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex flex-col">
       <header className="h-14 border-b border-border-default bg-[rgba(7,9,13,0.92)] backdrop-blur-sm flex items-center justify-between px-5">
         <Link href="/_legacy_app/home" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-brand-orange text-black flex items-center justify-center font-black chamfer-8">FQ</div>
+          <FQMark size={32} />
           <span className="text-label uppercase tracking-[0.16em] text-zinc-400">Command Application</span>
         </Link>
         <Link href="/portal/agency" className="quantum-btn-sm">Secure Access</Link>

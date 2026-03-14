@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { FQMark } from '@/components/branding/QuantumLogo';
 
 const STEPS = [
   { label: 'AGENCY INFO', path: '/signup' },
@@ -10,31 +11,6 @@ const STEPS = [
   { label: 'CHECKOUT',    path: '/signup/checkout' },
   { label: 'STATUS',      path: '/signup/success' },
 ];
-
-function HexLogo() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon
-        points="18,2 33,10 33,26 18,34 3,26 3,10"
-        fill="#FF4D00"
-        stroke="#FF4D00"
-        strokeWidth="1"
-      />
-      <text
-        x="18"
-        y="23"
-        textAnchor="middle"
-        fill="#050505"
-        fontSize="13"
-        fontWeight="900"
-        fontFamily="'Barlow Condensed', 'Barlow', sans-serif"
-        letterSpacing="0.5"
-      >
-        FQ
-      </text>
-    </svg>
-  );
-}
 
 function StepIndicator({ pathname }: { pathname: string }) {
   const currentIndex = STEPS.reduce((found, step, idx) => {
@@ -116,7 +92,7 @@ export default function SignupLayout({ children }: { children: ReactNode }) {
       {/* Header */}
       <div className="flex flex-col items-center z-10 w-full">
         <div className="flex items-center gap-4">
-          <HexLogo />
+          <FQMark size={40} />
           <div>
             <div className="text-xl md:text-2xl font-black tracking-[0.15em] text-white uppercase leading-none">
               FUSION<span className="text-[#FF4D00]">EMS</span> QUANTUM

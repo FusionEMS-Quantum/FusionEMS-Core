@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { startPublicOnboardingCheckout } from '@/services/api';
+import { FQMark } from '@/components/branding/QuantumLogo';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -96,10 +97,7 @@ export default function CheckoutPage() {
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               {/* Hex icon */}
-              <svg width="18" height="18" viewBox="0 0 36 36" fill="none">
-                <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--q-orange)" />
-                <text x="18" y="23" textAnchor="middle" fill="black" fontSize="11" fontWeight="900" fontFamily="'Barlow Condensed', sans-serif">FQ</text>
-              </svg>
+              <FQMark size={18} />
               <span className="text-sm font-bold text-[var(--color-text-primary)] tracking-wide">
                 FusionEMS Quantum
               </span>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getPortalStatements, getPortalPayments } from '@/services/api';
+import { FQMark } from '@/components/branding/QuantumLogo';
 
 interface SummaryData {
   total_balance: number;
@@ -84,10 +85,7 @@ export default function PatientHomeDashboard() {
       {/* Top bar */}
       <div className="bg-[var(--color-bg-surface)] border-b border-[var(--color-border-default)] px-6 h-14 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-            <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--q-orange)" />
-            <text x="18" y="23" textAnchor="middle" fill="var(--color-bg-base)" fontSize="10" fontWeight="900" fontFamily="sans-serif">FQ</text>
-          </svg>
+          <FQMark size={28} />
           <div className="flex items-center gap-2.5">
             <span className="text-micro font-label font-black tracking-wider uppercase">FUSION<span className="text-[var(--q-orange)]">EMS</span></span>
             <span className="text-micro text-[var(--color-text-muted)] tracking-wider uppercase ml-2">MY ACCOUNT</span>

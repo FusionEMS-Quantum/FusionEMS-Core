@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginPatientPortalSession } from '@/services/api';
+import { FQMark } from '@/components/branding/QuantumLogo';
 
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: 'var(--color-bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-body)', position: 'relative' },
@@ -52,10 +53,7 @@ export default function PatientLoginPage() {
       <div style={S.glow} />
       <div style={S.card}>
         <div style={S.logoRow}>
-          <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-            <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--q-orange)" />
-            <text x="18" y="23" textAnchor="middle" fill="var(--color-bg-base)" fontSize="11" fontWeight="900" fontFamily="sans-serif">FQ</text>
-          </svg>
+          <FQMark size={32} />
           <div style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
             FUSION<span style={{ color: 'var(--q-orange)' }}>EMS</span>
           </div>

@@ -14,48 +14,54 @@ interface QuantumLogoProps {
   readonly showWordmark?: boolean;
 }
 
+/**
+ * FQ Monogram Mark — standalone mark component for icon-only contexts
+ * (headers, favicons, inline badges). Uses a chamfered square container
+ * with an engineered FQ monogram: geometric F anchors the left, the Q arc
+ * wraps the upper-right, and the Q tail exits as a decisive diagonal cut.
+ */
+export function FQMark({ size = 28, className }: { readonly size?: number; readonly className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      className={className}
+    >
+      {/* Chamfered square — obsidian base */}
+      <path d="M0 0H52L64 12V64H0V0Z" fill="#0A0C0E" />
+      <path d="M1 1H51.5L63 12.5V63H1V1Z" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.75" />
+
+      {/* Structural F — left anchor */}
+      <rect x="14" y="14" width="24" height="3.5" rx="0" fill="#E8ECF0" />
+      <rect x="14" y="14" width="3.5" height="28" rx="0" fill="#E8ECF0" />
+      <rect x="14" y="27" width="17" height="3.5" rx="0" fill="#E8ECF0" />
+
+      {/* Q arc — upper right containment */}
+      <path d="M46 26A13 13 0 1 0 37 40" stroke="#F36A21" strokeWidth="3" fill="none" strokeLinecap="square" />
+
+      {/* Q tail — decisive diagonal exit */}
+      <path d="M39 38L54 54" stroke="#F36A21" strokeWidth="3.5" strokeLinecap="square" />
+    </svg>
+  );
+}
+
+/**
+ * QuantumLogo — full identity lockup.
+ * Pairs the FQ monogram with the FusionEMS Quantum wordmark.
+ * The mark uses a chamfered square (no hexagon), clean geometry,
+ * and the orange Q arc + tail as the signature accent.
+ */
 export default function QuantumLogo({ size = 'md', className, showWordmark = true }: QuantumLogoProps) {
   const spec = SIZE_MAP[size];
 
   return (
     <div className={clsx('inline-flex items-center gap-3', className)}>
       <div className="relative flex items-center justify-center" style={{ width: spec.mark, height: spec.mark }}>
-        <svg
-          width={spec.mark}
-          height={spec.mark}
-          viewBox="0 0 64 64"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="q-orange-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#FF7A2F" />
-              <stop offset="1" stopColor="#F36A21" />
-            </linearGradient>
-            <filter id="q-glow">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" />
-            </filter>
-          </defs>
-
-          {/* Outer Hexagon — obsidian */}
-          <path d="M32 2L58 17V47L32 62L6 47V17L32 2Z" fill="#0A0C0E" stroke="#1D2227" strokeWidth="1" />
-
-          {/* Inner hexagon — layered depth */}
-          <path d="M32 8L52 20V44L32 56L12 44V20L32 8Z" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="0.75" />
-
-          {/* Orange glow behind mark */}
-          <path d="M44 32A12 12 0 1 0 36 43" stroke="url(#q-orange-grad)" strokeWidth="3" fill="none" filter="url(#q-glow)" opacity="0.5" />
-
-          {/* Geometric F — precision letterform */}
-          <path d="M23 19H41V24.5H29.5V29.5H37V35H29.5V45H23V19Z" fill="#E8ECF0" />
-
-          {/* Q arc — signature stroke */}
-          <path d="M44 32A12 12 0 1 0 36 43" stroke="url(#q-orange-grad)" strokeWidth="2.5" fill="none" strokeLinecap="square" />
-
-          {/* Q tail — diagonal brand mark */}
-          <path d="M38 40L49 53" stroke="url(#q-orange-grad)" strokeWidth="3.5" strokeLinecap="square" />
-        </svg>
+        <FQMark size={spec.mark} />
       </div>
 
       {showWordmark && (
@@ -71,3 +77,4 @@ export default function QuantumLogo({ size = 'md', className, showWordmark = tru
     </div>
   );
 }
+

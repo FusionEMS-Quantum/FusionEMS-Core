@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { BILLING_PHONE_DISPLAY, BILLING_PHONE_TEL } from '@/lib/phone';
+import { FQMark } from '@/components/branding/QuantumLogo';
 
 const ACTIONS = [
   { href: '/portal/patient/pay', title: 'Pay My Bill', desc: 'Securely pay your balance online', primary: true },
@@ -11,15 +12,6 @@ const ACTIONS = [
   { href: '/portal/patient/support', title: 'Get Billing Help', desc: 'Chat, call, or request support', primary: false },
   { href: '/portal/patient/receipts', title: 'Download Receipt', desc: 'Access your payment receipts', primary: false },
 ];
-
-function HexLogo() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 36 36" fill="none">
-      <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="var(--q-orange)" />
-      <text x="18" y="23" textAnchor="middle" fill="var(--color-bg-base)" fontSize="12" fontWeight="900" fontFamily="sans-serif">FQ</text>
-    </svg>
-  );
-}
 
 export default function PatientPortalEntryPage() {
   return (
@@ -31,7 +23,7 @@ export default function PatientPortalEntryPage() {
       <div className="relative z-10 max-w-[1100px] mx-auto px-5 pb-20">
         <header className="flex flex-wrap items-center justify-between py-7 pb-12 gap-4">
           <div className="flex items-center gap-3.5">
-            <HexLogo />
+            <FQMark size={40} />
             <div>
               <div className="text-base font-black uppercase tracking-[0.15em] leading-none">
                 FUSION<span className="text-[var(--q-orange)]">EMS</span>
