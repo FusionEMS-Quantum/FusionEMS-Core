@@ -1,21 +1,27 @@
 import uuid
-from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
-from sqlalchemy.orm import Session
+from datetime import UTC, datetime
+from typing import Any
+
 from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from core_app.models.growth_models import (
-    ConversionEvent, LeadScore, Proposal, GrowthCampaign,
-    GrowthSocialPost, GrowthDemoAsset, GrowthLandingPage, GrowthAutomation
+    ConversionEvent,
+    GrowthCampaign,
+    GrowthDemoAsset,
+    GrowthSocialPost,
+    LeadScore,
 )
 
+
 def utc_now():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 class AIGrowthService:
     def __init__(self, db: Session):
         self.db = db
 
-    def record_conversion_event(self, funnel_stage: str, event_type: str, session_id: str, metadata: Dict[str, Any]) -> ConversionEvent:
+    def record_conversion_event(self, funnel_stage: str, event_type: str, session_id: str, metadata: dict[str, Any]) -> ConversionEvent:
         event = ConversionEvent(
             id=str(uuid.uuid4()),
             funnel_stage=funnel_stage,
@@ -30,15 +36,15 @@ class AIGrowthService:
         self.score_lead_pipeline(session_id, metadata)
         return event
 
-    def score_lead_pipeline(self, session_id: str, metadata: Dict[str, Any]):
+    def score_lead_pipeline(self, session_id: str, metadata: dict[str, Any]):
         email = metadata.get("email")
         if not email:
             return
-        
+
         # Check if lead exists
         stmt = select(LeadScore).where(LeadScore.contact_email == email)
         lead = self.db.execute(stmt).scalar_one_or_none()
-        
+
         if not lead:
             lead = LeadScore(
                 id=str(uuid.uuid4()),
@@ -62,10 +68,10 @@ class AIGrowthService:
             else:
                 lead.tier = "low"
             lead.updated_at = utc_now()
-        
+
         self.db.commit()
 
-    def create_campaign(self, name: str, objective: str, audience: Dict[str, Any]) -> GrowthCampaign:
+    def create_campaign(self, name: str, objective: str, audience: dict[str, Any]) -> GrowthCampaign:
         camp = GrowthCampaign(
             id=str(uuid.uuid4()),
             name=name,
@@ -94,7 +100,7 @@ class AIGrowthService:
                 created_at=utc_now()
             )
             self.db.add(post)
-        
+
         self.db.commit()
 
     def generate_demo_assets(self, campaign_id: str, focus_area: str):
@@ -117,7 +123,7 @@ class AIGrowthService:
         self.db.add(asset)
         self.db.commit()
 
-    def launch_orchestrator(self, mode: str) -> Dict[str, Any]:
+    def launch_orchestrator(self, mode: str) -> dict[str, Any]:
         return {
             "run_id": str(uuid.uuid4()),
             "mode": mode,

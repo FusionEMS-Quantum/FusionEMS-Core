@@ -19,8 +19,8 @@ from core_app.schemas.founder_command_domains import (
     SyncDeadLetterCreateRequest,
     SyncDeadLetterResponse,
 )
-from core_app.services.founder_command_domain_service import FounderCommandDomainService
 from core_app.services.ai_growth_service import AIGrowthService
+from core_app.services.founder_command_domain_service import FounderCommandDomainService
 
 router = APIRouter(
     prefix="/api/v1/founder/integration-command",
@@ -68,7 +68,7 @@ def start_launch_orchestrator(
         mode=payload.mode,
         auto_queue_sync_jobs=payload.auto_queue_sync_jobs,
     )
-    
+
     # Real AI Growth Launch Sequence
     growth_svc = AIGrowthService(db)
     campaign = growth_svc.create_campaign(
@@ -77,7 +77,7 @@ def start_launch_orchestrator(
         audience={"target": "EMS Agency Directors", "region": "US"}
     )
     growth_svc.generate_demo_assets(campaign.id, "Revenue Cycle Overhaul")
-    
+
     db.commit()
     return run
 
