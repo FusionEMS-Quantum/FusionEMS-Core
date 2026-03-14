@@ -63,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run TFLint
-        run: tflint --chdir=${{ env.TF_ROOT_DIR }} --recursive --minimum-failure-severity=error
+        run: cd ${{ env.TF_ROOT_DIR }} && tflint --recursive --minimum-failure-severity=error
 
       - name: Setup Python
         uses: actions/setup-python@v5
