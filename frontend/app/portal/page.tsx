@@ -39,13 +39,13 @@ export default function PortalDashboardPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <Link
           href="/portal/dea-cms"
-          className="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          className="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-[var(--color-status-info)] text-white transition-colors"
         >
           DEA / CMS Command
         </Link>
         <Link
           href="/portal/cases"
-          className="px-3 py-1.5 text-xs font-semibold border border-border-DEFAULT text-zinc-300 hover:bg-zinc-900 transition-colors"
+          className="px-3 py-1.5 text-xs font-semibold border border-border-DEFAULT text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-panel)] transition-colors"
         >
           Open Cases CMS Gate
         </Link>
@@ -70,12 +70,12 @@ export default function PortalDashboardPage() {
             <Link
               key={card.href}
               href={card.href}
-              className="group block bg-black border border-[var(--color-border-default)] chamfer-8 p-5 hover:border-brand-orange/35 transition-colors"
+              className="group block bg-[var(--color-bg-base)] border border-[var(--color-border-default)] chamfer-8 p-5 hover:border-brand-orange/35 transition-colors"
             >
-              <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3 group-hover:text-brand-orange/70 transition-colors">
+              <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3 group-hover:text-brand-orange/70 transition-colors">
                 {card.label}
               </div>
-              <div className="text-3xl font-bold text-zinc-100">{card.value}</div>
+              <div className="text-3xl font-bold text-[var(--color-text-primary)]">{card.value}</div>
             </Link>
           ))}
         </div>

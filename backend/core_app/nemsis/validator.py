@@ -69,6 +69,12 @@ def _find_all(root: ET.Element, local_name: str) -> list[ET.Element]:
     return result
 
 
+def _local_name(tag: str) -> str:
+    if "}" in tag:
+        return tag.split("}", 1)[1]
+    return tag
+
+
 @dataclass
 class ValidationIssue:
     severity: str
@@ -157,27 +163,49 @@ class NEMSISValidator:
             root = ET.fromstring(xml_bytes)
 
         if root is not None:
-            nat_issues = self._stage_national_schematron(root)
-            all_issues.extend(nat_issues)
-            stage_results["national_schematron"] = {
-                "passed": not any(i.severity == "error" for i in nat_issues),
-                "issue_count": len(nat_issues),
-            }
-
-            if state_code.upper() == "WI":
-                wi_issues = self._stage_wi_schematron(root)
-                all_issues.extend(wi_issues)
-                stage_results["wi_schematron"] = {
-                    "passed": not any(i.severity == "error" for i in wi_issues),
-                    "issue_count": len(wi_issues),
+            dataset_name = _local_name(root.tag)
+            if dataset_name == "DEMDataSet":
+                stage_results["national_schematron"] = {
+                    "passed": True,
+                    "issue_count": 0,
+                    "skipped": True,
+                    "reason": "DEMDataSet uses a different validation profile than EMS patient care records.",
+                }
+                if state_code.upper() == "WI":
+                    stage_results["wi_schematron"] = {
+                        "passed": True,
+                        "issue_count": 0,
+                        "skipped": True,
+                        "reason": "Wisconsin EMS patient-care rules do not apply to DEMDataSet payloads.",
+                    }
+                    stage_results["wi_state"] = {
+                        "passed": True,
+                        "issue_count": 0,
+                        "skipped": True,
+                        "reason": "Wisconsin EMS patient-care rules do not apply to DEMDataSet payloads.",
+                    }
+            else:
+                nat_issues = self._stage_national_schematron(root)
+                all_issues.extend(nat_issues)
+                stage_results["national_schematron"] = {
+                    "passed": not any(i.severity == "error" for i in nat_issues),
+                    "issue_count": len(nat_issues),
                 }
 
-                wi_state_issues = self._stage_wi_state(root)
-                all_issues.extend(wi_state_issues)
-                stage_results["wi_state"] = {
-                    "passed": not any(i.severity == "error" for i in wi_state_issues),
-                    "issue_count": len(wi_state_issues),
-                }
+                if state_code.upper() == "WI":
+                    wi_issues = self._stage_wi_schematron(root)
+                    all_issues.extend(wi_issues)
+                    stage_results["wi_schematron"] = {
+                        "passed": not any(i.severity == "error" for i in wi_issues),
+                        "issue_count": len(wi_issues),
+                    }
+
+                    wi_state_issues = self._stage_wi_state(root)
+                    all_issues.extend(wi_state_issues)
+                    stage_results["wi_state"] = {
+                        "passed": not any(i.severity == "error" for i in wi_state_issues),
+                        "issue_count": len(wi_state_issues),
+                    }
         else:
             for stage in ("national_schematron", "wi_schematron", "wi_state"):
                 stage_results[stage] = {"passed": False, "issue_count": 0, "skipped": True}

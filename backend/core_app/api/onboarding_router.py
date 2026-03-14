@@ -12,7 +12,7 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -270,7 +270,8 @@ async def onboarding_apply(
     email = str(payload.get("email", "")).lower().strip()
     agency_name = str(payload.get("agency_name", "")).strip()
     agency_type = str(payload.get("agency_type", "EMS")).strip()
-    state = str(payload.get("state", "")).strip()
+    str(payload.get("state", "")).strip()
+    zip_code = str(payload.get("zip_code", "")).strip()
     first_name = str(payload.get("first_name", "")).strip()
     last_name = str(payload.get("last_name", "")).strip()
     phone = str(payload.get("phone", "")).strip()
@@ -347,7 +348,7 @@ async def onboarding_apply(
                 "email": email,
                 "agency": agency_name,
                 "atype": agency_type,
-                "zip": state,
+                "zip": zip_code,
                 "plan_code": plan_code,
                 "tier_code": tier_code,
                 "billing_tier_code": billing_tier_code,
@@ -472,6 +473,7 @@ async def legal_packet_get(
 async def legal_packet_sign(
     packet_id: str,
     payload: dict[str, Any],
+    request: Request,
     db: Session = Depends(db_session_dependency),
 ):
     application_id = str(payload.get("application_id", "")).strip()
@@ -485,12 +487,20 @@ async def legal_packet_sign(
             status_code=404, detail="Packet not found or application_id mismatch"
         )
 
+    # IP and User-Agent are extracted server-side to prevent client-supplied forgery
+    # in the legal audit trail. Payload-supplied values are intentionally ignored.
+    forwarded_for = request.headers.get("X-Forwarded-For", "")
+    server_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
+        request.client.host if request.client else ""
+    )
+    server_user_agent = request.headers.get("User-Agent", "")
+
     signing_data = {
         "signer_name": payload.get("signer_name", ""),
         "signer_email": payload.get("signer_email", ""),
         "signer_title": payload.get("signer_title", ""),
-        "ip_address": payload.get("ip_address", ""),
-        "user_agent": payload.get("user_agent", ""),
+        "ip_address": server_ip,
+        "user_agent": server_user_agent,
         "consents": payload.get("consents", {}),
         "signature_text": payload.get("signature_text", ""),
     }
@@ -645,13 +655,13 @@ async def checkout_start(
                 detail="No billable line items for this plan configuration",
             )
 
-        base_url = str(settings.api_base_url).rstrip("/")
+        frontend_base = str(settings.resolved_frontend_base_url()).rstrip("/")
         session = stripe_lib.checkout.Session.create(
             mode="subscription",
             line_items=line_items,
             metadata={"application_id": application_id, "source": "onboarding"},
-            success_url=f"{base_url}/onboarding/success?application_id={application_id}",
-            cancel_url=f"{base_url}/onboarding/cancel?application_id={application_id}",
+            success_url=f"{frontend_base}/signup/success?application_id={application_id}",
+            cancel_url=f"{frontend_base}/signup?canceled=1&application_id={application_id}",
         )
 
         db.execute(
@@ -722,9 +732,12 @@ async def onboarding_status(
     tenant_id = str(app_row["tenant_id"]) if app_row["tenant_id"] else None
     billing_mode = app_row.get("billing_mode") or "FUSION_RCM"
     operational_mode = app_row.get("operational_mode") or "EMS_TRANSPORT"
-    provisioning_status = app_row.get("provisioning_status") or (
-        "complete" if provisioned else "processing"
-    )
+    # A provisioned tenant must always present as complete, even if prior steps
+    # left provisioning_status as a non-null intermediate value.
+    if provisioned:
+        provisioning_status = "complete"
+    else:
+        provisioning_status = app_row.get("provisioning_status") or "processing"
     provisioning_steps = app_row.get("provisioning_steps") or []
     provisioning_error = app_row.get("provisioning_error")
     statement_prefix = app_row.get("statement_prefix")

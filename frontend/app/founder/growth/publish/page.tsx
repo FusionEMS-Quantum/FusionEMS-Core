@@ -15,15 +15,15 @@ export default function PublishingControlCenterPage() {
       <p className="text-white/60 mb-8">Manage AI-generated campaigns, approve drafts, and track post performance.</p>
 
       <div className="flex gap-4 mb-6">
-        <button className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 text-sm">All Platforms</button>
+        <button className="bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-overlay)] text-white font-bold py-2 px-4 text-sm">All Platforms</button>
         <button className="border border-white/20 hover:bg-white/5 text-white py-2 px-4 text-sm">LinkedIn</button>
         <button className="border border-white/20 hover:bg-white/5 text-white py-2 px-4 text-sm">X</button>
         <button className="border border-white/20 hover:bg-white/5 text-white py-2 px-4 text-sm">Email Sequences</button>
       </div>
 
-      <div className="bg-zinc-950 border border-white/10 overflow-hidden">
+      <div className="bg-[var(--color-bg-base)] border border-white/10 overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-zinc-900 border-b border-white/10">
+          <thead className="bg-[var(--color-bg-panel)] border-b border-white/10">
             <tr>
               <th className="p-4 text-xs tracking-wider text-white/50 uppercase font-medium">Platform</th>
               <th className="p-4 text-xs tracking-wider text-white/50 uppercase font-medium">Content Preview</th>
@@ -34,11 +34,11 @@ export default function PublishingControlCenterPage() {
           </thead>
           <tbody className="divide-y divide-white/5">
             {posts.map((post) => (
-              <tr key={post.id} className="hover:bg-zinc-900/50 transition-colors">
+              <tr key={post.id} className="hover:bg-[var(--color-bg-panel)]/50 transition-colors">
                 <td className="p-4">
                   <span className={`inline-block px-2 py-1 text-xs font-bold ${
-                    post.platform === 'LinkedIn' ? 'bg-blue-900/50 text-blue-400' :
-                    post.platform === 'X' ? 'bg-zinc-800 text-white' :
+                    post.platform === 'LinkedIn' ? 'bg-blue-900/50 text-[var(--color-status-info)]' :
+                    post.platform === 'X' ? 'bg-[var(--color-bg-raised)] text-white' :
                     'bg-purple-900/50 text-purple-400'
                   }`}>
                     {post.platform}
@@ -48,8 +48,8 @@ export default function PublishingControlCenterPage() {
                 <td className="p-4 text-sm text-white/60">{post.date}</td>
                 <td className="p-4">
                   <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${
-                    post.status === 'Queued' ? 'text-amber-400' :
-                    post.status === 'Sent' ? 'text-emerald-400' :
+                    post.status === 'Queued' ? 'text-[var(--q-yellow)]' :
+                    post.status === 'Sent' ? 'text-[var(--color-status-active)]' :
                     'text-white/40'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${
@@ -61,9 +61,9 @@ export default function PublishingControlCenterPage() {
                   </span>
                 </td>
                 <td className="p-4">
-                  <button className="text-blue-400 hover:text-blue-300 text-sm font-medium mr-3">Edit</button>
+                  <button className="text-[var(--color-status-info)] hover:text-[var(--color-status-info)] text-sm font-medium mr-3">Edit</button>
                   {post.status === 'Draft' && (
-                    <button className="text-emerald-400 hover:text-emerald-300 text-sm font-medium">Approve</button>
+                    <button className="text-[var(--color-status-active)] hover:text-[var(--color-status-active)] text-sm font-medium">Approve</button>
                   )}
                 </td>
               </tr>

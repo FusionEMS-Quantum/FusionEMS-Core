@@ -10,7 +10,7 @@ export function WSBootstrap() {
   useEffect(() => {
     if (!user?.token) return;
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `wss://${window.location.host}/ws`;
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `wss://${window.location.host}/api/v1/realtime/ws`;
     initWSClient({ url: wsUrl, token: user.token });
   }, [user?.token]);
 

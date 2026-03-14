@@ -29,7 +29,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel
 
-from core_app.api.dependencies import require_role
+from core_app.api.dependencies import require_founder_only_audited
 from core_app.integrations.graph_service import (
     GraphApiError,
     GraphNotConfigured,
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/founder/graph", tags=["Founder Graph"])
 
-_FOUNDER = Depends(require_role("founder"))
+_FOUNDER = Depends(require_founder_only_audited())
 
 
 def _raise_graph(exc: GraphApiError) -> None:

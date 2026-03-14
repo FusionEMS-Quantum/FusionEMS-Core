@@ -325,6 +325,55 @@ TENANT_TABLES: set[str] = {
     "tenant_provisioning_idempotency",
     "nemsis_submission_results",
     "nemsis_submission_status_history",
+    # ── Scheduling (scheduling_router.py) ──────────────────────────────────
+    "coverage_rules",
+    "fatigue_assessments",
+    "shift_swap_requests",
+    # ── Fire Ops (fire_ops_router.py) ──────────────────────────────────────
+    "fire_apparatus_records",
+    # ── CrewLink paging (crewlink/paging_engine.py) ────────────────────────
+    "crew_paging_audit_log",
+    # ── Visibility (visibility_router.py) ─────────────────────────────────
+    "visibility_elevated_access",
+    "visibility_secure_links",
+    "visibility_time_windows",
+    "visibility_policies",
+    "visibility_emergency_access",
+    "visibility_kill_switch",
+    # ── NEMSIS manager (nemsis_manager_router.py) ─────────────────────────
+    "nemsis_state_mappings",
+    "nemsis_vocabularies",
+    "nemsis_version_locks",
+    "nemsis_data_lineage",
+    "nemsis_backups",
+    "nemsis_export_schedules",
+    "nemsis_submission_audit",
+    "nemsis_export_freezes",
+    # ── Patient portal (patient_portal_router.py) ─────────────────────────
+    "portal_accounts",
+    "portal_profile_updates",
+    "patient_notification_actions",
+    "payment_events",
+    "payment_plan_requests",
+    "patient_documents",
+    "support_requests",
+    # ── Export status router (export_status_router.py) ────────────────────
+    "export_approvals",
+    "export_audit_freezes",
+    "export_bundles",
+    "export_certificates",
+    "export_escalations",
+    "export_fire_mappings",
+    "export_fire_normalizations",
+    "export_freezes",
+    "export_integrity_hashes",
+    "export_locks",
+    "export_notifications",
+    "export_overrides",
+    "export_proofs",
+    "export_schedules",
+    "export_throttle_config",
+    "export_validation_results",
 }
 
 _TABLE_TYPED_COLUMNS: dict[str, frozenset[str]] = {

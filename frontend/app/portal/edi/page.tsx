@@ -58,13 +58,13 @@ type TabKey = 'batches' | 'ingest' | 'explain';
 function StatusBadge({ status }: { status?: string }) {
   const s = (status ?? '').toLowerCase();
   const map: Record<string, string> = {
-    pending: 'bg-zinc-950/10 text-zinc-100/50 border-white/10',
+    pending: 'bg-[var(--color-bg-base)]/10 text-[var(--color-text-primary)]/50 border-white/10',
     submitted: 'bg-system-billing/20 text-system-billing border-system-billing/30',
-    accepted: 'bg-status-active/20 text-status-active border-status-active/30',
+    accepted: 'bg-status-active/20 text-[var(--color-status-active)] border-status-active/30',
     rejected: 'bg-red/20 text-red border-red/30',
     partial: 'bg-status-warning/20 text-status-warning border-status-warning/30',
   };
-  const cls = map[s] ?? 'bg-zinc-950/10 text-zinc-100/40 border-white/10';
+  const cls = map[s] ?? 'bg-[var(--color-bg-base)]/10 text-[var(--color-text-primary)]/40 border-white/10';
   return (
     <span className={`inline-flex items-center px-2 py-0.5 chamfer-4 text-micro font-bold uppercase border ${cls}`}>
       {status ?? 'unknown'}
@@ -83,7 +83,7 @@ function CollapsibleJson({ data }: { data: unknown }) {
         {open ? 'Hide' : 'Show'} parsed result
       </button>
       {open && (
-        <pre className="mt-2 p-3 bg-black chamfer-4 text-green-400 text-xs overflow-x-auto whitespace-pre-wrap break-all border border-white/10">
+        <pre className="mt-2 p-3 bg-[var(--color-bg-base)] chamfer-4 text-[var(--color-status-active)] text-xs overflow-x-auto whitespace-pre-wrap break-all border border-white/10">
           {JSON.stringify(data, null, 2)}
         </pre>
       )}
@@ -142,10 +142,10 @@ function BatchesTab() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-zinc-100/40">EDI 837 batch history</p>
+        <p className="text-xs text-[var(--color-text-primary)]/40">EDI 837 batch history</p>
         <button
           onClick={() => { setShowGenModal(true); setGenResult(null); setGenError(''); }}
-          className="px-4 py-1.5 chamfer-4 bg-[#FF4D00]/20 border border-orange/40 text-[#FF4D00] text-xs font-semibold hover:bg-[#FF4D00]/30 transition-colors"
+          className="px-4 py-1.5 chamfer-4 bg-[var(--q-orange)]/20 border border-orange/40 text-[var(--q-orange)] text-xs font-semibold hover:bg-[var(--q-orange)]/30 transition-colors"
         >
           + Generate New Batch
         </button>
@@ -156,26 +156,26 @@ function BatchesTab() {
         <div className="p-3 chamfer-4 bg-red/10 border border-red/30 text-red text-xs">{error}</div>
       )}
       {!loading && !error && (
-        <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 overflow-hidden">
+        <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 overflow-hidden">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border-DEFAULT">
                 {['Batch ID', 'Created At', 'Claims', 'Status', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-micro font-bold text-zinc-100/40 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left text-micro font-bold text-[var(--color-text-primary)]/40 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {batches.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-zinc-100/30">No batches found</td>
+                  <td colSpan={5} className="px-4 py-8 text-center text-[var(--color-text-primary)]/30">No batches found</td>
                 </tr>
               )}
               {batches.map((b) => (
-                <tr key={b.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02] transition-colors">
-                  <td className="px-4 py-3 font-mono text-zinc-100/70">{b.id.length > 16 ? b.id.slice(0, 8) + '…' + b.id.slice(-4) : b.id}</td>
-                  <td className="px-4 py-3 text-zinc-100/50">{b.created_at ? new Date(b.created_at).toLocaleString() : 'N/A'}</td>
-                  <td className="px-4 py-3 text-zinc-100/70">{b.claim_count ?? b.claim_ids?.length ?? 'N/A'}</td>
+                <tr key={b.id} className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02] transition-colors">
+                  <td className="px-4 py-3 font-mono text-[var(--color-text-primary)]/70">{b.id.length > 16 ? b.id.slice(0, 8) + '…' + b.id.slice(-4) : b.id}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-primary)]/50">{b.created_at ? new Date(b.created_at).toLocaleString() : 'N/A'}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-primary)]/70">{b.claim_count ?? b.claim_ids?.length ?? 'N/A'}</td>
                   <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -189,7 +189,7 @@ function BatchesTab() {
                       </a>
                       <button
                         onClick={() => setDrawerBatch(b)}
-                        className="px-2.5 py-1 chamfer-4 bg-zinc-950/5 border border-white/10 text-zinc-100/60 text-body font-semibold hover:bg-zinc-950/10 transition-colors"
+                        className="px-2.5 py-1 chamfer-4 bg-[var(--color-bg-base)]/5 border border-white/10 text-[var(--color-text-primary)]/60 text-body font-semibold hover:bg-[var(--color-bg-base)]/10 transition-colors"
                       >
                         View Detail
                       </button>
@@ -205,79 +205,87 @@ function BatchesTab() {
       {/* Detail Drawer */}
       {drawerBatch && (
         <div className="fixed inset-0 z-50 flex" onClick={() => setDrawerBatch(null)}>
-          <div className="flex-1 bg-black/60" />
+          <div className="flex-1 bg-[var(--color-bg-base)]/60" />
           <div
-            className="w-[480px] h-full bg-[#050505] border-l border-border-DEFAULT overflow-y-auto p-6 space-y-5"
+            className="w-[480px] h-full bg-[var(--color-bg-base)] border-l border-border-DEFAULT overflow-y-auto p-6 space-y-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-zinc-100">Batch Detail</h3>
-              <button onClick={() => setDrawerBatch(null)} className="text-zinc-100/40 hover:text-zinc-100 text-lg leading-none">&times;</button>
-            </div>
-            <div className="space-y-2">
-              {[
-                ['ID', drawerBatch.id],
-                ['Status', ''],
-                ['Created', drawerBatch.created_at ? new Date(drawerBatch.created_at).toLocaleString() : 'N/A'],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center gap-2">
-                  <span className="text-micro text-zinc-100/40 uppercase w-20 shrink-0">{label}</span>
-                  {label === 'Status' ? <StatusBadge status={drawerBatch.status} /> : <span className="text-xs font-mono text-zinc-100/70 break-all">{value}</span>}
-                </div>
-              ))}
-            </div>
-            {(drawerBatch.claim_ids?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
-              <div>
-                <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Claim IDs ({drawerBatch.claim_ids!.length})</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {drawerBatch.claim_ids!.map((cid) => (
-                    <span key={cid} className="px-2 py-0.5 chamfer-4 bg-zinc-950/5 border border-white/10 text-body font-mono text-zinc-100/60">{cid}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {(drawerBatch.validation_errors?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
-              <div>
-                <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Validation Errors</p>
-                <ul className="space-y-1">
-                  {drawerBatch.validation_errors!.map((err, i) => (
-                    <li key={i} className="text-xs text-red bg-red/5 border border-red/20 chamfer-4 px-3 py-1.5">{err}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {drawerBatch.metadata && Object.keys(drawerBatch.metadata).length > 0 && (
-              <div>
-                <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Metadata</p>
-                <pre className="p-3 bg-black chamfer-4 text-green-400 text-xs overflow-x-auto whitespace-pre-wrap break-all border border-white/10">
-                  {JSON.stringify(drawerBatch.metadata, null, 2)}
-                </pre>
-              </div>
-            )}
+            {(() => {
+              const claimIds = Array.isArray(drawerBatch.claim_ids) ? drawerBatch.claim_ids : [];
+              const validationErrors = Array.isArray(drawerBatch.validation_errors) ? drawerBatch.validation_errors : [];
+              return (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Batch Detail</h3>
+                    <button onClick={() => setDrawerBatch(null)} className="text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)] text-lg leading-none">&times;</button>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      ['ID', drawerBatch.id],
+                      ['Status', ''],
+                      ['Created', drawerBatch.created_at ? new Date(drawerBatch.created_at).toLocaleString() : 'N/A'],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <span className="text-micro text-[var(--color-text-primary)]/40 uppercase w-20 shrink-0">{label}</span>
+                        {label === 'Status' ? <StatusBadge status={drawerBatch.status} /> : <span className="text-xs font-mono text-[var(--color-text-primary)]/70 break-all">{value}</span>}
+                      </div>
+                    ))}
+                  </div>
+                  {claimIds.length > 0 && (
+                    <div>
+                      <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Claim IDs ({claimIds.length})</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {claimIds.map((cid) => (
+                          <span key={cid} className="px-2 py-0.5 chamfer-4 bg-[var(--color-bg-base)]/5 border border-white/10 text-body font-mono text-[var(--color-text-primary)]/60">{cid}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {validationErrors.length > 0 && (
+                    <div>
+                      <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Validation Errors</p>
+                      <ul className="space-y-1">
+                        {validationErrors.map((err, i) => (
+                          <li key={i} className="text-xs text-red bg-red/5 border border-red/20 chamfer-4 px-3 py-1.5">{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {drawerBatch.metadata && Object.keys(drawerBatch.metadata).length > 0 && (
+                    <div>
+                      <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Metadata</p>
+                      <pre className="p-3 bg-[var(--color-bg-base)] chamfer-4 text-[var(--color-status-active)] text-xs overflow-x-auto whitespace-pre-wrap break-all border border-white/10">
+                        {JSON.stringify(drawerBatch.metadata, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
 
       {/* Generate Modal */}
       {showGenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowGenModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg-base)]/70" onClick={() => setShowGenModal(false)}>
           <div
-            className="w-[480px] bg-[#050505] border border-border-DEFAULT chamfer-4 p-6 space-y-4"
+            className="w-[480px] bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-zinc-100">Generate New EDI Batch</h3>
-              <button onClick={() => setShowGenModal(false)} className="text-zinc-100/40 hover:text-zinc-100 text-lg leading-none">&times;</button>
+              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Generate New EDI Batch</h3>
+              <button onClick={() => setShowGenModal(false)} className="text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)] text-lg leading-none">&times;</button>
             </div>
             <form onSubmit={handleGenerate} className="space-y-3">
               <div>
-                <label className="block text-micro text-zinc-100/40 uppercase tracking-wider mb-1">Claim IDs (comma-separated)</label>
+                <label className="block text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-1">Claim IDs (comma-separated)</label>
                 <textarea
                   value={genForm.claim_ids_raw}
                   onChange={(e) => setGenForm((f) => ({ ...f, claim_ids_raw: e.target.value }))}
                   rows={3}
                   placeholder="claim-001, claim-002, ..."
-                  className="w-full bg-black/30 border border-white/10 chamfer-4 px-3 py-2 text-xs text-zinc-100/80 placeholder-white/20 focus:outline-none focus:border-orange/50 resize-none"
+                  className="w-full bg-[var(--color-bg-base)]/30 border border-white/10 chamfer-4 px-3 py-2 text-xs text-[var(--color-text-primary)]/80 placeholder-white/20 focus:outline-none focus:border-orange/50 resize-none"
                 />
               </div>
               {[
@@ -286,13 +294,13 @@ function BatchesTab() {
                 { key: 'ein' as const, label: 'Submitter EIN', placeholder: '12-3456789' },
               ].map((field) => (
                 <div key={field.key}>
-                  <label className="block text-micro text-zinc-100/40 uppercase tracking-wider mb-1">{field.label}</label>
+                  <label className="block text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-1">{field.label}</label>
                   <input
                     type="text"
                     value={genForm[field.key]}
                     onChange={(e) => setGenForm((f) => ({ ...f, [field.key]: e.target.value }))}
                     placeholder={field.placeholder}
-                    className="w-full bg-black/30 border border-white/10 chamfer-4 px-3 py-2 text-xs text-zinc-100/80 placeholder-white/20 focus:outline-none focus:border-orange/50"
+                    className="w-full bg-[var(--color-bg-base)]/30 border border-white/10 chamfer-4 px-3 py-2 text-xs text-[var(--color-text-primary)]/80 placeholder-white/20 focus:outline-none focus:border-orange/50"
                   />
                 </div>
               ))}
@@ -300,23 +308,23 @@ function BatchesTab() {
                 <div className="p-2 chamfer-4 bg-red/10 border border-red/30 text-red text-xs">{genError}</div>
               )}
               {genResult && (
-                <div className="p-3 chamfer-4 bg-status-active/10 border border-status-active/30 text-status-active text-xs space-y-1">
+                <div className="p-3 chamfer-4 bg-status-active/10 border border-status-active/30 text-[var(--color-status-active)] text-xs space-y-1">
                   <p className="font-semibold">Batch generated successfully</p>
-                  <p className="font-mono text-micro text-zinc-100/50">ID: {genResult.id}</p>
+                  <p className="font-mono text-micro text-[var(--color-text-primary)]/50">ID: {genResult.id}</p>
                 </div>
               )}
               <div className="flex gap-2 pt-1">
                 <button
                   type="submit"
                   disabled={genLoading}
-                  className="flex-1 py-2 chamfer-4 bg-[#FF4D00]/20 border border-orange/40 text-[#FF4D00] text-xs font-semibold hover:bg-[#FF4D00]/30 transition-colors disabled:opacity-40"
+                  className="flex-1 py-2 chamfer-4 bg-[var(--q-orange)]/20 border border-orange/40 text-[var(--q-orange)] text-xs font-semibold hover:bg-[var(--q-orange)]/30 transition-colors disabled:opacity-40"
                 >
                   {genLoading ? 'Generating...' : 'Generate Batch'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowGenModal(false)}
-                  className="px-4 py-2 chamfer-4 bg-zinc-950/5 border border-white/10 text-zinc-100/50 text-xs font-semibold hover:bg-zinc-950/10 transition-colors"
+                  className="px-4 py-2 chamfer-4 bg-[var(--color-bg-base)]/5 border border-white/10 text-[var(--color-text-primary)]/50 text-xs font-semibold hover:bg-[var(--color-bg-base)]/10 transition-colors"
                 >
                   Cancel
                 </button>
@@ -367,38 +375,38 @@ function IngestCard({ config }: { config: typeof INGEST_CONFIG[number] }) {
   }
 
   return (
-    <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-5 flex flex-col gap-4">
+    <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-5 flex flex-col gap-4">
       <div>
-        <h3 className="text-sm font-bold text-zinc-100">{config.title}</h3>
-        <p className="text-xs text-zinc-100/40 mt-1 leading-relaxed">{config.description}</p>
+        <h3 className="text-sm font-bold text-[var(--color-text-primary)]">{config.title}</h3>
+        <p className="text-xs text-[var(--color-text-primary)]/40 mt-1 leading-relaxed">{config.description}</p>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 flex-1">
         <div className="flex-1">
-          <label className="block text-micro text-zinc-100/40 uppercase tracking-wider mb-1">X12 Content</label>
+          <label className="block text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-1">X12 Content</label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={6}
             placeholder="ISA*00*          *00*..."
-            className="w-full bg-black/30 border border-white/10 chamfer-4 px-3 py-2 text-xs font-mono text-zinc-100/80 placeholder-white/20 focus:outline-none focus:border-orange/50 resize-y"
+            className="w-full bg-[var(--color-bg-base)]/30 border border-white/10 chamfer-4 px-3 py-2 text-xs font-mono text-[var(--color-text-primary)]/80 placeholder-white/20 focus:outline-none focus:border-orange/50 resize-y"
           />
         </div>
         {config.hasBatchId && (
           <div>
-            <label className="block text-micro text-zinc-100/40 uppercase tracking-wider mb-1">Batch ID (optional)</label>
+            <label className="block text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-1">Batch ID (optional)</label>
             <input
               type="text"
               value={batchId}
               onChange={(e) => setBatchId(e.target.value)}
               placeholder="batch-uuid"
-              className="w-full bg-black/30 border border-white/10 chamfer-4 px-3 py-2 text-xs text-zinc-100/80 placeholder-white/20 focus:outline-none focus:border-orange/50"
+              className="w-full bg-[var(--color-bg-base)]/30 border border-white/10 chamfer-4 px-3 py-2 text-xs text-[var(--color-text-primary)]/80 placeholder-white/20 focus:outline-none focus:border-orange/50"
             />
           </div>
         )}
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="py-2 chamfer-4 bg-[#FF4D00]/20 border border-orange/40 text-[#FF4D00] text-xs font-semibold hover:bg-[#FF4D00]/30 transition-colors disabled:opacity-40"
+          className="py-2 chamfer-4 bg-[var(--q-orange)]/20 border border-orange/40 text-[var(--q-orange)] text-xs font-semibold hover:bg-[var(--q-orange)]/30 transition-colors disabled:opacity-40"
         >
           {loading ? 'Submitting...' : `Submit ${config.type}`}
         </button>
@@ -435,11 +443,11 @@ function IngestTab() {
 function OverallStatusChip({ status }: { status?: string }) {
   const s = (status ?? '').toLowerCase();
   const map: Record<string, string> = {
-    paid: 'bg-status-active/20 text-status-active border-status-active/30',
+    paid: 'bg-status-active/20 text-[var(--color-status-active)] border-status-active/30',
     denied: 'bg-red/20 text-red border-red/30',
     pending: 'bg-status-warning/20 text-status-warning border-status-warning/30',
   };
-  const cls = map[s] ?? 'bg-zinc-950/10 text-zinc-100/50 border-white/10';
+  const cls = map[s] ?? 'bg-[var(--color-bg-base)]/10 text-[var(--color-text-primary)]/50 border-white/10';
   return (
     <span className={`inline-flex items-center px-3 py-1 chamfer-4 text-xs font-bold uppercase border ${cls}`}>
       {status ?? 'unknown'}
@@ -470,6 +478,8 @@ function ExplainTab() {
   }
 
   const explanation = data?.explanation;
+  const adjustmentReasons = Array.isArray(explanation?.adjustment_reasons) ? explanation.adjustment_reasons : [];
+  const recommendedActions = Array.isArray(explanation?.recommended_actions) ? explanation.recommended_actions : [];
 
   return (
     <div className="max-w-2xl space-y-5">
@@ -479,12 +489,12 @@ function ExplainTab() {
           value={claimId}
           onChange={(e) => setClaimId(e.target.value)}
           placeholder="Enter Claim ID..."
-          className="flex-1 bg-[#050505] border border-border-DEFAULT chamfer-4 px-4 py-2 text-sm text-zinc-100/80 placeholder-white/20 focus:outline-none focus:border-orange/50"
+          className="flex-1 bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 px-4 py-2 text-sm text-[var(--color-text-primary)]/80 placeholder-white/20 focus:outline-none focus:border-orange/50"
         />
         <button
           type="submit"
           disabled={loading || !claimId.trim()}
-          className="px-5 py-2 chamfer-4 bg-[#FF4D00]/20 border border-orange/40 text-[#FF4D00] text-sm font-semibold hover:bg-[#FF4D00]/30 transition-colors disabled:opacity-40 whitespace-nowrap"
+          className="px-5 py-2 chamfer-4 bg-[var(--q-orange)]/20 border border-orange/40 text-[var(--q-orange)] text-sm font-semibold hover:bg-[var(--q-orange)]/30 transition-colors disabled:opacity-40 whitespace-nowrap"
         >
           {loading ? 'Analyzing...' : 'Get AI Explanation'}
         </button>
@@ -495,22 +505,22 @@ function ExplainTab() {
       )}
 
       {explanation && (
-        <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 p-5 space-y-5">
+        <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-5 space-y-5">
           {/* Overall Status */}
           <div className="flex items-center gap-3">
-            <span className="text-xs text-zinc-100/40 uppercase tracking-wider">Overall Status</span>
+            <span className="text-xs text-[var(--color-text-primary)]/40 uppercase tracking-wider">Overall Status</span>
             <OverallStatusChip status={explanation.overall_status} />
           </div>
 
           {/* Adjustment Reasons */}
-          {(explanation.adjustment_reasons?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
+          {adjustmentReasons.length > 0 && (
             <div>
-              <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Adjustment Reasons</p>
+              <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Adjustment Reasons</p>
               <div className="space-y-2">
-                {explanation.adjustment_reasons!.map((r, i) => (
-                  <div key={i} className="flex gap-3 bg-zinc-950/[0.03] border border-white/[0.06] chamfer-4 px-3 py-2">
+                {adjustmentReasons.map((r, i) => (
+                  <div key={i} className="flex gap-3 bg-[var(--color-bg-base)]/[0.03] border border-white/[0.06] chamfer-4 px-3 py-2">
                     <span className="text-body font-bold font-mono text-status-warning shrink-0 mt-px">{r.code}</span>
-                    <span className="text-xs text-zinc-100/70">{r.description}</span>
+                    <span className="text-xs text-[var(--color-text-primary)]/70">{r.description}</span>
                   </div>
                 ))}
               </div>
@@ -520,21 +530,21 @@ function ExplainTab() {
           {/* Denial Analysis */}
           {explanation.denial_analysis && (
             <div>
-              <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Denial Analysis</p>
-              <p className="text-xs text-zinc-100/70 leading-relaxed bg-red/5 border border-red/10 chamfer-4 px-3 py-2">
+              <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Denial Analysis</p>
+              <p className="text-xs text-[var(--color-text-primary)]/70 leading-relaxed bg-red/5 border border-red/10 chamfer-4 px-3 py-2">
                 {explanation.denial_analysis}
               </p>
             </div>
           )}
 
           {/* Recommended Actions */}
-          {(explanation.recommended_actions?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
+          {recommendedActions.length > 0 && (
             <div>
-              <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Recommended Actions</p>
+              <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Recommended Actions</p>
               <ol className="space-y-2">
-                {explanation.recommended_actions!.map((action, i) => (
-                  <li key={i} className="flex gap-3 text-xs text-zinc-100/70">
-                    <span className="w-5 h-5 shrink-0  bg-[#FF4D00]/20 border border-orange/30 text-[#FF4D00] flex items-center justify-center text-micro font-bold">
+                {recommendedActions.map((action, i) => (
+                  <li key={i} className="flex gap-3 text-xs text-[var(--color-text-primary)]/70">
+                    <span className="w-5 h-5 shrink-0  bg-[var(--q-orange)]/20 border border-orange/30 text-[var(--q-orange)] flex items-center justify-center text-micro font-bold">
                       {i + 1}
                     </span>
                     <span className="leading-relaxed mt-px">{action}</span>
@@ -547,8 +557,8 @@ function ExplainTab() {
           {/* Next Steps */}
           {explanation.next_steps && (
             <div>
-              <p className="text-micro text-zinc-100/40 uppercase tracking-wider mb-2">Next Steps</p>
-              <p className="text-xs text-zinc-100/70 leading-relaxed bg-system-billing/5 border border-system-billing/10 chamfer-4 px-3 py-2">
+              <p className="text-micro text-[var(--color-text-primary)]/40 uppercase tracking-wider mb-2">Next Steps</p>
+              <p className="text-xs text-[var(--color-text-primary)]/70 leading-relaxed bg-system-billing/5 border border-system-billing/10 chamfer-4 px-3 py-2">
                 {explanation.next_steps}
               </p>
             </div>

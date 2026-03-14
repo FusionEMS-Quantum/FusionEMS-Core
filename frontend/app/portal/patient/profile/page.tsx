@@ -38,18 +38,18 @@ function FieldRow({ label, value, editing, name, onChange, type = 'text' }: {
   type?: string;
 }) {
   return (
-    <div className="py-3 border-b border-zinc-900/50 flex items-center gap-4">
-      <div className="w-36 text-[10px] font-bold tracking-[0.15em] text-zinc-600 uppercase flex-shrink-0">{label}</div>
+    <div className="py-3 border-b border-[var(--color-border-subtle)]/50 flex items-center gap-4">
+      <div className="w-36 text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-muted)] uppercase flex-shrink-0">{label}</div>
       {editing ? (
         <input
           type={type}
           value={value}
           onChange={e => onChange(name, e.target.value)}
-          className="flex-1 bg-zinc-900 border border-zinc-700 text-zinc-200 text-sm px-3 py-1.5 outline-none focus:border-[#FF4D00]/50 transition-colors"
+          className="flex-1 bg-[var(--color-bg-panel)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] text-sm px-3 py-1.5 outline-none focus:border-[var(--q-orange)]/50 transition-colors"
           style={{ clipPath: clip6 }}
         />
       ) : (
-        <span className="text-sm text-zinc-300 flex-1">{value || <span className="text-zinc-700 italic">Not set</span>}</span>
+        <span className="text-sm text-[var(--color-text-secondary)] flex-1">{value || <span className="text-[var(--color-text-disabled)] italic">Not set</span>}</span>
       )}
     </div>
   );
@@ -62,14 +62,14 @@ function ToggleRow({ label, description, checked, onChange }: {
   onChange: (_v: boolean) => void;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-3 border-b border-zinc-900/50">
+    <div className="flex items-start justify-between gap-4 py-3 border-b border-[var(--color-border-subtle)]/50">
       <div>
-        <div className="text-sm font-semibold text-zinc-200">{label}</div>
-        <div className="text-xs text-zinc-600 mt-0.5">{description}</div>
+        <div className="text-sm font-semibold text-[var(--color-text-primary)]">{label}</div>
+        <div className="text-xs text-[var(--color-text-muted)] mt-0.5">{description}</div>
       </div>
       <button
         onClick={() => onChange(!checked)}
-        className={`flex-shrink-0 w-10 h-5 relative transition-colors ${checked ? 'bg-[#FF4D00]' : 'bg-zinc-800'}`}
+        className={`flex-shrink-0 w-10 h-5 relative transition-colors ${checked ? 'bg-[var(--q-orange)]' : 'bg-[var(--color-bg-raised)]'}`}
         style={{ clipPath: clip6 }}
         role="switch"
         aria-checked={checked}
@@ -143,7 +143,7 @@ export default function ProfilePage() {
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-[#0A0A0B] border border-zinc-900 h-16 animate-pulse" style={{ clipPath: clip10 }} />
+            <div key={i} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-subtle)] h-16 animate-pulse" style={{ clipPath: clip10 }} />
           ))}
         </div>
       </div>
@@ -156,13 +156,13 @@ export default function ProfilePage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-[3px] h-6 bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)]" />
+            <div className="w-[3px] h-6 bg-[var(--q-orange)] shadow-[0_0_8px_rgba(255,106,0,0.6)]" />
             <h1 className="text-xl font-black tracking-[0.12em] text-white uppercase">My Profile</h1>
           </div>
-          <p className="text-sm text-zinc-500 ml-5">Manage your contact information and communication preferences.</p>
+          <p className="text-sm text-[var(--color-text-muted)] ml-5">Manage your contact information and communication preferences.</p>
         </div>
         {saved && (
-          <span className="text-[10px] font-bold tracking-widest uppercase text-emerald-400 flex items-center gap-1.5">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-status-active)] flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             Saved
           </span>
@@ -170,19 +170,19 @@ export default function ProfilePage() {
       </div>
 
       {fetchError && (
-        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+        <div className="mb-6 px-4 py-3 bg-[var(--color-brand-red)]/8 border border-[var(--color-brand-red)]/20 text-sm text-[var(--color-brand-red)]" style={{ clipPath: clip6 }}>
           Unable to load profile. Please refresh the page or contact billing support.
         </div>
       )}
 
       {/* Personal info */}
-      <div className="bg-[#0A0A0B] border border-zinc-800 mb-6" style={{ clipPath: clip10 }}>
-        <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-900">
-          <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase">Personal Information</span>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] mb-6" style={{ clipPath: clip10 }}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">Personal Information</span>
           {!editing ? (
             <button
               onClick={() => setEditing(true)}
-              className="text-[10px] font-bold tracking-widest uppercase text-[#FF4D00] hover:text-[#FF6B35] transition-colors flex items-center gap-1.5"
+              className="text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)] hover:text-[#FF6B35] transition-colors flex items-center gap-1.5"
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               Edit
@@ -191,14 +191,14 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleCancel}
-                className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-1.5 h-7 px-3 bg-[#FF4D00] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 h-7 px-3 bg-[var(--q-orange)] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-50"
                 style={{ clipPath: clip6 }}
               >
                 {saving && <div className="w-2.5 h-2.5 border border-black border-t-transparent rounded-full animate-spin" />}
@@ -218,9 +218,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Mailing address */}
-      <div className="bg-[#0A0A0B] border border-zinc-800 mb-6" style={{ clipPath: clip10 }}>
-        <div className="px-5 py-3 border-b border-zinc-900">
-          <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase">Mailing Address</span>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] mb-6" style={{ clipPath: clip10 }}>
+        <div className="px-5 py-3 border-b border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">Mailing Address</span>
         </div>
         <div className="px-5 py-2">
           <FieldRow label="Street"    value={draft.address?.street ?? ''} editing={editing} name="address.street" onChange={handleFieldChange} />
@@ -231,9 +231,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Communication preferences */}
-      <div className="bg-[#0A0A0B] border border-zinc-800 mb-6" style={{ clipPath: clip10 }}>
-        <div className="px-5 py-3 border-b border-zinc-900">
-          <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase">Communication Preferences</span>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] mb-6" style={{ clipPath: clip10 }}>
+        <div className="px-5 py-3 border-b border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">Communication Preferences</span>
         </div>
         <div className="px-5 py-2">
           <ToggleRow
@@ -262,11 +262,11 @@ export default function ProfilePage() {
           />
         </div>
         {(editing) && (
-          <div className="px-5 py-3 border-t border-zinc-900 text-right">
+          <div className="px-5 py-3 border-t border-[var(--color-border-subtle)] text-right">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="h-7 px-4 bg-[#FF4D00] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-50"
+              className="h-7 px-4 bg-[var(--q-orange)] text-black text-[10px] font-black tracking-widest uppercase hover:bg-[#E64500] transition-colors disabled:opacity-50"
               style={{ clipPath: clip6 }}
             >
               {saving ? 'Saving...' : 'Save Preferences'}
@@ -276,31 +276,31 @@ export default function ProfilePage() {
       </div>
 
       {/* Portal security */}
-      <div className="bg-[#0A0A0B] border border-zinc-800" style={{ clipPath: clip10 }}>
-        <div className="px-5 py-3 border-b border-zinc-900">
-          <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase">Portal Security</span>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)]" style={{ clipPath: clip10 }}>
+        <div className="px-5 py-3 border-b border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">Portal Security</span>
         </div>
         <div className="px-5 py-4 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold text-zinc-200">Password</div>
-              <div className="text-xs text-zinc-600 mt-0.5">Update your portal login password.</div>
+              <div className="text-sm font-semibold text-[var(--color-text-primary)]">Password</div>
+              <div className="text-xs text-[var(--color-text-muted)] mt-0.5">Update your portal login password.</div>
             </div>
             <Link
               href="/portal/patient/reset-password"
-              className="text-[10px] font-bold tracking-widest uppercase text-[#FF4D00] hover:underline"
+              className="text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)] hover:underline"
             >
               Change Password →
             </Link>
           </div>
-          <div className="border-t border-zinc-900/50 pt-3 flex items-center justify-between">
+          <div className="border-t border-[var(--color-border-subtle)]/50 pt-3 flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold text-zinc-200">Account Access</div>
-              <div className="text-xs text-zinc-600 mt-0.5">Sign out of the patient billing portal.</div>
+              <div className="text-sm font-semibold text-[var(--color-text-primary)]">Account Access</div>
+              <div className="text-xs text-[var(--color-text-muted)] mt-0.5">Sign out of the patient billing portal.</div>
             </div>
             <Link
               href="/portal/patient/login"
-              className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-zinc-200 transition-colors border border-zinc-800 hover:border-zinc-600 px-3 py-1.5"
+              className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] px-3 py-1.5"
               style={{ clipPath: clip6 }}
             >
               Sign Out
@@ -310,9 +310,9 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-6 text-center">
-        <p className="text-[10px] text-zinc-700 font-mono">
+        <p className="text-[10px] text-[var(--color-text-disabled)] font-mono">
           For name corrections or HIPAA-related requests, contact{' '}
-          <Link href="/portal/patient/support" className="text-zinc-500 hover:text-zinc-400 underline">billing support</Link>.
+          <Link href="/portal/patient/support" className="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] underline">billing support</Link>.
         </p>
       </div>
     </div>

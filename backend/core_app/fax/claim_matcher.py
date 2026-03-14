@@ -264,48 +264,53 @@ class ClaimMatcher:
         actor: str = "auto",
     ) -> dict:
         now = datetime.now(UTC).isoformat()
+
+        # Domination tables are protected by RLS and require explicit tenant context.
         with contextlib.suppress(Exception):
             self.db.execute(
-                text(
-                    "INSERT INTO claim_documents "
-                    "(fax_id, claim_id, attachment_type, attached_by, attached_at, tenant_id) "
-                    "VALUES (:fax_id, :claim_id, :attachment_type, :actor, :now, :tid) "
-                    "ON CONFLICT (fax_id, claim_id) DO UPDATE SET "
-                    "attachment_type = EXCLUDED.attachment_type, attached_at = EXCLUDED.attached_at"
-                ),
-                {
-                    "fax_id": fax_id,
-                    "claim_id": claim_id,
-                    "attachment_type": attachment_type,
-                    "actor": actor,
-                    "now": now,
-                    "tid": self.tenant_id,
-                },
+                text("SELECT set_config('app.tenant_id', :tid, true)"),
+                {"tid": str(self.tenant_id)},
             )
 
-        self.db.execute(
-            text(
-                "UPDATE fax_documents "
-                "SET status = 'attached', matched_claim_id = :claim_id, updated_at = :now "
-                "WHERE fax_id = :fax_id"
-            ),
-            {"claim_id": claim_id, "now": now, "fax_id": fax_id},
-        )
+        base = {
+            "fax_id": fax_id,
+            "claim_id": claim_id,
+            "attachment_type": attachment_type,
+            "attached_by": actor,
+            "attached_at": now,
+        }
 
-        with contextlib.suppress(Exception):
+        existing = (
             self.db.execute(
                 text(
-                    "INSERT INTO document_audit_events "
-                    "(entity_type, entity_id, action, actor, tenant_id, occurred_at, meta) "
-                    "VALUES ('fax_document', :fax_id, 'attached_to_claim', :actor, :tid, :now, :meta::jsonb)"
+                    "SELECT id FROM claim_documents "
+                    "WHERE tenant_id = :tid AND deleted_at IS NULL "
+                    "AND data->>'fax_id' = :fid AND data->>'claim_id' = :cid "
+                    "ORDER BY updated_at DESC LIMIT 1"
+                ),
+                {"tid": str(self.tenant_id), "fid": fax_id, "cid": claim_id},
+            )
+            .mappings()
+            .first()
+        )
+
+        if existing and existing.get("id"):
+            self.db.execute(
+                text(
+                    "UPDATE claim_documents "
+                    "SET data = data || :patch::jsonb, version = version + 1, updated_at = now() "
+                    "WHERE tenant_id = :tid AND id = :id"
                 ),
                 {
-                    "fax_id": fax_id,
-                    "actor": actor,
-                    "tid": self.tenant_id,
-                    "now": now,
-                    "meta": json.dumps({"claim_id": claim_id, "attachment_type": attachment_type}),
+                    "tid": str(self.tenant_id),
+                    "id": str(existing["id"]),
+                    "patch": json.dumps(base, default=str),
                 },
+            )
+        else:
+            self.db.execute(
+                text("INSERT INTO claim_documents (tenant_id, data) VALUES (:tid, :data::jsonb)"),
+                {"tid": str(self.tenant_id), "data": json.dumps(base, default=str)},
             )
 
         self.db.commit()

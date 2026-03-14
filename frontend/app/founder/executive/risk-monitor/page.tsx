@@ -101,10 +101,10 @@ export default function RiskMonitorPage() {
   useEffect(() => { loadData(); }, []);
 
   const riskColor = (level?: string) => {
-    if (level === 'critical') return 'text-red-400';
-    if (level === 'high') return 'text-orange-400';
-    if (level === 'medium') return 'text-amber-400';
-    return 'text-emerald-400';
+    if (level === 'critical') return 'text-[var(--color-brand-red)]';
+    if (level === 'high') return 'text-[var(--q-orange)]';
+    if (level === 'medium') return 'text-[var(--q-yellow)]';
+    return 'text-[var(--color-status-active)]';
   };
 
   const formatCents = (cents: number | undefined) =>
@@ -112,78 +112,78 @@ export default function RiskMonitorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+      <div className="min-h-screen bg-[var(--color-bg-base)] text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-[var(--color-status-active)]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-white p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/founder/executive" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm mb-2">
+            <Link href="/founder/executive" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 text-sm mb-2">
               <ArrowLeft className="w-4 h-4" /> Back to Executive
             </Link>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <ShieldAlert className="w-8 h-8 text-red-400" />
+              <ShieldAlert className="w-8 h-8 text-[var(--color-brand-red)]" />
               Risk Monitor
             </h1>
-            <p className="text-gray-400 mt-1">Real-time risk intelligence — churn, revenue, compliance, fraud</p>
+            <p className="text-[var(--color-text-secondary)] mt-1">Real-time risk intelligence — churn, revenue, compliance, fraud</p>
           </div>
-          <button onClick={loadData} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2 text-sm">
+          <button onClick={loadData} className="px-4 py-2 bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-overlay)] chamfer-8 flex items-center gap-2 text-sm">
             <RefreshCw className="w-4 h-4" /> Refresh
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-            <span className="text-red-300">{error}</span>
+          <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-[var(--color-brand-red)]" />
+            <span className="text-[var(--color-brand-red)]">{error}</span>
           </div>
         )}
 
         {/* Risk Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
-            <Users className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-amber-400">{churn.length}</div>
-            <div className="text-gray-400 text-sm">Churn Signals</div>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5 text-center">
+            <Users className="w-6 h-6 text-[var(--q-yellow)] mx-auto mb-2" />
+            <div className="text-2xl font-bold text-[var(--q-yellow)]">{churn.length}</div>
+            <div className="text-[var(--color-text-secondary)] text-sm">Churn Signals</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
-            <AlertTriangle className="w-6 h-6 text-red-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-red-400">{alerts.length}</div>
-            <div className="text-gray-400 text-sm">Active Alerts</div>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5 text-center">
+            <AlertTriangle className="w-6 h-6 text-[var(--color-brand-red)] mx-auto mb-2" />
+            <div className="text-2xl font-bold text-[var(--color-brand-red)]">{alerts.length}</div>
+            <div className="text-[var(--color-text-secondary)] text-sm">Active Alerts</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
-            <TrendingDown className="w-6 h-6 text-orange-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-orange-400">{marginTenants.length}</div>
-            <div className="text-gray-400 text-sm">High-Risk Tenants</div>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5 text-center">
+            <TrendingDown className="w-6 h-6 text-[var(--q-orange)] mx-auto mb-2" />
+            <div className="text-2xl font-bold text-[var(--q-orange)]">{marginTenants.length}</div>
+            <div className="text-[var(--color-text-secondary)] text-sm">High-Risk Tenants</div>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-center">
-            <Shield className="w-6 h-6 text-violet-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-violet-400">{fraud.length}</div>
-            <div className="text-gray-400 text-sm">Fraud Anomalies</div>
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-5 text-center">
+            <Shield className="w-6 h-6 text-[var(--color-system-compliance)] mx-auto mb-2" />
+            <div className="text-2xl font-bold text-[var(--color-system-compliance)]">{fraud.length}</div>
+            <div className="text-[var(--color-text-secondary)] text-sm">Fraud Anomalies</div>
           </div>
         </div>
 
         {/* Churn Risk */}
         {churn.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Users className="w-5 h-5 text-amber-400" /> Churn Risk Signals
+              <Users className="w-5 h-5 text-[var(--q-yellow)]" /> Churn Risk Signals
             </h2>
             <div className="space-y-2">
               {churn.map((c, i) => (
-                <div key={i} className="flex items-center justify-between bg-gray-800/50 rounded px-4 py-3">
+                <div key={i} className="flex items-center justify-between bg-[var(--color-bg-raised)]/50 rounded px-4 py-3">
                   <div>
                     <span className="font-medium">{c.name ?? c.tenant_id ?? `Signal ${i + 1}`}</span>
-                    {c.signals && <span className="text-gray-400 text-sm ml-3">{c.signals.join(', ')}</span>}
+                    {c.signals && <span className="text-[var(--color-text-secondary)] text-sm ml-3">{c.signals.join(', ')}</span>}
                   </div>
-                  <span className={`font-mono text-sm ${(c.risk_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 70 ? 'text-red-400' : 'text-amber-400'}`}>
-                    {c.risk_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%
+                  <span className={`font-mono text-sm ${(c.risk_score ?? 0) > 70 ? 'text-[var(--color-brand-red)]' : 'text-[var(--q-yellow)]'}`}>
+                    {c.risk_score ?? 0}%
                   </span>
                 </div>
               ))}
@@ -193,13 +193,13 @@ export default function RiskMonitorPage() {
 
         {/* Margin-At-Risk Tenants */}
         {marginTenants.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-orange-400" /> High-Risk Margin Tenants
+              <TrendingDown className="w-5 h-5 text-[var(--q-orange)]" /> High-Risk Margin Tenants
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="text-gray-400 border-b border-gray-800">
+                <thead><tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border-default)]">
                   <th className="text-left py-2">Tenant</th>
                   <th className="text-right py-2">Revenue</th>
                   <th className="text-right py-2">Margin</th>
@@ -208,11 +208,11 @@ export default function RiskMonitorPage() {
                 </tr></thead>
                 <tbody>
                   {marginTenants.map((t, i) => (
-                    <tr key={i} className="border-b border-gray-800/50">
+                    <tr key={i} className="border-b border-[var(--color-border-default)]/50">
                       <td className="py-2">{t.name ?? 'Unknown'}</td>
-                      <td className="py-2 text-right text-emerald-400">{formatCents(t.revenue_cents)}</td>
-                      <td className="py-2 text-right">{t.margin_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
-                      <td className="py-2 text-right text-amber-400">{t.denial_rate_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
+                      <td className="py-2 text-right text-[var(--color-status-active)]">{formatCents(t.revenue_cents)}</td>
+                      <td className="py-2 text-right">{t.margin_pct ?? 0}%</td>
+                      <td className="py-2 text-right text-[var(--q-yellow)]">{t.denial_rate_pct ?? 0}%</td>
                       <td className={`py-2 text-right font-semibold uppercase ${riskColor(t.risk_level)}`}>{t.risk_level}</td>
                     </tr>
                   ))}
@@ -224,11 +224,11 @@ export default function RiskMonitorPage() {
 
         {/* AR Concentration */}
         {arRisk.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4">AR Concentration Risk</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="text-gray-400 border-b border-gray-800">
+                <thead><tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border-default)]">
                   <th className="text-left py-2">Payer</th>
                   <th className="text-right py-2">Exposure</th>
                   <th className="text-right py-2">Concentration</th>
@@ -236,11 +236,11 @@ export default function RiskMonitorPage() {
                 </tr></thead>
                 <tbody>
                   {arRisk.map((a, i) => (
-                    <tr key={i} className="border-b border-gray-800/50">
+                    <tr key={i} className="border-b border-[var(--color-border-default)]/50">
                       <td className="py-2">{a.payer_name ?? 'Unknown'}</td>
-                      <td className="py-2 text-right text-emerald-400">{formatCents(a.exposure_cents)}</td>
-                      <td className="py-2 text-right">{a.concentration_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%</td>
-                      <td className="py-2 text-right text-gray-400">{a.aging_bucket ?? '—'}</td>
+                      <td className="py-2 text-right text-[var(--color-status-active)]">{formatCents(a.exposure_cents)}</td>
+                      <td className="py-2 text-right">{a.concentration_pct ?? 0}%</td>
+                      <td className="py-2 text-right text-[var(--color-text-secondary)]">{a.aging_bucket ?? '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -251,18 +251,18 @@ export default function RiskMonitorPage() {
 
         {/* Fraud Anomalies */}
         {fraud.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] chamfer-8 p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-violet-400" /> Fraud Anomalies
+              <Shield className="w-5 h-5 text-[var(--color-system-compliance)]" /> Fraud Anomalies
             </h2>
             <div className="space-y-2">
               {fraud.map((f, i) => (
-                <div key={i} className="flex items-center justify-between bg-gray-800/50 rounded px-4 py-3">
+                <div key={i} className="flex items-center justify-between bg-[var(--color-bg-raised)]/50 rounded px-4 py-3">
                   <div>
-                    <span className="font-mono text-sm text-gray-400">{f.claim_id ?? '—'}</span>
+                    <span className="font-mono text-sm text-[var(--color-text-secondary)]">{f.claim_id ?? '—'}</span>
                     <span className="ml-3 text-sm">{f.anomaly_type ?? f.detail ?? 'Anomaly detected'}</span>
                   </div>
-                  <span className="text-sm font-mono text-violet-400">{f.confidence != null ? `${(f.confidence * 100).toFixed(0)}%` : '—'}</span>
+                  <span className="text-sm font-mono text-[var(--color-system-compliance)]">{f.confidence != null ? `${(f.confidence * 100).toFixed(0)}%` : '—'}</span>
                 </div>
               ))}
             </div>
@@ -271,10 +271,10 @@ export default function RiskMonitorPage() {
 
         {/* No Risks State */}
         {churn.length === 0 && alerts.length === 0 && marginTenants.length === 0 && fraud.length === 0 && (
-          <div className="bg-gray-900 border border-emerald-800 rounded-lg p-8 text-center">
-            <Shield className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-emerald-400">All Systems Nominal</h3>
-            <p className="text-gray-400 mt-1">No active risk signals detected across all monitored domains.</p>
+          <div className="bg-[var(--color-bg-panel)] border border-emerald-800 chamfer-8 p-8 text-center">
+            <Shield className="w-12 h-12 text-[var(--color-status-active)] mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-[var(--color-status-active)]">All Systems Nominal</h3>
+            <p className="text-[var(--color-text-secondary)] mt-1">No active risk signals detected across all monitored domains.</p>
           </div>
         )}
       </div>

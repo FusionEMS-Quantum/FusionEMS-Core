@@ -19,16 +19,16 @@ type StatusColor = {
 
 const STATUS_COLORS: Record<string, StatusColor> = {
   RED: {
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/40',
-    text: 'text-red-400',
-    dot: 'bg-red-500',
+    bg: 'bg-[var(--color-brand-red)]/10',
+    border: 'border-[var(--color-brand-red)]/40',
+    text: 'text-[var(--color-brand-red)]',
+    dot: 'bg-[var(--color-brand-red)]',
   },
   ORANGE: {
-      bg: 'bg-[rgba(255,77,0,0.10)]',
+      bg: 'bg-[rgba(255,106,0,0.10)]',
     border: 'border-orange-500/40',
-      text: 'text-[#FF4D00]',
-      dot: 'bg-[#FF4D00]',
+      text: 'text-[var(--q-orange)]',
+      dot: 'bg-[var(--q-orange)]',
   },
   YELLOW: {
     bg: 'bg-yellow-500/10',
@@ -37,22 +37,22 @@ const STATUS_COLORS: Record<string, StatusColor> = {
     dot: 'bg-yellow-500',
   },
   BLUE: {
-    bg: 'bg-blue-500/10',
-    border: 'border-blue-500/40',
-    text: 'text-blue-400',
-    dot: 'bg-blue-500',
+    bg: 'bg-[var(--color-status-info)]/10',
+    border: 'border-[var(--color-status-info)]/40',
+    text: 'text-[var(--color-status-info)]',
+    dot: 'bg-[var(--color-status-info)]',
   },
   GREEN: {
-    bg: 'bg-green-500/10',
-    border: 'border-green-500/40',
-    text: 'text-green-400',
-    dot: 'bg-green-500',
+    bg: 'bg-[var(--color-status-active)]/10',
+    border: 'border-[var(--color-status-active)]/40',
+    text: 'text-[var(--color-status-active)]',
+    dot: 'bg-[var(--color-status-active)]',
   },
   GRAY: {
-    bg: 'bg-zinc-500/10',
-    border: 'border-zinc-500/40',
-    text: 'text-zinc-400',
-    dot: 'bg-zinc-500',
+    bg: 'bg-[var(--color-bg-raised)]/10',
+    border: 'border-[var(--color-border-strong)]/40',
+    text: 'text-[var(--color-text-secondary)]',
+    dot: 'bg-[var(--color-bg-raised)]',
   },
 };
 
@@ -123,11 +123,11 @@ function normalizeSeverity(severity: string): SeverityLevel {
 
 function severityTextColor(severity: string): string {
   const normalized = normalizeSeverity(severity);
-  if (normalized === 'BLOCKING') return 'text-red-400';
-  if (normalized === 'HIGH') return 'text-[#FF4D00]';
+  if (normalized === 'BLOCKING') return 'text-[var(--color-brand-red)]';
+  if (normalized === 'HIGH') return 'text-[var(--q-orange)]';
   if (normalized === 'MEDIUM') return 'text-yellow-400';
-  if (normalized === 'LOW') return 'text-blue-400';
-  return 'text-zinc-400';
+  if (normalized === 'LOW') return 'text-[var(--color-status-info)]';
+  return 'text-[var(--color-text-secondary)]';
 }
 
 export default function PlatformCommandCenterPage() {
@@ -190,18 +190,18 @@ export default function PlatformCommandCenterPage() {
   const topPriorityIncidents = useMemo(() => incidents.slice(0, 3), [incidents]);
 
   const scoreClass = useMemo(() => {
-    if (!health) return 'text-zinc-400';
-    if (health.score >= 90) return 'text-green-400';
+    if (!health) return 'text-[var(--color-text-secondary)]';
+    if (health.score >= 90) return 'text-[var(--color-status-active)]';
     if (health.score >= 70) return 'text-yellow-400';
-      if (health.score >= 50) return 'text-[#FF4D00]';
-    return 'text-red-400';
+      if (health.score >= 50) return 'text-[var(--q-orange)]';
+    return 'text-[var(--color-brand-red)]';
   }, [health]);
 
   if (loading && !health) {
     return (
       <div className="p-8 flex items-center gap-3">
-          <div className="w-3 h-3  bg-[#FF4D00] animate-pulse" />
-        <span className="text-sm text-zinc-400">Loading platform command telemetry…</span>
+          <div className="w-3 h-3  bg-[var(--q-orange)] animate-pulse" />
+        <span className="text-sm text-[var(--color-text-secondary)]">Loading platform command telemetry…</span>
       </div>
     );
   }
@@ -209,12 +209,12 @@ export default function PlatformCommandCenterPage() {
   if (!health) {
     return (
       <div className="p-8">
-        <div className="bg-red-500/10 border border-red-500/40 p-6 chamfer-8">
-          <h2 className="text-lg font-bold text-red-400 mb-2">Platform command unavailable</h2>
-          <p className="text-sm text-zinc-300 mb-4">{error || 'No platform data available.'}</p>
+        <div className="bg-[var(--color-brand-red)]/10 border border-[var(--color-brand-red)]/40 p-6 chamfer-8">
+          <h2 className="text-lg font-bold text-[var(--color-brand-red)] mb-2">Platform command unavailable</h2>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">{error || 'No platform data available.'}</p>
           <button
             onClick={() => void refreshAll()}
-            className="px-4 py-2 bg-red-500/20 border border-red-500/40 text-red-300 text-sm hover:bg-red-500/30 transition-colors chamfer-4"
+            className="px-4 py-2 bg-[var(--color-brand-red)]/20 border border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)] text-sm hover:bg-[var(--color-brand-red)]/30 transition-colors chamfer-4"
           >
             Retry
           </button>
@@ -225,25 +225,25 @@ export default function PlatformCommandCenterPage() {
 
   return (
     <div className="p-5 min-h-screen">
-      <div className="pb-3 mb-6 flex justify-between items-end border-b border-zinc-800">
+      <div className="pb-3 mb-6 flex justify-between items-end border-b border-[var(--color-border-default)]">
         <div>
-          <div className="text-micro uppercase tracking-[0.2em] text-zinc-500 mb-1">Domination OS</div>
+          <div className="text-micro uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-1">Domination OS</div>
           <h1 className="text-2xl font-bold text-white">Platform Command Center</h1>
-          <p className="text-sm text-zinc-400 mt-1">Reliability telemetry, incident control, and AI executive guidance</p>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Reliability telemetry, incident control, and AI executive guidance</p>
         </div>
         <div className="text-right flex items-end gap-4">
           <div>
-            <div className="text-micro text-zinc-500 font-mono mb-1">REFRESHED</div>
-            <div className="text-xs text-zinc-400 font-mono">{lastRefresh || '—'}</div>
+            <div className="text-micro text-[var(--color-text-muted)] font-mono mb-1">REFRESHED</div>
+            <div className="text-xs text-[var(--color-text-secondary)] font-mono">{lastRefresh || '—'}</div>
           </div>
           <div>
-            <div className="text-micro text-zinc-500 font-mono mb-1">PLATFORM SCORE</div>
+            <div className="text-micro text-[var(--color-text-muted)] font-mono mb-1">PLATFORM SCORE</div>
             <div className={`text-4xl font-bold font-mono ${scoreClass}`}>{health.score}%</div>
           </div>
           <button
             onClick={() => void refreshAll()}
             disabled={loading}
-            className="px-3 py-1.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs hover:bg-zinc-700 transition-colors chamfer-4 disabled:opacity-50"
+            className="px-3 py-1.5 bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] text-xs hover:bg-[var(--color-bg-overlay)] transition-colors chamfer-4 disabled:opacity-50"
           >
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
@@ -259,24 +259,24 @@ export default function PlatformCommandCenterPage() {
       {(topPriorityIncidents.length > 0 || assistantIssues.length > 0) && (
         <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
           {topPriorityIncidents.map((incident) => (
-            <div key={incident.id} className="bg-zinc-900 border border-zinc-700 p-3 chamfer-4">
+            <div key={incident.id} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-strong)] p-3 chamfer-4">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-micro font-mono font-bold ${severityTextColor(incident.severity)}`}>
                   {incident.severity}
                 </span>
-                <span className="text-micro text-zinc-500">{incident.state}</span>
+                <span className="text-micro text-[var(--color-text-muted)]">{incident.state}</span>
               </div>
               <div className="text-xs text-white">{incident.title}</div>
             </div>
           ))}
 
           {topPriorityIncidents.length < 3 && assistantIssues[0] && (
-            <div className="bg-zinc-900 border border-orange-500/30 p-3 chamfer-4">
+            <div className="bg-[var(--color-bg-panel)] border border-orange-500/30 p-3 chamfer-4">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-micro font-mono font-bold ${severityTextColor(assistantIssues[0].severity)}`}>
                   {assistantIssues[0].severity}
                 </span>
-                <span className="text-micro text-zinc-500">AI ANALYST</span>
+                <span className="text-micro text-[var(--color-text-muted)]">AI ANALYST</span>
               </div>
               <div className="text-xs text-white">{assistantIssues[0].issue}</div>
             </div>
@@ -297,8 +297,8 @@ export default function PlatformCommandCenterPage() {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-zinc-900/60 border border-zinc-800 chamfer-8 p-4">
-              <h3 className="text-micro uppercase tracking-[0.15em] text-zinc-500 mb-3">Service Health Matrix</h3>
+            <div className="bg-[var(--color-bg-panel)]/60 border border-[var(--color-border-default)] chamfer-8 p-4">
+              <h3 className="text-micro uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-3">Service Health Matrix</h3>
               <div className="space-y-2">
                 {health.services.map((service) => {
                   const style = statusStyle(service.status);
@@ -308,7 +308,7 @@ export default function PlatformCommandCenterPage() {
                         <span className={`w-2 h-2  ${style.dot}`} />
                         <span className="text-xs text-white">{service.name}</span>
                       </div>
-                      <span className="text-micro font-mono text-zinc-400">
+                      <span className="text-micro font-mono text-[var(--color-text-secondary)]">
                         {service.latency_ms}ms · {service.uptime}
                       </span>
                     </div>
@@ -317,8 +317,8 @@ export default function PlatformCommandCenterPage() {
               </div>
             </div>
 
-            <div className="bg-zinc-900/60 border border-zinc-800 chamfer-8 p-4">
-              <h3 className="text-micro uppercase tracking-[0.15em] text-zinc-500 mb-3">Integration Status</h3>
+            <div className="bg-[var(--color-bg-panel)]/60 border border-[var(--color-border-default)] chamfer-8 p-4">
+              <h3 className="text-micro uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-3">Integration Status</h3>
               <div className="space-y-2">
                 {health.integrations.map((integration) => {
                   const style = statusStyle(integration.status);
@@ -333,14 +333,14 @@ export default function PlatformCommandCenterPage() {
             </div>
           </div>
 
-          <div className="bg-zinc-900/60 border border-zinc-800 chamfer-8 p-4">
-            <h3 className="text-micro uppercase tracking-[0.15em] text-zinc-500 mb-3">Active Incidents</h3>
+          <div className="bg-[var(--color-bg-panel)]/60 border border-[var(--color-border-default)] chamfer-8 p-4">
+            <h3 className="text-micro uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-3">Active Incidents</h3>
             {incidents.length === 0 ? (
-              <div className="text-xs text-zinc-500 py-2">No active incidents — all clear.</div>
+              <div className="text-xs text-[var(--color-text-muted)] py-2">No active incidents — all clear.</div>
             ) : (
               <div className="space-y-2">
                 {incidents.map((incident) => (
-                  <div key={incident.id} className="flex justify-between items-center bg-zinc-800/50 p-2.5 border border-zinc-700 chamfer-4">
+                  <div key={incident.id} className="flex justify-between items-center bg-[var(--color-bg-raised)]/50 p-2.5 border border-[var(--color-border-strong)] chamfer-4">
                     <div className="flex items-center gap-3">
                       <span className={`text-micro font-mono font-bold ${severityTextColor(incident.severity)}`}>
                         {incident.severity}
@@ -348,8 +348,8 @@ export default function PlatformCommandCenterPage() {
                       <span className="text-xs text-white">{incident.title}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-micro text-zinc-500 font-mono">{incident.state}</span>
-                      <span className="text-micro text-zinc-600 font-mono">{new Date(incident.created_at).toLocaleTimeString()}</span>
+                      <span className="text-micro text-[var(--color-text-muted)] font-mono">{incident.state}</span>
+                      <span className="text-micro text-[var(--color-text-muted)] font-mono">{new Date(incident.created_at).toLocaleTimeString()}</span>
                     </div>
                   </div>
                 ))}
@@ -359,14 +359,14 @@ export default function PlatformCommandCenterPage() {
         </div>
 
         <div className="space-y-3">
-          <div className="bg-zinc-900/60 border border-orange-500/30 chamfer-8 p-4 sticky top-5 space-y-3">
-            <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                <span className="w-2 h-2  bg-[#FF4D00] animate-pulse" />
-                <h3 className="text-xs font-bold text-[#FF4D00] uppercase tracking-[0.15em]">Executive AI Analyst</h3>
+          <div className="bg-[var(--color-bg-panel)]/60 border border-orange-500/30 chamfer-8 p-4 sticky top-5 space-y-3">
+            <div className="flex items-center gap-2 border-b border-[var(--color-border-default)] pb-3">
+                <span className="w-2 h-2  bg-[var(--q-orange)] animate-pulse" />
+                <h3 className="text-xs font-bold text-[var(--q-orange)] uppercase tracking-[0.15em]">Executive AI Analyst</h3>
             </div>
 
             {assistantIssues.length === 0 ? (
-              <div className="text-xs text-zinc-500 py-6 text-center">No AI issues currently detected.</div>
+              <div className="text-xs text-[var(--color-text-muted)] py-6 text-center">No AI issues currently detected.</div>
             ) : (
               assistantIssues.map((issue, idx) => (
                 <AIExplanationCard

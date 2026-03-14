@@ -147,11 +147,11 @@ function SectionTitle({ title }: { title: string }) {
 
 function Badge({ color, label }: { color: string; label: string }) {
   const colors: Record<string, string> = {
-    green: "bg-green-900/40 text-green-300 border-green-700",
-    red: "bg-red-900/40 text-red-300 border-red-700",
+    green: "bg-green-900/40 text-[var(--color-status-active)] border-green-700",
+    red: "bg-red-900/40 text-[var(--color-brand-red)] border-red-700",
     yellow: "bg-yellow-900/40 text-yellow-300 border-yellow-700",
-    blue: "bg-blue-900/40 text-blue-300 border-blue-700",
-    gray: "bg-bg-raised text-zinc-400 border-border-strong",
+    blue: "bg-blue-900/40 text-[var(--color-status-info)] border-blue-700",
+    gray: "bg-bg-raised text-[var(--color-text-secondary)] border-border-strong",
   };
   return (
     <span className={`inline-flex items-center  px-2 py-0.5 text-xs border font-medium ${colors[color] ?? colors.gray}`}>
@@ -182,7 +182,7 @@ function RuleCard({ rule, onDelete }: { rule: Rule; onDelete: (_id: string) => v
       )}
       <button
         onClick={() => onDelete(rule.id)}
-        className="mt-1 self-end text-xs text-red-400 hover:text-red-300"
+        className="mt-1 self-end text-xs text-[var(--color-brand-red)] hover:text-[var(--color-brand-red)]"
       >
         Delete
       </button>
@@ -383,7 +383,7 @@ export default function VisibilityRuleMakerPage() {
           </div>
           <div className="flex items-center gap-2">
             {killSwitchStatus && (
-              <div className={` px-3 py-1 text-xs font-semibold border ${killSwitchStatus.kill_switch_active ? "bg-red-900/40 border-red-700 text-red-300" : "bg-green-900/40 border-green-700 text-green-300"}`}>
+              <div className={` px-3 py-1 text-xs font-semibold border ${killSwitchStatus.kill_switch_active ? "bg-red-900/40 border-red-700 text-[var(--color-brand-red)]" : "bg-green-900/40 border-green-700 text-[var(--color-status-active)]"}`}>
                 Kill Switch: {killSwitchStatus.kill_switch_active ? "ACTIVE" : "OFF"}
               </div>
             )}
@@ -392,9 +392,9 @@ export default function VisibilityRuleMakerPage() {
       </div>
 
       {msg && (
-        <div className=" border border-green-700 bg-green-900/20 px-4 py-3 text-sm text-green-300 flex items-center justify-between">
+        <div className=" border border-green-700 bg-green-900/20 px-4 py-3 text-sm text-[var(--color-status-active)] flex items-center justify-between">
           <span>{msg}</span>
-          <button onClick={() => setMsg("")} className="text-green-400 hover:text-green-200">×</button>
+          <button onClick={() => setMsg("")} className="text-[var(--color-status-active)] hover:text-[var(--color-status-active)]">×</button>
         </div>
       )}
 
@@ -507,7 +507,7 @@ export default function VisibilityRuleMakerPage() {
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted">Emergency visibility shutdown for all non-founder roles</div>
                 <div className="flex gap-2 ml-auto">
-                  <button onClick={() => triggerKillSwitch(true)} className=" bg-red-700 px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-red-600">
+                  <button onClick={() => triggerKillSwitch(true)} className=" bg-red-700 px-4 py-2 text-xs font-semibold text-[var(--color-text-primary)] hover:bg-red-600">
                     Activate Kill Switch
                   </button>
                   <button onClick={() => triggerKillSwitch(false)} className=" border border-border px-4 py-2 text-xs hover:bg-[rgba(255,255,255,0.05)]">
@@ -667,7 +667,7 @@ export default function VisibilityRuleMakerPage() {
               {evalResult && (
                 <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                   <div className=" border border-green-700 bg-green-900/20 p-3">
-                    <div className="text-xs font-semibold text-green-300 mb-2">Visible Fields ({evalResult.visible_fields.length})</div>
+                    <div className="text-xs font-semibold text-[var(--color-status-active)] mb-2">Visible Fields ({evalResult.visible_fields.length})</div>
                     {evalResult.visible_fields.length === 0 ? <div className="text-xs text-muted">None</div> : evalResult.visible_fields.map((f) => <div key={f} className="text-xs">{f}</div>)}
                   </div>
                   <div className=" border border-yellow-700 bg-yellow-900/20 p-3">
@@ -675,7 +675,7 @@ export default function VisibilityRuleMakerPage() {
                     {evalResult.masked_fields.length === 0 ? <div className="text-xs text-muted">None</div> : evalResult.masked_fields.map((f) => <div key={f} className="text-xs">{f}</div>)}
                   </div>
                   <div className=" border border-red-700 bg-red-900/20 p-3">
-                    <div className="text-xs font-semibold text-red-300 mb-2">Denied Fields ({evalResult.denied_fields.length})</div>
+                    <div className="text-xs font-semibold text-[var(--color-brand-red)] mb-2">Denied Fields ({evalResult.denied_fields.length})</div>
                     {evalResult.denied_fields.length === 0 ? <div className="text-xs text-muted">None</div> : evalResult.denied_fields.map((f) => <div key={f} className="text-xs">{f}</div>)}
                   </div>
                 </div>
@@ -708,7 +708,7 @@ export default function VisibilityRuleMakerPage() {
                 Check Minimization
               </button>
               {minimizeResult && (
-                <div className={`mt-3  border p-3 text-sm ${(minimizeResult as Record<string, unknown>).compliant ? "border-green-700 bg-green-900/20 text-green-300" : "border-red-700 bg-red-900/20 text-red-300"}`}>
+                <div className={`mt-3  border p-3 text-sm ${(minimizeResult as Record<string, unknown>).compliant ? "border-green-700 bg-green-900/20 text-[var(--color-status-active)]" : "border-red-700 bg-red-900/20 text-[var(--color-brand-red)]"}`}>
                   <div className="font-semibold">{(minimizeResult as Record<string, unknown>).compliant ? "Compliant - No excessive fields" : "Non-compliant - Excessive fields detected"}</div>
                   {((minimizeResult as Record<string, unknown[]>).excessive_fields || []).length > 0 && (
                     <div className="mt-1 text-xs">Excessive: {((minimizeResult as Record<string, string[]>).excessive_fields || []).join(", ")}</div>
@@ -729,7 +729,7 @@ export default function VisibilityRuleMakerPage() {
                 <div className="mb-3 text-xs text-muted">Role: <span className="text-text font-medium">{phiFields.masked_for_role}</span> | Masked fields: <span className="text-yellow-300">{phiFields.masked.length}</span></div>
                 <div className="flex flex-wrap gap-2">
                   {phiFields.phi_fields.map((f) => (
-                    <span key={f} className={` px-2 py-1 text-xs border ${phiFields.masked.includes(f) ? "border-yellow-700 bg-yellow-900/20 text-yellow-300" : "border-green-700 bg-green-900/20 text-green-300"}`}>
+                    <span key={f} className={` px-2 py-1 text-xs border ${phiFields.masked.includes(f) ? "border-yellow-700 bg-yellow-900/20 text-yellow-300" : "border-green-700 bg-green-900/20 text-[var(--color-status-active)]"}`}>
                       {phiFields.masked.includes(f) ? "*** " : ""}{f}
                     </span>
                   ))}
@@ -836,7 +836,7 @@ export default function VisibilityRuleMakerPage() {
               </button>
               {zeroTrustResult && (
                 <div className={`mt-3  border p-4 ${zeroTrustResult.allowed ? "border-green-700 bg-green-900/20" : "border-red-700 bg-red-900/20"}`}>
-                  <div className={`font-semibold text-sm ${zeroTrustResult.allowed ? "text-green-300" : "text-red-300"}`}>
+                  <div className={`font-semibold text-sm ${zeroTrustResult.allowed ? "text-[var(--color-status-active)]" : "text-[var(--color-brand-red)]"}`}>
                     {zeroTrustResult.allowed ? "ACCESS GRANTED" : "ACCESS DENIED"}
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted">
@@ -937,7 +937,7 @@ export default function VisibilityRuleMakerPage() {
               </button>
               {sandboxResult && (
                 <div className={`mt-3  border p-4 ${sandboxResult.would_apply ? "border-green-700 bg-green-900/20" : "border-border bg-[rgba(255,255,255,0.03)]"}`}>
-                  <div className={`font-semibold text-sm ${sandboxResult.would_apply ? "text-green-300" : "text-muted"}`}>
+                  <div className={`font-semibold text-sm ${sandboxResult.would_apply ? "text-[var(--color-status-active)]" : "text-muted"}`}>
                     Rule would {sandboxResult.would_apply ? "" : "NOT "}apply
                   </div>
                   <div className="mt-2 text-xs text-muted">
@@ -968,7 +968,7 @@ export default function VisibilityRuleMakerPage() {
                 <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
                   {["visible", "masked", "denied"].map((type) => (
                     <div key={type} className={` border p-3 ${type === "visible" ? "border-green-700 bg-green-900/20" : type === "masked" ? "border-yellow-700 bg-yellow-900/20" : "border-red-700 bg-red-900/20"}`}>
-                      <div className={`text-xs font-semibold mb-2 ${type === "visible" ? "text-green-300" : type === "masked" ? "text-yellow-300" : "text-red-300"}`}>
+                      <div className={`text-xs font-semibold mb-2 ${type === "visible" ? "text-[var(--color-status-active)]" : type === "masked" ? "text-yellow-300" : "text-[var(--color-brand-red)]"}`}>
                         {type.charAt(0).toUpperCase() + type.slice(1)} ({((simResult as Record<string, string[]>)[type] || []).length})
                       </div>
                       {((simResult as Record<string, string[]>)[type] || []).length === 0 ? (
@@ -1129,11 +1129,11 @@ export default function VisibilityRuleMakerPage() {
               <SectionTitle title="Classification Labels" />
               <div className="flex flex-wrap gap-3">
                 {[
-                  { label: "PHI", color: "bg-red-900/40 text-red-300 border-red-700", desc: "HIPAA Protected Health Information" },
-                  { label: "PII", color: "bg-[rgba(255,77,0,0.2)] text-[#FF9A66] border-orange-700", desc: "Personally Identifiable Information" },
+                  { label: "PHI", color: "bg-red-900/40 text-[var(--color-brand-red)] border-red-700", desc: "HIPAA Protected Health Information" },
+                  { label: "PII", color: "bg-[rgba(255,106,0,0.2)] text-[#FF9A66] border-orange-700", desc: "Personally Identifiable Information" },
                   { label: "FINANCIAL", color: "bg-yellow-900/40 text-yellow-300 border-yellow-700", desc: "PCI / financial policy" },
-                  { label: "OPERATIONAL", color: "bg-blue-900/40 text-blue-300 border-blue-700", desc: "Internal use" },
-                  { label: "PUBLIC", color: "bg-green-900/40 text-green-300 border-green-700", desc: "Non-sensitive" },
+                  { label: "OPERATIONAL", color: "bg-blue-900/40 text-[var(--color-status-info)] border-blue-700", desc: "Internal use" },
+                  { label: "PUBLIC", color: "bg-green-900/40 text-[var(--color-status-active)] border-green-700", desc: "Non-sensitive" },
                 ].map(({ label, color, desc }) => (
                   <div key={label} className={` border px-3 py-2 text-xs ${color}`}>
                     <div className="font-semibold">{label}</div>

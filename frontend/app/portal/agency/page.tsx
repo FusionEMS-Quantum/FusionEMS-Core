@@ -8,11 +8,11 @@ export default function AgencyAccessPage() {
       subtitle="Secure command entry for agency operators, billing staff, dispatch, and administrative teams."
     >
       <div className="space-y-4">
-        <p className="text-body text-zinc-400">Authenticate to access command modules, operational dashboards, and module controls.</p>
+        <p className="text-body text-[var(--color-text-secondary)]">Authenticate to access command modules, operational dashboards, and module controls.</p>
 
         <div className="grid sm:grid-cols-2 gap-2">
           {['Command dashboards', 'Billing workflows', 'Dispatch-aligned operations', 'Compliance controls'].map((item) => (
-            <div key={item} className="border border-border-subtle bg-[rgba(10,10,11,0.45)] chamfer-8 px-3 py-2 text-body text-zinc-400">
+            <div key={item} className="border border-border-subtle bg-[rgba(10,10,11,0.45)] chamfer-8 px-3 py-2 text-body text-[var(--color-text-secondary)]">
               {item}
             </div>
           ))}

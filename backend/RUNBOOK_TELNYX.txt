@@ -25,9 +25,9 @@ Inbound Telnyx events flow:
 
   Telnyx platform
     │
-    ├─ POST /webhooks/telnyx/voice  → IVR state machine (voice_webhook_router)
-    ├─ POST /webhooks/telnyx/sms   → STOP/HELP compliance (sms_webhook_router)
-    └─ POST /webhooks/telnyx/fax   → Fax ingest + classify queue (fax_webhook_router)
+    ├─ POST /api/v1/webhooks/telnyx/voice  → IVR state machine (voice_webhook_router)
+    ├─ POST /api/v1/webhooks/telnyx/sms   → STOP/HELP compliance (sms_webhook_router)
+    └─ POST /api/v1/webhooks/telnyx/fax   → Fax ingest + classify queue (fax_webhook_router)
 
 All three endpoints:
   - Verify Ed25519 signatures before processing (telnyx/signature.py)
@@ -134,13 +134,13 @@ Confirm Telnyx webhook traffic reaches the backend:
   # Verify listener rule exists
   aws elbv2 describe-rules \
     --listener-arn <HttpsListenerArn> \
-    --query 'Rules[?Conditions[?Values[?contains(@, `/webhooks/telnyx/`)]]].Priority'
+    --query 'Rules[?Conditions[?Values[?contains(@, `/api/v1/webhooks/telnyx/`)]]].Priority'
 
   # Expected: Priority 7 (TelnyxWebhookListenerRule)
 
   # Smoke-test with a dummy POST (should return 400 — bad sig, not 502/503)
   curl -s -o /dev/null -w "%{http_code}" \
-    -X POST https://api.fusionemsquantum.com/webhooks/telnyx/sms \
+    -X POST https://api.fusionemsquantum.com/api/v1/webhooks/telnyx/sms \
     -H "Content-Type: application/json" \
     -d '{"data":{"event_type":"message.received","id":"test","payload":{}}}'
   # Expected: 400
@@ -190,7 +190,7 @@ exponential backoff. The telnyx_events idempotency table prevents duplicate
 processing, so retries are safe.
 
 Symptoms of a retry storm:
-  - CloudWatch metric: high POST /webhooks/telnyx/* request rate
+  - CloudWatch metric: high POST /api/v1/webhooks/telnyx/* request rate
   - telnyx_events table growing rapidly
   - High DB write load on INSERT ... ON CONFLICT
 
@@ -333,7 +333,7 @@ before sending. A DELETE here immediately re-enables SMS for that number.
 
 --- Recommended CloudWatch alarms ---
 
-  1. 5xx rate on /webhooks/telnyx/* > 1% over 5 min → page on-call
+  1. 5xx rate on /api/v1/webhooks/telnyx/* > 1% over 5 min → page on-call
   2. telnyx_events INSERT failure rate > 0 → investigate DB
   3. FAX_CLASSIFY_QUEUE_URL ApproximateAgeOfOldestMessage > 300s → page on-call
   4. IVR transfer failure count > 5 in 10 min → notify billing team

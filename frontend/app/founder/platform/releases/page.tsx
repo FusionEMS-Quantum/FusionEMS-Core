@@ -38,9 +38,9 @@ interface DriftAlert {
 }
 
 const HEALTH_COLORS: Record<string, string> = {
-  healthy: 'text-green-400 bg-green-400/10 border-green-400/30',
-  degraded: 'text-[#FF4D00] bg-[rgba(255,77,0,0.10)] border-orange-400/30',
-  down: 'text-red-400 bg-red-400/10 border-red-400/30',
+  healthy: 'text-[var(--color-status-active)] bg-[var(--color-status-active)]/10 border-green-400/30',
+  degraded: 'text-[var(--q-orange)] bg-[rgba(255,106,0,0.10)] border-orange-400/30',
+  down: 'text-[var(--color-brand-red)] bg-red-400/10 border-red-400/30',
 };
 
 export default function ReleasesPage() {
@@ -86,15 +86,15 @@ export default function ReleasesPage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-zinc-500 animate-pulse">Loading releases…</div>;
-  if (error) return <div className="p-6 text-red-400 text-sm">{error}</div>;
+  if (loading) return <div className="p-6 text-[var(--color-text-muted)] animate-pulse">Loading releases…</div>;
+  if (error) return <div className="p-6 text-[var(--color-brand-red)] text-sm">{error}</div>;
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between hud-rail pb-2">
         <div>
-          <h1 className="text-h1 font-bold text-zinc-100">Releases & Environments</h1>
-          <p className="text-body text-zinc-500 mt-1">Environment health, release versions, and configuration drift</p>
+          <h1 className="text-h1 font-bold text-[var(--color-text-primary)]">Releases & Environments</h1>
+          <p className="text-body text-[var(--color-text-muted)] mt-1">Environment health, release versions, and configuration drift</p>
         </div>
         <button onClick={() => setShowCreate(!showCreate)} className="px-4 py-2 bg-brand-orange text-black text-sm font-semibold">
           {showCreate ? 'Cancel' : '+ New Release'}
@@ -103,31 +103,31 @@ export default function ReleasesPage() {
 
       {/* Create Release */}
       {showCreate && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <input value={newRelease.version_tag} onChange={(e) => setNewRelease({ ...newRelease, version_tag: e.target.value })}
-              placeholder="Version tag (e.g., v2.4.0)" className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100" />
+              placeholder="Version tag (e.g., v2.4.0)" className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)]" />
             <input value={newRelease.git_sha} onChange={(e) => setNewRelease({ ...newRelease, git_sha: e.target.value })}
-              placeholder="Git SHA" className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100" />
+              placeholder="Git SHA" className="bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)]" />
           </div>
           <textarea value={newRelease.release_notes} onChange={(e) => setNewRelease({ ...newRelease, release_notes: e.target.value })}
-            placeholder="Release notes" className="w-full bg-bg-surface border border-border-DEFAULT p-2 text-sm text-zinc-100 h-20 resize-none" />
+            placeholder="Release notes" className="w-full bg-bg-surface border border-border-DEFAULT p-2 text-sm text-[var(--color-text-primary)] h-20 resize-none" />
           <button onClick={handleCreateRelease} className="px-4 py-2 bg-brand-orange text-black text-sm font-semibold">Create Release</button>
         </motion.div>
       )}
 
       {/* Environments */}
       <div>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-3">Environments</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Environments</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {environments.map((env) => (
             <motion.div key={env.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-              className={`p-4 border ${HEALTH_COLORS[env.health_status] || 'text-zinc-500 border-border-DEFAULT bg-[#0A0A0B]'}`}>
+              className={`p-4 border ${HEALTH_COLORS[env.health_status] || 'text-[var(--color-text-muted)] border-border-DEFAULT bg-[var(--color-bg-panel)]'}`}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-bold">{env.display_name}</span>
-                {env.is_production && <span className="text-[9px] px-1.5 py-0.5 bg-red-400/10 text-red-400 font-bold">PROD</span>}
+                {env.is_production && <span className="text-[9px] px-1.5 py-0.5 bg-red-400/10 text-[var(--color-brand-red)] font-bold">PROD</span>}
               </div>
-              <div className="text-[10px] text-zinc-500 space-y-0.5">
+              <div className="text-[10px] text-[var(--color-text-muted)] space-y-0.5">
                 <div>Status: <span className="font-semibold">{env.health_status}</span></div>
                 {env.current_version && <div>Version: {env.current_version}</div>}
                 {env.current_git_sha && <div>SHA: {env.current_git_sha.slice(0, 8)}</div>}
@@ -139,16 +139,16 @@ export default function ReleasesPage() {
 
       {/* Releases */}
       <div>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-3">Releases</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Releases</h2>
         <div className="space-y-2">
-          {releases.length === 0 && <div className="text-xs text-zinc-500">No releases recorded</div>}
+          {releases.length === 0 && <div className="text-xs text-[var(--color-text-muted)]">No releases recorded</div>}
           {releases.map((r) => (
-            <div key={r.id} className="bg-[#0A0A0B] border border-border-DEFAULT p-3 flex items-center justify-between">
+            <div key={r.id} className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3 flex items-center justify-between">
               <div>
-                <span className="text-sm font-mono font-bold text-zinc-100">{r.version_tag}</span>
-                <span className="text-[10px] text-zinc-500 ml-3">{r.git_sha.slice(0, 8)}</span>
+                <span className="text-sm font-mono font-bold text-[var(--color-text-primary)]">{r.version_tag}</span>
+                <span className="text-[10px] text-[var(--color-text-muted)] ml-3">{r.git_sha.slice(0, 8)}</span>
               </div>
-              <div className="text-[10px] text-zinc-500">{new Date(r.created_at).toLocaleDateString()} · {r.released_by}</div>
+              <div className="text-[10px] text-[var(--color-text-muted)]">{new Date(r.created_at).toLocaleDateString()} · {r.released_by}</div>
             </div>
           ))}
         </div>
@@ -156,28 +156,28 @@ export default function ReleasesPage() {
 
       {/* Config Drift Alerts */}
       <div>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-3">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">
           Configuration Drift Alerts
           {driftAlerts.filter((d) => !d.resolved).length > 0 && (
-            <span className="ml-2 text-red-400">({driftAlerts.filter((d) => !d.resolved).length} unresolved)</span>
+            <span className="ml-2 text-[var(--color-brand-red)]">({driftAlerts.filter((d) => !d.resolved).length} unresolved)</span>
           )}
         </h2>
         <div className="space-y-2">
-          {driftAlerts.length === 0 && <div className="text-xs text-zinc-500">No drift alerts</div>}
+          {driftAlerts.length === 0 && <div className="text-xs text-[var(--color-text-muted)]">No drift alerts</div>}
           {driftAlerts.filter((d) => !d.resolved).map((d) => (
-            <div key={d.id} className="bg-[#0A0A0B] border border-orange-400/30 p-3">
+            <div key={d.id} className="bg-[var(--color-bg-panel)] border border-orange-400/30 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-100">{d.drift_type}</span>
+                <span className="text-xs font-semibold text-[var(--color-text-primary)]">{d.drift_type}</span>
                 <SeverityBadge
                   severity={normalizeSeverity(d.severity)}
                   size="sm"
                   label={normalizeSeverity(d.severity)}
                 />
               </div>
-              <div className="text-[10px] text-zinc-500 mt-1">{d.description}</div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">
-                Expected: <span className="text-zinc-400">{d.expected_value}</span> ·
-                  Actual: <span className="text-[#FF4D00]">{d.actual_value}</span>
+              <div className="text-[10px] text-[var(--color-text-muted)] mt-1">{d.description}</div>
+              <div className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
+                Expected: <span className="text-[var(--color-text-secondary)]">{d.expected_value}</span> ·
+                  Actual: <span className="text-[var(--q-orange)]">{d.actual_value}</span>
               </div>
             </div>
           ))}

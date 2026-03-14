@@ -7,18 +7,21 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, require_role
+from core_app.api.dependencies import db_session_dependency, require_founder_only_audited
 from core_app.core.config import get_settings
 from core_app.schemas.auth import CurrentUser
 from core_app.services.event_publisher import get_event_publisher
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/founder/documents", tags=["Founder Documents"])
+router = APIRouter(
+    prefix="/api/v1/founder/documents",
+    tags=["Founder Documents"],
+)
 
 @router.get("/legal-templates")
 async def list_legal_templates(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     """Returns legal templates from the database. Templates are managed in S3/DB."""
@@ -53,7 +56,7 @@ async def list_legal_templates(
 
 @router.get("/executed-documents")
 async def list_executed_documents(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     settings = get_settings()
@@ -108,7 +111,7 @@ async def list_executed_documents(
 @router.get("/executed-documents/{doc_id}/download")
 async def download_executed_document(
     doc_id: str,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     settings = get_settings()
@@ -139,14 +142,14 @@ async def download_executed_document(
             bucket=settings.s3_bucket_docs, key=s3_key, expires_seconds=300
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"S3 error: {str(exc)}")
+        raise HTTPException(status_code=500, detail=f"S3 error: {str(exc)}") from exc
 
     return {"doc_id": doc_id, "presigned_url": url, "expires_seconds": 300}
 
 
 @router.get("/onboarding-applications")
 async def list_onboarding_applications(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     rows = (
@@ -217,7 +220,7 @@ async def list_onboarding_applications(
 @router.post("/onboarding-applications/{application_id}/resend-legal")
 async def resend_legal(
     application_id: str,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     app_row = (
@@ -255,7 +258,7 @@ async def resend_legal(
 @router.post("/onboarding-applications/{application_id}/resend-checkout")
 async def resend_checkout(
     application_id: str,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     settings = get_settings()
@@ -298,7 +301,7 @@ async def resend_checkout(
             base_amount_cents = 100000
 
         module_amount_cents = len(selected_modules) * 5000
-        base_url = str(settings.api_base_url).rstrip("/")
+        frontend_base = str(settings.resolved_frontend_base_url()).rstrip("/")
 
         session = stripe_lib.checkout.Session.create(
             mode="subscription",
@@ -317,19 +320,19 @@ async def resend_checkout(
                 }
             ],
             metadata={"application_id": application_id, "source": "onboarding_resend"},
-            success_url=f"{base_url}/onboarding/success?application_id={application_id}",
-            cancel_url=f"{base_url}/onboarding/cancel?application_id={application_id}",
+            success_url=f"{frontend_base}/signup/success?application_id={application_id}",
+            cancel_url=f"{frontend_base}/signup?canceled=1&application_id={application_id}",
         )
         return {"checkout_url": session.url, "application_id": application_id}
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Stripe error: {str(exc)}")
+        raise HTTPException(status_code=500, detail=f"Stripe error: {str(exc)}") from exc
 
 
 @router.post("/onboarding-applications/{application_id}/manual-provision")
 async def manual_provision(
     application_id: str,
     payload: dict,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     if not payload.get("confirm"):
@@ -366,13 +369,14 @@ async def manual_provision(
             {"type": "manual_provision", "source": "founder_override"},
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Provisioning failed: {str(exc)}")
+        raise HTTPException(status_code=500, detail=f"Provisioning failed: {str(exc)}") from exc
 
     now = datetime.now(UTC).isoformat()
     db.execute(
         text(
             "UPDATE onboarding_applications SET status = 'provisioned', "
-            "provisioned_at = :now, tenant_id = :tid WHERE id = :app_id"
+            "provisioned_at = :now, tenant_id = :tid, provisioning_status = 'complete' "
+            "WHERE id = :app_id"
         ),
         {"now": now, "tid": result.get("tenant_id"), "app_id": application_id},
     )
@@ -389,7 +393,7 @@ async def manual_provision(
 @router.post("/onboarding-applications/{application_id}/revoke")
 async def revoke_application(
     application_id: str,
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     app_row = (
@@ -431,7 +435,7 @@ async def revoke_application(
 
 @router.get("/sign-events")
 async def list_sign_events(
-    current: CurrentUser = Depends(require_role("founder")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ):
     sign_events = (

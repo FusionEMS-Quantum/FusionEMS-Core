@@ -1,10 +1,10 @@
 # GuardDuty
 resource "aws_guardduty_detector" "primary" {
-  enable = true
+  enable                       = true
   finding_publishing_frequency = "FIFTEEN_MINUTES"
   tags = {
     Environment = var.environment
-    Compliance = "SOC2,HIPAA,ISO27001"
+    Compliance  = "SOC2,HIPAA,ISO27001"
   }
 }
 
@@ -26,7 +26,7 @@ resource "aws_config_configuration_recorder" "main" {
   name     = "${var.environment}-config-recorder"
   role_arn = aws_iam_role.config_role.arn
   recording_group {
-    all_supported = true
+    all_supported                 = true
     include_global_resource_types = true
   }
 }
@@ -44,7 +44,7 @@ resource "aws_config_configuration_recorder_status" "main" {
 }
 
 resource "aws_s3_bucket" "config_bucket" {
-  bucket = "${var.environment}-fusionems-config-logs"
+  bucket        = "${var.environment}-fusionems-config-logs"
   force_destroy = false
 }
 resource "aws_s3_bucket_public_access_block" "config_bucket_pab" {

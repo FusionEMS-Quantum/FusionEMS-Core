@@ -17,6 +17,10 @@ interface Payment {
   };
 }
 
+function asNumberOrZero(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
 const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)' },
   header: { background: 'var(--color-bg-surface)', borderBottom: '1px solid var(--color-border-default)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' },
@@ -44,7 +48,7 @@ export default function PaymentsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const totalPaid = payments.reduce((acc, p) => acc + (p.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
+  const totalPaid = payments.reduce((acc, p) => acc + asNumberOrZero(p.data?.amount), 0);
   const pending = payments.filter((p) => p.data?.status === 'pending').length;
 
   return (
@@ -56,7 +60,7 @@ export default function PaymentsPage() {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <Link href="/portal/patient/home" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--color-border-default)', color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)' }}>← Dashboard</Link>
-          <Link href="/portal/patient/receipts" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,77,0,0.3)', color: '#FF4D00', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)' }}>Receipts Center</Link>
+          <Link href="/portal/patient/receipts" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid rgba(255,106,0,0.3)', color: 'var(--q-orange)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)' }}>Receipts Center</Link>
         </div>
       </div>
       <div style={S.inner}>
@@ -68,7 +72,7 @@ export default function PaymentsPage() {
         <div style={S.statsRow}>
           <div style={S.stat}>
             <div style={S.statLabel}>Total Paid</div>
-            <div style={{ ...S.statVal, color: '#10B981' }}>${totalPaid.toFixed(2)}</div>
+            <div style={{ ...S.statVal, color: 'var(--color-status-active)' }}>${totalPaid.toFixed(2)}</div>
           </div>
           <div style={S.stat}>
             <div style={S.statLabel}>Transactions</div>
@@ -77,7 +81,7 @@ export default function PaymentsPage() {
           {pending > 0 && (
             <div style={{ ...S.stat, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)' }}>
               <div style={S.statLabel}>Pending</div>
-              <div style={{ ...S.statVal, color: '#F59E0B' }}>{pending}</div>
+              <div style={{ ...S.statVal, color: 'var(--q-yellow)' }}>{pending}</div>
             </div>
           )}
         </div>
@@ -97,9 +101,9 @@ export default function PaymentsPage() {
             </div>
             {payments.map((p) => {
               const statusCfg = p.data?.status === 'posted'
-                ? { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', color: '#10B981' }
+                ? { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', color: 'var(--color-status-active)' }
                 : p.data?.status === 'pending'
-                  ? { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', color: '#F59E0B' }
+                  ? { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', color: 'var(--q-yellow)' }
                   : { bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.3)', color: '#818CF8' };
               return (
                 <div key={p.id} style={S.row}>
@@ -108,7 +112,7 @@ export default function PaymentsPage() {
                       {p.data?.reference ?? p.id.slice(-8).toUpperCase()}
                     </div>
                     {p.data?.statement_id && (
-                      <Link href={`/portal/patient/invoices/${p.data.statement_id}`} style={{ fontSize: '11px', color: '#FF4D00', textDecoration: 'none' }}>
+                      <Link href={`/portal/patient/invoices/${p.data.statement_id}`} style={{ fontSize: '11px', color: 'var(--q-orange)', textDecoration: 'none' }}>
                         View Statement →
                       </Link>
                     )}
@@ -119,8 +123,8 @@ export default function PaymentsPage() {
                   <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', textTransform: 'capitalize' as const }}>
                     {p.data?.method ?? 'Online'}
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#10B981' }}>
-                    ${(p.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toFixed(2)}
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-status-active)' }}>
+                    ${asNumberOrZero(p.data?.amount).toFixed(2)}
                   </div>
                   <div>
                     <span style={{ ...S.chip, background: statusCfg.bg, border: `1px solid ${statusCfg.border}`, color: statusCfg.color }}>
@@ -135,7 +139,7 @@ export default function PaymentsPage() {
 
         <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
           <span>Questions about a payment? </span>
-          <Link href="/portal/patient/support" style={{ color: '#FF4D00', textDecoration: 'none' }}>Contact Billing Support</Link>
+          <Link href="/portal/patient/support" style={{ color: 'var(--q-orange)', textDecoration: 'none' }}>Contact Billing Support</Link>
         </div>
       </div>
     </div>

@@ -73,7 +73,7 @@ function getDomain(eventType: string): EventDomain {
 const DOMAIN_COLORS: Record<EventDomain, string> = {
   onboarding: 'var(--color-status-info)',
   billing: 'var(--color-status-active)',
-  fax: '#FF4D00',
+  fax: 'var(--q-orange)',
   edi: 'var(--color-status-warning)',
   support: 'var(--color-system-compliance)',
   provisioning: 'var(--color-system-fleet)',
@@ -147,7 +147,7 @@ function EventRow({
   return (
     <tr
       onClick={handleClick}
-      className="border-b border-white/5 hover:bg-zinc-950/[0.03] cursor-pointer transition-colors"
+      className="border-b border-white/5 hover:bg-[var(--color-bg-base)]/[0.03] cursor-pointer transition-colors"
     >
       {/* Unread dot */}
       <td className="pl-4 pr-2 py-3 w-5">
@@ -161,16 +161,16 @@ function EventRow({
 
       {/* Time */}
       <td
-        className="pr-4 py-3 whitespace-nowrap text-xs text-zinc-400"
+        className="pr-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-secondary)]"
         title={absoluteTime(event.created_at)}
       >
         {relativeTime(event.created_at)}
       </td>
 
       {/* Tenant */}
-      <td className="pr-4 py-3 text-xs text-zinc-400 max-w-[120px] truncate">
+      <td className="pr-4 py-3 text-xs text-[var(--color-text-secondary)] max-w-[120px] truncate">
         {event.tenant_name || event.tenant_id || (
-          <span className="text-zinc-500">—</span>
+          <span className="text-[var(--color-text-muted)]">—</span>
         )}
       </td>
 
@@ -185,23 +185,23 @@ function EventRow({
       </td>
 
       {/* Entity */}
-      <td className="pr-4 py-3 text-xs text-zinc-400 max-w-[160px]">
+      <td className="pr-4 py-3 text-xs text-[var(--color-text-secondary)] max-w-[160px]">
         {event.entity_type ? (
           <span className="truncate block">
-            <span className="text-zinc-100">
+            <span className="text-[var(--color-text-primary)]">
               {event.entity_type}
             </span>{' '}
-            <span className="text-zinc-500 font-mono">
+            <span className="text-[var(--color-text-muted)] font-mono">
               {event.entity_id ? event.entity_id.slice(0, 12) + '…' : ''}
             </span>
           </span>
         ) : (
-          <span className="text-zinc-500">—</span>
+          <span className="text-[var(--color-text-muted)]">—</span>
         )}
       </td>
 
       {/* Summary */}
-      <td className="py-3 text-xs text-zinc-400 max-w-[280px] truncate pr-4">
+      <td className="py-3 text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate pr-4">
         {event.summary}
       </td>
     </tr>
@@ -217,9 +217,9 @@ function ExpandedRow({
 }) {
   const json = JSON.stringify(event.payload, null, 2);
   return (
-    <tr className="bg-[#050505]">
+    <tr className="bg-[var(--color-bg-base)]">
       <td colSpan={colSpan} className="px-6 py-4">
-        <pre className="text-xs text-system-billing bg-black border border-border-DEFAULT chamfer-4 p-4 overflow-x-auto whitespace-pre-wrap break-words">
+        <pre className="text-xs text-system-billing bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 p-4 overflow-x-auto whitespace-pre-wrap break-words">
           {json}
         </pre>
       </td>
@@ -361,14 +361,14 @@ export default function EventsFeedPage() {
   return (
     <div
       className="min-h-screen px-6 py-6 flex flex-col gap-5"
-      style={{ background: '#050505', color: 'white' }}
+      style={{ background: 'var(--color-bg-base)', color: 'white' }}
     >
       {/* ── Page header ───────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-4">
-        <h1 className="text-sm font-semibold tracking-widest uppercase text-zinc-100">
+        <h1 className="text-sm font-semibold tracking-widest uppercase text-[var(--color-text-primary)]">
           Platform Events Feed
           {unreadCount > 0 && (
-            <span className="ml-2 text-[#FF4D00]">({unreadCount} unread)</span>
+            <span className="ml-2 text-[var(--q-orange)]">({unreadCount} unread)</span>
           )}
         </h1>
         <div className="ml-auto flex items-center gap-3 flex-wrap">
@@ -377,8 +377,8 @@ export default function EventsFeedPage() {
             onClick={() => setAutoRefresh((v) => !v)}
             className={`text-xs px-3 py-1.5 chamfer-4 border transition-colors ${
               autoRefresh
-                ? 'border-green-500/[0.4] text-status-active bg-green-500/[0.08]'
-                : 'border-border-DEFAULT text-zinc-500'
+                ? 'border-[var(--color-status-active)]/[0.4] text-[var(--color-status-active)] bg-[var(--color-status-active)]/[0.08]'
+                : 'border-border-DEFAULT text-[var(--color-text-muted)]'
             }`}
           >
             {autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
@@ -386,7 +386,7 @@ export default function EventsFeedPage() {
           {/* Mark all read */}
           <button
             onClick={markAllRead}
-            className="text-xs px-3 py-1.5 chamfer-4 border border-border-DEFAULT text-zinc-400 hover:text-zinc-100 hover:border-white/[0.2] transition-colors"
+            className="text-xs px-3 py-1.5 chamfer-4 border border-border-DEFAULT text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-white/[0.2] transition-colors"
           >
             Mark all read
           </button>
@@ -405,8 +405,8 @@ export default function EventsFeedPage() {
                 onClick={() => setFilter(pill.value)}
                 className={`text-xs px-3 py-1 chamfer-4 border transition-colors font-mono ${
                   active
-                    ? 'border-brand-orange/[0.5] text-[#FF4D00] bg-brand-orange/[0.1]'
-                    : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100 hover:border-white/[0.2]'
+                    ? 'border-brand-orange/[0.5] text-[var(--q-orange)] bg-brand-orange/[0.1]'
+                    : 'border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-white/[0.2]'
                 }`}
               >
                 {pill.label}
@@ -416,7 +416,7 @@ export default function EventsFeedPage() {
         </div>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-zinc-950/10 mx-1" />
+        <div className="w-px h-4 bg-[var(--color-bg-base)]/10 mx-1" />
 
         {/* Date range */}
         <div className="flex gap-1.5">
@@ -429,7 +429,7 @@ export default function EventsFeedPage() {
                 className={`text-xs px-3 py-1 chamfer-4 border transition-colors ${
                   active
                     ? 'border-cyan-500/[0.4] text-system-billing bg-cyan-500/[0.08]'
-                    : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100 hover:border-white/[0.2]'
+                    : 'border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-white/[0.2]'
                 }`}
               >
                 {opt.label}
@@ -440,14 +440,14 @@ export default function EventsFeedPage() {
       </div>
 
       {/* ── Events table ──────────────────────────────────────────────────── */}
-      <div className="bg-[#050505] border border-border-DEFAULT chamfer-4 overflow-hidden flex-1">
+      <div className="bg-[var(--color-bg-base)] border border-border-DEFAULT chamfer-4 overflow-hidden flex-1">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <span className="text-sm text-zinc-500">Loading events…</span>
+            <span className="text-sm text-[var(--color-text-muted)]">Loading events…</span>
           </div>
         ) : events.length === 0 ? (
           <div className="flex items-center justify-center py-16">
-            <span className="text-sm text-zinc-500">No events</span>
+            <span className="text-sm text-[var(--color-text-muted)]">No events</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -455,19 +455,19 @@ export default function EventsFeedPage() {
               <thead>
                 <tr className="border-b border-border-DEFAULT">
                   <th className="w-5 pl-4 pr-2 py-2" />
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-zinc-500 whitespace-nowrap">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[var(--color-text-muted)] whitespace-nowrap">
                     Time
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-zinc-500">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[var(--color-text-muted)]">
                     Tenant
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-zinc-500">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[var(--color-text-muted)]">
                     Event Type
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-zinc-500">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[var(--color-text-muted)]">
                     Entity
                   </th>
-                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-zinc-500">
+                  <th className="pr-4 py-2 text-left text-micro font-semibold tracking-widest uppercase text-[var(--color-text-muted)]">
                     Summary
                   </th>
                 </tr>

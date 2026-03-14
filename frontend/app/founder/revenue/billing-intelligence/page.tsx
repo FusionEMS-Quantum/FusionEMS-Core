@@ -15,9 +15,9 @@ import {
 
 interface RevenueMetric { label: string; value: string; color: string; dir: string }
 interface DenialReason { reason: string; count: number; pct: number }
-interface PayerRow { name: string; volume: number; avgDays: number; denialRate: string; netCollection: string }
+interface PayerRow { name: string; volume: number | null; avgDays: number | null; denialRate: string; netCollection: string }
 interface ArBucket { bucket: string; amount: number; pct: number; color: string }
-interface ProcCode { code: string; desc: string; volume: number; accuracy: number; error: number }
+interface ProcCode { code: string; desc: string; volume: number; accuracy: number | null; error: number | null }
 interface ProdMetric { label: string; value: string; sub: string; color: string }
 
 function MetricRow({
@@ -115,7 +115,7 @@ export default function BillingIntelligencePage() {
           { label: 'MoM Growth', value: fmtPct(exec.mom_growth_pct), color: 'var(--color-status-active)', dir: exec.mom_growth_pct != null && exec.mom_growth_pct >= 0 ? '▲' : '▼' },
           { label: 'QoQ Growth', value: fmtPct(exec.qoq_growth_pct), color: 'var(--color-status-active)', dir: exec.qoq_growth_pct != null && exec.qoq_growth_pct >= 0 ? '▲' : '▼' },
           { label: 'YoY Growth', value: fmtPct(exec.yoy_growth_pct), color: 'var(--color-status-active)', dir: exec.yoy_growth_pct != null && exec.yoy_growth_pct >= 0 ? '▲' : '▼' },
-          { label: 'Run Rate (ARR)', value: fmtDollars(exec.arr_cents), color: '#FF4D00', dir: '' },
+          { label: 'Run Rate (ARR)', value: fmtDollars(exec.arr_cents), color: 'var(--q-orange)', dir: '' },
         ]);
         if (Array.isArray(exec.monthly_revenue_cents) && exec.monthly_revenue_cents.length > 0) {
           const maxVal = Math.max(...exec.monthly_revenue_cents, 1);
@@ -127,8 +127,8 @@ export default function BillingIntelligencePage() {
       if (Array.isArray((denial as { heatmap?: Array<{ reason?: string; reason_code?: string; count?: number; percentage?: number }> } | null)?.heatmap)) {
         setDenialReasons((denial as { heatmap: Array<{ reason?: string; reason_code?: string; count?: number; percentage?: number }> }).heatmap.map((d) => ({
           reason: d.reason || d.reason_code || 'Unknown',
-          count: d.count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
-          pct: Math.round(d.percentage ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
+          count: typeof d.count === 'number' && Number.isFinite(d.count) ? d.count : 0,
+          pct: typeof d.percentage === 'number' && Number.isFinite(d.percentage) ? Math.round(d.percentage) : 0,
         })));
       }
 
@@ -137,8 +137,8 @@ export default function BillingIntelligencePage() {
       if (Array.isArray(payerRows)) {
         setPayers(payerRows.map((p) => ({
           name: p.payer_name,
-          volume: p.submitted_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
-          avgDays: p.avg_days_to_payment ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
+          volume: typeof p.submitted_count === 'number' && Number.isFinite(p.submitted_count) ? p.submitted_count : null,
+          avgDays: typeof p.avg_days_to_payment === 'number' && Number.isFinite(p.avg_days_to_payment) ? p.avg_days_to_payment : null,
           denialRate: p.denial_rate != null ? `${p.denial_rate.toFixed(1)}%` : '—',
           netCollection: p.net_collection_rate != null ? `${p.net_collection_rate.toFixed(1)}%` : '—',
         })));
@@ -163,8 +163,8 @@ export default function BillingIntelligencePage() {
           code: t.code,
           desc: t.description,
           volume: t.volume,
-          accuracy: t.accuracy_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
-          error: t.error_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
+          accuracy: typeof t.accuracy_pct === 'number' && Number.isFinite(t.accuracy_pct) ? t.accuracy_pct : null,
+          error: typeof t.error_pct === 'number' && Number.isFinite(t.error_pct) ? t.error_pct : null,
         })));
       }
 
@@ -200,7 +200,7 @@ export default function BillingIntelligencePage() {
   return (
     <div style={{ padding: '20px 24px', minHeight: '100%' }}>
       {error && (
-        <div style={{ padding: '10px 14px', marginBottom: 16, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.1)', color: '#F59E0B', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+        <div style={{ padding: '10px 14px', marginBottom: 16, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.1)', color: 'var(--q-yellow)', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
           {error}
         </div>
       )}
@@ -414,7 +414,7 @@ export default function BillingIntelligencePage() {
           header="Payer Intelligence"
           headerRight={
             <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-              {payers.reduce((s, p) => s + p.volume, 0).toLocaleString()} total claims
+              {payers.reduce((s, p) => s + (p.volume ?? 0), 0).toLocaleString()} total claims
             </span>
           }
         >
@@ -475,7 +475,7 @@ export default function BillingIntelligencePage() {
                         color: 'var(--color-text-secondary)',
                       }}
                     >
-                      {p.volume.toLocaleString()}
+                      {p.volume != null ? p.volume.toLocaleString() : '—'}
                     </td>
                     <td
                       style={{
@@ -483,12 +483,12 @@ export default function BillingIntelligencePage() {
                         textAlign: 'right',
                         fontFamily: 'var(--font-mono)',
                         color:
-                          p.avgDays > 30
+                          p.avgDays != null && p.avgDays > 30
                             ? 'var(--color-status-warning)'
                             : 'var(--color-text-secondary)',
                       }}
                     >
-                      {p.avgDays}d
+                      {p.avgDays != null ? `${p.avgDays}d` : '—'}
                     </td>
                     <td
                       style={{
@@ -711,14 +711,16 @@ export default function BillingIntelligencePage() {
                         fontFamily: 'var(--font-mono)',
                         fontWeight: 700,
                         color:
-                          row.accuracy >= 97
+                          row.accuracy == null
+                            ? 'var(--color-text-muted)'
+                            : row.accuracy >= 97
                             ? 'var(--color-status-active)'
                             : row.accuracy >= 94
                             ? 'var(--color-status-warning)'
                             : 'var(--color-brand-red)',
                       }}
                     >
-                      {row.accuracy}%
+                      {row.accuracy == null ? '—' : `${row.accuracy}%`}
                     </td>
                     <td
                       style={{
@@ -727,14 +729,16 @@ export default function BillingIntelligencePage() {
                         fontFamily: 'var(--font-mono)',
                         fontWeight: 700,
                         color:
-                          row.error < 3
+                          row.error == null
+                            ? 'var(--color-text-muted)'
+                            : row.error < 3
                             ? 'var(--color-text-muted)'
                             : row.error < 6
                             ? 'var(--color-status-warning)'
                             : 'var(--color-brand-red)',
                       }}
                     >
-                      {row.error}%
+                      {row.error == null ? '—' : `${row.error}%`}
                     </td>
                   </tr>
                 ))}

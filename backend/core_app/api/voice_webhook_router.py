@@ -765,7 +765,7 @@ def _forward_target(
 # ── Webhook entrypoint ────────────────────────────────────────────────────────
 
 
-@router.post("/webhooks/telnyx/voice")
+@router.post("/api/v1/webhooks/telnyx/voice")
 async def telnyx_voice_webhook(
     request: Request,
     db: Session = Depends(db_session_dependency),

@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core_app.api.dependencies import require_role
+from core_app.api.dependencies import require_founder_only_audited
 from core_app.db.session import get_async_db_session
 from core_app.schemas.auth import CurrentUser
 from core_app.schemas.relationship_command import (
@@ -27,7 +27,7 @@ def _svc(
 
 @router.get("/summary", response_model=RelationshipCommandSummary)
 async def command_summary(
-    current_user: CurrentUser = Depends(require_role("founder", "admin")),
+    current_user: CurrentUser = Depends(require_founder_only_audited()),
     svc: RelationshipAIService = Depends(_svc),
 ) -> RelationshipCommandSummary:
     return await svc.build_command_summary(
@@ -37,7 +37,7 @@ async def command_summary(
 
 @router.get("/issues", response_model=RelationshipIssueList)
 async def generate_issues(
-    current_user: CurrentUser = Depends(require_role("founder", "admin")),
+    current_user: CurrentUser = Depends(require_founder_only_audited()),
     svc: RelationshipAIService = Depends(_svc),
 ) -> RelationshipIssueList:
     """Generate structured relationship issues per directive Part 9 format."""

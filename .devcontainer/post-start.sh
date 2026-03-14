@@ -6,6 +6,24 @@ cd "$(dirname "$0")/.."
 
 echo "=== FusionEMS-Core: post-start ==="
 
+# Ensure required dependencies exist for VS Code terminal sandbox execution.
+# This runs on every start so older containers can self-heal after restart.
+missing_deps=()
+command -v rg >/dev/null 2>&1 || missing_deps+=("ripgrep")
+command -v bwrap >/dev/null 2>&1 || missing_deps+=("bubblewrap")
+command -v socat >/dev/null 2>&1 || missing_deps+=("socat")
+
+if [ ${#missing_deps[@]} -gt 0 ]; then
+  echo "[0/4] Installing required sandbox deps: ${missing_deps[*]}"
+  if command -v sudo >/dev/null 2>&1; then
+    sudo apt-get update -y
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing_deps[@]}"
+  else
+    apt-get update -y
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing_deps[@]}"
+  fi
+fi
+
 # Activate venv if present
 if [ -f .venv/bin/activate ]; then
   source .venv/bin/activate

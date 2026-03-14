@@ -99,6 +99,7 @@ async def health_dashboard(
         "api",
         "stripe_webhook",
         "cognito",
+        "fax_pipeline",
     ]
     return {
         "total_active_alerts": len(active_alerts),
@@ -190,6 +191,35 @@ async def service_health(
             "value": cf_error or 0,
         },
     ]
+
+    # Fax pipeline configuration health (no external calls; safe for founders/admins)
+    fax_flags = {
+        "telnyx_public_key_configured": bool(getattr(s, "telnyx_public_key", "")),
+        "telnyx_api_key_configured": bool(getattr(s, "telnyx_api_key", "")),
+        "telnyx_fax_connection_id_configured": bool(
+            getattr(s, "telnyx_fax_connection_id", "")
+            or getattr(s, "TELNYX_FAX_CONNECTION_ID", "")
+        ),
+        "fax_outbound_queue_configured": bool(getattr(s, "fax_outbound_queue_url", "")),
+        "fax_classify_queue_configured": bool(getattr(s, "fax_classify_queue_url", "")),
+    }
+    fax_ok = fax_flags["telnyx_public_key_configured"]
+    # Outbound send is considered degraded if queue or send credentials missing.
+    outbound_ready = (
+        fax_flags["fax_outbound_queue_configured"]
+        and fax_flags["telnyx_api_key_configured"]
+        and fax_flags["telnyx_fax_connection_id_configured"]
+    )
+    fax_status = "healthy" if (fax_ok and outbound_ready) else ("degraded" if fax_ok else "unavailable")
+    services.append(
+        {
+            "service": "fax_pipeline",
+            "status": fax_status,
+            "metric": "configuration",
+            "value": 1 if fax_ok else 0,
+            "details": fax_flags,
+        }
+    )
     return {"services": services, "as_of": _now_iso()}
 
 

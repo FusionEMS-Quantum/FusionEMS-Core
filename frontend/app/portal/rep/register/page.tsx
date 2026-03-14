@@ -32,7 +32,7 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const BTN_PRIMARY: React.CSSProperties = {
   clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)',
-  background: '#FF4D00',
+  background: 'var(--q-orange)',
   color: 'var(--color-text-primary)',
   fontWeight: 600,
   fontSize: '0.9375rem',
@@ -59,12 +59,12 @@ function ProgressStepper({ current }: { current: number }) {
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
-                  background: done ? '#FF4D00' : active ? 'rgba(255,107,26,0.18)' : 'rgba(255,255,255,0.06)',
-                  border: `1px solid ${done ? '#FF4D00' : active ? 'rgba(255,107,26,0.6)' : 'rgba(255,255,255,0.12)'}`,
+                  background: done ? 'var(--q-orange)' : active ? 'rgba(255,106,0,0.18)' : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${done ? 'var(--q-orange)' : active ? 'rgba(255,106,0,0.6)' : 'rgba(255,255,255,0.12)'}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: done ? 'var(--color-text-primary)' : active ? '#FF4D00' : 'rgba(255,255,255,0.3)',
+                  color: done ? 'var(--color-text-primary)' : active ? 'var(--q-orange)' : 'rgba(255,255,255,0.3)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                 }}
@@ -82,7 +82,7 @@ function ProgressStepper({ current }: { current: number }) {
                   fontSize: '0.6875rem',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
-                  color: done ? '#FF4D00' : active ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.28)',
+                  color: done ? 'var(--q-orange)' : active ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.28)',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -94,7 +94,7 @@ function ProgressStepper({ current }: { current: number }) {
                 style={{
                   flex: 1,
                   height: '1px',
-                  background: done ? 'rgba(255,107,26,0.5)' : 'rgba(255,255,255,0.08)',
+                  background: done ? 'rgba(255,106,0,0.5)' : 'rgba(255,255,255,0.08)',
                   margin: '0 8px',
                   marginBottom: '20px',
                 }}
@@ -158,7 +158,7 @@ export default function RepRegisterPage() {
 
   return (
     <div
-      style={{ background: 'var(--color-bg-base, #050505)', minHeight: '100vh' }}
+      style={{ background: 'var(--color-bg-base, var(--color-bg-base))', minHeight: '100vh' }}
       className="flex items-center justify-center px-4 py-12"
     >
       <div style={{ width: '100%', maxWidth: '520px' }}>

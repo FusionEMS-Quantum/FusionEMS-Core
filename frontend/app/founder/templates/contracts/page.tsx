@@ -7,9 +7,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -31,7 +31,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -64,7 +64,7 @@ export default function ContractBuilderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-6 space-y-6">
       {/* Page Header */}
       <div className="border-b border-border-subtle pb-4">
         <div className="flex items-center justify-between">
@@ -73,9 +73,9 @@ export default function ContractBuilderPage() {
               MODULE 7 · TEMPLATES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-status-info)' }}>Contract Builder</h1>
-            <p className="text-xs text-zinc-500 mt-1">Service agreements · BAAs · data processing · renewal contracts</p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">Service agreements · BAAs · data processing · renewal contracts</p>
           </div>
-          <Link href="/founder" className="text-body text-zinc-500 hover:text-status-info transition-colors font-mono">
+          <Link href="/founder" className="text-body text-[var(--color-text-muted)] hover:text-status-info transition-colors font-mono">
             ← Back to Founder OS
           </Link>
         </div>
@@ -97,14 +97,14 @@ export default function ContractBuilderPage() {
               onClick={() => setSelectedTemplate(t.id)}
             >
               <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="text-[12px] font-semibold text-zinc-100 leading-tight">{t.name}</span>
+                <span className="text-[12px] font-semibold text-[var(--color-text-primary)] leading-tight">{t.name}</span>
                 {t.used > 0 ? (
                   <Badge label={`Used ${t.used}x`} status="info" />
                 ) : (
                   <Badge label="New" status="warn" />
                 )}
               </div>
-              <p className="text-body text-zinc-500 mb-3">{t.desc}</p>
+              <p className="text-body text-[var(--color-text-muted)] mb-3">{t.desc}</p>
               <button
                 className="text-micro font-semibold px-3 py-1 chamfer-4 transition-colors"
                 style={{ background: 'color-mix(in srgb, var(--color-status-info) 9%, transparent)', color: 'var(--color-status-info)', border: '1px solid color-mix(in srgb, var(--color-status-info) 19%, transparent)' }}
@@ -125,19 +125,19 @@ export default function ContractBuilderPage() {
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Contract', 'Agency', 'Type', 'Status', 'Signed Date', 'Expiry'].map((h) => (
-                  <th key={h} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{h}</th>
+                  <th key={h} className="text-left py-2 pr-4 text-[var(--color-text-muted)] font-semibold uppercase tracking-wider text-micro">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {activeContracts.map((c) => (
-                <tr key={c.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
+                <tr key={c.id} className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02]">
                   <td className="py-2 pr-4 font-mono text-status-info">{c.id}</td>
-                  <td className="py-2 pr-4 text-zinc-100">{c.agency}</td>
-                  <td className="py-2 pr-4 text-zinc-400">{c.type}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-primary)]">{c.agency}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{c.type}</td>
                   <td className="py-2 pr-4"><Badge label={c.status} status={c.statusKey as any} /></td>
-                  <td className="py-2 pr-4 text-zinc-400">{c.signed}</td>
-                  <td className="py-2 pr-4 text-zinc-400">{c.expiry}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{c.signed}</td>
+                  <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{c.expiry}</td>
                 </tr>
               ))}
             </tbody>
@@ -156,13 +156,13 @@ export default function ContractBuilderPage() {
             >
               {selectedTemplate ? (
                 <div className="w-full">
-                  <p className="text-body text-zinc-400 mb-2">Editing: <span className="text-status-info">{templates.find(t => t.id === selectedTemplate)?.name}</span></p>
-                  <div className="h-16 bg-zinc-950/[0.03] border border-border-subtle chamfer-4 flex items-center justify-center">
-                    <span className="text-micro text-zinc-500">Contract content area</span>
+                  <p className="text-body text-[var(--color-text-secondary)] mb-2">Editing: <span className="text-status-info">{templates.find(t => t.id === selectedTemplate)?.name}</span></p>
+                  <div className="h-16 bg-[var(--color-bg-base)]/[0.03] border border-border-subtle chamfer-4 flex items-center justify-center">
+                    <span className="text-micro text-[var(--color-text-muted)]">Contract content area</span>
                   </div>
                 </div>
               ) : (
-                <p className="text-body text-zinc-500">Select a template to begin editing</p>
+                <p className="text-body text-[var(--color-text-muted)]">Select a template to begin editing</p>
               )}
             </div>
             <div className="flex gap-2">
@@ -183,7 +183,7 @@ export default function ContractBuilderPage() {
             </div>
           </div>
           <div>
-            <p className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-2">Template Variables</p>
+            <p className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Template Variables</p>
             <div className="flex flex-wrap gap-2">
               {templateVars.map((v) => (
                 <button
@@ -201,7 +201,7 @@ export default function ContractBuilderPage() {
                 </button>
               ))}
             </div>
-            <p className="text-micro text-zinc-500 mt-2">Click variable to copy to clipboard</p>
+            <p className="text-micro text-[var(--color-text-muted)] mt-2">Click variable to copy to clipboard</p>
           </div>
         </div>
       </Panel>

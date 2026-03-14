@@ -96,7 +96,7 @@ export default function PWASchedulingPage() {
   if (error) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+        <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 text-[var(--color-brand-red)]">{error}</div>
       </div>
     );
   }
@@ -107,8 +107,8 @@ export default function PWASchedulingPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/founder/pwa" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
-        <Calendar className="h-6 w-6 text-violet-400" />
+        <Link href="/founder/pwa" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"><ArrowLeft className="h-5 w-5" /></Link>
+        <Calendar className="h-6 w-6 text-[var(--color-system-compliance)]" />
         <h1 className="text-2xl font-bold text-white">PWA Scheduling</h1>
       </div>
 
@@ -119,19 +119,19 @@ export default function PWASchedulingPage() {
           { label: 'AI Drafts', value: drafts.length, icon: Clock, color: 'purple' },
           { label: 'Fatigue Alerts', value: highFatigue, icon: AlertTriangle, color: highFatigue > 0 ? 'red' : 'green' },
         ].map((kpi) => (
-          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-[var(--color-bg-raised)] border border-${kpi.color}-500/30 chamfer-8 p-4`}>
+            <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
             <div className="text-2xl font-bold text-white">{kpi.value}</div>
           </motion.div>
         ))}
       </div>
 
-      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
+      <div className="bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-8 overflow-hidden">
+        <div className="p-4 border-b border-[var(--color-border-strong)]">
           <h2 className="text-sm font-semibold text-white">Shift Templates</h2>
         </div>
         <table className="w-full text-sm">
-          <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+          <thead className="bg-[var(--color-bg-panel)] text-[var(--color-text-secondary)] text-xs uppercase">
             <tr>
               <th className="px-4 py-3 text-left">Template</th>
               <th className="px-4 py-3 text-left">Start</th>
@@ -142,14 +142,14 @@ export default function PWASchedulingPage() {
           </thead>
           <tbody className="divide-y divide-gray-700">
             {templates.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No shift templates configured.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-[var(--color-text-muted)]">No shift templates configured.</td></tr>
             ) : templates.map((t) => (
-              <tr key={t.id} className="hover:bg-gray-700/50">
+              <tr key={t.id} className="hover:bg-[var(--color-bg-overlay)]/50">
                 <td className="px-4 py-3 text-white font-medium">{t.name}</td>
-                <td className="px-4 py-3 text-gray-300">{t.start_time}</td>
-                <td className="px-4 py-3 text-gray-300">{t.end_time}</td>
-                <td className="px-4 py-3 text-gray-300">{t.crew_required}</td>
-                <td className="px-4 py-3 text-gray-400">{t.days_of_week?.join(', ') ?? 'All'}</td>
+                <td className="px-4 py-3 text-[var(--color-text-secondary)]">{t.start_time}</td>
+                <td className="px-4 py-3 text-[var(--color-text-secondary)]">{t.end_time}</td>
+                <td className="px-4 py-3 text-[var(--color-text-secondary)]">{t.crew_required}</td>
+                <td className="px-4 py-3 text-[var(--color-text-secondary)]">{t.days_of_week?.join(', ') ?? 'All'}</td>
               </tr>
             ))}
           </tbody>
@@ -157,12 +157,12 @@ export default function PWASchedulingPage() {
       </div>
 
       {drafts.length > 0 && (
-        <div className="bg-gray-800 border border-purple-500/30 rounded-lg overflow-hidden">
-          <div className="p-4 border-b border-gray-700">
+        <div className="bg-[var(--color-bg-raised)] border border-purple-500/30 chamfer-8 overflow-hidden">
+          <div className="p-4 border-b border-[var(--color-border-strong)]">
             <h2 className="text-sm font-semibold text-white">AI Schedule Drafts</h2>
           </div>
           <table className="w-full text-sm">
-            <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+            <thead className="bg-[var(--color-bg-panel)] text-[var(--color-text-secondary)] text-xs uppercase">
               <tr>
                 <th className="px-4 py-3 text-left">Crew</th>
                 <th className="px-4 py-3 text-left">Shift</th>
@@ -173,11 +173,11 @@ export default function PWASchedulingPage() {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {drafts.map((d) => (
-                <tr key={d.id} className="hover:bg-gray-700/50">
+                <tr key={d.id} className="hover:bg-[var(--color-bg-overlay)]/50">
                   <td className="px-4 py-3 text-white">{d.crew_member}</td>
-                  <td className="px-4 py-3 text-gray-300">{d.shift_name}</td>
-                  <td className="px-4 py-3 text-gray-300">{d.shift_date}</td>
-                  <td className="px-4 py-3 text-gray-300">{d.ai_confidence ? `${(d.ai_confidence * 100).toFixed(0)}%` : '—'}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-secondary)]">{d.shift_name}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-secondary)]">{d.shift_date}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-secondary)]">{d.ai_confidence ? `${(d.ai_confidence * 100).toFixed(0)}%` : '—'}</td>
                   <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-900/50 text-purple-300">{d.status}</span></td>
                 </tr>
               ))}
@@ -187,12 +187,12 @@ export default function PWASchedulingPage() {
       )}
 
       {fatigue.length > 0 && (
-        <div className="bg-gray-800 border border-red-500/30 rounded-lg overflow-hidden">
-          <div className="p-4 border-b border-gray-700">
+        <div className="bg-[var(--color-bg-raised)] border border-[var(--color-brand-red)]/30 chamfer-8 overflow-hidden">
+          <div className="p-4 border-b border-[var(--color-border-strong)]">
             <h2 className="text-sm font-semibold text-white">Fatigue Report</h2>
           </div>
           <table className="w-full text-sm">
-            <thead className="bg-gray-900 text-gray-400 text-xs uppercase">
+            <thead className="bg-[var(--color-bg-panel)] text-[var(--color-text-secondary)] text-xs uppercase">
               <tr>
                 <th className="px-4 py-3 text-left">Crew Member</th>
                 <th className="px-4 py-3 text-left">Hours (48h)</th>
@@ -201,11 +201,11 @@ export default function PWASchedulingPage() {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {fatigue.map((f, i) => (
-                <tr key={i} className="hover:bg-gray-700/50">
+                <tr key={i} className="hover:bg-[var(--color-bg-overlay)]/50">
                   <td className="px-4 py-3 text-white">{f.crew_member}</td>
-                  <td className="px-4 py-3 text-gray-300">{f.hours_last_48}h</td>
+                  <td className="px-4 py-3 text-[var(--color-text-secondary)]">{f.hours_last_48}h</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${f.fatigue_risk === 'high' ? 'bg-red-900/50 text-red-300' : f.fatigue_risk === 'medium' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-green-900/50 text-green-300'}`}>{f.fatigue_risk}</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${f.fatigue_risk === 'high' ? 'bg-red-900/50 text-[var(--color-brand-red)]' : f.fatigue_risk === 'medium' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-green-900/50 text-[var(--color-status-active)]'}`}>{f.fatigue_risk}</span>
                   </td>
                 </tr>
               ))}

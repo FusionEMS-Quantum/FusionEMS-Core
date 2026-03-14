@@ -7,7 +7,7 @@ resource "aws_wafv2_web_acl" "main" {
   default_action {
     allow {}
   }
-  
+
   rule {
     name     = "AWSManagedRulesCommonRuleSet"
     priority = 1
@@ -32,7 +32,9 @@ resource "aws_wafv2_web_acl" "main" {
   rule {
     name     = "AWSManagedRulesSQLiRuleSet"
     priority = 2
-    override_action { none {} }
+    override_action {
+      none {}
+    }
     statement {
       managed_rule_group_statement {
         name        = "AWSManagedRulesSQLiRuleSet"

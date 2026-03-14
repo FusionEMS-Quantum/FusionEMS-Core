@@ -12,7 +12,11 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
-from core_app.api.dependencies import db_session_dependency, require_role
+from core_app.api.dependencies import (
+    db_session_dependency,
+    require_founder_only_audited,
+    require_role,
+)
 from core_app.schemas.auth import CurrentUser
 from core_app.schemas.export_offboarding import (
     ExportPackageApproveRequest,
@@ -280,7 +284,7 @@ founder_export_router = APIRouter(
 
 @founder_export_router.get("/overview")
 async def founder_export_overview(
-    current: CurrentUser = Depends(require_role("founder", "admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict[str, Any]:
     """Cross-tenant export/offboarding overview for founder dashboard."""
@@ -290,7 +294,7 @@ async def founder_export_overview(
 
 @founder_export_router.get("/billers")
 async def founder_list_billers(
-    current: CurrentUser = Depends(require_role("founder", "admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict[str, Any]:
     """List all third-party billers across tenants (founder only)."""
@@ -302,18 +306,21 @@ async def founder_list_billers(
 @founder_export_router.get("/risk-analysis")
 async def founder_risk_analysis(
     tenant_id: uuid.UUID = Query(...),
-    current: CurrentUser = Depends(require_role("founder", "admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict[str, Any]:
     """Run handoff risk analysis for a specific tenant (founder only)."""
     svc = ExportOffboardingService(db)
-    risk_level, risk_details = svc._analyze_risk(tenant_id, ["FULL_OFFBOARDING"])
+    risk_level, risk_details = svc.analyze_risk(
+        tenant_id=tenant_id,
+        modules=["FULL_OFFBOARDING"],
+    )  # pyright: ignore[reportPrivateUsage]
     return {"tenant_id": str(tenant_id), "risk_level": risk_level, "risk_details": risk_details}
 
 
 @founder_export_router.get("/field-crosswalk")
 async def founder_field_crosswalk(
-    current: CurrentUser = Depends(require_role("founder", "admin")),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict[str, Any]:
     """Get the field crosswalk mapping (founder view)."""

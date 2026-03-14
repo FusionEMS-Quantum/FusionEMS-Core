@@ -37,10 +37,10 @@ export default function PortalDocumentsPage() {
           <Link
             key={item.href}
             href={item.href}
-            className="block  border border-border-subtle bg-[#0A0A0B] px-5 py-4 transition-colors hover:border-brand-orange/50"
+            className="block border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] chamfer-8 px-5 py-4 transition-colors hover:border-[var(--color-border-strong)]"
           >
-            <h2 className="text-sm font-semibold text-zinc-100">{item.title}</h2>
-            <p className="mt-2 text-sm text-zinc-500">{item.description}</p>
+            <h2 className="text-body font-bold text-[var(--color-text-primary)]">{item.title}</h2>
+            <p className="mt-2 text-micro text-[var(--color-text-muted)]">{item.description}</p>
           </Link>
         ))}
       </div>

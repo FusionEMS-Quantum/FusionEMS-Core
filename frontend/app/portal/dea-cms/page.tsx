@@ -108,49 +108,49 @@ export default function PortalDeaCmsPage() {
             void runAudit();
           }}
           disabled={busy}
-          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-xs font-semibold"
+          className="px-3 py-1.5 bg-orange-600 hover:bg-[var(--q-orange)] disabled:opacity-50 text-xs font-semibold"
         >
           {busy ? "Running DEA Audit…" : "Run DEA Audit"}
         </button>
       }
     >
-      {error && <div className="mb-4 border border-red-900 bg-red-950/30 text-red-300 text-xs p-3">{error}</div>}
+      {error && <div className="mb-4 border border-[var(--color-brand-red)] bg-[var(--color-brand-red)]/30 text-[var(--color-brand-red)] text-xs p-3">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4 space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-100">DEA Narcotics Audit</h2>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">DEA Narcotics Audit</h2>
           {loading ? (
-            <p className="text-xs text-zinc-500">Loading…</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Loading…</p>
           ) : !deaLatest ? (
-            <p className="text-xs text-zinc-500">No audit reports found yet.</p>
+            <p className="text-xs text-[var(--color-text-muted)]">No audit reports found yet.</p>
           ) : (
             <>
-              <p className="text-xs text-zinc-400">Latest run: {ts(deaLatest.generated_at)}</p>
-              <p className={deaPassed ? "text-emerald-400 text-sm font-semibold" : "text-red-300 text-sm font-semibold"}>
+              <p className="text-xs text-[var(--color-text-secondary)]">Latest run: {ts(deaLatest.generated_at)}</p>
+              <p className={deaPassed ? "text-[var(--color-status-active)] text-sm font-semibold" : "text-[var(--color-brand-red)] text-sm font-semibold"}>
                 Score {deaScore ?? "—"} · {deaPassed ? "PASS" : "FAIL"}
               </p>
-              <p className="text-xs text-zinc-500">Hard block: {deaHardBlock ? "YES" : "NO"}</p>
-              <p className="text-xs text-zinc-500">Open discrepancies: {deaOpenDiscrepancies ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</p>
-              <p className="text-xs text-zinc-500">Unwitnessed waste events: {deaUnwitnessed ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Hard block: {deaHardBlock ? "YES" : "NO"}</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Open discrepancies: {deaOpenDiscrepancies != null ? deaOpenDiscrepancies : '—'}</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Unwitnessed waste events: {deaUnwitnessed != null ? deaUnwitnessed : '—'}</p>
             </>
           )}
         </div>
 
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4 space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-100">CMS Gate Summary (30 days)</h2>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">CMS Gate Summary (30 days)</h2>
           {loading ? (
-            <p className="text-xs text-zinc-500">Loading…</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Loading…</p>
           ) : !cmsSummary ? (
-            <p className="text-xs text-zinc-500">No CMS summary available.</p>
+            <p className="text-xs text-[var(--color-text-muted)]">No CMS summary available.</p>
           ) : (
             <>
-              <p className="text-xs text-zinc-500">Total checks: <span className="text-zinc-200">{cmsSummary.total}</span></p>
-              <p className="text-xs text-zinc-500">Pass rate: <span className="text-zinc-200">{cmsSummary.pass_rate}%</span></p>
-              <p className="text-xs text-zinc-500">Hard blocks: <span className="text-zinc-200">{cmsSummary.hard_block_count}</span></p>
-              <p className="text-xs text-zinc-500">Average score: <span className="text-zinc-200">{cmsSummary.avg_score}</span></p>
+              <p className="text-xs text-[var(--color-text-muted)]">Total checks: <span className="text-[var(--color-text-primary)]">{cmsSummary.total}</span></p>
+              <p className="text-xs text-[var(--color-text-muted)]">Pass rate: <span className="text-[var(--color-text-primary)]">{cmsSummary.pass_rate}%</span></p>
+              <p className="text-xs text-[var(--color-text-muted)]">Hard blocks: <span className="text-[var(--color-text-primary)]">{cmsSummary.hard_block_count}</span></p>
+              <p className="text-xs text-[var(--color-text-muted)]">Average score: <span className="text-[var(--color-text-primary)]">{cmsSummary.avg_score}</span></p>
             </>
           )}
-          <Link href="/portal/cases" className="inline-block mt-2 text-xs text-blue-400 hover:text-blue-300">
+          <Link href="/portal/cases" className="inline-block mt-2 text-xs text-[var(--color-status-info)] hover:text-[var(--color-status-info)]">
             Open Cases CMS Gate Workflow →
           </Link>
         </div>

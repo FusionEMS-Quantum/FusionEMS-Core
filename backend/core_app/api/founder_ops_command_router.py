@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 from core_app.api.dependencies import (
     db_session_dependency,
     get_current_user,
-    require_role,
+    require_founder_only_audited,
 )
 from core_app.schemas.auth import CurrentUser
 from core_app.services.founder_ops_service import FounderOpsService
@@ -31,7 +31,7 @@ from core_app.services.founder_ops_service import FounderOpsService
 router = APIRouter(
     prefix="/api/v1/founder/ops",
     tags=["Founder Operations"],
-    dependencies=[Depends(require_role("founder", "admin"))],
+    dependencies=[Depends(require_founder_only_audited())],
 )
 
 

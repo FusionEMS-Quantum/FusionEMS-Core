@@ -69,13 +69,13 @@ export default function ScenariosPage() {
   };
 
   return (
-    <div className="p-5 space-y-6 min-h-screen bg-black">
+    <div className="p-5 space-y-6 min-h-screen bg-[var(--color-bg-base)]">
       <div>
         <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · TEST SCENARIOS
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Test Scenarios</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">C&amp;S vendor test case browser and runner</p>
+        <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Test Scenarios</h1>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">C&amp;S vendor test case browser and runner</p>
       </div>
 
       <div className="flex items-center gap-3">
@@ -88,17 +88,17 @@ export default function ScenariosPage() {
         />
         <button
           onClick={() => uploadRef.current?.click()}
-          className="bg-[#0A0A0B] border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 hover:bg-cyan-500/[0.08] transition-colors"
+          className="bg-[var(--color-bg-panel)] border border-cyan-500/[0.3] text-system-billing text-xs px-4 py-2 hover:bg-cyan-500/[0.08] transition-colors"
         >
           Upload Scenario File
         </button>
-        {uploadStatus && <span className="text-xs text-zinc-400">{uploadStatus}</span>}
+        {uploadStatus && <span className="text-xs text-[var(--color-text-secondary)]">{uploadStatus}</span>}
       </div>
 
       {loading ? (
         <div className="p-6"><QuantumTableSkeleton rows={6} cols={4} /></div>
       ) : scenarios.length === 0 ? (
-        <div className="text-xs text-zinc-500">No scenarios uploaded yet</div>
+        <div className="text-xs text-[var(--color-text-muted)]">No scenarios uploaded yet</div>
       ) : (
         <div className="space-y-3">
           {scenarios.map((scenario) => {
@@ -108,24 +108,24 @@ export default function ScenariosPage() {
             return (
               <div
                 key={scenario.id}
-                className="bg-[#0A0A0B] border border-border-DEFAULT p-4 space-y-3"
+                className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 space-y-3"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-sm font-bold text-zinc-100">{d.name || 'Untitled Scenario'}</div>
+                    <div className="text-sm font-bold text-[var(--color-text-primary)]">{d.name || 'Untitled Scenario'}</div>
                     {d.summary && (
-                      <div className="text-xs text-zinc-500 mt-0.5">{d.summary}</div>
+                      <div className="text-xs text-[var(--color-text-muted)] mt-0.5">{d.summary}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span
-                      className={`text-micro font-bold px-2 py-0.5 ${d.dataset_type === 'DEM' ? 'bg-purple-900 text-purple-300' : 'bg-blue-900 text-blue-300'}`}
+                      className={`text-micro font-bold px-2 py-0.5 ${d.dataset_type === 'DEM' ? 'bg-purple-900 text-purple-300' : 'bg-blue-900 text-[var(--color-status-info)]'}`}
                     >
                       {d.dataset_type || 'EMS'}
                     </span>
                     <span
-                      className={`text-micro font-bold px-2 py-0.5 ${d.expected_result === 'PASS' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
+                      className={`text-micro font-bold px-2 py-0.5 ${d.expected_result === 'PASS' ? 'bg-green-900 text-[var(--color-status-active)]' : 'bg-red-900 text-[var(--color-brand-red)]'}`}
                     >
                       Expected: {d.expected_result || 'PASS'}
                     </span>
@@ -135,7 +135,7 @@ export default function ScenariosPage() {
                 {d.sections && d.sections.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {d.sections.map((s: string, i: number) => (
-                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-zinc-400 px-2 py-0.5">
+                      <span key={i} className="text-micro bg-bg-input border border-border-DEFAULT text-[var(--color-text-secondary)] px-2 py-0.5">
                         {s}
                       </span>
                     ))}
@@ -160,15 +160,15 @@ export default function ScenariosPage() {
                   {result && (
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-micro font-bold px-2 py-0.5 ${result.passed ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}
+                        className={`text-micro font-bold px-2 py-0.5 ${result.passed ? 'bg-green-900 text-[var(--color-status-active)]' : 'bg-red-900 text-[var(--color-brand-red)]'}`}
                       >
                         {result.passed ? 'PASS' : 'FAIL'}
                       </span>
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-[var(--color-text-muted)]">
                         {result.issue_count} issue{result.issue_count !== 1 ? 's' : ''}
                       </span>
                       {result.message && (
-                        <span className="text-xs text-zinc-500">{result.message}</span>
+                        <span className="text-xs text-[var(--color-text-muted)]">{result.message}</span>
                       )}
                     </div>
                   )}

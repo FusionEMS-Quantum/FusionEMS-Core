@@ -1,0 +1,281 @@
+{
+  "generated_at_utc": "2026-03-10T15:23:09.099579+00:00",
+  "caller_identity": {
+    "arn": "arn:aws:iam::793439286972:user/joshua"
+  },
+  "sequence": [
+    {
+      "step": 1,
+      "name": "Enumerate and validate secrets",
+      "status": "completed_with_findings",
+      "note": "See artifacts/secrets_discovery_report.json (targeted checks; IAM denied ListSecrets/DescribeSecret/GetSecretValue)"
+    },
+    {
+      "step": 2,
+      "name": "Terraform init (prod)",
+      "status": "warning",
+      "command": [
+        "terraform",
+        "-chdir=infra/terraform/environments/prod",
+        "init",
+        "-lock-timeout=10m"
+      ],
+      "started_at_utc": "2026-03-10T15:23:09.100335+00:00",
+      "exit_code": 1,
+      "stdout_tail": "\n\u001b[0m\u001b[1mInitializing the backend...\u001b[0m\n\u001b[0m\u001b[1mInitializing modules...\u001b[0m\n- backup in ../../modules/aws_backup\n- prod_audit_manager in ../../modules/audit_manager\n- prod_backups in ../../modules/aws_backup\n- prod_cloudtrail in ../../modules/audit\n- prod_kms in ../../modules/kms\n- prod_security_subsystem in ../../modules/security\n- prod_waf in ../../modules/network\n",
+      "stderr_tail": "\u001b[31m\u001b[31m\u2577\u001b[0m\u001b[0m\n\u001b[31m\u2502\u001b[0m \u001b[0m\u001b[1m\u001b[31mError: \u001b[0m\u001b[0m\u001b[1mvalidating provider credentials: retrieving caller identity from STS: operation error STS: GetCallerIdentity, https response error StatusCode: 403, RequestID: 4e5a3764-2302-4b2f-8dc1-0cbd4dc887ca, api error ExpiredToken: The security token included in the request is expired\u001b[0m\n\u001b[31m\u2502\u001b[0m \u001b[0m\n\u001b[31m\u2502\u001b[0m \u001b[0m\u001b[0m\n\u001b[31m\u2575\u001b[0m\u001b[0m\n\u001b[0m\u001b[0m\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:23:14.110971+00:00"
+    },
+    {
+      "step": 3,
+      "name": "Terraform plan (prod)",
+      "status": "blocked",
+      "note": "Skipped because terraform init did not pass"
+    },
+    {
+      "step": 4,
+      "name": "Terraform apply (prod)",
+      "status": "blocked",
+      "note": "Not executed because plan/apply preconditions not met in current IAM context"
+    },
+    {
+      "step": 5,
+      "name": "Build backend container",
+      "status": "passed",
+      "command": [
+        "docker",
+        "build",
+        "-t",
+        "fusionems-backend:evidence",
+        "./backend"
+      ],
+      "started_at_utc": "2026-03-10T15:23:14.111261+00:00",
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": "rning.\n#11 7.029 Using Python 3.12.13 environment at: /usr/local\n#11 7.471 Resolved 80 packages in 441ms\n#11 7.546 Downloading openai (1.1MiB)\n#11 7.547 Downloading telnyx (2.1MiB)\n#11 7.547 Downloading grpcio (6.4MiB)\n#11 7.547 Downloading botocore (14.0MiB)\n#11 7.549 Downloading pynacl (1.3MiB)\n#11 7.549 Downloading cryptography (4.3MiB)\n#11 7.550 Downloading psycopg-binary (4.9MiB)\n#11 7.551 Downloading sqlalchemy (3.2MiB)\n#11 7.551 Downloading pydantic-core (2.0MiB)\n#11 7.558 Downloading stripe (2.0MiB)\n#11 7.921  Downloaded pynacl\n#11 7.967  Downloaded pydantic-core\n#11 8.084  Downloaded sqlalchemy\n#11 8.186  Downloaded psycopg-binary\n#11 8.192  Downloaded cryptography\n#11 8.221  Downloaded grpcio\n#11 8.386  Downloaded openai\n#11 8.411  Downloaded stripe\n#11 8.609  Downloaded botocore\n#11 8.623  Downloaded telnyx\n#11 8.623 Prepared 80 packages in 1.15s\n#11 9.444 Installed 80 packages in 821ms\n#11 9.444  + alembic==1.18.4\n#11 9.444  + annotated-doc==0.0.4\n#11 9.445  + annotated-types==0.7.0\n#11 9.445  + anyio==4.12.1\n#11 9.445  + asgiref==3.11.1\n#11 9.445  + bcrypt==5.0.0\n#11 9.445  + boto3==1.42.64\n#11 9.445  + botocore==1.42.64\n#11 9.445  + certifi==2026.2.25\n#11 9.445  + cffi==2.0.0\n#11 9.445  + charset-normalizer==3.4.5\n#11 9.445  + click==8.3.1\n#11 9.445  + cryptography==46.0.5\n#11 9.445  + distro==1.9.0\n#11 9.445  + dnspython==2.8.0\n#11 9.445  + ecdsa==0.19.1\n#11 9.445  + email-validator==2.3.0\n#11 9.445  + fastapi==0.135.1\n#11 9.445  + googleapis-common-protos==1.73.0\n#11 9.445  + greenlet==3.3.2\n#11 9.445  + grpcio==1.78.0\n#11 9.445  + h11==0.16.0\n#11 9.445  + httpcore==1.0.9\n#11 9.446  + httpx==0.28.1\n#11 9.446  + idna==3.11\n#11 9.446  + importlib-metadata==8.7.1\n#11 9.446  + invoke==2.2.1\n#11 9.446  + jiter==0.13.0\n#11 9.446  + jmespath==1.1.0\n#11 9.446  + mako==1.3.10\n#11 9.446  + markupsafe==3.0.3\n#11 9.446  + openai==2.26.0\n#11 9.446  + opentelemetry-api==1.40.0\n#11 9.446  + opentelemetry-exporter-otlp==1.40.0\n#11 9.446  + opentelemetry-exporter-otlp-proto-common==1.40.0\n#11 9.446  + opentelemetry-exporter-otlp-proto-grpc==1.40.0\n#11 9.446  + opentelemetry-exporter-otlp-proto-http==1.40.0\n#11 9.446  + opentelemetry-instrumentation==0.61b0\n#11 9.446  + opentelemetry-instrumentation-asgi==0.61b0\n#11 9.446  + opentelemetry-instrumentation-fastapi==0.61b0\n#11 9.446  + opentelemetry-instrumentation-requests==0.61b0\n#11 9.446  + opentelemetry-proto==1.40.0\n#11 9.446  + opentelemetry-sdk==1.40.0\n#11 9.446  + opentelemetry-semantic-conventions==0.61b0\n#11 9.446  + opentelemetry-util-http==0.61b0\n#11 9.446  + packaging==26.0\n#11 9.446  + paramiko==4.0.0\n#11 9.446  + passlib==1.7.4\n#11 9.447  + prometheus-client==0.24.1\n#11 9.447  + protobuf==6.33.5\n#11 9.447  + psycopg==3.3.3\n#11 9.447  + psycopg-binary==3.3.3\n#11 9.447  + pyasn1==0.6.2\n#11 9.447  + pycparser==3.0\n#11 9.447  + pydantic==2.12.5\n#11 9.447  + pydantic-core==2.41.5\n#11 9.447  + pydantic-settings==2.13.1\n#11 9.447  + pynacl==1.6.2\n#11 9.447  + python-dateutil==2.9.0.post0\n#11 9.447  + python-dotenv==1.2.2\n#11 9.447  + python-jose==3.5.0\n#11 9.447  + python-multipart==0.0.22\n#11 9.447  + redis==7.3.0\n#11 9.447  + requests==2.32.5\n#11 9.447  + rsa==4.9.1\n#11 9.447  + s3transfer==0.16.0\n#11 9.447  + six==1.17.0\n#11 9.447  + sniffio==1.3.1\n#11 9.448  + sqlalchemy==2.0.48\n#11 9.448  + starlette==0.52.1\n#11 9.448  + stripe==14.4.1\n#11 9.448  + telnyx==4.61.0\n#11 9.448  + tenacity==9.1.4\n#11 9.448  + tqdm==4.67.3\n#11 9.448  + typing-extensions==4.15.0\n#11 9.448  + typing-inspection==0.4.2\n#11 9.448  + urllib3==2.6.3\n#11 9.448  + uvicorn==0.41.0\n#11 9.448  + wrapt==1.17.3\n#11 9.448  + zipp==3.23.0\n#11 DONE 12.7s\n\n#12 [7/8] COPY . /app\n#12 DONE 0.8s\n\n#13 [8/8] RUN chown -R fusionems:fusionems /app\n#13 DONE 1.9s\n\n#14 exporting to image\n#14 exporting layers\n#14 exporting layers 9.0s done\n#14 writing image sha256:32740eb7e37a41687ce6a66ff20e8a5984746e54515b17901669a3e383c98464 0.0s done\n#14 naming to docker.io/library/fusionems-backend:evidence 0.0s done\n#14 DONE 9.1s\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:24:05.056341+00:00"
+    },
+    {
+      "step": 5,
+      "name": "Build frontend container",
+      "status": "warning",
+      "command": [
+        "docker",
+        "build",
+        "-t",
+        "fusionems-frontend:evidence",
+        "./frontend"
+      ],
+      "started_at_utc": "2026-03-10T15:24:05.056500+00:00",
+      "exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "[39m\u001b[33mdiv\u001b[39m className\u001b[33m=\u001b[39m\u001b[32m\"grid grid-cols-2 gap-3\"\u001b[39m\u001b[33m>\u001b[39m\n#17 62.52  \u001b[90m 315 |\u001b[39m                       {[\u001b[0m\n#17 62.52 \n#17 62.52 Expected '</', got '('\n#17 62.52 \n#17 62.52 \n#17 62.52     at <unknown> (./app/portal/edi/page.tsx:221:18)\n#17 62.52     at <unknown> (./app/portal/fax-inbox/page.tsx:312:18)\n#17 ERROR: process \"/bin/sh -c npm run audit:routes && npm run build\" did not complete successfully: exit code: 1\n------\n > [builder 6/6] RUN npm run audit:routes && npm run build:\n62.52  \u001b[90m     |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n62.52  \u001b[90m 313 |\u001b[39m                   \u001b[33m<\u001b[39m\u001b[33mdiv\u001b[39m className\u001b[33m=\u001b[39m\u001b[32m\"space-y-3\"\u001b[39m\u001b[33m>\u001b[39m\n62.52  \u001b[90m 314 |\u001b[39m                     \u001b[33m<\u001b[39m\u001b[33mdiv\u001b[39m className\u001b[33m=\u001b[39m\u001b[32m\"grid grid-cols-2 gap-3\"\u001b[39m\u001b[33m>\u001b[39m\n62.52  \u001b[90m 315 |\u001b[39m                       {[\u001b[0m\n62.52 \n62.52 Expected '</', got '('\n62.52 \n62.52 \n62.52     at <unknown> (./app/portal/edi/page.tsx:221:18)\n62.52     at <unknown> (./app/portal/fax-inbox/page.tsx:312:18)\n------\nDockerfile:43\n--------------------\n  41 |     COPY . .\n  42 |     \n  43 | >>> RUN npm run audit:routes && npm run build\n  44 |     \n  45 |     \n--------------------\nERROR: failed to solve: process \"/bin/sh -c npm run audit:routes && npm run build\" did not complete successfully: exit code: 1\n58  dockerd --dns 168.63.129.16\ngithub.com/moby/buildkit/executor/runcexecutor.exitError\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/executor/runcexecutor/executor.go:391\ngithub.com/moby/buildkit/executor/runcexecutor.(*runcExecutor).Run\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/executor/runcexecutor/executor.go:339\ngithub.com/moby/buildkit/solver/llbsolver/ops.(*ExecOp).Exec\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/llbsolver/ops/exec.go:489\ngithub.com/moby/buildkit/solver.(*sharedOp).Exec.func2\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/jobs.go:1106\ngithub.com/moby/buildkit/util/flightcontrol.(*call[...]).run\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/util/flightcontrol/flightcontrol.go:123\nsync.(*Once).doSlow\n\t/usr/local/go/src/sync/once.go:76\nsync.(*Once).Do\n\t/usr/local/go/src/sync/once.go:67\nruntime.goexit\n\t/usr/local/go/src/runtime/asm_amd64.s:1700\n\n89365 v0.23.0 /usr/libexec/docker/cli-plugins/docker-buildx buildx build -t fusionems-frontend:evidence ./frontend\ngoogle.golang.org/grpc.(*ClientConn).Invoke\n\tgoogle.golang.org/grpc@v1.69.4/call.go:35\ngithub.com/moby/buildkit/api/services/control.(*controlClient).Solve\n\tgithub.com/moby/buildkit@v0.21.0/api/services/control/control_grpc.pb.go:88\ngithub.com/moby/buildkit/client.(*Client).solve.func2\n\tgithub.com/moby/buildkit@v0.21.0/client/solve.go:268\ngolang.org/x/sync/errgroup.(*Group).Go.func1\n\tgolang.org/x/sync@v0.13.0/errgroup/errgroup.go:79\nruntime.goexit\n\truntime/asm_amd64.s:1700\n\n58  dockerd --dns 168.63.129.16\ngithub.com/moby/buildkit/solver.(*edge).execOp\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/edge.go:963\ngithub.com/moby/buildkit/solver/internal/pipe.NewWithFunction[...].func2\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/internal/pipe/pipe.go:78\nruntime.goexit\n\t/usr/local/go/src/runtime/asm_amd64.s:1700\n\n89365 v0.23.0 /usr/libexec/docker/cli-plugins/docker-buildx buildx build -t fusionems-frontend:evidence ./frontend\ngithub.com/moby/buildkit/client.(*Client).solve.func2\n\tgithub.com/moby/buildkit@v0.21.0/client/solve.go:285\ngolang.org/x/sync/errgroup.(*Group).Go.func1\n\tgolang.org/x/sync@v0.13.0/errgroup/errgroup.go:79\n\n58  dockerd --dns 168.63.129.16\ngithub.com/moby/buildkit/solver/llbsolver/ops.(*ExecOp).Exec\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/llbsolver/ops/exec.go:510\ngithub.com/moby/buildkit/solver.(*sharedOp).Exec.func2\n\t/go/src/github.com/docker/docker/vendor/github.com/moby/buildkit/solver/jobs.go:1106\n\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:15.336980+00:00"
+    },
+    {
+      "step": 6,
+      "name": "ECR login probe",
+      "status": "warning",
+      "command": [
+        "aws",
+        "ecr",
+        "get-login-password",
+        "--region",
+        "us-east-1",
+        "--profile",
+        "default"
+      ],
+      "started_at_utc": "2026-03-10T15:27:15.341979+00:00",
+      "exit_code": 255,
+      "stdout_tail": "",
+      "stderr_tail": "\nAn error occurred (ExpiredTokenException) when calling the GetAuthorizationToken operation: The security token included in the request is expired\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:17.217907+00:00"
+    },
+    {
+      "step": 6,
+      "name": "Push images to ECR",
+      "status": "blocked",
+      "note": "ECR repository URI/authz/tag mapping not completed due prior IAM and deploy precondition failures"
+    },
+    {
+      "step": 7,
+      "name": "Deploy ECS services",
+      "status": "blocked",
+      "note": "Skipped; requires successful terraform/apply and image publish"
+    },
+    {
+      "step": 8,
+      "name": "Alembic upgrade head (backend)",
+      "status": "passed",
+      "command": [
+        "/workspaces/FusionEMS-Core/.venv/bin/python",
+        "-m",
+        "alembic",
+        "upgrade",
+        "head"
+      ],
+      "started_at_utc": "2026-03-10T15:27:17.218257+00:00",
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": "INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\nINFO  [alembic.runtime.migration] Will assume transactional DDL.\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:20.576410+00:00"
+    },
+    {
+      "step": 9,
+      "name": "Start services",
+      "status": "blocked",
+      "note": "No deployed ECS revision available from this execution cycle"
+    },
+    {
+      "step": 10,
+      "name": "Startup fail-fast validation (prod config)",
+      "status": "warning",
+      "command": [
+        "/workspaces/FusionEMS-Core/.venv/bin/python",
+        "-c",
+        "import os; os.environ[\"ENVIRONMENT\"]=\"production\"; from core_app.core.config import Settings; Settings()"
+      ],
+      "started_at_utc": "2026-03-10T15:27:20.576624+00:00",
+      "exit_code": 1,
+      "stdout_tail": "",
+      "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/workspaces/FusionEMS-Core/.venv/lib/python3.12/site-packages/pydantic_settings/main.py\", line 171, in __init__\n    super().__init__(\n  File \"/workspaces/FusionEMS-Core/.venv/lib/python3.12/site-packages/pydantic/main.py\", line 250, in __init__\n    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for Settings\noss_tts_piper_speaker_id\n  Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/int_parsing\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:20.803348+00:00"
+    },
+    {
+      "step": 11,
+      "name": "Health endpoint /health",
+      "status": "passed",
+      "command": [
+        "curl",
+        "-fsS",
+        "https://api.fusionemsquantum.com/health"
+      ],
+      "started_at_utc": "2026-03-10T15:27:20.803497+00:00",
+      "exit_code": 0,
+      "stdout_tail": "{\"status\":\"ok\"}",
+      "stderr_tail": "",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:21.052015+00:00"
+    },
+    {
+      "step": 11,
+      "name": "Health endpoint /healthz",
+      "status": "passed",
+      "command": [
+        "curl",
+        "-fsS",
+        "https://api.fusionemsquantum.com/healthz"
+      ],
+      "started_at_utc": "2026-03-10T15:27:21.052257+00:00",
+      "exit_code": 0,
+      "stdout_tail": "{\"status\":\"ok\"}",
+      "stderr_tail": "",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:21.136048+00:00"
+    },
+    {
+      "step": 12,
+      "name": "Authenticated smoke test script",
+      "status": "warning",
+      "command": [
+        "/workspaces/FusionEMS-Core/.venv/bin/python",
+        "backend/scripts/smoke_test.py"
+      ],
+      "started_at_utc": "2026-03-10T15:27:21.136794+00:00",
+      "exit_code": 2,
+      "stdout_tail": "SMOKE_API_BASE_URL (or BASE_URL) is required\n",
+      "stderr_tail": "/workspaces/FusionEMS-Core/.venv/lib/python3.12/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.0.1)/charset_normalizer (3.4.5) doesn't match a supported version!\n  warnings.warn(\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:22.186348+00:00"
+    },
+    {
+      "step": 13,
+      "name": "API status connectivity check",
+      "status": "warning",
+      "command": [
+        "curl",
+        "-fsS",
+        "https://api.fusionemsquantum.com/api/v1/status"
+      ],
+      "started_at_utc": "2026-03-10T15:27:22.186544+00:00",
+      "exit_code": 22,
+      "stdout_tail": "",
+      "stderr_tail": "curl: (22) The requested URL returned error: 503 \n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:22.329019+00:00"
+    },
+    {
+      "step": 14,
+      "name": "Microsoft Graph connectivity",
+      "status": "blocked",
+      "note": "Graph secret access denied by IAM policy; cannot run live send/connectivity probe in this session"
+    },
+    {
+      "step": 15,
+      "name": "Stripe connectivity",
+      "status": "blocked",
+      "note": "Stripe secret access denied by IAM policy; active-path connectivity probe unavailable"
+    },
+    {
+      "step": 16,
+      "name": "Office Ally connectivity",
+      "status": "blocked",
+      "note": "Office Ally secret access denied by IAM policy; connectivity probe unavailable"
+    },
+    {
+      "step": 17,
+      "name": "CloudWatch log groups describe",
+      "status": "warning",
+      "command": [
+        "aws",
+        "logs",
+        "describe-log-groups",
+        "--profile",
+        "default",
+        "--max-items",
+        "20"
+      ],
+      "started_at_utc": "2026-03-10T15:27:22.329501+00:00",
+      "exit_code": 255,
+      "stdout_tail": "",
+      "stderr_tail": "You must specify a region. You can also configure your region by running \"aws configure\".\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:22.925453+00:00"
+    },
+    {
+      "step": 18,
+      "name": "CloudTrail status probe",
+      "status": "warning",
+      "command": [
+        "aws",
+        "cloudtrail",
+        "describe-trails",
+        "--profile",
+        "default"
+      ],
+      "started_at_utc": "2026-03-10T15:27:22.925703+00:00",
+      "exit_code": 255,
+      "stdout_tail": "",
+      "stderr_tail": "You must specify a region. You can also configure your region by running \"aws configure\".\n",
+      "note": "",
+      "finished_at_utc": "2026-03-10T15:27:23.473241+00:00"
+    }
+  ],
+  "artifacts": [
+    "/workspaces/FusionEMS-Core/artifacts/secrets_discovery_report.json"
+  ],
+  "access": {
+    "application_url": "https://app.fusionemsquantum.com",
+    "login_url": "https://app.fusionemsquantum.com/login",
+    "founder_login_url": "https://app.fusionemsquantum.com/founder-login",
+    "api_base_url": "https://api.fusionemsquantum.com",
+    "health_endpoint": "https://api.fusionemsquantum.com/healthz",
+    "bootstrap_admin_method": "Microsoft Entra login with founder role/policy controls in backend"
+  }
+}

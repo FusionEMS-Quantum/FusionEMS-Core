@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import uuid as _uuid
+
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core_app.api.dependencies import (
     db_session_dependency,
-    get_current_user,
-    require_role,
+    require_founder_only_audited,
 )
 from core_app.models.founder_tax import (
     FounderExpense,
@@ -30,14 +32,13 @@ def get_s3_vault_service() -> S3DocumentVaultService:
 
 @tax_advisor_router.get("/vault/documents")
 async def list_vault_documents(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict:
     """
     Returns the list of documents stored in the KMS-Encrypted S3 Vault,
     queried from the TaxDocumentVault table.
     """
-    require_role(current, ["founder", "admin"])
     docs = (
         db.execute(select(TaxDocumentVault).order_by(TaxDocumentVault.created_at.desc()))
         .scalars()
@@ -132,15 +133,12 @@ async def get_domination_strategies(
 
 
 @tax_advisor_router.get("/efile/realtime-status")
-async def realtime_efile_tracking():
-    """
-    Returns status of IRS MeF and Wisconsin Dept of Revenue e-file integration.
-    """
-    return {
-        "status": "not_configured",
-        "message": "IRS MeF and Wisconsin DOR e-file gateway integration is not yet connected. Configure IRS_MEF_API_KEY and WI_DOR_API_KEY to enable live filing status.",
-        "steps": [],
-    }
+async def realtime_efile_tracking(
+    current: CurrentUser = Depends(require_founder_only_audited()),
+) -> dict:
+    """Return live configuration + reachability status for IRS MeF and WI DOR."""
+    from core_app.accounting.efile_service import EfileOrchestrator
+    return await EfileOrchestrator().realtime_status()
 
 
 @tax_advisor_router.post("/receipts/scan")
@@ -173,7 +171,7 @@ async def scan_android_receipt(
 
 @tax_advisor_router.get("/forecast")
 async def get_forward_looking_forecast(
-    current: CurrentUser = Depends(get_current_user),
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
     ai_advisor: AIReceiptTaxAdvisor = Depends(),
 ) -> dict:
@@ -181,7 +179,6 @@ async def get_forward_looking_forecast(
     Returns quarter-by-quarter insights on estimated taxes for Federal + Wisconsin,
     computed from actual YTD expenses in the founder_expenses table.
     """
-    require_role(current, ["founder", "admin"])
     expenses = (
         db.execute(
             select(FounderExpense)
@@ -198,42 +195,56 @@ async def get_forward_looking_forecast(
     }
 
 
+class WisconsinEfileRequest(BaseModel):
+    tax_year: int
+    filer_ssn: str  # Never logged; transmitted encrypted via TLS
+    first_name: str
+    last_name: str
+    street: str
+    city: str
+    zip_code: str
+    wi_adjusted_gross_income: float = 0.0
+    wi_exemptions: float = 700.0   # Single filer standard WI exemption
+    wi_credits: float = 0.0
+    wi_withholding: float = 0.0
+    net_taxable_income: float = 0.0
+    correlation_id: str = ""
+
+
+
 @tax_advisor_router.post("/efile/transmit/wisconsin")
-async def generate_wisconsin_wt4(
-    current: CurrentUser = Depends(get_current_user),
+async def transmit_wisconsin_form1(
+    request: WisconsinEfileRequest,
+    current: CurrentUser = Depends(require_founder_only_audited()),
     db: Session = Depends(db_session_dependency),
 ) -> dict:
+    """Transmit Wisconsin Form 1 (Individual Income Tax Return) via WI DOR TAP API.
+
+    Set WI_DOR_API_KEY environment variable to activate live submission.
+    Without the key the response will explain the registration steps.
     """
-    Compiles the founder expense ledger into the JSON specification required by
-    the Wisconsin Department of Revenue MyTax Account API (DRAFT stage).
-    PaymentAmount is computed from recorded net income once revenue is present;
-    in the pre-revenue phase it will be $0.00 (no estimated payments due).
-    """
-    require_role(current, ["founder", "admin"])
-    expenses = (
-        db.execute(select(FounderExpense).order_by(FounderExpense.transaction_date.desc()).limit(1000))
-        .scalars()
-        .all()
-    )
-    total_deductible = round(sum(e.total_amount for e in expenses), 2)
-    ongoing_expenses = round(
-        sum(e.total_amount for e in expenses if not e.is_startup_expense_sec195), 2
-    )
-    # Wisconsin income tax is owed only on net income (revenue - deductions).
-    # In the pre-revenue phase net income = 0, so estimated payment = $0.
-    # This value will become non-zero once annual revenue data is available.
-    wi_estimated_payment = 0.00
-    return {
-        "status": "DRAFT",
-        "form": "WI_WT4 / Estimated Payments",
-        "compiled_json_schema": {
-            "Taxpayer": "LLC / Sole Proprietor",
-            "State": "WI",
-            "TotalDeductibleExpenses": total_deductible,
-            "OngoingBusinessExpenses": ongoing_expenses,
-            "ExpenseCount": len(expenses),
-            "PaymentAmount": wi_estimated_payment,
-            "note": "Estimated payment will be non-zero once annual revenue is recorded.",
+    from core_app.accounting.efile_service import WisconsinDORClient
+
+    if not request.correlation_id:
+        request.correlation_id = str(_uuid.uuid4())
+
+    client = WisconsinDORClient()
+    result = await client.transmit_wi_form1(
+        tax_year=request.tax_year,
+        filer_ssn=request.filer_ssn,
+        first_name=request.first_name,
+        last_name=request.last_name,
+        address={
+            "street": request.street,
+            "city": request.city,
+            "state": "WI",
+            "zip": request.zip_code,
         },
-        "next_step": "Transmit to State API Gateway",
-    }
+        wi_adjusted_gross_income=request.wi_adjusted_gross_income,
+        wi_exemptions=request.wi_exemptions,
+        wi_credits=request.wi_credits,
+        wi_withholding=request.wi_withholding,
+        net_taxable_income=request.net_taxable_income,
+        correlation_id=request.correlation_id,
+    )
+    return result.to_dict()

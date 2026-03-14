@@ -148,9 +148,9 @@ function severityFromScore(score: number): Severity {
 }
 
 function severityClasses(severity: Severity): string {
-  if (severity === "ok") return "text-emerald-400 border-emerald-900 bg-emerald-950/30";
-  if (severity === "warn") return "text-amber-300 border-amber-900 bg-amber-950/30";
-  return "text-red-300 border-red-900 bg-red-950/30";
+  if (severity === "ok") return "text-[var(--color-status-active)] border-[var(--color-status-active)] bg-[var(--color-status-active)]/30";
+  if (severity === "warn") return "text-[var(--q-yellow)] border-amber-900 bg-amber-950/30";
+  return "text-[var(--color-brand-red)] border-[var(--color-brand-red)] bg-[var(--color-brand-red)]/30";
 }
 
 export default function FounderDEACMSPage() {
@@ -166,6 +166,12 @@ export default function FounderDEACMSPage() {
   const [bundleBusy, setBundleBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const cmsHardBlockCount = cmsSummary?.hard_block_count;
+  const cmsPassRate = cmsSummary?.pass_rate;
+  const deaOpenDiscrepancies = deaLatest?.metrics?.open_discrepancies;
+  const cmsHardBlockCountSafe = typeof cmsHardBlockCount === 'number' && Number.isFinite(cmsHardBlockCount)
+    ? cmsHardBlockCount
+    : 0;
   const commandActions = useMemo<NextAction[]>(() => {
     const actions: NextAction[] = [];
 
@@ -178,19 +184,19 @@ export default function FounderDEACMSPage() {
       });
     }
 
-    if ((cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0) {
+    if (typeof cmsHardBlockCount === 'number' && cmsHardBlockCount > 0) {
       actions.push({
         id: 'cms-hard-block',
-        title: `Resolve ${cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} CMS hard-block case(s)`,
+        title: `Resolve ${cmsHardBlockCount} CMS hard-block case(s)`,
         severity: 'BLOCKING',
         domain: 'CMS Gate',
       });
     }
 
-    if ((cmsSummary?.pass_rate ?? 100) < 85) {
+    if (typeof cmsPassRate === 'number' && cmsPassRate < 85) {
       actions.push({
         id: 'cms-pass-rate',
-        title: `Improve CMS pass rate from ${cmsSummary?.pass_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`,
+        title: `Improve CMS pass rate from ${cmsPassRate}%`,
         severity: 'HIGH',
         domain: 'CMS Gate',
       });
@@ -215,19 +221,35 @@ export default function FounderDEACMSPage() {
     }
 
     return actions;
-  }, [bundleHistory.length, cmsSummary?.hard_block_count, cmsSummary?.pass_rate, deaLatest]);
+  }, [bundleHistory.length, cmsHardBlockCount, cmsPassRate, deaLatest]);
 
   const complianceDomainHealth = useMemo<DomainHealth[]>(() => {
-    const deaScore = Math.max(0, Math.min(100, Math.round(deaLatest?.score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())));
-    const cmsScore = Math.max(0, Math.min(100, Math.round(cmsSummary?.pass_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())));
+    const deaScoreCandidate = deaLatest?.score;
+    const cmsScoreCandidate = cmsSummary?.pass_rate;
+    const deaScore = typeof deaScoreCandidate === 'number' && Number.isFinite(deaScoreCandidate)
+      ? Math.max(0, Math.min(100, Math.round(deaScoreCandidate)))
+      : 55;
+    const cmsScore = typeof cmsScoreCandidate === 'number' && Number.isFinite(cmsScoreCandidate)
+      ? Math.max(0, Math.min(100, Math.round(cmsScoreCandidate)))
+      : 60;
     const evidenceScore = bundleHistory.length > 0 ? 92 : 58;
+
+    const deaOpenDiscrepanciesCount = typeof deaOpenDiscrepancies === 'number' && Number.isFinite(deaOpenDiscrepancies)
+      ? deaOpenDiscrepancies
+      : 0;
+    const cmsHardBlocksCount = typeof cmsHardBlockCount === 'number' && Number.isFinite(cmsHardBlockCount)
+      ? cmsHardBlockCount
+      : 0;
+    const cmsPassRatePct = typeof cmsPassRate === 'number' && Number.isFinite(cmsPassRate)
+      ? cmsPassRate
+      : null;
 
     return [
       {
         domain: 'compliance',
         score: deaLatest ? deaScore : 55,
         trend: deaLatest?.passed ? 'up' : 'down',
-        alertCount: (deaLatest?.metrics?.open_discrepancies ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) + (deaLatest?.hard_block ? 1 : 0),
+        alertCount: (deaLatest ? deaOpenDiscrepanciesCount : 0) + (deaLatest?.hard_block ? 1 : 0),
         topIssue: deaLatest?.hard_block
           ? 'DEA hard-block findings require intervention'
           : 'DEA custody posture stable',
@@ -235,11 +257,11 @@ export default function FounderDEACMSPage() {
       {
         domain: 'billing',
         score: cmsSummary ? cmsScore : 60,
-        trend: (cmsSummary?.pass_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) >= 85 ? 'up' : 'down',
-        alertCount: cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(),
-        topIssue: (cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0
-          ? `${cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} CMS hard block(s)`
-          : 'CMS gate checks healthy',
+        trend: cmsPassRatePct == null ? 'stable' : cmsPassRatePct >= 85 ? 'up' : 'down',
+        alertCount: cmsSummary ? cmsHardBlocksCount : 0,
+        topIssue: cmsSummary
+          ? (cmsHardBlocksCount > 0 ? `${cmsHardBlocksCount} CMS hard block(s)` : 'CMS gate checks healthy')
+          : 'CMS summary unavailable',
       },
       {
         domain: 'ops',
@@ -251,7 +273,7 @@ export default function FounderDEACMSPage() {
           : 'Inspection evidence pipeline active',
       },
     ];
-  }, [bundleHistory.length, cmsSummary, deaLatest]);
+  }, [bundleHistory.length, cmsSummary, cmsHardBlockCount, cmsPassRate, deaLatest, deaOpenDiscrepancies]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -359,7 +381,7 @@ export default function FounderDEACMSPage() {
     <div className="p-5 space-y-6">
       <FounderStatusBar
         isLive={!Boolean(error)}
-        activeIncidents={(deaLatest?.hard_block ? 1 : 0) + (cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+        activeIncidents={(deaLatest?.hard_block ? 1 : 0) + cmsHardBlockCountSafe}
       />
 
       <div className="flex items-start justify-between gap-4">
@@ -367,14 +389,14 @@ export default function FounderDEACMSPage() {
           <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">
             DOMAIN 5 · DEA / CMS COMMAND
           </div>
-          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">DEA & CMS Compliance Command</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">DEA & CMS Compliance Command</h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
             Controlled-substance audit evidence + CMS medical necessity gate transparency
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <SeverityBadge
               severity={
-                deaLatest?.hard_block || (cmsSummary?.hard_block_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0
+                deaLatest?.hard_block || (cmsSummary?.hard_block_count ?? 0) > 0
                   ? 'BLOCKING'
                   : (cmsSummary?.pass_rate ?? 100) < 85
                     ? 'HIGH'
@@ -386,7 +408,7 @@ export default function FounderDEACMSPage() {
         </div>
         <Link
           href="/portal/dea-cms"
-          className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+          className="text-xs text-[var(--color-status-info)] hover:text-[var(--color-status-info)] transition-colors"
         >
           Open Agency Portal View →
         </Link>
@@ -399,23 +421,23 @@ export default function FounderDEACMSPage() {
       {error && <ErrorState title="Compliance command error" message={error} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-100">Run DEA Narcotics Audit</h2>
-          <label className="block text-xs text-zinc-500">Lookback window (days)</label>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Run DEA Narcotics Audit</h2>
+          <label className="block text-xs text-[var(--color-text-muted)]">Lookback window (days)</label>
           <input
             type="number"
             min={1}
             max={365}
             value={lookbackDays}
             onChange={(e) => setLookbackDays(Number(e.target.value || 30))}
-            className="w-full bg-black border border-border-DEFAULT px-2 py-1.5 text-xs text-zinc-100"
+            className="w-full bg-[var(--color-bg-base)] border border-border-DEFAULT px-2 py-1.5 text-xs text-[var(--color-text-primary)]"
           />
           <button
             onClick={() => {
               void runDeaAudit();
             }}
             disabled={busy}
-            className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-xs font-semibold"
+            className="w-full px-3 py-2 bg-orange-600 hover:bg-[var(--q-orange)] disabled:opacity-50 text-xs font-semibold"
           >
             {busy ? "Running…" : "Run DEA Audit"}
           </button>
@@ -424,16 +446,16 @@ export default function FounderDEACMSPage() {
               void refresh();
             }}
             disabled={loading}
-            className="w-full px-3 py-2 border border-border-DEFAULT text-xs text-zinc-300 hover:bg-zinc-900 disabled:opacity-50"
+            className="w-full px-3 py-2 border border-border-DEFAULT text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-panel)] disabled:opacity-50"
           >
             Refresh Metrics
           </button>
         </div>
 
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4">
-          <h2 className="text-sm font-semibold text-zinc-100 mb-3">Latest DEA Audit</h2>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Latest DEA Audit</h2>
           {loading ? (
-            <p className="text-xs text-zinc-500">Loading DEA audit telemetry...</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Loading DEA audit telemetry...</p>
           ) : !deaLatest ? (
             <QuantumEmptyState
               title="No DEA audit reports yet"
@@ -445,13 +467,13 @@ export default function FounderDEACMSPage() {
               <div className={`inline-flex px-2 py-1 text-xs border ${severityClasses(severityFromScore(deaLatest.score))}`}>
                 Score {deaLatest.score} · {deaLatest.passed ? "PASS" : "FAIL"}
               </div>
-              <p className="text-xs text-zinc-500">Generated: {fmtTs(deaLatest.generated_at)}</p>
-              <p className="text-xs text-zinc-400">Open discrepancies: {deaLatest.metrics.open_discrepancies}</p>
-              <p className="text-xs text-zinc-400">Unwitnessed waste events: {deaLatest.metrics.unwitnessed_waste_events}</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Generated: {fmtTs(deaLatest.generated_at)}</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">Open discrepancies: {deaLatest.metrics.open_discrepancies}</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">Unwitnessed waste events: {deaLatest.metrics.unwitnessed_waste_events}</p>
               {deaLatest.required_actions.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {deaLatest.required_actions.map((action) => (
-                    <li key={action} className="text-xs text-amber-300">• {action}</li>
+                    <li key={action} className="text-xs text-[var(--q-yellow)]">• {action}</li>
                   ))}
                 </ul>
               )}
@@ -459,10 +481,10 @@ export default function FounderDEACMSPage() {
           )}
         </div>
 
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4">
-          <h2 className="text-sm font-semibold text-zinc-100 mb-3">CMS Gate Summary (30d)</h2>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">CMS Gate Summary (30d)</h2>
           {loading ? (
-            <p className="text-xs text-zinc-500">Loading CMS summary telemetry...</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Loading CMS summary telemetry...</p>
           ) : !cmsSummary ? (
             <QuantumEmptyState
               title="No CMS summary available"
@@ -471,29 +493,29 @@ export default function FounderDEACMSPage() {
             />
           ) : (
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-black border border-border-subtle p-2">
-                <p className="text-zinc-500">Total checks</p>
-                <p className="text-zinc-100 text-sm font-semibold">{cmsSummary.total}</p>
+              <div className="bg-[var(--color-bg-base)] border border-border-subtle p-2">
+                <p className="text-[var(--color-text-muted)]">Total checks</p>
+                <p className="text-[var(--color-text-primary)] text-sm font-semibold">{cmsSummary.total}</p>
               </div>
-              <div className="bg-black border border-border-subtle p-2">
-                <p className="text-zinc-500">Pass rate</p>
-                <p className="text-zinc-100 text-sm font-semibold">{cmsSummary.pass_rate}%</p>
+              <div className="bg-[var(--color-bg-base)] border border-border-subtle p-2">
+                <p className="text-[var(--color-text-muted)]">Pass rate</p>
+                <p className="text-[var(--color-text-primary)] text-sm font-semibold">{cmsSummary.pass_rate}%</p>
               </div>
-              <div className="bg-black border border-border-subtle p-2">
-                <p className="text-zinc-500">Hard blocks</p>
-                <p className="text-zinc-100 text-sm font-semibold">{cmsSummary.hard_block_count}</p>
+              <div className="bg-[var(--color-bg-base)] border border-border-subtle p-2">
+                <p className="text-[var(--color-text-muted)]">Hard blocks</p>
+                <p className="text-[var(--color-text-primary)] text-sm font-semibold">{cmsSummary.hard_block_count}</p>
               </div>
-              <div className="bg-black border border-border-subtle p-2">
-                <p className="text-zinc-500">Avg score</p>
-                <p className="text-zinc-100 text-sm font-semibold">{cmsSummary.avg_score}</p>
+              <div className="bg-[var(--color-bg-base)] border border-border-subtle p-2">
+                <p className="text-[var(--color-text-muted)]">Avg score</p>
+                <p className="text-[var(--color-text-primary)] text-sm font-semibold">{cmsSummary.avg_score}</p>
               </div>
             </div>
           )}
         </div>
 
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-100">Inspection Evidence Bundle</h2>
-          <p className="text-xs text-zinc-500">
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Inspection Evidence Bundle</h2>
+          <p className="text-xs text-[var(--color-text-muted)]">
             Generates CSV + PDF payload + immutable hash (sha256-jcs) for inspection handoff.
           </p>
           <button
@@ -501,21 +523,21 @@ export default function FounderDEACMSPage() {
               void createEvidenceBundle();
             }}
             disabled={bundleBusy}
-            className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-xs font-semibold"
+            className="w-full px-3 py-2 bg-blue-600 hover:bg-[var(--color-status-info)] disabled:opacity-50 text-xs font-semibold"
           >
             {bundleBusy ? "Generating…" : "Generate Evidence Bundle"}
           </button>
           {bundleDetail && (
-            <div className="space-y-1 border border-border-subtle bg-black p-2">
-              <p className="text-xs text-zinc-500">Selected bundle</p>
-              <p className="text-xs text-zinc-300 font-mono">{bundleDetail.bundle_id}</p>
-              <p className="text-xs text-zinc-500">Hash: {bundleDetail.immutable_hash.slice(0, 18)}…</p>
+            <div className="space-y-1 border border-border-subtle bg-[var(--color-bg-base)] p-2">
+              <p className="text-xs text-[var(--color-text-muted)]">Selected bundle</p>
+              <p className="text-xs text-[var(--color-text-secondary)] font-mono">{bundleDetail.bundle_id}</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Hash: {bundleDetail.immutable_hash.slice(0, 18)}…</p>
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => {
                     downloadCsv(bundleDetail.csv_artifact);
                   }}
-                  className="px-2 py-1 text-xs border border-border-DEFAULT text-zinc-300 hover:bg-zinc-900"
+                  className="px-2 py-1 text-xs border border-border-DEFAULT text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-panel)]"
                 >
                   Download CSV
                 </button>
@@ -524,7 +546,7 @@ export default function FounderDEACMSPage() {
                     void verifyEvidenceBundle(bundleDetail.bundle_id);
                   }}
                   disabled={bundleBusy}
-                  className="px-2 py-1 text-xs border border-border-DEFAULT text-zinc-300 hover:bg-zinc-900 disabled:opacity-50"
+                  className="px-2 py-1 text-xs border border-border-DEFAULT text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-panel)] disabled:opacity-50"
                 >
                   Verify Hash
                 </button>
@@ -532,7 +554,7 @@ export default function FounderDEACMSPage() {
             </div>
           )}
           {bundleVerify && (
-            <div className={`border p-2 text-xs ${bundleVerify.hash_valid ? "border-emerald-900 bg-emerald-950/30 text-emerald-300" : "border-red-900 bg-red-950/30 text-red-300"}`}>
+            <div className={`border p-2 text-xs ${bundleVerify.hash_valid ? "border-[var(--color-status-active)] bg-[var(--color-status-active)]/30 text-[var(--color-status-active)]" : "border-[var(--color-brand-red)] bg-[var(--color-brand-red)]/30 text-[var(--color-brand-red)]"}`}>
               Verification: {bundleVerify.verification_status} · {fmtTs(bundleVerify.verified_at)}
             </div>
           )}
@@ -540,38 +562,38 @@ export default function FounderDEACMSPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">DEA Audit History</h3>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">DEA Audit History</h3>
           <div className="space-y-2">
             {deaHistory.length === 0 && !loading && (
               <QuantumEmptyState title="No DEA history" description="No DEA audit records were returned for this tenant." className="py-6" />
             )}
             {deaHistory.map((row) => (
-              <div key={row.report_id} className="border border-border-subtle bg-black p-2">
+              <div key={row.report_id} className="border border-border-subtle bg-[var(--color-bg-base)] p-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-400">{fmtTs(row.generated_at)}</span>
-                  <span className={row.passed ? "text-emerald-400" : "text-red-300"}>{row.score}</span>
+                  <span className="text-[var(--color-text-secondary)]">{fmtTs(row.generated_at)}</span>
+                  <span className={row.passed ? "text-[var(--color-status-active)]" : "text-[var(--color-brand-red)]"}>{row.score}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">CMS Gate History</h3>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">CMS Gate History</h3>
           <div className="space-y-2">
             {cmsHistory.length === 0 && !loading && (
               <QuantumEmptyState title="No CMS history" description="No CMS gate history rows were returned for this tenant." className="py-6" />
             )}
             {cmsHistory.map((row) => (
-              <div key={row.id} className="border border-border-subtle bg-black p-2 text-xs">
+              <div key={row.id} className="border border-border-subtle bg-[var(--color-bg-base)] p-2 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-400">{fmtTs(row.data?.evaluated_at)}</span>
-                  <span className={row.data?.passed ? "text-emerald-400" : "text-red-300"}>
+                  <span className="text-[var(--color-text-secondary)]">{fmtTs(row.data?.evaluated_at)}</span>
+                  <span className={row.data?.passed ? "text-[var(--color-status-active)]" : "text-[var(--color-brand-red)]"}>
                     {row.data?.score ?? "—"}
                   </span>
                 </div>
-                <p className="text-zinc-500 mt-1">Case: {row.data?.case_id ?? "standalone"}</p>
+                <p className="text-[var(--color-text-muted)] mt-1">Case: {row.data?.case_id ?? "standalone"}</p>
               </div>
             ))}
           </div>
@@ -579,26 +601,26 @@ export default function FounderDEACMSPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">Evidence Bundle History</h3>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Evidence Bundle History</h3>
           <div className="space-y-2">
             {bundleHistory.length === 0 && !loading && (
               <QuantumEmptyState title="No evidence bundles generated" description="Generate an inspection-ready bundle to establish immutable evidence output." className="py-6" />
             )}
             {bundleHistory.map((row) => (
-              <div key={row.bundle_id} className="border border-border-subtle bg-black p-2 text-xs space-y-1">
+              <div key={row.bundle_id} className="border border-border-subtle bg-[var(--color-bg-base)] p-2 text-xs space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-400">{fmtTs(row.generated_at)}</span>
-                  <span className="text-blue-300">DEA {row.dea_total} · CMS {row.cms_total}</span>
+                  <span className="text-[var(--color-text-secondary)]">{fmtTs(row.generated_at)}</span>
+                  <span className="text-[var(--color-status-info)]">DEA {row.dea_total} · CMS {row.cms_total}</span>
                 </div>
-                <p className="text-zinc-500 font-mono">{row.immutable_hash.slice(0, 24)}…</p>
+                <p className="text-[var(--color-text-muted)] font-mono">{row.immutable_hash.slice(0, 24)}…</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       void loadEvidenceBundle(row.bundle_id);
                     }}
                     disabled={bundleBusy}
-                    className="px-2 py-1 border border-border-DEFAULT text-zinc-300 hover:bg-zinc-900 disabled:opacity-50"
+                    className="px-2 py-1 border border-border-DEFAULT text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-panel)] disabled:opacity-50"
                   >
                     Inspect
                   </button>
@@ -607,7 +629,7 @@ export default function FounderDEACMSPage() {
                       void verifyEvidenceBundle(row.bundle_id);
                     }}
                     disabled={bundleBusy}
-                    className="px-2 py-1 border border-border-DEFAULT text-zinc-300 hover:bg-zinc-900 disabled:opacity-50"
+                    className="px-2 py-1 border border-border-DEFAULT text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-panel)] disabled:opacity-50"
                   >
                     Verify
                   </button>
@@ -617,27 +639,27 @@ export default function FounderDEACMSPage() {
           </div>
         </div>
 
-        <div className="border border-border-DEFAULT bg-[#0A0A0B] p-4">
-          <h3 className="text-sm font-semibold text-zinc-100 mb-3">Bundle Detail</h3>
+        <div className="border border-border-DEFAULT bg-[var(--color-bg-panel)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Bundle Detail</h3>
           {!bundleDetail ? (
-            <p className="text-xs text-zinc-500">Select a bundle from history to inspect payload details.</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Select a bundle from history to inspect payload details.</p>
           ) : (
             <div className="space-y-2 text-xs">
-              <p className="text-zinc-500">Bundle ID: <span className="text-zinc-300 font-mono">{bundleDetail.bundle_id}</span></p>
-              <p className="text-zinc-500">Hash algorithm: <span className="text-zinc-300">{bundleDetail.hash_algorithm}</span></p>
-              <p className="text-zinc-500">Immutable hash:</p>
-              <p className="text-zinc-300 font-mono break-all">{bundleDetail.immutable_hash}</p>
-              <p className="text-zinc-500">
-                PDF Template: <span className="text-zinc-300">{bundleDetail.pdf_payload?.template_id || "—"}</span>
+              <p className="text-[var(--color-text-muted)]">Bundle ID: <span className="text-[var(--color-text-secondary)] font-mono">{bundleDetail.bundle_id}</span></p>
+              <p className="text-[var(--color-text-muted)]">Hash algorithm: <span className="text-[var(--color-text-secondary)]">{bundleDetail.hash_algorithm}</span></p>
+              <p className="text-[var(--color-text-muted)]">Immutable hash:</p>
+              <p className="text-[var(--color-text-secondary)] font-mono break-all">{bundleDetail.immutable_hash}</p>
+              <p className="text-[var(--color-text-muted)]">
+                PDF Template: <span className="text-[var(--color-text-secondary)]">{bundleDetail.pdf_payload?.template_id || "—"}</span>
               </p>
-              <p className="text-zinc-500">
-                PDF Sections: <span className="text-zinc-300">{bundleDetail.pdf_payload?.sections?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
+              <p className="text-[var(--color-text-muted)]">
+                PDF Sections: <span className="text-[var(--color-text-secondary)]">{Array.isArray(bundleDetail.pdf_payload?.sections) ? bundleDetail.pdf_payload.sections.length : '—'}</span>
               </p>
               <div className="pt-2 border-t border-border-subtle">
-                <p className="text-zinc-500 mb-1">Critical Findings</p>
+                <p className="text-[var(--color-text-muted)] mb-1">Critical Findings</p>
                 <ul className="space-y-1">
                   {(bundleDetail.bundle_core.findings?.critical_findings || []).map((finding) => (
-                    <li key={finding} className="text-zinc-300">• {finding}</li>
+                    <li key={finding} className="text-[var(--color-text-secondary)]">• {finding}</li>
                   ))}
                 </ul>
               </div>
@@ -646,7 +668,7 @@ export default function FounderDEACMSPage() {
         </div>
       </div>
 
-      <Link href="/founder/compliance" className="text-xs text-orange-dim hover:text-[#FF4D00]">
+      <Link href="/founder/compliance" className="text-xs text-orange-dim hover:text-[var(--q-orange)]">
         ← Back to Compliance
       </Link>
     </div>

@@ -243,11 +243,15 @@ async def provision_tenant_from_application(
     db: Session,
     application_id: str,
     application_row: dict,
-    _stripe_event: dict,
+    stripe_event: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     from core_app.core.config import get_settings
 
     settings = get_settings()
+
+    # stripe_event is intentionally optional: provisioning must be driven by the
+    # application record (authoritative) and not depend on webhook payload shape.
+    _ = stripe_event
 
     tenant_name = application_row.get("agency_name", "")
     contact_email = application_row.get("contact_email", "")

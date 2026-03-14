@@ -326,7 +326,7 @@ class ExportOffboardingService:
             pkg.total_size_bytes = archive_buf.tell()
 
             # Risk analysis
-            risk_level, risk_details = self._analyze_risk(tenant_id, pkg.modules)
+            risk_level, risk_details = self.analyze_risk(tenant_id=tenant_id, modules=pkg.modules)
             pkg.risk_level = risk_level
             pkg.risk_details = risk_details
 
@@ -449,7 +449,7 @@ class ExportOffboardingService:
         )
 
         # Run risk analysis
-        risk_level, risk_details = self._analyze_risk(tenant_id, mods)
+        risk_level, risk_details = self.analyze_risk(tenant_id=tenant_id, modules=mods)
         req.risk_level = risk_level
         req.risk_details = risk_details
         self.db.flush()
@@ -504,7 +504,7 @@ class ExportOffboardingService:
 
     # ── Risk Analysis ────────────────────────────────────────────────────
 
-    def _analyze_risk(self, tenant_id: uuid.UUID, modules: list[str]) -> tuple[str, list[str]]:
+    def analyze_risk(self, tenant_id: uuid.UUID, modules: list[str]) -> tuple[str, list[str]]:
         """Detect offboarding risks across billing, documentation, and communications."""
         risks: list[str] = []
 

@@ -61,8 +61,8 @@ jobs:
       - name: Run tests
         working-directory: backend
         env:
-          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
-          SECRET_KEY: "ci-test-key-not-for-production"
+          DATABASE_URL: "postgresql+psycopg://test:test@localhost:5432/test"
+          JWT_SECRET_KEY: "ci-test-key-not-for-production"
           REDIS_URL: "redis://localhost:6379"
           ENVIRONMENT: "test"
           STRIPE_SECRET_KEY: ""
@@ -80,6 +80,8 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: python scripts/ci_gate_route_matrix.py
+      - name: Gate — prohibit crash-on-fallback injections
+        run: python scripts/ci_gate_no_frontend_crash_fallbacks.py
 
   compliance-program:
     name: Compliance Program Gate
@@ -125,7 +127,7 @@ jobs:
         run: npx tsc --noEmit
       - name: Lint
         working-directory: frontend
-        run: npx next lint
+        run: npm run lint
 
   frontend-build:
     name: Frontend Build
@@ -148,7 +150,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: postgis/postgis:16-3.4
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
@@ -169,20 +171,22 @@ jobs:
       - name: Run migrations to head
         working-directory: backend
         env:
-          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+          DATABASE_URL: "postgresql+psycopg://test:test@localhost:5432/test"
           ENVIRONMENT: "test"
         run: alembic upgrade head
       - name: Verify no pending migrations
         working-directory: backend
         env:
-          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+          DATABASE_URL: "postgresql+psycopg://test:test@localhost:5432/test"
           ENVIRONMENT: "test"
         run: |
-          alembic check 2>&1 || {
-            echo "ERROR: Alembic detects unapplied model changes."
-            echo "Run 'alembic revision --autogenerate -m <msg>' locally."
+          set -euo pipefail
+          current_rev="$(alembic current | awk 'NR==1 {print $1}')"
+          head_rev="$(alembic heads | awk 'NR==1 {print $1}')"
+          if [[ -z "$current_rev" || -z "$head_rev" || "$current_rev" != "$head_rev" ]]; then
+            echo "ERROR: Database revision is not at head (current=${current_rev}, head=${head_rev})."
             exit 1
-          }
+          fi
 
   frontend-test:
     name: Frontend Tests

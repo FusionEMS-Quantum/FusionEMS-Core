@@ -24,10 +24,10 @@ resource "aws_s3_bucket_public_access_block" "audit_evidence" {
 
 # Framework: SOC 2 Type II
 resource "aws_auditmanager_assessment" "soc2" {
-  name          = "${var.environment}-soc2-assessment"
-  description   = "Automated evidence collection for SOC 2 Type II readiness"
-  framework_id  = "arn:aws:auditmanager::aws:framework/SOC-2-Type-II" 
-  
+  name         = "${var.environment}-soc2-assessment"
+  description  = "Automated evidence collection for SOC 2 Type II readiness"
+  framework_id = "arn:aws:auditmanager::aws:framework/SOC-2-Type-II"
+
   assessment_reports_destination {
     destination_type = "S3"
     destination      = "s3://${aws_s3_bucket.audit_evidence.id}"
@@ -41,10 +41,10 @@ resource "aws_auditmanager_assessment" "soc2" {
 
 # Framework: HIPAA Security Rule
 resource "aws_auditmanager_assessment" "hipaa" {
-  name          = "${var.environment}-hipaa-assessment"
-  description   = "Automated evidence collection for HIPAA compliance"
-  framework_id  = "arn:aws:auditmanager::aws:framework/HIPAA-Security-Rule-2003"
-  
+  name         = "${var.environment}-hipaa-assessment"
+  description  = "Automated evidence collection for HIPAA compliance"
+  framework_id = "arn:aws:auditmanager::aws:framework/HIPAA-Security-Rule-2003"
+
   assessment_reports_destination {
     destination_type = "S3"
     destination      = "s3://${aws_s3_bucket.audit_evidence.id}"

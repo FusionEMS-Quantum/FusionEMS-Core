@@ -37,8 +37,8 @@ interface TenantStatus {
 }
 
 const JURISDICTION_COLORS: Record<string, string> = {
-  WI_STATE: "bg-blue-900/40 text-blue-300 border-blue-800",
-  US_FEDERAL: "bg-red-900/40 text-red-300 border-red-800",
+  WI_STATE: "bg-blue-900/40 text-[var(--color-status-info)] border-blue-800",
+  US_FEDERAL: "bg-red-900/40 text-[var(--color-brand-red)] border-red-800",
   US_ACCREDITATION: "bg-purple-900/40 text-purple-300 border-purple-800",
   CAMTS_GLOBAL: "bg-sky-900/40 text-sky-300 border-sky-800",
   HOSPITAL_ACCREDITATION: "bg-teal-900/40 text-teal-300 border-teal-800",
@@ -159,19 +159,19 @@ export default function FounderCompliancePacksPage() {
   const activePacks = new Set(tenantStatus?.active_pack_ids ?? []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
       <div className="border-b border-border-subtle px-6 py-4">
-        <h1 className="text-xl font-bold text-zinc-100">Compliance Pack Index</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Apply compliance packs to tenants with one click — DEA, CAAS, CAMTS, Trans 309, Hospital</p>
+        <h1 className="text-xl font-bold text-[var(--color-text-primary)]">Compliance Pack Index</h1>
+        <p className="text-sm text-[var(--color-text-muted)] mt-0.5">Apply compliance packs to tenants with one click — DEA, CAAS, CAMTS, Trans 309, Hospital</p>
       </div>
 
       <div className="p-6 space-y-8 max-w-6xl">
         {/* Tenant Selector */}
-        <div className="chamfer-4-xl border border-border-subtle bg-[#0A0A0B] p-4">
-          <h2 className="text-sm font-semibold text-zinc-100 mb-3">Tenant Selector</h2>
+        <div className="chamfer-4-xl border border-border-subtle bg-[var(--color-bg-panel)] p-4">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Tenant Selector</h2>
           <div className="flex gap-3">
             <input
-              className="flex-1 px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-zinc-100 placeholder-gray-500 font-mono"
+              className="flex-1 px-3 py-2 bg-bg-raised border border-border-DEFAULT chamfer-4 text-sm text-[var(--color-text-primary)] placeholder-gray-500 font-mono"
               placeholder="Tenant UUID"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
@@ -180,7 +180,7 @@ export default function FounderCompliancePacksPage() {
             <button
               onClick={() => loadTenantStatus(tenantId)}
               disabled={!tenantId || loadingStatus}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
+              className="px-5 py-2 bg-blue-600 hover:bg-[var(--color-status-info)] disabled:opacity-50 chamfer-4 text-sm font-medium transition-colors"
             >
               {loadingStatus ? "Loading…" : "Load Status"}
             </button>
@@ -189,20 +189,20 @@ export default function FounderCompliancePacksPage() {
           {tenantStatus && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="chamfer-8 bg-bg-raised p-3">
-                <p className="text-xs text-zinc-500">Active Packs</p>
-                <p className="text-xl font-bold text-zinc-100">{tenantStatus.active_pack_ids.length}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Active Packs</p>
+                <p className="text-xl font-bold text-[var(--color-text-primary)]">{tenantStatus.active_pack_ids.length}</p>
               </div>
               <div className="chamfer-8 bg-bg-raised p-3">
-                <p className="text-xs text-zinc-500">Fleet Score</p>
-                <p className="text-xl font-bold text-zinc-100">{tenantStatus.fleet_score !== null ? `${tenantStatus.fleet_score}%` : "—"}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Fleet Score</p>
+                <p className="text-xl font-bold text-[var(--color-text-primary)]">{tenantStatus.fleet_score !== null ? `${tenantStatus.fleet_score}%` : "—"}</p>
               </div>
               <div className="chamfer-8 bg-bg-raised p-3">
-                <p className="text-xs text-zinc-500">Inspections</p>
-                <p className="text-xl font-bold text-zinc-100">{tenantStatus.inspections_total}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Inspections</p>
+                <p className="text-xl font-bold text-[var(--color-text-primary)]">{tenantStatus.inspections_total}</p>
               </div>
               <div className="chamfer-8 bg-bg-raised p-3">
-                <p className="text-xs text-zinc-500">Active Set</p>
-                <p className="text-sm font-semibold text-emerald-400 truncate">{tenantStatus.active_set_id ?? "—"}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Active Set</p>
+                <p className="text-sm font-semibold text-[var(--color-status-active)] truncate">{tenantStatus.active_set_id ?? "—"}</p>
               </div>
             </div>
           )}
@@ -210,7 +210,7 @@ export default function FounderCompliancePacksPage() {
 
         {/* Recommended Sets */}
         <div>
-          <h2 className="text-base font-semibold text-zinc-100 mb-3">Recommended Sets</h2>
+          <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-3">Recommended Sets</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {index?.recommended_sets.map((set) => {
               const isActive = tenantStatus?.active_set_id === set.set_id;
@@ -219,26 +219,26 @@ export default function FounderCompliancePacksPage() {
                 <div
                   key={set.set_id}
                   className={`chamfer-4-xl border p-5 transition-colors ${
-                    isActive ? "border-emerald-700 bg-emerald-900/10" : "border-border-subtle bg-[#0A0A0B]"
+                    isActive ? "border-emerald-700 bg-emerald-900/10" : "border-border-subtle bg-[var(--color-bg-panel)]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 chamfer-8 bg-bg-overlay flex items-center justify-center text-xs font-bold text-zinc-400">
+                      <div className="w-10 h-10 chamfer-8 bg-bg-overlay flex items-center justify-center text-xs font-bold text-[var(--color-text-secondary)]">
                         {SET_ICONS[set.set_id] ?? "SET"}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-zinc-100">{set.label}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">{set.description}</p>
+                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">{set.label}</p>
+                        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{set.description}</p>
                       </div>
                     </div>
                     {isActive ? (
-                      <span className="flex-shrink-0 px-2 py-1 bg-emerald-800/50 text-emerald-400 text-xs chamfer-4 font-medium">Active</span>
+                      <span className="flex-shrink-0 px-2 py-1 bg-emerald-800/50 text-[var(--color-status-active)] text-xs chamfer-4 font-medium">Active</span>
                     ) : (
                       <button
                         onClick={() => setConfirmSet(set)}
                         disabled={!tenantId || isApplying || !!applying}
-                        className="flex-shrink-0 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 chamfer-4 text-xs font-semibold transition-colors"
+                        className="flex-shrink-0 px-4 py-1.5 bg-blue-600 hover:bg-[var(--color-status-info)] disabled:opacity-40 chamfer-4 text-xs font-semibold transition-colors"
                       >
                         {isApplying ? "Applying…" : "Apply"}
                       </button>
@@ -249,7 +249,7 @@ export default function FounderCompliancePacksPage() {
                       <span
                         key={pid}
                         className={`px-2 py-0.5 chamfer-4 text-xs border ${
-                          activePacks.has(pid) ? "bg-emerald-900/30 text-emerald-400 border-emerald-800" : "bg-bg-raised text-zinc-500 border-border-DEFAULT"
+                          activePacks.has(pid) ? "bg-emerald-900/30 text-[var(--color-status-active)] border-emerald-800" : "bg-bg-raised text-[var(--color-text-muted)] border-border-DEFAULT"
                         }`}
                       >
                         {pid}
@@ -264,10 +264,10 @@ export default function FounderCompliancePacksPage() {
 
         {/* All Packs Table */}
         <div>
-          <h2 className="text-base font-semibold text-zinc-100 mb-3">All Packs</h2>
+          <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-3">All Packs</h2>
           <div className="chamfer-4-xl border border-border-subtle overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-bg-raised text-zinc-500 text-xs">
+              <thead className="bg-bg-raised text-[var(--color-text-muted)] text-xs">
                 <tr>
                   <th className="px-4 py-2.5 text-left">Pack</th>
                   <th className="px-4 py-2.5 text-left">Jurisdiction</th>
@@ -283,19 +283,19 @@ export default function FounderCompliancePacksPage() {
                   return (
                     <tr key={pack.pack_id} className="hover:bg-bg-raised/50">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-zinc-100">{pack.name}</p>
-                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{pack.pack_id}</p>
+                        <p className="font-medium text-[var(--color-text-primary)]">{pack.name}</p>
+                        <p className="text-xs text-[var(--color-text-muted)] font-mono mt-0.5">{pack.pack_id}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5  text-xs border ${JURISDICTION_COLORS[pack.jurisdiction] ?? "bg-bg-overlay text-zinc-500 border-border-strong"}`}>
+                        <span className={`px-2 py-0.5  text-xs border ${JURISDICTION_COLORS[pack.jurisdiction] ?? "bg-bg-overlay text-[var(--color-text-muted)] border-border-strong"}`}>
                           {pack.jurisdiction}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         {isActive ? (
-                          <span className="px-2 py-0.5 bg-emerald-900/40 text-emerald-400 chamfer-4 text-xs">Active</span>
+                          <span className="px-2 py-0.5 bg-emerald-900/40 text-[var(--color-status-active)] chamfer-4 text-xs">Active</span>
                         ) : tenantStatus ? (
-                          <span className="px-2 py-0.5 bg-bg-overlay text-zinc-500 chamfer-4 text-xs">Inactive</span>
+                          <span className="px-2 py-0.5 bg-bg-overlay text-[var(--color-text-muted)] chamfer-4 text-xs">Inactive</span>
                         ) : (
                           <span className="text-text-disabled text-xs">—</span>
                         )}
@@ -328,7 +328,7 @@ export default function FounderCompliancePacksPage() {
                 })}
                 {!index?.packs.length && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-zinc-500 text-sm">
+                    <td colSpan={4} className="px-4 py-8 text-center text-[var(--color-text-muted)] text-sm">
                       Loading pack index…
                     </td>
                   </tr>
@@ -341,12 +341,12 @@ export default function FounderCompliancePacksPage() {
         {/* Active Packs Detail */}
         {tenantStatus?.active_packs && tenantStatus.active_packs.length > 0 && (
           <div>
-            <h2 className="text-base font-semibold text-zinc-100 mb-3">Tenant Active Packs</h2>
+            <h2 className="text-base font-semibold text-[var(--color-text-primary)] mb-3">Tenant Active Packs</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {tenantStatus.active_packs.map((p) => (
                 <div key={p.pack_id} className="chamfer-8 border border-emerald-800 bg-emerald-900/10 p-3">
-                  <p className="text-sm font-medium text-emerald-300">{p.name}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">{p.jurisdiction} · {p.status}</p>
+                  <p className="text-sm font-medium text-[var(--color-status-active)]">{p.name}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{p.jurisdiction} · {p.status}</p>
                 </div>
               ))}
             </div>
@@ -355,16 +355,16 @@ export default function FounderCompliancePacksPage() {
 
         {/* Progress Log */}
         {progressLog.length > 0 && (
-          <div className="chamfer-4-xl border border-border-subtle bg-[#0A0A0B] p-4">
+          <div className="chamfer-4-xl border border-border-subtle bg-[var(--color-bg-panel)] p-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-zinc-100">Activity Log</h3>
+              <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Activity Log</h3>
               {!applying && (
-                <button onClick={() => setProgressLog([])} className="text-xs text-zinc-500 hover:text-zinc-400">Clear</button>
+                <button onClick={() => setProgressLog([])} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">Clear</button>
               )}
             </div>
             <div className="font-mono text-xs space-y-1 max-h-40 overflow-y-auto">
               {progressLog.map((line, i) => (
-                <p key={i} className={line.includes("Done") || line.includes("enabled") || line.includes("applied") ? "text-emerald-400" : line.includes("Ingesting") || line.includes("Activating") || line.includes("Enabling") ? "text-blue-400" : "text-zinc-500"}>
+                <p key={i} className={line.includes("Done") || line.includes("enabled") || line.includes("applied") ? "text-[var(--color-status-active)]" : line.includes("Ingesting") || line.includes("Activating") || line.includes("Enabling") ? "text-[var(--color-status-info)]" : "text-[var(--color-text-muted)]"}>
                   {line}
                 </p>
               ))}
@@ -376,36 +376,36 @@ export default function FounderCompliancePacksPage() {
 
       {/* Confirm Modal */}
       {confirmSet && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0A0A0B] border border-border-DEFAULT chamfer-4-xl p-6 max-w-md w-full shadow-[0_0_15px_rgba(0,0,0,0.6)]">
-            <h3 className="text-lg font-bold text-zinc-100 mb-2">Apply Pack Set</h3>
-            <p className="text-sm text-zinc-400 mb-4">
-              Apply <span className="text-blue-400 font-semibold">{confirmSet.label}</span> to tenant{" "}
-              <span className="font-mono text-zinc-100">{tenantId}</span>?
+        <div className="fixed inset-0 bg-[var(--color-bg-base)]/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT chamfer-4-xl p-6 max-w-md w-full shadow-[0_0_15px_rgba(0,0,0,0.6)]">
+            <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">Apply Pack Set</h3>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+              Apply <span className="text-[var(--color-status-info)] font-semibold">{confirmSet.label}</span> to tenant{" "}
+              <span className="font-mono text-[var(--color-text-primary)]">{tenantId}</span>?
             </p>
             <div className="mb-4">
-              <p className="text-xs text-zinc-500 mb-2">Packs included:</p>
+              <p className="text-xs text-[var(--color-text-muted)] mb-2">Packs included:</p>
               <div className="space-y-1">
                 {confirmSet.pack_ids.map((pid) => (
                   <div key={pid} className="flex items-center gap-2 text-xs">
-                    <span className="w-2 h-2  bg-blue-500 flex-shrink-0" />
-                    <span className="text-zinc-100">{pid}</span>
-                    {activePacks.has(pid) && <span className="text-emerald-400">(already active)</span>}
+                    <span className="w-2 h-2  bg-[var(--color-status-info)] flex-shrink-0" />
+                    <span className="text-[var(--color-text-primary)]">{pid}</span>
+                    {activePacks.has(pid) && <span className="text-[var(--color-status-active)]">(already active)</span>}
                   </div>
                 ))}
               </div>
             </div>
-            <p className="text-xs text-amber-400 mb-4">This will ingest missing packs and activate them immediately.</p>
+            <p className="text-xs text-[var(--q-yellow)] mb-4">This will ingest missing packs and activate them immediately.</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmSet(null)}
-                className="flex-1 py-2 border border-border-DEFAULT chamfer-8 text-sm text-zinc-400 hover:bg-bg-raised transition-colors"
+                className="flex-1 py-2 border border-border-DEFAULT chamfer-8 text-sm text-[var(--color-text-secondary)] hover:bg-bg-raised transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => applySet(confirmSet)}
-                className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 chamfer-8 text-sm font-semibold transition-colors"
+                className="flex-1 py-2 bg-blue-600 hover:bg-[var(--color-status-info)] chamfer-8 text-sm font-semibold transition-colors"
               >
                 Apply Now
               </button>

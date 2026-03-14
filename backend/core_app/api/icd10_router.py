@@ -16,7 +16,7 @@ async def search(q: str = Query(...), db: Session = Depends(db_session_dependenc
     # global search: uses icd10_codes table; simple LIKE query
     rows = db.execute(
         text(
-            "SELECT code, short_description FROM icd10_codes WHERE code ILIKE :q OR short_description ILIKE :q LIMIT 50"
+            "SELECT code, description FROM icd10_codes WHERE code ILIKE :q OR description ILIKE :q LIMIT 50"
         ),
         {"q": f"%{q}%"},
     ).fetchall()
@@ -27,7 +27,7 @@ async def search(q: str = Query(...), db: Session = Depends(db_session_dependenc
 async def get_code(code: str, db: Session = Depends(db_session_dependency)):
     row = db.execute(
         text(
-            "SELECT code, short_description, long_description, version_year FROM icd10_codes WHERE code = :c LIMIT 1"
+            "SELECT code, description, description, version_year FROM icd10_codes WHERE code = :c LIMIT 1"
         ),
         {"c": code},
     ).fetchone()
@@ -52,14 +52,13 @@ async def import_codes(
     for c in codes:
         db.execute(
             text(
-                """INSERT INTO icd10_codes (id, code, short_description, long_description, version_year, created_at, updated_at)
-                             VALUES (gen_random_uuid(), :code, :sd, :ld, :vy, now(), now())
+                """INSERT INTO icd10_codes (id, code, description, version_year)
+                             VALUES (gen_random_uuid(), :code, :description, :vy)
                              ON CONFLICT (code, version_year) DO NOTHING"""
             ),
             {
                 "code": c["code"],
-                "sd": c.get("short_description", ""),
-                "ld": c.get("long_description", ""),
+                "description": c.get("long_description") or c.get("short_description") or "",
                 "vy": int(c.get("version_year", 0)),
             },
         )

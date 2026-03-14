@@ -88,7 +88,7 @@ export default function CrewLinkPWAPage() {
   if (error) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-red-300">{error}</div>
+        <div className="bg-red-900/30 border border-[var(--color-brand-red)] chamfer-8 p-4 text-[var(--color-brand-red)]">{error}</div>
       </div>
     );
   }
@@ -100,8 +100,8 @@ export default function CrewLinkPWAPage() {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/founder/pwa" className="text-gray-400 hover:text-white"><ArrowLeft className="h-5 w-5" /></Link>
-          <Radio className="h-6 w-6 text-orange-400" />
+          <Link href="/founder/pwa" className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"><ArrowLeft className="h-5 w-5" /></Link>
+          <Radio className="h-6 w-6 text-[var(--q-orange)]" />
           <h1 className="text-2xl font-bold text-white">CrewLink PWA</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -114,13 +114,13 @@ export default function CrewLinkPWAPage() {
       </div>
 
       {showPage && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-gray-800 border border-gray-700 rounded-lg p-4 space-y-3">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-8 p-4 space-y-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Message</label>
-            <input value={pageMsg} onChange={(e) => setPageMsg(e.target.value)} className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm" placeholder="Page message..." />
+            <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Message</label>
+            <input value={pageMsg} onChange={(e) => setPageMsg(e.target.value)} className="w-full px-3 py-2 bg-[var(--color-bg-panel)] border border-gray-600 rounded text-white text-sm" placeholder="Page message..." />
           </div>
           <div className="flex items-center gap-3">
-            <select value={pagePriority} onChange={(e) => setPagePriority(e.target.value)} className="px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm">
+            <select value={pagePriority} onChange={(e) => setPagePriority(e.target.value)} className="px-3 py-2 bg-[var(--color-bg-panel)] border border-gray-600 rounded text-white text-sm">
               <option value="normal">Normal</option>
               <option value="high">High</option>
               <option value="critical">Critical</option>
@@ -137,27 +137,27 @@ export default function CrewLinkPWAPage() {
           { label: 'Connections', value: health?.active_connections ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), icon: Users, color: 'blue' },
           { label: 'Link Status', value: connStatus, icon: Activity, color: connStatus === 'healthy' ? 'green' : 'yellow' },
         ].map((kpi) => (
-          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-gray-800 border border-${kpi.color}-500/30 rounded-lg p-4`}>
-            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`bg-[var(--color-bg-raised)] border border-${kpi.color}-500/30 chamfer-8 p-4`}>
+            <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-xs mb-1"><kpi.icon className="h-4 w-4" />{kpi.label}</div>
             <div className="text-2xl font-bold text-white">{kpi.value}</div>
           </motion.div>
         ))}
       </div>
 
-      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
+      <div className="bg-[var(--color-bg-raised)] border border-[var(--color-border-strong)] chamfer-8 overflow-hidden">
+        <div className="p-4 border-b border-[var(--color-border-strong)]">
           <h2 className="text-sm font-semibold text-white">Active Crew Pages</h2>
         </div>
         <div className="divide-y divide-gray-700">
           {pages.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500">No active crew pages.</div>
+            <div className="px-4 py-8 text-center text-[var(--color-text-muted)]">No active crew pages.</div>
           ) : pages.map((p) => (
-            <div key={p.id} className="px-4 py-3 hover:bg-gray-700/50">
+            <div key={p.id} className="px-4 py-3 hover:bg-[var(--color-bg-overlay)]/50">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm text-white font-medium">{p.message}</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${p.priority === 'critical' ? 'bg-red-900/50 text-red-300' : p.priority === 'high' ? 'bg-orange-900/50 text-orange-300' : 'bg-gray-700 text-gray-300'}`}>{p.priority}</span>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${p.priority === 'critical' ? 'bg-red-900/50 text-[var(--color-brand-red)]' : p.priority === 'high' ? 'bg-orange-900/50 text-[var(--q-orange)]' : 'bg-[var(--color-bg-overlay)] text-[var(--color-text-secondary)]'}`}>{p.priority}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-400">
+              <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
                 <span>{p.sent_at ? new Date(p.sent_at).toLocaleString() : '—'}</span>
                 <span>{p.responses?.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} responses</span>
               </div>

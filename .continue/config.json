@@ -1,0 +1,25 @@
+{
+  "models": [
+    {
+      "title": "DeepSeek Coder",
+      "provider": "openai",
+      "model": "deepseek-coder-v2",
+      "apiBase": "https://api.deepseek.com",
+      "apiKey": "${env:DEEPSEEK_API_KEY}"
+    },
+    {
+      "title": "DeepSeek Chat",
+      "provider": "openai",
+      "model": "deepseek-chat",
+      "apiBase": "https://api.deepseek.com",
+      "apiKey": "${env:DEEPSEEK_API_KEY}"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "DeepSeek Autocomplete",
+    "provider": "openai",
+    "model": "deepseek-coder-v2",
+    "apiBase": "https://api.deepseek.com",
+    "apiKey": "${env:DEEPSEEK_API_KEY}"
+  }
+}

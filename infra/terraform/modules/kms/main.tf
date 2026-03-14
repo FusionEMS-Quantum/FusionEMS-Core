@@ -5,7 +5,7 @@ resource "aws_kms_key" "main" {
   deletion_window_in_days = 30
   enable_key_rotation     = true
   multi_region            = true
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Id      = "key-consolepolicy-3"

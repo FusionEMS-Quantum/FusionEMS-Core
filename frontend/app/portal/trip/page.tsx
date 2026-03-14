@@ -61,12 +61,12 @@ function fmt$(n: number) {
 
 function StatusBadge({ status }: { status: string }) {
   const cls =
-    status === 'ENROLLED' ? 'bg-blue-900/30 border-blue-500/40 text-blue-300' :
-    status === 'INTERCEPTED' ? 'bg-green-900/30 border-green-500/40 text-green-300' :
-    status === 'REJECTED' ? 'bg-red-900/30 border-red-500/40 text-red-300' :
+    status === 'ENROLLED' ? 'bg-blue-900/30 border-[var(--color-status-info)]/40 text-[var(--color-status-info)]' :
+    status === 'INTERCEPTED' ? 'bg-green-900/30 border-[var(--color-status-active)]/40 text-[var(--color-status-active)]' :
+    status === 'REJECTED' ? 'bg-red-900/30 border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)]' :
     status === 'PENDING' ? 'bg-yellow-900/30 border-yellow-500/40 text-yellow-300' :
     status === 'POSTED' ? 'bg-purple-900/30 border-purple-500/40 text-purple-300' :
-    'bg-zinc-900/50 border-gray-600 text-zinc-500';
+    'bg-[var(--color-bg-panel)]/50 border-gray-600 text-[var(--color-text-muted)]';
   return (
     <span className={`text-xs font-semibold px-2 py-0.5 chamfer-4 border ${cls}`}>{status}</span>
   );
@@ -90,7 +90,7 @@ function DebtTable({
   const statuses = ['ALL', 'CANDIDATE', 'ENROLLED', 'INTERCEPTED', 'REJECTED', 'POSTED'];
   const filtered = debts.filter(d => statusFilter === 'ALL' || d.status === statusFilter);
 
-  const totalBalance = filtered.reduce((sum, d) => sum + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
+  const totalBalance = filtered.reduce((sum, d) => sum + (d.balance ?? 0), 0);
 
   async function handleBuild() {
     setBuilding(true);
@@ -112,7 +112,7 @@ function DebtTable({
               onClick={() => setStatusFilter(s)}
               className={`px-3 py-1.5 text-micro font-semibold chamfer-4 border transition-colors ${
                 statusFilter === s ? 'bg-brand-orange/15 border-brand-orange/35 text-brand-orange' :
-                'bg-zinc-950/[0.03] border-border-subtle text-zinc-500 hover:text-zinc-400'
+                'bg-[var(--color-bg-base)]/[0.03] border-border-subtle text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
               }`}
             >
               {s}
@@ -138,25 +138,25 @@ function DebtTable({
       </div>
 
       {filtered.length > 0 && (
-        <div className="flex items-center gap-4 bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
+        <div className="flex items-center gap-4 bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 px-4 py-3">
           <div>
-            <div className="text-2xl font-black text-zinc-100">{filtered.length}</div>
-            <div className="text-micro text-zinc-500">debts ({statusFilter})</div>
+            <div className="text-2xl font-black text-[var(--color-text-primary)]">{filtered.length}</div>
+            <div className="text-micro text-[var(--color-text-muted)]">debts ({statusFilter})</div>
           </div>
           <div className="w-px h-8 bg-border-subtle" />
           <div>
-            <div className="text-2xl font-black text-yellow-400">{fmt$(totalBalance)}</div>
-            <div className="text-micro text-zinc-500">total balance</div>
+            <div className="text-2xl font-black text-[var(--q-yellow)]">{fmt$(totalBalance)}</div>
+            <div className="text-micro text-[var(--color-text-muted)]">total balance</div>
           </div>
           <div className="w-px h-8 bg-border-subtle" />
           <div>
-            <div className="text-2xl font-black text-blue-400">{filtered.filter(d => d.status === 'ENROLLED').length}</div>
-            <div className="text-micro text-zinc-500">enrolled</div>
+            <div className="text-2xl font-black text-[var(--color-status-info)]">{filtered.filter(d => d.status === 'ENROLLED').length}</div>
+            <div className="text-micro text-[var(--color-text-muted)]">enrolled</div>
           </div>
           <div className="w-px h-8 bg-border-subtle" />
           <div>
-            <div className="text-2xl font-black text-green-400">{fmt$(filtered.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0))}</div>
-            <div className="text-micro text-zinc-500">intercepted</div>
+            <div className="text-2xl font-black text-[var(--color-status-active)]">{fmt$(filtered.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? 0), 0))}</div>
+            <div className="text-micro text-[var(--color-text-muted)]">intercepted</div>
           </div>
         </div>
       )}
@@ -170,34 +170,34 @@ function DebtTable({
           icon="document"
         />
       ) : (
-        <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
+        <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-border-subtle">
                 {['Debtor', 'SSN (masked)', 'Agency Debt ID', 'Balance', 'Age', 'Incident Date', 'Status', 'Enrolled'].map(h => (
-                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
+                  <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-[var(--color-text-muted)]">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map(debt => (
-                <tr key={debt.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
-                  <td className="px-4 py-3 text-sm font-semibold text-zinc-100">{debt.debtor_name || '—'}</td>
-                  <td className="px-4 py-3 text-xs font-mono text-zinc-500">{debt.debtor_ssn_masked || '***-**-****'}</td>
-                  <td className="px-4 py-3 text-xs font-mono text-zinc-400">{debt.debt_id || debt.id.slice(0, 12)}</td>
-                  <td className="px-4 py-3 text-sm font-mono font-bold text-yellow-400">{debt.balance != null ? fmt$(debt.balance) : '—'}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-400">
+                <tr key={debt.id} className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02]">
+                  <td className="px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)]">{debt.debtor_name || '—'}</td>
+                  <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-muted)]">{debt.debtor_ssn_masked || '***-**-****'}</td>
+                  <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-secondary)]">{debt.debt_id || debt.id.slice(0, 12)}</td>
+                  <td className="px-4 py-3 text-sm font-mono font-bold text-[var(--q-yellow)]">{debt.balance != null ? fmt$(debt.balance) : '—'}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
                     {debt.debt_age_days != null ? (
-                      <span className={debt.debt_age_days >= 90 ? 'text-green-400' : 'text-red-400'}>
+                      <span className={debt.debt_age_days >= 90 ? 'text-[var(--color-status-active)]' : 'text-[var(--color-brand-red)]'}>
                         {debt.debt_age_days}d
                       </span>
                     ) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-xs font-mono text-zinc-500">
+                  <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-muted)]">
                     {debt.incident_date ? new Date(debt.incident_date).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3"><StatusBadge status={debt.status || 'UNKNOWN'} /></td>
-                  <td className="px-4 py-3 text-xs font-mono text-zinc-500">
+                  <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-muted)]">
                     {debt.enrolled_at ? new Date(debt.enrolled_at).toLocaleDateString() : '—'}
                   </td>
                 </tr>
@@ -224,26 +224,26 @@ function ExportHistory({ exports }: { exports: TRIPExport[] }) {
   }
 
   return (
-    <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 overflow-hidden">
+    <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 overflow-hidden">
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-border-subtle">
             {['Export ID', 'Generated', 'Records', 'Total Balance', 'Status', 'Filename'].map(h => (
-              <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-zinc-500">{h}</th>
+              <th key={h} className="px-4 py-3 text-micro uppercase tracking-widest text-[var(--color-text-muted)]">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {exports.map(exp => (
-            <tr key={exp.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
-              <td className="px-4 py-3 text-xs font-mono text-zinc-500">{exp.id.slice(0, 12)}</td>
-              <td className="px-4 py-3 text-xs font-mono text-zinc-500">
+            <tr key={exp.id} className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02]">
+              <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-muted)]">{exp.id.slice(0, 12)}</td>
+              <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-muted)]">
                 {exp.generated_at ? new Date(exp.generated_at).toLocaleString() : '—'}
               </td>
-              <td className="px-4 py-3 text-sm text-zinc-400">{exp.record_count ?? '—'}</td>
-              <td className="px-4 py-3 text-sm font-mono text-yellow-400">{exp.total_balance != null ? fmt$(exp.total_balance) : '—'}</td>
+              <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">{exp.record_count ?? '—'}</td>
+              <td className="px-4 py-3 text-sm font-mono text-[var(--q-yellow)]">{exp.total_balance != null ? fmt$(exp.total_balance) : '—'}</td>
               <td className="px-4 py-3"><StatusBadge status={exp.status || 'UNKNOWN'} /></td>
-              <td className="px-4 py-3 text-xs font-mono text-zinc-500 truncate max-w-xs">{exp.filename || '—'}</td>
+              <td className="px-4 py-3 text-xs font-mono text-[var(--color-text-muted)] truncate max-w-xs">{exp.filename || '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -265,40 +265,41 @@ function ReconciliationView({ data }: { data: TRIPReconciliation | null }) {
     );
   }
 
-  const interceptPct = ((data.intercept_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 100).toFixed(1);
+  const interceptRate = data.intercept_rate ?? 0;
+  const interceptPct = (interceptRate * 100).toFixed(1);
 
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Submitted', value: (data.total_submitted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-zinc-100' },
-          { label: 'Intercepted', value: (data.total_intercepted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-green-400' },
-          { label: 'Rejected', value: (data.total_rejected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-red-400' },
-          { label: 'Posted to AR', value: (data.total_posted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toString(), color: 'text-blue-400' },
-          { label: 'Intercept Rate', value: `${interceptPct}%`, color: parseFloat(interceptPct) >= 50 ? 'text-green-400' : 'text-yellow-400' },
-          { label: 'Net Recovered', value: data.net_recovered != null ? fmt$(data.net_recovered) : '—', color: 'text-green-400' },
+          { label: 'Total Submitted', value: String(data.total_submitted ?? 0), color: 'text-[var(--color-text-primary)]' },
+          { label: 'Intercepted', value: String(data.total_intercepted ?? 0), color: 'text-[var(--color-status-active)]' },
+          { label: 'Rejected', value: String(data.total_rejected ?? 0), color: 'text-[var(--color-brand-red)]' },
+          { label: 'Posted to AR', value: String(data.total_posted ?? 0), color: 'text-[var(--color-status-info)]' },
+          { label: 'Intercept Rate', value: `${interceptPct}%`, color: parseFloat(interceptPct) >= 50 ? 'text-[var(--color-status-active)]' : 'text-yellow-400' },
+          { label: 'Net Recovered', value: data.net_recovered != null ? fmt$(data.net_recovered) : '—', color: 'text-[var(--color-status-active)]' },
         ].map(m => (
-          <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-4">
+          <div key={m.label} className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 px-4 py-4">
             <div className={`text-3xl font-black ${m.color}`}>{m.value}</div>
-            <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
+            <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{m.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-4">
-        <div className="text-micro uppercase tracking-widest text-zinc-500 mb-3">Intercept Pipeline</div>
+      <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-4">
+        <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Intercept Pipeline</div>
         <div className="space-y-3">
           {[
-            { label: 'Submitted to DOR', value: data.total_submitted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-blue-500/40' },
-            { label: 'Intercepted', value: data.total_intercepted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-green-500/40' },
-            { label: 'Rejected', value: data.total_rejected ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-red-500/40' },
-            { label: 'Posted to AR', value: data.total_posted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })(), color: 'bg-purple-500/40' },
+            { label: 'Submitted to DOR', value: data.total_submitted ?? 0, color: 'bg-[var(--color-status-info)]/40' },
+            { label: 'Intercepted', value: data.total_intercepted ?? 0, color: 'bg-[var(--color-status-active)]/40' },
+            { label: 'Rejected', value: data.total_rejected ?? 0, color: 'bg-[var(--color-brand-red)]/40' },
+            { label: 'Posted to AR', value: data.total_posted ?? 0, color: 'bg-purple-500/40' },
           ].map(stage => {
-            const max = data.total_submitted ?? 1;
+            const max = Math.max(data.total_submitted ?? 0, 1);
             return (
               <div key={stage.label} className="flex items-center gap-3">
-                <span className="text-micro text-zinc-500 w-28 flex-shrink-0">{stage.label}</span>
-                <div className="flex-1 h-5 bg-zinc-950/[0.04] chamfer-4 overflow-hidden">
+                <span className="text-micro text-[var(--color-text-muted)] w-28 flex-shrink-0">{stage.label}</span>
+                <div className="flex-1 h-5 bg-[var(--color-bg-base)]/[0.04] chamfer-4 overflow-hidden">
                   <div className={`h-full ${stage.color} chamfer-4 flex items-center px-2 transition-all`} style={{ width: `${(stage.value / max) * 100}%` }}>
                     <span className="text-micro text-white/80 whitespace-nowrap">{stage.value}</span>
                   </div>
@@ -332,12 +333,12 @@ function SettingsView({ settings, onSave }: { settings: TRIPSettings; onSave: (_
 
   return (
     <div className="max-w-lg space-y-4">
-      <div className="bg-blue-900/20 border border-blue-500/30 chamfer-8 p-4 text-sm text-blue-300">
+      <div className="bg-blue-900/20 border border-[var(--color-status-info)]/30 chamfer-8 p-4 text-sm text-[var(--color-status-info)]">
         Wisconsin Tax Refund Intercept Program (TRIP) — Government agencies may submit qualifying delinquent debts to the Wisconsin DOR.
         Minimum debt age: 90 days. Required: Debtor name, SSN/DL/FEIN, balance, Agency Debt ID.
       </div>
 
-      <div className="bg-[#0A0A0B] border border-border-subtle chamfer-8 p-5 space-y-4">
+      <div className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 p-5 space-y-4">
         {[
           { key: 'agency_code' as const, label: 'Agency Code', type: 'text', placeholder: 'WI agency code' },
           { key: 'min_debt_age_days' as const, label: 'Min Debt Age (days)', type: 'number', placeholder: '90' },
@@ -345,12 +346,12 @@ function SettingsView({ settings, onSave }: { settings: TRIPSettings; onSave: (_
           { key: 'notification_email' as const, label: 'Notification Email', type: 'email', placeholder: 'billing@agency.gov' },
         ].map(field => (
           <div key={field.key}>
-            <label className="text-micro uppercase tracking-widest text-zinc-500 block mb-1.5">{field.label}</label>
+            <label className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] block mb-1.5">{field.label}</label>
             <input
               type={field.type}
               value={(form[field.key] as string | number) ?? ''}
               onChange={e => setForm(f => ({ ...f, [field.key]: field.type === 'number' ? parseFloat(e.target.value) : e.target.value }))}
-              className="w-full bg-black border border-border-subtle chamfer-4 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-[var(--color-bg-base)] border border-border-subtle chamfer-4 px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-brand-orange/60"
               placeholder={field.placeholder}
             />
           </div>
@@ -364,7 +365,7 @@ function SettingsView({ settings, onSave }: { settings: TRIPSettings; onSave: (_
             onChange={e => setForm(f => ({ ...f, auto_enroll: e.target.checked }))}
             className="accent-brand-orange"
           />
-          <label htmlFor="auto_enroll" className="text-sm text-zinc-400">Auto-enroll eligible debts (90+ days, qualifying payer)</label>
+          <label htmlFor="auto_enroll" className="text-sm text-[var(--color-text-secondary)]">Auto-enroll eligible debts (90+ days, qualifying payer)</label>
         </div>
 
         <button
@@ -441,28 +442,28 @@ export default function TRIPPage() {
   }
 
   const enrolledCount = debts.filter(d => d.status === 'ENROLLED').length;
-  const interceptedBalance = debts.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
+  const interceptedBalance = debts.filter(d => d.status === 'INTERCEPTED').reduce((s, d) => s + (d.balance ?? 0), 0);
   const candidateCount = debts.filter(d => d.status === 'CANDIDATE').length;
-  const totalBalance = debts.reduce((s, d) => s + (d.balance ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
+  const totalBalance = debts.reduce((s, d) => s + (d.balance ?? 0), 0);
 
   return (
-    <div className="flex flex-col bg-black min-h-screen">
+    <div className="flex flex-col bg-[var(--color-bg-base)] min-h-screen">
       {loadError && (
-        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-red-500/30 text-red-400 text-sm font-medium chamfer-4">
+        <div className="mx-5 mt-4 px-4 py-3 bg-red-900/20 border border-[var(--color-brand-red)]/30 text-[var(--color-brand-red)] text-sm font-medium chamfer-4">
           ⚠ {loadError}
         </div>
       )}
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border-subtle bg-[#0A0A0B]/50 px-5 py-4">
+      <div className="flex-shrink-0 border-b border-border-subtle bg-[var(--color-bg-panel)]/50 px-5 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs font-black text-zinc-100 uppercase tracking-widest">Wisconsin TRIP</div>
-            <div className="text-micro text-zinc-500">Tax Refund Intercept Program · Debt enrollment · DOR exports · Reconciliation</div>
+            <div className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-widest">Wisconsin TRIP</div>
+            <div className="text-micro text-[var(--color-text-muted)]">Tax Refund Intercept Program · Debt enrollment · DOR exports · Reconciliation</div>
           </div>
           <div className="flex items-center gap-2">
             {candidateCount > 0 && (
               <div className="flex items-center gap-1.5 bg-yellow-900/30 border border-yellow-500/40 chamfer-4 px-3 py-1.5">
-                <span className="text-micro font-bold text-yellow-400">{candidateCount} candidates ready to enroll</span>
+                <span className="text-micro font-bold text-[var(--q-yellow)]">{candidateCount} candidates ready to enroll</span>
               </div>
             )}
           </div>
@@ -470,14 +471,14 @@ export default function TRIPPage() {
 
         <div className="grid grid-cols-4 gap-3 mt-4">
           {[
-            { label: 'Total TRIP Debts', value: debts.length.toString(), color: 'text-zinc-100' },
+            { label: 'Total TRIP Debts', value: debts.length.toString(), color: 'text-[var(--color-text-primary)]' },
             { label: 'Total Balance', value: fmt$(totalBalance), color: 'text-yellow-400' },
-            { label: 'Enrolled', value: enrolledCount.toString(), color: 'text-blue-400' },
-            { label: 'Intercepted (est.)', value: fmt$(interceptedBalance), color: 'text-green-400' },
+            { label: 'Enrolled', value: enrolledCount.toString(), color: 'text-[var(--color-status-info)]' },
+            { label: 'Intercepted (est.)', value: fmt$(interceptedBalance), color: 'text-[var(--color-status-active)]' },
           ].map(m => (
-            <div key={m.label} className="bg-[#0A0A0B] border border-border-subtle chamfer-8 px-4 py-3">
+            <div key={m.label} className="bg-[var(--color-bg-panel)] border border-border-subtle chamfer-8 px-4 py-3">
               <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
-              <div className="text-micro text-zinc-500 mt-0.5">{m.label}</div>
+              <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{m.label}</div>
             </div>
           ))}
         </div>
@@ -493,7 +494,7 @@ export default function TRIPPage() {
               key={t.id}
               onClick={() => setActiveView(t.id)}
               className={`px-4 py-2 text-micro font-semibold border-b-2 transition-colors ${
-                activeView === t.id ? 'border-brand-orange text-brand-orange' : 'border-transparent text-zinc-500 hover:text-zinc-400'
+                activeView === t.id ? 'border-brand-orange text-brand-orange' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
               }`}
             >
               {t.label}

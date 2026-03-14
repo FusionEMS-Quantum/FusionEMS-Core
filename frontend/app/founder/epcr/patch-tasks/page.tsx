@@ -17,9 +17,9 @@ interface PatchTask {
 }
 
 const FIX_TYPE_COLORS: Record<string, string> = {
-  exporter_bug: 'bg-red-900 text-red-300',
-  mapping_bug: 'bg-[rgba(255,77,0,0.2)] text-[#FF4D00]',
-  ui_rule: 'bg-blue-900 text-blue-300',
+  exporter_bug: 'bg-red-900 text-[var(--color-brand-red)]',
+  mapping_bug: 'bg-[rgba(255,106,0,0.2)] text-[var(--q-orange)]',
+  ui_rule: 'bg-blue-900 text-[var(--color-status-info)]',
   code_list: 'bg-purple-900 text-purple-300',
   schema_rule: 'bg-yellow-900 text-yellow-300',
   config: 'bg-teal-900 text-teal-300',
@@ -74,20 +74,20 @@ export default function PatchTasksPage() {
 
   if (loading) {
     return (
-      <div className="p-5 min-h-screen bg-black flex items-center">
-        <span className="text-xs text-zinc-500">Loading patch tasks...</span>
+      <div className="p-5 min-h-screen bg-[var(--color-bg-base)] flex items-center">
+        <span className="text-xs text-[var(--color-text-muted)]">Loading patch tasks...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-5 space-y-6 min-h-screen bg-black">
+    <div className="p-5 space-y-6 min-h-screen bg-[var(--color-bg-base)]">
       <div>
         <div className="text-micro font-bold uppercase tracking-[0.2em] text-system-billing mb-1">
           ePCR · PATCH TASKS
         </div>
-        <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Patch Tasks</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">
+        <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Patch Tasks</h1>
+        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
           AI-generated fix tasks from validation issues
         </p>
       </div>
@@ -98,29 +98,29 @@ export default function PatchTasksPage() {
           return (
             <div key={col.key} className="flex flex-col gap-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)]">
                   {col.label}
                 </span>
-                <span className="text-micro bg-bg-input border border-border-DEFAULT text-zinc-500 px-2 py-0.5">
+                <span className="text-micro bg-bg-input border border-border-DEFAULT text-[var(--color-text-muted)] px-2 py-0.5">
                   {colTasks.length}
                 </span>
               </div>
               <div className="space-y-2 min-h-[120px]">
                 {colTasks.length === 0 && (
-                  <div className="text-body text-zinc-500 italic pt-2">No tasks</div>
+                  <div className="text-body text-[var(--color-text-muted)] italic pt-2">No tasks</div>
                 )}
                 {colTasks.map((task) => {
                   const d = task.data || {};
-                  const fixTypeClass = FIX_TYPE_COLORS[d.fix_type] ?? 'bg-bg-raised text-zinc-400';
+                  const fixTypeClass = FIX_TYPE_COLORS[d.fix_type] ?? 'bg-bg-raised text-[var(--color-text-secondary)]';
                   const isUpdating = updatingId === task.id;
                   const nextStatuses = COLUMNS.filter((c) => c.key !== col.key).map((c) => c.key);
                   return (
                     <div
                       key={task.id}
-                      className="bg-[#0A0A0B] border border-border-DEFAULT p-3 space-y-2"
+                      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3 space-y-2"
                       style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
                     >
-                      <div className="text-xs font-bold text-zinc-100 leading-tight">{d.title || 'Untitled Task'}</div>
+                      <div className="text-xs font-bold text-[var(--color-text-primary)] leading-tight">{d.title || 'Untitled Task'}</div>
                       <div className="flex flex-wrap items-center gap-1.5">
                         {d.element_id && (
                           <span className="text-micro font-mono text-system-billing">{d.element_id}</span>
@@ -132,12 +132,12 @@ export default function PatchTasksPage() {
                         )}
                       </div>
                       {d.description && (
-                        <p className="text-body text-zinc-500 leading-tight">
+                        <p className="text-body text-[var(--color-text-muted)] leading-tight">
                           {d.description.length > 100 ? `${d.description.slice(0, 100)}...` : d.description}
                         </p>
                       )}
                       {d.steps && d.steps.length > 0 && (
-                        <div className="text-micro text-zinc-500">
+                        <div className="text-micro text-[var(--color-text-muted)]">
                           {d.steps.length} step{d.steps.length !== 1 ? 's' : ''}
                         </div>
                       )}
@@ -147,7 +147,7 @@ export default function PatchTasksPage() {
                             key={ns}
                             onClick={() => updateStatus(task.id, ns)}
                             disabled={isUpdating}
-                            className="text-micro bg-bg-input border border-white/[0.12] text-zinc-400 px-2 py-0.5 hover:border-cyan-500/[0.3] hover:text-system-billing disabled:opacity-40 transition-colors"
+                            className="text-micro bg-bg-input border border-white/[0.12] text-[var(--color-text-secondary)] px-2 py-0.5 hover:border-cyan-500/[0.3] hover:text-system-billing disabled:opacity-40 transition-colors"
                           >
                             → {ns.replace('_', ' ')}
                           </button>

@@ -99,6 +99,12 @@ variable "kms_key_arns" {
   default     = []
 }
 
+variable "bedrock_model_arns" {
+  description = "Optional Bedrock model ARNs the ECS task role may invoke (bedrock:InvokeModel)."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Additional tags to merge with common tags"
   type        = map(string)

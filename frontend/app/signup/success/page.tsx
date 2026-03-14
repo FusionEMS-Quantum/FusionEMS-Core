@@ -72,12 +72,12 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
                 backgroundColor: isDone
                   ? 'rgba(76,175,80,0.15)'
                   : isActive
-                  ? 'rgba(255,107,26,0.15)'
+                  ? 'rgba(255,106,0,0.15)'
                   : 'rgba(255,255,255,0.04)',
                 border: isDone
                   ? '1px solid rgba(76,175,80,0.4)'
                   : isActive
-                  ? '1px solid rgba(255,107,26,0.5)'
+                  ? '1px solid rgba(255,106,0,0.5)'
                   : '1px solid rgba(255,255,255,0.08)',
               }}
             >
@@ -87,8 +87,8 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
                 </svg>
               ) : isActive ? (
                 <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="4" />
-                  <path className="opacity-75" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="var(--q-orange)" strokeWidth="4" />
+                  <path className="opacity-75" fill="var(--q-orange)" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
               ) : (
                 <div
@@ -105,7 +105,7 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
                 color: isDone
                   ? 'var(--color-status-active)'
                   : isActive
-                  ? '#FF4D00'
+                  ? 'var(--q-orange)'
                   : isPending
                   ? 'rgba(255,255,255,0.25)'
                   : 'rgba(255,255,255,0.65)',
@@ -119,9 +119,9 @@ function ProvisioningSteps({ status }: { status: ProvisioningStatus }) {
               <span
                 className="ml-1 text-xs px-1.5 py-0.5 "
                 style={{
-                  backgroundColor: 'rgba(255,107,26,0.12)',
-                  border: '1px solid rgba(255,107,26,0.25)',
-                  color: '#FF4D00',
+                  backgroundColor: 'rgba(255,106,0,0.12)',
+                  border: '1px solid rgba(255,106,0,0.25)',
+                  color: 'var(--q-orange)',
                 }}
               >
                 In progress
@@ -190,22 +190,22 @@ export default function SuccessPage() {
 
   return (
     <div
-      className=" bg-zinc-950 border border-zinc-800 p-6 md:p-8"
+      className=" bg-[var(--color-bg-base)] border border-[var(--color-border-default)] p-6 md:p-8"
       style={{ backgroundColor: 'var(--q-bg)', borderColor: 'rgba(255,255,255,0.08)' }}
     >
       {/* Top success banner */}
       <div
         className=" border px-5 py-4 mb-6 flex items-start gap-4"
         style={{
-          backgroundColor: isComplete ? 'rgba(76,175,80,0.08)' : 'rgba(255,107,26,0.06)',
-          borderColor:     isComplete ? 'rgba(76,175,80,0.3)'  : 'rgba(255,107,26,0.2)',
+          backgroundColor: isComplete ? 'rgba(76,175,80,0.08)' : 'rgba(255,106,0,0.06)',
+          borderColor:     isComplete ? 'rgba(76,175,80,0.3)'  : 'rgba(255,106,0,0.2)',
         }}
       >
         <div
           className="flex-shrink-0 w-10 h-10  flex items-center justify-center mt-0.5"
           style={{
-            backgroundColor: isComplete ? 'rgba(76,175,80,0.15)' : 'rgba(255,107,26,0.15)',
-            border: isComplete ? '1px solid rgba(76,175,80,0.4)' : '1px solid rgba(255,107,26,0.4)',
+            backgroundColor: isComplete ? 'rgba(76,175,80,0.15)' : 'rgba(255,106,0,0.15)',
+            border: isComplete ? '1px solid rgba(76,175,80,0.4)' : '1px solid rgba(255,106,0,0.4)',
           }}
         >
           {isComplete ? (
@@ -214,14 +214,14 @@ export default function SuccessPage() {
             </svg>
           ) : (
             <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#FF4D00" strokeWidth="4" />
-              <path className="opacity-75" fill="#FF4D00" d="M4 12a8 8 0 018-8v8z" />
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="var(--q-orange)" strokeWidth="4" />
+              <path className="opacity-75" fill="var(--q-orange)" d="M4 12a8 8 0 018-8v8z" />
             </svg>
           )}
         </div>
         <div>
           <h1
-            className="text-base font-bold text-zinc-100 uppercase tracking-wider"
+            className="text-base font-bold text-[var(--color-text-primary)] uppercase tracking-wider"
             style={{ fontFamily: "'Barlow Condensed', 'Barlow', sans-serif" }}
           >
             {isComplete ? 'Agency Provisioned!' : 'Your Agency is Being Provisioned'}
@@ -267,7 +267,7 @@ export default function SuccessPage() {
                   className="h-full  transition-all duration-700"
                   style={{
                     width: `${progress}%`,
-                    backgroundColor: isComplete ? 'var(--color-status-active)' : '#FF4D00',
+                    backgroundColor: isComplete ? 'var(--color-status-active)' : 'var(--q-orange)',
                   }}
                 />
               </div>
@@ -340,7 +340,7 @@ export default function SuccessPage() {
               {
                 icon: (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#FF4D00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="var(--q-orange)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ),
                 text: 'Your HIPAA-compliant tenant is being isolated and configured.',
@@ -388,7 +388,7 @@ export default function SuccessPage() {
               <div className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 Agency
               </div>
-              <div className="text-sm font-semibold text-zinc-100 mt-0.5">{agencyName}</div>
+              <div className="text-sm font-semibold text-[var(--color-text-primary)] mt-0.5">{agencyName}</div>
             </div>
           )}
 
@@ -436,8 +436,8 @@ export default function SuccessPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             {successPayload.centralized_billing?.enabled && (
-              <div className=" border p-3" style={{ borderColor: 'rgba(255,107,26,0.25)', backgroundColor: 'rgba(255,107,26,0.07)' }}>
-                <div className="font-semibold" style={{ color: '#FF4D00' }}>Centralized RCM Enabled</div>
+              <div className=" border p-3" style={{ borderColor: 'rgba(255,106,0,0.25)', backgroundColor: 'rgba(255,106,0,0.07)' }}>
+                <div className="font-semibold" style={{ color: 'var(--q-orange)' }}>Centralized RCM Enabled</div>
                 <div style={{ color: 'rgba(255,255,255,0.6)' }}>Single billing number active. Statement prefix: {successPayload.centralized_billing.statement_prefix || 'FEM'}.</div>
               </div>
             )}
@@ -476,7 +476,7 @@ export default function SuccessPage() {
         {isComplete ? (
           <button
             onClick={() => router.push('/login')}
-            className="bg-[#FF4D00] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all "
+            className="bg-[var(--q-orange)] hover:bg-[#E64500] text-black font-black uppercase tracking-[0.2em] text-[11px] px-8 py-4 transition-all "
           >
             Login Now →
           </button>
@@ -484,9 +484,9 @@ export default function SuccessPage() {
           <div className="flex items-center gap-2">
             <div
               className="w-2 h-2  animate-pulse"
-              style={{ backgroundColor: '#FF4D00' }}
+              style={{ backgroundColor: 'var(--q-orange)' }}
             />
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF4D00' }}>
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--q-orange)' }}>
               Provisioning…
             </span>
           </div>

@@ -59,7 +59,7 @@ function TransportLinkLoginInner() {
             <Truck className="w-6 h-6 text-white" strokeWidth={2.5} />
           </div>
           <div className="text-[13px] font-black tracking-[0.22em] text-white uppercase">TransportLink</div>
-          <div className="text-[9px] tracking-[0.35em] text-[#FF4D00] uppercase font-medium mt-0.5">FusionEMS · Facility Portal</div>
+          <div className="text-[9px] tracking-[0.35em] text-[var(--q-orange)] uppercase font-medium mt-0.5">FusionEMS · Facility Portal</div>
         </div>
 
         {/* Panel */}
@@ -72,11 +72,11 @@ function TransportLinkLoginInner() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h1 className="text-h2 font-black text-white">Secure Access</h1>
-                <p className="text-[10px] text-zinc-500 mt-0.5">Facility portal sign in</p>
+                <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">Facility portal sign in</p>
               </div>
-              <div className="p-2 border border-orange/20 bg-[#FF4D00]/5"
+              <div className="p-2 border border-orange/20 bg-[var(--q-orange)]/5"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}>
-                <Lock className="w-4 h-4 text-[#FF4D00]" />
+                <Lock className="w-4 h-4 text-[var(--q-orange)]" />
               </div>
             </div>
 
@@ -90,7 +90,7 @@ function TransportLinkLoginInner() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
                   Work Email
                 </label>
                 <input
@@ -98,7 +98,7 @@ function TransportLinkLoginInner() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@yourfacility.org"
-                  className="w-full h-10 px-3 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors"
+                  className="w-full h-10 px-3 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors"
                   style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
                   autoComplete="email"
                 />
@@ -106,8 +106,8 @@ function TransportLinkLoginInner() {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Password</label>
-                  <Link href="/forgot-password" className="text-[9px] text-[#FF4D00]/70 hover:text-[#FF4D00] transition-colors">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">Password</label>
+                  <Link href="/forgot-password" className="text-[9px] text-[var(--q-orange)]/70 hover:text-[var(--q-orange)] transition-colors">
                     Forgot password?
                   </Link>
                 </div>
@@ -117,14 +117,14 @@ function TransportLinkLoginInner() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full h-10 px-3 pr-10 bg-zinc-950/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-zinc-500 transition-colors"
+                    className="w-full h-10 px-3 pr-10 bg-[var(--color-bg-base)]/[0.04] border border-white/[0.08] focus:border-orange/40 focus:outline-none text-[12px] text-white placeholder:text-[var(--color-text-muted)] transition-colors"
                     style={{ clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw((v) => !v)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-100 transition-colors"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                   >
                     {showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
@@ -134,7 +134,7 @@ function TransportLinkLoginInner() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-10 bg-[#FF4D00] hover:bg-[#FF6A1A] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                className="w-full h-10 bg-[var(--q-orange)] hover:bg-[#FF6A1A] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
               >
                 {loading ? (
@@ -152,10 +152,10 @@ function TransportLinkLoginInner() {
             </form>
 
             <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center justify-between">
-              <span className="text-[10px] text-zinc-500">Don&apos;t have access?</span>
+              <span className="text-[10px] text-[var(--color-text-muted)]">Don&apos;t have access?</span>
               <Link
                 href="/transportlink/request-access"
-                className="text-[10px] font-semibold text-[#FF4D00] hover:text-[#FF6A1A] transition-colors flex items-center gap-1"
+                className="text-[10px] font-semibold text-[var(--q-orange)] hover:text-[#FF6A1A] transition-colors flex items-center gap-1"
               >
                 Request Access <ChevronRight className="w-2.5 h-2.5" />
               </Link>
@@ -165,8 +165,8 @@ function TransportLinkLoginInner() {
 
         {/* Security label */}
         <div className="flex items-center justify-center gap-2 mt-5">
-          <Shield className="w-3 h-3 text-zinc-500" />
-          <span className="text-[9px] text-zinc-500 uppercase tracking-widest">
+          <Shield className="w-3 h-3 text-[var(--color-text-muted)]" />
+          <span className="text-[9px] text-[var(--color-text-muted)] uppercase tracking-widest">
             Secured · CMS-Aware · Wisconsin-First
           </span>
         </div>

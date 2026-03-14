@@ -23,30 +23,31 @@ interface Invoice {
   };
 }
 
-const STATUS: Record<string, { label: string; bg: string; border: string; color: string }> = {
-  paid:      { label: 'PAID',      bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.3)',  color: '#10B981' },
-  pending:   { label: 'PENDING',   bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', color: '#F59E0B' },
-  overdue:   { label: 'OVERDUE',   bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.3)',  color: '#EF4444' },
-  in_review: { label: 'IN REVIEW', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.3)',  color: '#818CF8' },
-  partial:   { label: 'PARTIAL',   bg: 'rgba(255,77,0,0.1)',    border: 'rgba(255,77,0,0.3)',    color: '#FF4D00' },
-};
-
-const S: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', fontFamily: 'var(--font-body)' },
-  header: { background: 'var(--color-bg-surface)', borderBottom: '1px solid var(--color-border-default)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' },
-  inner: { maxWidth: '1100px', margin: '0 auto', padding: '32px 24px' },
-  filtersRow: { display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' },
-  filterBtn: { padding: '7px 16px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid var(--color-border-default)', background: 'transparent', color: 'var(--color-text-muted)', cursor: 'pointer', clipPath: 'polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)', transition: 'all 0.15s' },
-  filterBtnActive: { background: 'rgba(255,77,0,0.1)', border: '1px solid rgba(255,77,0,0.3)', color: '#FF4D00' },
-  table: { background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', overflow: 'hidden', clipPath: 'polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)' },
-  thead: { borderBottom: '1px solid var(--color-border-default)', padding: '12px 20px', display: 'grid', gridTemplateColumns: '1fr 140px 120px 120px 100px', gap: '12px', background: 'rgba(255,255,255,0.02)' },
-  th: { fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--color-text-muted)' },
-  row: { padding: '14px 20px', display: 'grid', gridTemplateColumns: '1fr 140px 120px 120px 100px', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s' },
-  chip: { fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '3px 8px', display: 'inline-block', clipPath: 'polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,0 100%)' },
-  empty: { padding: '48px 24px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '14px' },
+const STATUS_COLORS: Record<string, { color: string; label: string }> = {
+  paid:      { color: 'var(--color-status-active)', label: 'PAID' },
+  pending:   { color: 'var(--q-yellow)', label: 'PENDING' },
+  overdue:   { color: 'var(--color-brand-red)', label: 'OVERDUE' },
+  in_review: { color: 'var(--color-status-info)', label: 'IN REVIEW' },
+  partial:   { color: 'var(--q-orange)', label: 'PARTIAL' },
 };
 
 function fmt(cents?: number) { return cents !== undefined ? `$${(cents / 100).toFixed(2)}` : '—'; }
+
+function asNumberOrUndefined(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+}
+
+function StatusChip({ status }: { status?: string }) {
+  const cfg = STATUS_COLORS[status ?? 'pending'] ?? STATUS_COLORS.pending;
+  return (
+    <span
+      className="text-micro font-label font-bold tracking-wider uppercase px-2 py-0.5 chamfer-4 inline-block"
+      style={{ color: cfg.color, backgroundColor: `color-mix(in srgb, ${cfg.color} 12%, transparent)`, border: `1px solid color-mix(in srgb, ${cfg.color} 30%, transparent)` }}
+    >
+      {cfg.label}
+    </span>
+  );
+}
 
 function InvoicesContent() {
   const searchParams = useSearchParams();
@@ -66,65 +67,84 @@ function InvoicesContent() {
   const displayed = filter === 'all' ? invoices : invoices.filter((i) => i.data?.status === filter);
 
   return (
-    <div style={S.page}>      {fetchError && (
-        <div style={{ padding: '12px 20px', background: 'rgba(239,68,68,0.08)', borderBottom: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5', fontSize: '13px' }}>
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] font-sans">
+      {fetchError && (
+        <div className="px-5 py-3 bg-[var(--color-brand-red-ghost)] border-b border-[var(--color-brand-red)] text-body text-[var(--color-brand-red)]">
           Unable to load invoices. Please refresh the page or contact billing support.
         </div>
-      )}      <div style={S.header}>
-        <div>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>PATIENT BILLING PORTAL</div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>Invoices &amp; Statements</h1>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Link href="/portal/patient/home" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--color-border-default)', color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)' }}>← Dashboard</Link>
-          <Link href="/portal/patient/pay" style={{ padding: '8px 16px', background: '#FF4D00', border: '1px solid #FF4D00', color: '#000', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', clipPath: 'polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%)' }}>Pay Now</Link>
-        </div>
-      </div>
+      )}
 
-      <div style={S.inner}>
-        <div style={S.filtersRow}>
+      <header className="bg-[var(--color-bg-surface)] border-b border-[var(--color-border-default)] px-6 py-5 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="text-micro font-label font-bold tracking-wider uppercase text-[var(--color-text-muted)] mb-1">PATIENT BILLING PORTAL</div>
+          <h1 className="text-h2 font-black m-0">Invoices &amp; Statements</h1>
+        </div>
+        <div className="flex gap-2.5">
+          <Link href="/portal/patient/home" className="quantum-btn no-underline">&larr; Dashboard</Link>
+          <Link href="/portal/patient/pay" className="quantum-btn-primary no-underline">Pay Now</Link>
+        </div>
+      </header>
+
+      <div className="max-w-[1100px] mx-auto px-6 py-8">
+        {/* Filters */}
+        <div className="flex gap-2.5 mb-6 flex-wrap">
           {['all', 'pending', 'overdue', 'paid', 'in_review'].map((f) => (
-            <button key={f} onClick={() => setFilter(f)} style={{ ...S.filterBtn, ...(filter === f ? S.filterBtnActive : {}) }}>
+            <button
+              key={f} onClick={() => setFilter(f)}
+              className={`px-4 py-1.5 text-micro font-label font-bold tracking-wider uppercase chamfer-4 border transition-colors cursor-pointer ${
+                filter === f
+                  ? 'bg-[var(--color-brand-orange-ghost)] border-[color-mix(in_srgb,var(--q-orange)_30%,transparent)] text-[var(--q-orange)]'
+                  : 'bg-transparent border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]'
+              }`}
+            >
               {f === 'all' ? 'All Statements' : f.replace('_', ' ')}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div style={S.empty}>Loading statements…</div>
+          <div className="p-12 text-center text-body text-[var(--color-text-muted)]">Loading statements&hellip;</div>
         ) : displayed.length === 0 ? (
-          <div style={{ ...S.table, ...S.empty }}>No statements found{filter !== 'all' ? ` for filter: ${filter}` : ''}.</div>
+          <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-12 p-12 text-center text-body text-[var(--color-text-muted)]">
+            No statements found{filter !== 'all' ? ` for filter: ${filter}` : ''}.
+          </div>
         ) : (
-          <div style={S.table}>
-            <div style={S.thead}>
-              <div style={S.th}>Statement</div>
-              <div style={S.th}>Date</div>
-              <div style={S.th}>Billed</div>
-              <div style={S.th}>Balance</div>
-              <div style={S.th}>Status</div>
+          <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] chamfer-12 overflow-hidden">
+            {/* Table header */}
+            <div className="grid grid-cols-[1fr_140px_120px_120px_100px] gap-3 px-5 py-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-overlay)]">
+              <span className="label-caps">Statement</span>
+              <span className="label-caps">Date</span>
+              <span className="label-caps">Billed</span>
+              <span className="label-caps">Balance</span>
+              <span className="label-caps">Status</span>
             </div>
+            {/* Rows */}
             {displayed.map((inv) => {
-              const cfg = STATUS[inv.data?.status ?? 'pending'] ?? STATUS.pending;
+              const dueCents = asNumberOrUndefined(inv.data?.amount_due_cents);
+              const dueForCompare = dueCents ?? 0;
               return (
-                <Link key={inv.id} href={`/portal/patient/invoices/${inv.id}`} style={S.row}>
+                <Link
+                  key={inv.id} href={`/portal/patient/invoices/${inv.id}`}
+                  className="grid grid-cols-[1fr_140px_120px_120px_100px] gap-3 px-5 py-3.5 border-b border-[var(--color-border-subtle)] no-underline text-inherit items-center hover:bg-[var(--color-bg-overlay)] transition-colors"
+                >
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600 }}>Statement #{inv.id.slice(-8).toUpperCase()}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{inv.data?.service_type ?? 'EMS Transport'}</div>
+                    <div className="text-body font-semibold text-[var(--color-text-primary)]">Statement #{inv.id.slice(-8).toUpperCase()}</div>
+                    <div className="text-micro text-[var(--color-text-muted)] mt-0.5">{inv.data?.service_type ?? 'EMS Transport'}</div>
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{inv.data?.incident_date ?? inv.data?.service_date ?? '—'}</div>
-                  <div style={{ fontSize: '13px' }}>{fmt(inv.data?.amount_billed_cents)}</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: (inv.data?.amount_due_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? '#FF4D00' : '#10B981' }}>{fmt(inv.data?.amount_due_cents)}</div>
-                  <div><span style={{ ...S.chip, background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>{cfg.label}</span></div>
+                  <div className="text-body text-[var(--color-text-muted)]">{inv.data?.incident_date ?? inv.data?.service_date ?? '—'}</div>
+                  <div className="text-body text-[var(--color-text-primary)]">{fmt(inv.data?.amount_billed_cents)}</div>
+                  <div className={`text-body font-bold ${dueForCompare > 0 ? 'text-[var(--q-orange)]' : 'text-[var(--color-status-active)]'}`}>{fmt(dueCents)}</div>
+                  <div><StatusChip status={inv.data?.status} /></div>
                 </Link>
               );
             })}
           </div>
         )}
 
-        <div style={{ marginTop: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+        <div className="mt-6 flex gap-3 flex-wrap text-body text-[var(--color-text-muted)]">
           <span>Showing {displayed.length} of {invoices.length} statement{invoices.length !== 1 ? 's' : ''}</span>
-          <span>·</span>
-          <Link href="/portal/patient/support" style={{ color: '#FF4D00', textDecoration: 'none' }}>Questions about a statement? Get Help</Link>
+          <span>&middot;</span>
+          <Link href="/portal/patient/support" className="text-[var(--q-orange)] no-underline hover:underline">Questions about a statement? Get Help</Link>
         </div>
       </div>
     </div>
@@ -133,7 +153,7 @@ function InvoicesContent() {
 
 export default function InvoicesPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--color-bg-base)' }} />}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--color-bg-base)]" />}>
       <InvoicesContent />
     </Suspense>
   );

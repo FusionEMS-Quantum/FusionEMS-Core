@@ -27,7 +27,7 @@ interface PolicyVersion {
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-semibold border ${active ? 'border-green/40 text-green bg-green/10' : 'border-red-500/40 text-red-400 bg-red-500/10'}`}>
+    <span className={`px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-semibold border ${active ? 'border-green/40 text-green bg-green/10' : 'border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)] bg-[var(--color-brand-red)]/10'}`}>
       {active ? 'Active' : 'Inactive'}
     </span>
   );
@@ -195,7 +195,7 @@ export default function PolicySandboxPage() {
       <AnimatePresence>
         {toast && (
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className={`fixed top-4 right-4 z-50 px-4 py-3 border text-sm font-semibold max-w-sm ${toast.ok ? 'border-green text-green bg-green/10' : 'border-red-500 text-red-400 bg-red-500/10'}`}
+            className={`fixed top-4 right-4 z-50 px-4 py-3 border text-sm font-semibold max-w-sm ${toast.ok ? 'border-green text-green bg-green/10' : 'border-[var(--color-brand-red)] text-[var(--color-brand-red)] bg-[var(--color-brand-red)]/10'}`}
             style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
             {toast.msg}
           </motion.div>
@@ -205,19 +205,19 @@ export default function PolicySandboxPage() {
       {/* Header */}
       <div className="hud-rail pb-3 mb-6 flex items-end justify-between">
         <div>
-          <div className="micro-caps mb-1 text-zinc-500">Security</div>
-          <h1 className="text-h2 font-bold text-zinc-100">Policy Sandbox</h1>
-          <p className="text-body text-zinc-500 mt-1">
+          <div className="micro-caps mb-1 text-[var(--color-text-muted)]">Security</div>
+          <h1 className="text-h2 font-bold text-[var(--color-text-primary)]">Policy Sandbox</h1>
+          <p className="text-body text-[var(--color-text-muted)] mt-1">
             Manage tenant policies with versioning and two-person approval workflow.
           </p>
         </div>
         <div className="flex gap-2">
           <button onClick={openCreate}
-            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors">
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest bg-[var(--q-orange)] text-bg-page hover:bg-[#E64500] transition-colors">
             + New Policy
           </button>
           <Link href="/founder/security"
-            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 transition-colors">
+            className="px-3 py-1.5 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
             ← Security
           </Link>
         </div>
@@ -226,23 +226,23 @@ export default function PolicySandboxPage() {
       <div className="grid grid-cols-12 gap-4">
         {/* Policy list */}
         <div className="col-span-4">
-          <div className="text-micro uppercase tracking-widest text-zinc-500 mb-2">Policies ({policies.length})</div>
+          <div className="text-micro uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Policies ({policies.length})</div>
           {loading ? (
-            <div className="text-zinc-500 text-sm py-8 text-center">Loading…</div>
+            <div className="text-[var(--color-text-muted)] text-sm py-8 text-center">Loading…</div>
           ) : policies.length === 0 ? (
-            <div className="text-zinc-500 text-sm py-8 text-center border border-border-DEFAULT p-4">No policies yet.</div>
+            <div className="text-[var(--color-text-muted)] text-sm py-8 text-center border border-border-DEFAULT p-4">No policies yet.</div>
           ) : (
             <div className="flex flex-col gap-1.5">
               {policies.map(p => (
                 <motion.button key={p.id} whileHover={{ scale: 1.01 }}
                   onClick={() => selectPolicy(p)}
-                  className={`w-full text-left p-3 border transition-colors ${selected?.id === p.id ? 'border-orange bg-[#FF4D00]/10' : 'border-border-DEFAULT hover:border-white/20 bg-[#0A0A0B]'}`}
+                  className={`w-full text-left p-3 border transition-colors ${selected?.id === p.id ? 'border-orange bg-[var(--q-orange)]/10' : 'border-border-DEFAULT hover:border-white/20 bg-[var(--color-bg-panel)]'}`}
                   style={{ clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-zinc-100 font-mono">{p.key}</span>
+                    <span className="text-xs font-bold text-[var(--color-text-primary)] font-mono">{p.key}</span>
                     <StatusBadge active={p.is_active} />
                   </div>
-                  <div className="text-micro text-zinc-500">v{p.version} · {new Date(p.updated_at).toLocaleDateString()}</div>
+                  <div className="text-micro text-[var(--color-text-muted)]">v{p.version} · {new Date(p.updated_at).toLocaleDateString()}</div>
                 </motion.button>
               ))}
             </div>
@@ -252,7 +252,7 @@ export default function PolicySandboxPage() {
         {/* Detail / Editor panel */}
         <div className="col-span-8">
           {mode === 'list' && !selected && (
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-8 text-center text-zinc-500 text-sm"
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-8 text-center text-[var(--color-text-muted)] text-sm"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
               Select a policy or create a new one.
             </div>
@@ -260,36 +260,36 @@ export default function PolicySandboxPage() {
 
           {/* Create / Edit form */}
           {(mode === 'create' || mode === 'edit') && (
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-micro uppercase tracking-widest text-[#FF4D00] mb-4">
+              <div className="text-micro uppercase tracking-widest text-[var(--q-orange)] mb-4">
                 {mode === 'create' ? 'New Policy' : `Edit — ${selected?.key}`}
               </div>
               {mode === 'create' && (
                 <div className="mb-3">
-                  <label className="text-micro text-zinc-500 block mb-1">Policy Key</label>
+                  <label className="text-micro text-[var(--color-text-muted)] block mb-1">Policy Key</label>
                   <input value={formKey} onChange={e => setFormKey(e.target.value)} placeholder="e.g. mfa.required"
-                    className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none focus:border-orange" />
+                    className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-orange" />
                 </div>
               )}
               <div className="mb-3">
-                <label className="text-micro text-zinc-500 block mb-1">Value (JSON)</label>
+                <label className="text-micro text-[var(--color-text-muted)] block mb-1">Value (JSON)</label>
                 <textarea rows={8} value={formValue} onChange={e => setFormValue(e.target.value)}
-                  className={`w-full bg-bg-page border px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none resize-none ${formValueError ? 'border-red-500' : 'border-border-DEFAULT focus:border-orange'}`} />
-                {formValueError && <p className="text-micro text-red-400 mt-1">{formValueError}</p>}
+                  className={`w-full bg-bg-page border px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none resize-none ${formValueError ? 'border-[var(--color-brand-red)]' : 'border-border-DEFAULT focus:border-orange'}`} />
+                {formValueError && <p className="text-micro text-[var(--color-brand-red)] mt-1">{formValueError}</p>}
               </div>
               <div className="mb-4">
-                <label className="text-micro text-zinc-500 block mb-1">Change Reason (optional)</label>
+                <label className="text-micro text-[var(--color-text-muted)] block mb-1">Change Reason (optional)</label>
                 <input value={formReason} onChange={e => setFormReason(e.target.value)} placeholder="Summarize the change…"
-                  className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-orange" />
+                  className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-orange" />
               </div>
               <div className="flex gap-2">
                 <button onClick={savePolicy} disabled={saving || !formKey.trim()}
-                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
+                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[var(--q-orange)] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
                   {saving ? 'Saving…' : 'Save'}
                 </button>
                 <button onClick={() => setMode('list')}
-                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 transition-colors">
+                  className="px-4 py-2 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
                   Cancel
                 </button>
               </div>
@@ -300,32 +300,32 @@ export default function PolicySandboxPage() {
           {mode === 'list' && selected && (
             <div className="space-y-4">
               {/* Current value */}
-              <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+              <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <span className="text-xs font-bold text-zinc-100 font-mono">{selected.key}</span>
+                    <span className="text-xs font-bold text-[var(--color-text-primary)] font-mono">{selected.key}</span>
                     <span className="ml-2"><StatusBadge active={selected.is_active} /></span>
-                    <span className="ml-2 text-micro text-zinc-500">v{selected.version}</span>
+                    <span className="ml-2 text-micro text-[var(--color-text-muted)]">v{selected.version}</span>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={openEdit}
-                      className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-400 hover:text-zinc-100 hover:border-orange transition-colors">
+                      className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-orange transition-colors">
                       Edit
                     </button>
                     <button onClick={() => setShowApprovalPanel(p => !p)}
-                      className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-orange/40 text-[#FF4D00] hover:bg-[#FF4D00]/10 transition-colors">
+                      className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-orange/40 text-[var(--q-orange)] hover:bg-[var(--q-orange)]/10 transition-colors">
                       Request Approval
                     </button>
                     {selected.is_active && (
                       <button onClick={deactivatePolicy}
-                        className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors">
+                        className="px-2 py-1 text-micro font-semibold uppercase tracking-widest border border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)] hover:bg-[var(--color-brand-red)]/10 transition-colors">
                         Deactivate
                       </button>
                     )}
                   </div>
                 </div>
-                <pre className="bg-bg-page text-xs font-mono text-zinc-400 p-3  overflow-auto max-h-48">
+                <pre className="bg-bg-page text-xs font-mono text-[var(--color-text-secondary)] p-3  overflow-auto max-h-48">
                   {JSON.stringify(selected.value, null, 2)}
                 </pre>
               </div>
@@ -334,21 +334,21 @@ export default function PolicySandboxPage() {
               <AnimatePresence>
                 {showApprovalPanel && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                    className="bg-[#0A0A0B] border border-orange/30 p-4 overflow-hidden"
+                    className="bg-[var(--color-bg-panel)] border border-orange/30 p-4 overflow-hidden"
                     style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-                    <div className="text-micro uppercase tracking-widest text-[#FF4D00] mb-3">
+                    <div className="text-micro uppercase tracking-widest text-[var(--q-orange)] mb-3">
                       Request Approval (2-person rule enforced)
                     </div>
-                    <label className="text-micro text-zinc-500 block mb-1">Proposed Value (JSON)</label>
+                    <label className="text-micro text-[var(--color-text-muted)] block mb-1">Proposed Value (JSON)</label>
                     <textarea rows={6} value={approvalProposed} onChange={e => setApprovalProposed(e.target.value)}
-                      className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-zinc-100 focus:outline-none focus:border-orange resize-none mb-3" />
+                      className="w-full bg-bg-page border border-border-DEFAULT px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-orange resize-none mb-3" />
                     <div className="flex gap-2">
                       <button onClick={requestApproval} disabled={requestingApproval}
-                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
+                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest bg-[var(--q-orange)] text-bg-page hover:bg-[#E64500] transition-colors disabled:opacity-50">
                         {requestingApproval ? 'Requesting…' : 'Submit for Approval'}
                       </button>
                       <button onClick={() => setShowApprovalPanel(false)}
-                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-zinc-500 hover:text-zinc-100 transition-colors">
+                        className="px-4 py-2 text-micro font-semibold uppercase tracking-widest border border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
                         Cancel
                       </button>
                     </div>
@@ -357,34 +357,34 @@ export default function PolicySandboxPage() {
               </AnimatePresence>
 
               {/* Version history */}
-              <div className="bg-[#0A0A0B] border border-border-DEFAULT"
+              <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                  <span className="text-micro uppercase tracking-widest text-zinc-500">Version History</span>
+                  <span className="text-micro uppercase tracking-widest text-[var(--color-text-muted)]">Version History</span>
                   {rollbackVersion !== null && (
                     <button onClick={rollback} disabled={rollingBack}
-                      className="px-3 py-1 text-micro font-semibold uppercase tracking-widest bg-[#FF4D00]/20 text-[#FF4D00] border border-orange/40 hover:bg-[#FF4D00]/30 transition-colors disabled:opacity-50">
+                      className="px-3 py-1 text-micro font-semibold uppercase tracking-widest bg-[var(--q-orange)]/20 text-[var(--q-orange)] border border-orange/40 hover:bg-[var(--q-orange)]/30 transition-colors disabled:opacity-50">
                       {rollingBack ? 'Rolling back…' : `Rollback to v${rollbackVersion}`}
                     </button>
                   )}
                 </div>
                 {versionsLoading ? (
-                  <div className="px-4 py-6 text-center text-zinc-500 text-sm">Loading versions…</div>
+                  <div className="px-4 py-6 text-center text-[var(--color-text-muted)] text-sm">Loading versions…</div>
                 ) : versions.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-zinc-500 text-sm">No version history yet.</div>
+                  <div className="px-4 py-6 text-center text-[var(--color-text-muted)] text-sm">No version history yet.</div>
                 ) : (
                   versions.map((v, i) => (
                     <motion.div key={v.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
-                      className="flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-zinc-950/[0.02]">
-                      <span className="text-xs font-bold font-mono text-[#FF4D00] w-8">v{v.version_number}</span>
+                      className="flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-[var(--color-bg-base)]/[0.02]">
+                      <span className="text-xs font-bold font-mono text-[var(--q-orange)] w-8">v{v.version_number}</span>
                       <div className="flex-1">
-                        <div className="text-xs text-zinc-100">{v.change_reason ?? 'No reason provided'}</div>
-                        <div className="text-micro text-zinc-500 font-mono">
+                        <div className="text-xs text-[var(--color-text-primary)]">{v.change_reason ?? 'No reason provided'}</div>
+                        <div className="text-micro text-[var(--color-text-muted)] font-mono">
                           {v.changed_by_user_id.slice(0, 8)}… · {new Date(v.created_at).toLocaleString()}
                         </div>
                       </div>
                       <button onClick={() => setRollbackVersion(v.version_number === rollbackVersion ? null : v.version_number)}
-                        className={`text-micro font-semibold uppercase tracking-widest transition-colors px-2 py-1 border ${rollbackVersion === v.version_number ? 'border-orange text-[#FF4D00] bg-[#FF4D00]/10' : 'border-border-DEFAULT text-zinc-500 hover:text-zinc-100'}`}>
+                        className={`text-micro font-semibold uppercase tracking-widest transition-colors px-2 py-1 border ${rollbackVersion === v.version_number ? 'border-orange text-[var(--q-orange)] bg-[var(--q-orange)]/10' : 'border-border-DEFAULT text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
                         {rollbackVersion === v.version_number ? 'Selected' : 'Select'}
                       </button>
                     </motion.div>

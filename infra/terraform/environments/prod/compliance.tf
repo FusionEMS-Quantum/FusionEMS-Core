@@ -35,15 +35,16 @@ module "prod_security_subsystem" {
 
 # 5. Backup and Restore / Vault Lock immutability
 module "prod_backups" {
-  source      = "../../modules/aws_backup"
-  environment = var.environment
-  kms_key_arn = module.prod_kms.key_arn
+  source          = "../../modules/aws_backup"
+  environment     = var.environment
+  project         = var.project
+  alert_topic_arn = module.observability.alert_topic_arn
 }
 
 # 6. Global Web Application Firewall (Block SQLi, OWASP configs)
 module "prod_waf" {
   source      = "../../modules/network"
   environment = var.environment
-  vpc_id      = module.vpc.vpc_id                        # Assumes a VPC module output
-  subnet_ids  = module.vpc.public_subnets                # Assumes VPC module public subnets
+  vpc_id      = module.networking.vpc_id            # Assumes a networking module output
+  subnet_ids  = module.networking.public_subnet_ids # Assumes networking module public subnets
 }

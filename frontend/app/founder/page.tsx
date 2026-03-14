@@ -58,6 +58,17 @@ type FounderDashboardMetrics = {
   mrr_cents: number;
   tenant_count: number;
   error_count_1h: number;
+  clinical_datasets?: {
+    icd10?: { version?: string; term_count?: number };
+    rxnorm?: { status?: string; source?: string };
+    snomed?: { status?: string; source?: string };
+    nemsis?: { version?: string; element_count?: number };
+    npi?: { verification_supported?: boolean; source?: string };
+  };
+  integration_readiness?: {
+    required_missing?: string[];
+    required_missing_count?: number;
+  };
   as_of: string;
 };
 
@@ -369,11 +380,11 @@ function KpiCard({
   
   const inner = (
     <div
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4 h-full flex flex-col justify-between hover:border-brand-orange/[0.3] transition-colors cursor-pointer group"
+      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 h-full flex flex-col justify-between hover:border-brand-orange/[0.3] transition-colors cursor-pointer group"
       style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-2">{label}</div>
-      <div className="text-2xl font-bold text-zinc-100" style={color ? { color } : {}}>{value}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">{label}</div>
+      <div className="text-2xl font-bold text-[var(--color-text-primary)]" style={color ? { color } : {}}>{value}</div>
       {sub && (
         <div className="flex items-center gap-1 mt-1">
           {trend && <span className="text-micro" style={{ color: trendColor }}>{trendIcon}</span>}
@@ -394,8 +405,8 @@ function SectionHeader({ title, sub, number }: { title: string; sub?: string; nu
     <div className="hud-rail pb-2 mb-4">
       <div className="flex items-baseline gap-3">
           <span className="text-micro font-bold text-orange-dim font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -404,16 +415,16 @@ function SectionHeader({ title, sub, number }: { title: string; sub?: string; nu
 function RiskCard({ label, items }: { label: string; items: { text: string; level: 'ok' | 'warn' | 'crit' }[] }) {
   const levelColor = { ok: 'var(--color-status-active)', warn: 'var(--color-status-warning)', crit: 'var(--color-brand-red)' };
   return (
-    <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-3">{label}</div>
+    <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-3">{label}</div>
       {items.length === 0 ? (
-          <div className="text-xs text-zinc-500">No active risk signals detected for this module.</div>
+          <div className="text-xs text-[var(--color-text-muted)]">No active risk signals detected for this module.</div>
       ) : (
         <div className="space-y-1.5">
           {items.map((item, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="w-1.5 h-1.5  flex-shrink-0" style={{ background: levelColor[item.level] }} />
-              <span className="text-xs text-zinc-400">{item.text}</span>
+              <span className="text-xs text-[var(--color-text-secondary)]">{item.text}</span>
             </div>
           ))}
         </div>
@@ -424,7 +435,7 @@ function RiskCard({ label, items }: { label: string; items: { text: string; leve
 
 function DenialHeatCell({ value, max }: { value: number; max: number }) {
   const intensity = max > 0 ? value / max : 0;
-  const bg = intensity > 0.8 ? 'var(--color-brand-red)' : intensity > 0.5 ? '#FF4D00' : intensity > 0.25 ? 'var(--color-status-warning)' : '#0A0A0B';
+  const bg = intensity > 0.8 ? 'var(--color-brand-red)' : intensity > 0.5 ? 'var(--q-orange)' : intensity > 0.25 ? 'var(--color-status-warning)' : 'var(--color-bg-panel)';
   const text = intensity > 0.5 ? 'var(--color-text-primary)' : 'rgba(255,255,255,0.65)';
   return (
     <div
@@ -442,8 +453,8 @@ function ActionItemRow({ rank, text, category, urgency }: { rank: number; text: 
     <div className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
         <span className="text-micro font-bold text-orange-dim font-mono w-5">{rank}</span>
       <span className="w-1.5 h-1.5  flex-shrink-0" style={{ background: urgencyColor[urgency] }} />
-      <span className="flex-1 text-xs text-zinc-100">{text}</span>
-      <span className="text-micro uppercase tracking-wider text-zinc-500 bg-zinc-950/5 px-2 py-0.5 chamfer-4">
+      <span className="flex-1 text-xs text-[var(--color-text-primary)]">{text}</span>
+      <span className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-bg-base)]/5 px-2 py-0.5 chamfer-4">
         {category}
       </span>
     </div>
@@ -454,17 +465,17 @@ function GrowthVelocityBar({ label, value, max }: { label: string; value: number
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-micro text-zinc-500 w-10 flex-shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-zinc-950/[0.06]  overflow-hidden">
+      <span className="text-micro text-[var(--color-text-muted)] w-10 flex-shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-[var(--color-bg-base)]/[0.06]  overflow-hidden">
         <motion.div
           className="h-full "
-          style={{ background: '#FF4D00' }}
+          style={{ background: 'var(--q-orange)' }}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         />
       </div>
-      <span className="text-xs font-semibold text-zinc-100 w-12 text-right">{value.toLocaleString()}</span>
+      <span className="text-xs font-semibold text-[var(--color-text-primary)] w-12 text-right">{value.toLocaleString()}</span>
     </div>
   );
 }
@@ -574,14 +585,22 @@ export default function FounderExecutivePage() {
   const mrrDisplay = mrr != null ? `$${(mrr / 100).toLocaleString()}` : '—';
   const arrDisplay = arr != null ? `$${(arr / 100).toLocaleString()}` : '—';
   const tenantCount = metrics?.tenant_count ?? '—';
-  const errorCount = metrics?.error_count_1h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const errorCount = metrics?.error_count_1h ?? 0;
+  const icdVersion = metrics?.clinical_datasets?.icd10?.version || '—';
+  const icdTermCount = metrics?.clinical_datasets?.icd10?.term_count;
+  const rxnormStatus = metrics?.clinical_datasets?.rxnorm?.status || 'not_probed';
+  const snomedStatus = metrics?.clinical_datasets?.snomed?.status || 'not_probed';
+  const nemsisVersion = metrics?.clinical_datasets?.nemsis?.version || '—';
+  const nemsisElementCount = metrics?.clinical_datasets?.nemsis?.element_count;
+  const npiVerificationEnabled = Boolean(metrics?.clinical_datasets?.npi?.verification_supported);
+  const requiredIntegrationMissingCount = metrics?.integration_readiness?.required_missing_count ?? 0;
   const totalAR = aging ? aging.buckets.reduce((a, b) => a + b.total_cents, 0) / 100 : null;
 
   const degradedModules = TELEMETRY_MODULES.filter((key) => moduleStatus[key] === 'error');
   const hasTelemetryDegradation = degradedModules.length > 0;
 
   const denialHeatmap = billingDenials?.heatmap ?? [];
-  const complianceScoreValue = ((complianceStatus?.compliance_packs?.active_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 20)
+  const complianceScoreValue = ((complianceStatus?.compliance_packs?.active_count ?? 0) * 20)
     + (complianceStatus?.nemsis?.certified ? 30 : 0)
     + (complianceStatus?.neris?.onboarded ? 30 : 0);
   const complianceScore = `${Math.min(100, complianceScoreValue)}%`;
@@ -593,24 +612,24 @@ export default function FounderExecutivePage() {
   ) / 2;
   const exportSuccessRate = `${Math.round(exportSuccessRateValue * 100)}%`;
 
-  const billingHealthScoreNum = Number(billingHealth?.health_score ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })());
+  const billingHealthScoreNum = Number(billingHealth?.health_score ?? 0);
   const complianceScoreNum = Math.min(100, complianceScoreValue);
-  const failedDeployments = opsData?.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
-  const pastDueSubscriptions = opsData?.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
-  const degradedChannels = opsData?.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
-  const crewEscalations = opsData?.crewlink_health?.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+  const failedDeployments = opsData?.deployment_issues?.failed_deployments ?? 0;
+  const pastDueSubscriptions = opsData?.payment_failures?.past_due_subscriptions ?? 0;
+  const degradedChannels = opsData?.comms_health?.degraded_channels ?? 0;
+  const crewEscalations = opsData?.crewlink_health?.escalations_last_24h ?? 0;
 
   const apiHealthScore = clampScore(100 - Math.min(80, errorCount * 3) - degradedModules.length * 8);
   const operationsScore = clampScore(100 - failedDeployments * 20 - crewEscalations * 4 - degradedModules.length * 10);
-  const supportScore = clampScore(100 - degradedChannels * 30 - (opsData?.comms_health?.failed_messages ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()));
-  const schedulingScore = clampScore(100 - crewEscalations * 12 - (opsData?.crewlink_health?.pending_no_response ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 2);
+  const supportScore = clampScore(100 - degradedChannels * 30 - (opsData?.comms_health?.failed_messages ?? 0));
+  const schedulingScore = clampScore(100 - crewEscalations * 12 - (opsData?.crewlink_health?.pending_no_response ?? 0) * 2);
 
   const commandDomainHealth: DomainHealth[] = [
     {
       domain: 'billing',
       score: clampScore(billingHealthScoreNum),
-      trend: (billingKpis?.denial_rate ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 10 ? 'down' : 'stable',
-      alertCount: (billingAlerts?.total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) + (billingLeakage?.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
+      trend: (billingKpis?.denial_rate ?? 0) > 10 ? 'down' : 'stable',
+      alertCount: (billingAlerts?.total ?? 0) + (billingLeakage?.item_count ?? 0),
       topIssue: billingAlerts?.alerts?.[0]?.type?.replaceAll('_', ' ') || 'Billing telemetry nominal',
     },
     {
@@ -634,7 +653,7 @@ export default function FounderExecutivePage() {
       domain: 'support',
       score: supportScore,
       trend: degradedChannels > 0 ? 'down' : 'stable',
-      alertCount: degradedChannels + (opsData?.comms_health?.failed_messages ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()),
+      alertCount: degradedChannels + (opsData?.comms_health?.failed_messages ?? 0),
       topIssue: degradedChannels > 0 ? `${degradedChannels} communication channels degraded` : 'Communication channels healthy',
     },
     {
@@ -730,7 +749,7 @@ export default function FounderExecutivePage() {
   const activeIncidentCount = failedDeployments + degradedChannels + pastDueSubscriptions + degradedModules.length;
   const founderOverallSeverity: SeverityLevel = hasTelemetryDegradation || activeIncidentCount > 0
     ? 'BLOCKING'
-    : (billingAlerts?.total ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 || (opsData?.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0
+    : (billingAlerts?.total ?? 0) > 0 || (opsData?.claims_pipeline?.denied ?? 0) > 0
       ? 'HIGH'
       : 'LOW';
 
@@ -745,15 +764,15 @@ export default function FounderExecutivePage() {
   };
 
   const riskInfrastructure: Array<{ text: string; level: 'ok' | 'warn' | 'crit' }> = [
-    { text: `${opsData?.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} failed deployments`, level: (opsData?.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-    { text: `${opsData?.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} degraded comms channels`, level: (opsData?.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
-    { text: `${opsData?.crewlink_health?.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} crew escalations (24h)`, level: (opsData?.crewlink_health?.escalations_last_24h ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
+    { text: `${failedDeployments} failed deployments`, level: failedDeployments > 0 ? 'crit' : 'ok' },
+    { text: `${degradedChannels} degraded comms channels`, level: degradedChannels > 0 ? 'warn' : 'ok' },
+    { text: `${crewEscalations} crew escalations (24h)`, level: crewEscalations > 0 ? 'warn' : 'ok' },
   ];
 
   const riskBusiness: Array<{ text: string; level: 'ok' | 'warn' | 'crit' }> = [
-    { text: `${opsData?.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} past-due subscriptions`, level: (opsData?.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-    { text: `${opsData?.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} denied claims`, level: (opsData?.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-    { text: `${billingLeakage?.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} leakage candidates`, level: (billingLeakage?.item_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
+    { text: `${pastDueSubscriptions} past-due subscriptions`, level: pastDueSubscriptions > 0 ? 'crit' : 'ok' },
+    { text: `${opsData?.claims_pipeline?.denied ?? 0} denied claims`, level: (opsData?.claims_pipeline?.denied ?? 0) > 0 ? 'crit' : 'ok' },
+    { text: `${billingLeakage?.item_count ?? 0} leakage candidates`, level: (billingLeakage?.item_count ?? 0) > 0 ? 'warn' : 'ok' },
   ];
 
   const complianceGauges: Array<{ label: string; value: number; color: string }> = [
@@ -769,7 +788,7 @@ export default function FounderExecutivePage() {
     },
     {
       label: 'Compliance Packs',
-      value: Math.min(100, (complianceStatus?.compliance_packs?.active_count ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 20),
+      value: Math.min(100, (complianceStatus?.compliance_packs?.active_count ?? 0) * 20),
       color: 'var(--color-status-info)',
     },
   ];
@@ -810,7 +829,7 @@ export default function FounderExecutivePage() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 px-4 py-2 bg-red-ghost border border-red text-red-bright text-sm font-semibold chamfer-4"
+          className="flex items-center gap-3 px-4 py-2 bg-[var(--color-brand-red)]/10 border border-red text-[var(--color-brand-red)] text-sm font-semibold chamfer-4"
         >
           <span className="animate-pulse">⬤</span>
           INCIDENT MODE ACTIVE — All non-critical communications suspended. War room routing engaged.
@@ -821,8 +840,8 @@ export default function FounderExecutivePage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="text-micro font-bold uppercase tracking-[0.2em] text-orange-dim mb-1">FUSIONEMS QUANTUM</div>
-          <h1 className="text-xl font-black uppercase tracking-wider text-zinc-100">Founder Command OS</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Executive Command Overview · Real-Time Backend Hooked System</p>
+          <h1 className="text-xl font-black uppercase tracking-wider text-[var(--color-text-primary)]">Founder Command OS</h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Executive Command Overview · Real-Time Backend Hooked System</p>
           <div className="mt-2">
             <SeverityBadge severity={founderOverallSeverity} size="sm" />
           </div>
@@ -837,7 +856,7 @@ export default function FounderExecutivePage() {
           </Link>
           <button
             onClick={() => setIncidentMode(true)}
-            className="h-8 px-3 bg-red-600/[0.12] border border-red-ghost text-red text-xs font-semibold chamfer-4 hover:bg-red-600/[0.2] transition-colors"
+            className="h-8 px-3 bg-red-600/[0.12] border border-[var(--color-brand-red)]/20 text-red text-xs font-semibold chamfer-4 hover:bg-red-600/[0.2] transition-colors"
           >
             Incident Mode
           </button>
@@ -848,19 +867,19 @@ export default function FounderExecutivePage() {
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-4 py-3 border border-amber-500/30 bg-amber-500/[0.08] text-xs text-amber-300"
+          className="px-4 py-3 border border-amber-500/30 bg-[var(--q-yellow)]/[0.08] text-xs text-[var(--q-yellow)]"
           style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
         >
           <div className="flex items-center justify-between gap-3 mb-1">
-            <div className="font-semibold uppercase tracking-wider text-micro text-amber-200">Telemetry Degraded</div>
+            <div className="font-semibold uppercase tracking-wider text-micro text-[var(--q-yellow)]">Telemetry Degraded</div>
             <button
               onClick={fetchAllTelemetry}
-              className="px-2 py-1 border border-amber-400/30 text-amber-200 hover:bg-amber-400/10 transition-colors uppercase tracking-wider text-[10px]"
+              className="px-2 py-1 border border-amber-400/30 text-[var(--q-yellow)] hover:bg-amber-400/10 transition-colors uppercase tracking-wider text-[10px]"
             >
               Retry Telemetry
             </button>
           </div>
-          <div className="text-amber-100/80">
+          <div className="text-[var(--q-yellow)]/80">
             {degradedModules.map((key) => MODULE_LABELS[key]).join(' · ')} unavailable. Founder command is running in partial visibility mode until these signals recover.
           </div>
         </motion.div>
@@ -896,15 +915,15 @@ export default function FounderExecutivePage() {
             <div
               className="relative overflow-hidden border p-5"
               style={{
-                borderColor: growthWizard?.autopilot_ready ? 'rgba(34,197,94,0.35)' : 'rgba(255,77,0,0.4)',
-                background: 'radial-gradient(circle at 20% 0%, rgba(255,77,0,0.16), transparent 55%), #0A0A0B',
+                borderColor: growthWizard?.autopilot_ready ? 'rgba(34,197,94,0.35)' : 'rgba(255,106,0,0.4)',
+                background: 'radial-gradient(circle at 20% 0%, rgba(255,106,0,0.16), transparent 55%), var(--color-bg-panel)',
                 clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)',
               }}
             >
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
-                  <div className="text-micro uppercase tracking-wider text-zinc-400">Autopilot Readiness</div>
-                  <div className={`text-lg font-black ${growthWizard?.autopilot_ready ? 'text-green-300' : 'text-orange-300'}`}>
+                  <div className="text-micro uppercase tracking-wider text-[var(--color-text-secondary)]">Autopilot Readiness</div>
+                  <div className={`text-lg font-black ${growthWizard?.autopilot_ready ? 'text-[var(--color-status-active)]' : 'text-[var(--q-orange)]'}`}>
                     {growthWizard?.autopilot_ready ? 'READY FOR AUTOPILOT' : 'BLOCKED — HUMAN SETUP REQUIRED'}
                   </div>
                 </div>
@@ -912,7 +931,7 @@ export default function FounderExecutivePage() {
                   <select
                     value={launchMode}
                     onChange={(event) => setLaunchMode(event.target.value as LaunchMode)}
-                    className="h-8 bg-black/40 border border-white/20 px-2 text-xs text-zinc-100"
+                    className="h-8 bg-[var(--color-bg-base)]/40 border border-white/20 px-2 text-xs text-[var(--color-text-primary)]"
                   >
                     <option value="autopilot">autopilot</option>
                     <option value="approval-first">approval-first</option>
@@ -921,7 +940,7 @@ export default function FounderExecutivePage() {
                   <button
                     onClick={() => { void startLaunchOrchestrator(); }}
                     disabled={launchBusy}
-                    className="h-8 px-3 bg-orange-600/25 border border-orange-400/50 text-orange-200 text-xs font-semibold hover:bg-orange-600/35 disabled:opacity-50"
+                    className="h-8 px-3 bg-orange-600/25 border border-orange-400/50 text-[var(--q-orange)] text-xs font-semibold hover:bg-orange-600/35 disabled:opacity-50"
                   >
                     {launchBusy ? 'Launching…' : 'Start Launch Orchestrator'}
                   </button>
@@ -929,13 +948,13 @@ export default function FounderExecutivePage() {
               </div>
 
               {launchError && (
-                <div className="mb-3 px-3 py-2 border border-red-500/40 bg-red-500/10 text-xs text-red-200">
+                <div className="mb-3 px-3 py-2 border border-[var(--color-brand-red)]/40 bg-[var(--color-brand-red)]/10 text-xs text-[var(--color-brand-red)]">
                   {launchError}
                 </div>
               )}
 
               {launchRun && (
-                <div className="mb-3 px-3 py-2 border border-white/20 bg-black/30 text-xs text-zinc-300">
+                <div className="mb-3 px-3 py-2 border border-white/20 bg-[var(--color-bg-base)]/30 text-xs text-[var(--color-text-secondary)]">
                   Run {launchRun.run_id.slice(0, 8)} · {launchRun.status.toUpperCase()} · mode {launchRun.mode} · queued sync jobs {launchRun.queued_sync_jobs}
                 </div>
               )}
@@ -943,22 +962,22 @@ export default function FounderExecutivePage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <KpiCard label="Active MRR" value={growthMrrDisplay} sub="live subscription base" trend="up" color="var(--color-status-info)" />
                 <KpiCard label="Pipeline" value={growthPipelineDisplay} sub="pending proposal value" trend="up" color="var(--color-status-warning)" />
-                <KpiCard label="Conversion" value={`${growthSummary?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}%`} sub="proposal → paid" trend="flat" color="var(--color-status-active)" />
+                <KpiCard label="Conversion" value={`${growthSummary?.proposal_to_paid_conversion_pct ?? 0}%`} sub="proposal → paid" trend="flat" color="var(--color-status-active)" />
                 <KpiCard label="Graph Mailbox" value={growthSummary?.graph_mailbox_configured ? 'ONLINE' : 'MISSING'} sub="outbound founder email" trend={growthSummary?.graph_mailbox_configured ? 'up' : 'down'} color={growthSummary?.graph_mailbox_configured ? 'var(--color-status-active)' : 'var(--color-brand-red)'} />
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-xs">
-                <span className="text-zinc-400">Required services connected</span>
-                <span className="font-bold text-zinc-100">{requiredGrowthConnected}/{requiredGrowthServices.length}</span>
-                <span className="text-zinc-500">•</span>
-                <span className="text-zinc-400">Blocked items</span>
-                <span className={`font-bold ${(growthWizard?.blocked_items.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'text-red-300' : 'text-green-300'}`}>{growthWizard?.blocked_items.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()}</span>
+                <span className="text-[var(--color-text-secondary)]">Required services connected</span>
+                <span className="font-bold text-[var(--color-text-primary)]">{requiredGrowthConnected}/{requiredGrowthServices.length}</span>
+                <span className="text-[var(--color-text-muted)]">•</span>
+                <span className="text-[var(--color-text-secondary)]">Blocked items</span>
+                <span className={`font-bold ${(growthWizard?.blocked_items?.length ?? 0) > 0 ? 'text-[var(--color-brand-red)]' : 'text-[var(--color-status-active)]'}`}>{growthWizard?.blocked_items?.length ?? 0}</span>
               </div>
 
-              {(growthWizard?.blocked_items.length ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 && (
+              {(growthWizard?.blocked_items?.length ?? 0) > 0 && (
                 <div className="mt-3 grid grid-cols-1 gap-2">
                   {growthWizard?.blocked_items.slice(0, 4).map((item) => (
-                    <div key={item} className="px-3 py-2 border border-red-500/25 bg-red-500/[0.08] text-xs text-red-200">
+                    <div key={item} className="px-3 py-2 border border-[var(--color-brand-red)]/25 bg-[var(--color-brand-red)]/[0.08] text-xs text-[var(--color-brand-red)]">
                       {item}
                     </div>
                   ))}
@@ -966,22 +985,22 @@ export default function FounderExecutivePage() {
               )}
             </div>
 
-            <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
-              <div className="text-micro uppercase tracking-wider text-zinc-500 mb-3">Connected Services Matrix</div>
+            <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+              <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-3">Connected Services Matrix</div>
               <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                 {(growthWizard?.services ?? []).map((service) => (
-                  <div key={service.service_key} className="border border-white/10 bg-black/20 p-2">
+                  <div key={service.service_key} className="border border-white/10 bg-[var(--color-bg-base)]/20 p-2">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="text-xs font-semibold text-zinc-100">{service.label}</div>
-                      <div className={`text-[10px] uppercase tracking-wider ${service.connected ? 'text-green-300' : 'text-red-300'}`}>
+                      <div className="text-xs font-semibold text-[var(--color-text-primary)]">{service.label}</div>
+                      <div className={`text-[10px] uppercase tracking-wider ${service.connected ? 'text-[var(--color-status-active)]' : 'text-[var(--color-brand-red)]'}`}>
                         {service.connected ? 'connected' : 'disconnected'}
                       </div>
                     </div>
-                    <div className="mt-1 text-[11px] text-zinc-400">
+                    <div className="mt-1 text-[11px] text-[var(--color-text-secondary)]">
                       {service.install_state} · perms {service.permissions_state} · token {service.token_state} · health {service.health_state} · retry {service.retry_count}
                     </div>
                     {service.required && !service.connected && (
-                      <div className="mt-1 text-[11px] text-red-200">required service is not ready</div>
+                      <div className="mt-1 text-[11px] text-[var(--color-brand-red)]">required service is not ready</div>
                     )}
                   </div>
                 ))}
@@ -1011,6 +1030,65 @@ export default function FounderExecutivePage() {
             sub="System health"
             trend={errorCount > 10 ? 'down' : 'flat'}
             href="/founder/infra/ecs"
+          />
+        </div>
+      </div>
+
+      {/* MODULE 4A · Clinical Data Integrations */}
+      <div>
+        <SectionHeader
+          number="4A"
+          title="Clinical Open-Data Integrations"
+          sub="ICD-10 · RxNorm · SNOMED · NEMSIS Dataset · NPI Verification"
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <KpiCard
+            label="ICD-10"
+            value={icdVersion === '—' ? '—' : `v${icdVersion}`}
+            sub={icdTermCount != null ? `${icdTermCount.toLocaleString()} terms` : 'code set'}
+            trend="flat"
+            color="var(--color-status-info)"
+            href="/founder/datasets"
+          />
+          <KpiCard
+            label="NEMSIS Dataset"
+            value={nemsisVersion === '—' ? '—' : `v${nemsisVersion}`}
+            sub={nemsisElementCount != null ? `${nemsisElementCount} mapped elements` : 'schema mapping'}
+            trend="flat"
+            color="var(--color-status-info)"
+            href="/founder/compliance/nemsis"
+          />
+          <KpiCard
+            label="RxNorm"
+            value={rxnormStatus.toUpperCase()}
+            sub="open source feed"
+            trend={rxnormStatus === 'active' ? 'up' : 'flat'}
+            color={rxnormStatus === 'active' ? 'var(--color-status-active)' : 'var(--q-yellow)'}
+            href="/founder/datasets"
+          />
+          <KpiCard
+            label="SNOMED"
+            value={snomedStatus.toUpperCase()}
+            sub="open source feed"
+            trend={snomedStatus === 'active' ? 'up' : 'flat'}
+            color={snomedStatus === 'active' ? 'var(--color-status-active)' : 'var(--q-yellow)'}
+            href="/founder/datasets"
+          />
+          <KpiCard
+            label="NPI Verification"
+            value={npiVerificationEnabled ? 'ENABLED' : 'DISABLED'}
+            sub="NPPES + open search"
+            trend={npiVerificationEnabled ? 'up' : 'flat'}
+            color={npiVerificationEnabled ? 'var(--color-status-active)' : 'var(--color-brand-red)'}
+            href="/founder/datasets"
+          />
+          <KpiCard
+            label="Missing Required Integrations"
+            value={String(requiredIntegrationMissingCount)}
+            sub="from runtime readiness table"
+            trend={requiredIntegrationMissingCount > 0 ? 'down' : 'up'}
+            color={requiredIntegrationMissingCount > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+            href="/founder/integration-command"
           />
         </div>
       </div>
@@ -1088,7 +1166,7 @@ export default function FounderExecutivePage() {
               title: 'Invoice Creator',
               sub: 'Generate invoices · track outstanding balances · reminders',
               tag: 'Invoicing',
-              color: '#FF4D00',
+              color: 'var(--q-orange)',
             },
             {
               href: '/founder/tools/expense-ledger',
@@ -1115,12 +1193,12 @@ export default function FounderExecutivePage() {
             <Link
               key={item.href}
               href={item.href}
-              className="bg-[#0A0A0B] border border-border-DEFAULT p-4 hover:border-brand-orange/[0.3] transition-colors"
+              className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 hover:border-brand-orange/[0.3] transition-colors"
               style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}
             >
               <div className="text-micro uppercase tracking-wider font-semibold mb-1" style={{ color: item.color }}>{item.tag}</div>
-              <div className="text-sm font-bold text-zinc-100 mb-1">{item.title}</div>
-              <div className="text-xs text-zinc-500">{item.sub}</div>
+              <div className="text-sm font-bold text-[var(--color-text-primary)] mb-1">{item.title}</div>
+              <div className="text-xs text-[var(--color-text-muted)]">{item.sub}</div>
             </Link>
           ))}
         </div>
@@ -1141,9 +1219,9 @@ export default function FounderExecutivePage() {
           <div className="space-y-4">
             {/* Top 3 Actions */}
             {opsData.top_actions?.length > 0 && (
-              <div className="bg-[#0A0A0B] border border-brand-orange/[0.15] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
+              <div className="bg-[var(--color-bg-panel)] border border-brand-orange/[0.15] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-1.5 h-1.5  bg-[#FF4D00] animate-pulse" />
+                  <span className="w-1.5 h-1.5  bg-[var(--q-orange)] animate-pulse" />
                   <span className="text-micro font-bold uppercase tracking-widest text-brand-orange">Top Actions — Right Now</span>
                 </div>
                 {opsData.top_actions.map((a, i: number) => (
@@ -1156,46 +1234,46 @@ export default function FounderExecutivePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               <KpiCard
                 label="Failed Deployments"
-                value={String(opsData.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+                value={String(opsData.deployment_issues?.failed_deployments ?? 0)}
                 sub="Blocking agencies"
-                trend={(opsData.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
-                color={(opsData.deployment_issues?.failed_deployments ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                trend={(opsData.deployment_issues?.failed_deployments ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.deployment_issues?.failed_deployments ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
               />
               <KpiCard
                 label="Past-Due Subs"
-                value={String(opsData.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+                value={String(opsData.payment_failures?.past_due_subscriptions ?? 0)}
                 sub="Revenue at risk"
-                trend={(opsData.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
-                color={(opsData.payment_failures?.past_due_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                trend={(opsData.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.payment_failures?.past_due_subscriptions ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
               />
               <KpiCard
                 label="Ready to Submit"
-                value={String(opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+                value={String(opsData.claims_pipeline?.ready_to_submit ?? 0)}
                 sub="Claims waiting"
-                trend={(opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'up' : 'flat'}
+                trend={(opsData.claims_pipeline?.ready_to_submit ?? 0) > 0 ? 'up' : 'flat'}
                 color="var(--color-status-warning)"
                 href="/founder/revenue/billing-intelligence"
               />
               <KpiCard
                 label="Denied Claims"
-                value={String(opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+                value={String(opsData.claims_pipeline?.denied ?? 0)}
                 sub="Need appeal review"
-                trend={(opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
-                color={(opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                trend={(opsData.claims_pipeline?.denied ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.claims_pipeline?.denied ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
                 href="/founder/revenue/billing-intelligence"
               />
               <KpiCard
                 label="Active Paging"
-                value={String(opsData.crewlink_health?.active_alerts ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
+                value={String(opsData.crewlink_health?.active_alerts ?? 0)}
                 sub="CrewLink alerts"
                 color="var(--color-status-info)"
               />
               <KpiCard
                 label="Comms Degraded"
-                value={String(opsData.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })())}
-                sub={`of ${opsData.comms_health?.total_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} channels`}
-                trend={(opsData.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'down' : 'flat'}
-                color={(opsData.comms_health?.degraded_channels ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
+                value={String(opsData.comms_health?.degraded_channels ?? 0)}
+                sub={`of ${opsData.comms_health?.total_channels ?? 0} channels`}
+                trend={(opsData.comms_health?.degraded_channels ?? 0) > 0 ? 'down' : 'flat'}
+                color={(opsData.comms_health?.degraded_channels ?? 0) > 0 ? 'var(--color-brand-red)' : 'var(--color-status-active)'}
               />
             </div>
 
@@ -1203,24 +1281,24 @@ export default function FounderExecutivePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Claims Pipeline */}
               <RiskCard label="Claims Pipeline" items={[
-                { text: `${opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} ready to submit`, level: (opsData.claims_pipeline?.ready_to_submit ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
-                { text: `${opsData.claims_pipeline?.blocked_for_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} blocked for review`, level: (opsData.claims_pipeline?.blocked_for_review ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-                { text: `${opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} denied`, level: (opsData.claims_pipeline?.denied ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-                { text: `${opsData.claims_pipeline?.appeals_drafted ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} appeals drafted`, level: 'warn' },
-                { text: `${opsData.claims_pipeline?.blocking_issues ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} blocking issues`, level: (opsData.claims_pipeline?.blocking_issues ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.ready_to_submit ?? 0} ready to submit`, level: (opsData.claims_pipeline?.ready_to_submit ?? 0) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.claims_pipeline?.blocked_for_review ?? 0} blocked for review`, level: (opsData.claims_pipeline?.blocked_for_review ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.denied ?? 0} denied`, level: (opsData.claims_pipeline?.denied ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.claims_pipeline?.appeals_drafted ?? 0} appeals drafted`, level: 'warn' },
+                { text: `${opsData.claims_pipeline?.blocking_issues ?? 0} blocking issues`, level: (opsData.claims_pipeline?.blocking_issues ?? 0) > 0 ? 'crit' : 'ok' },
               ]} />
               {/* Patient Balances */}
               <RiskCard label="Patient Balances" items={[
-                { text: `${opsData.patient_balance_review?.open_balances ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} open balances`, level: 'warn' },
-                { text: `${opsData.patient_balance_review?.autopay_pending ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} autopay pending`, level: 'ok' },
-                { text: `${opsData.patient_balance_review?.collections_ready ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} collections ready`, level: (opsData.patient_balance_review?.collections_ready ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-                { text: `$${((opsData.patient_balance_review?.total_outstanding_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()} outstanding`, level: (opsData.patient_balance_review?.total_outstanding_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 100000 ? 'crit' : 'warn' },
+                { text: `${opsData.patient_balance_review?.open_balances ?? 0} open balances`, level: 'warn' },
+                { text: `${opsData.patient_balance_review?.autopay_pending ?? 0} autopay pending`, level: 'ok' },
+                { text: `${opsData.patient_balance_review?.collections_ready ?? 0} collections ready`, level: (opsData.patient_balance_review?.collections_ready ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.patient_balance_review?.total_outstanding_cents != null ? `$${(opsData.patient_balance_review.total_outstanding_cents / 100).toLocaleString()}` : '—'} outstanding`, level: (opsData.patient_balance_review?.total_outstanding_cents ?? 0) > 100000 ? 'crit' : 'warn' },
               ]} />
               {/* Profile Gaps */}
               <RiskCard label="Agency Profile Gaps" items={[
-                { text: `${opsData.profile_gaps?.missing_tax_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} missing tax profile`, level: (opsData.profile_gaps?.missing_tax_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'crit' : 'ok' },
-                { text: `${opsData.profile_gaps?.missing_billing_policy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} missing billing policy`, level: (opsData.profile_gaps?.missing_billing_policy ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
-                { text: `${opsData.profile_gaps?.missing_public_sector_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} missing public sector`, level: (opsData.profile_gaps?.missing_public_sector_profile ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_tax_profile ?? 0} missing tax profile`, level: (opsData.profile_gaps?.missing_tax_profile ?? 0) > 0 ? 'crit' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_billing_policy ?? 0} missing billing policy`, level: (opsData.profile_gaps?.missing_billing_policy ?? 0) > 0 ? 'warn' : 'ok' },
+                { text: `${opsData.profile_gaps?.missing_public_sector_profile ?? 0} missing public sector`, level: (opsData.profile_gaps?.missing_public_sector_profile ?? 0) > 0 ? 'warn' : 'ok' },
               ]} />
             </div>
           </div>
@@ -1253,23 +1331,23 @@ export default function FounderExecutivePage() {
         ) : denialHeatmap.length === 0 ? (
           <QuantumEmptyState title="No denial data" description="No denied-claim reason signals were returned for this tenant." icon="activity" />
         ) : (
-          <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 overflow-x-auto" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
+          <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 overflow-x-auto" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
             <table className="w-full min-w-[600px] text-xs">
               <thead>
                 <tr>
-                  <th className="text-left text-micro uppercase tracking-wider text-zinc-500 pb-2 pr-4 font-semibold">Reason Code</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Count</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Share</th>
+                  <th className="text-left text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 pr-4 font-semibold">Reason Code</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Count</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Share</th>
                 </tr>
               </thead>
               <tbody>
                 {denialHeatmap.map((row) => {
-                  const total = billingDenials?.total_denials ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })();
+                  const total = billingDenials?.total_denials ?? 0;
                   const pct = total > 0 ? (row.count / total) * 100 : 0;
                   return (
                   <tr key={row.reason_code}>
-                    <td className="text-zinc-400 pr-4 py-0.5 whitespace-nowrap">{row.reason_code}</td>
-                    <td className="text-zinc-100 text-right px-0.5 py-0.5">{row.count}</td>
+                    <td className="text-[var(--color-text-secondary)] pr-4 py-0.5 whitespace-nowrap">{row.reason_code}</td>
+                    <td className="text-[var(--color-text-primary)] text-right px-0.5 py-0.5">{row.count}</td>
                     <td className="px-0.5 py-0.5">
                       <DenialHeatCell value={Math.round(pct)} max={100} />
                     </td>
@@ -1293,9 +1371,9 @@ export default function FounderExecutivePage() {
         ) : (
             <RiskCard label="Churn · Revenue · Compliance Risks · Modules 11–13" items={riskBusiness} />
         )}
-        <div className="bg-[#0A0A0B] border border-purple-500/20 p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
+        <div className="bg-[var(--color-bg-panel)] border border-purple-500/20 p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)' }}>
           <div className="flex items-center justify-between mb-3">
-            <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500">Module 7 · Compliance Command</div>
+            <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">Module 7 · Compliance Command</div>
             <Link href="/compliance" className="text-[9px] font-bold uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
               Open 7-Domain Command Center →
             </Link>
@@ -1305,36 +1383,36 @@ export default function FounderExecutivePage() {
           <div className="flex items-center gap-4 mb-3">
             <div className="flex items-center gap-2">
               <div className="text-lg font-black" style={{ color: complianceScoreNum >= 80 ? 'var(--color-status-active)' : complianceScoreNum >= 60 ? 'var(--color-status-warning)' : 'var(--color-brand-red)' }}>{complianceScore}</div>
-              <div className="text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Overall</div>
+              <div className="text-[9px] font-bold tracking-widest text-[var(--color-text-muted)] uppercase">Overall</div>
             </div>
             <div className="h-5 w-px bg-white/10" />
             <div className="flex gap-2 text-[9px] font-bold tracking-wider">
-              <span className="text-green-400">NEMSIS</span>
-              <span className="text-zinc-600">|</span>
-              <span className="text-blue-400">HIPAA</span>
-              <span className="text-zinc-600">|</span>
-              <span className="text-yellow-400">PCR</span>
-              <span className="text-zinc-600">|</span>
-              <span className="text-cyan-400">Billing</span>
-              <span className="text-zinc-600">|</span>
+              <span className="text-[var(--color-status-active)]">NEMSIS</span>
+              <span className="text-[var(--color-text-muted)]">|</span>
+              <span className="text-[var(--color-status-info)]">HIPAA</span>
+              <span className="text-[var(--color-text-muted)]">|</span>
+              <span className="text-[var(--q-yellow)]">PCR</span>
+              <span className="text-[var(--color-text-muted)]">|</span>
+              <span className="text-[var(--color-status-info)]">Billing</span>
+              <span className="text-[var(--color-text-muted)]">|</span>
               <span className="text-purple-400">Accred</span>
-              <span className="text-zinc-600">|</span>
-              <span className="text-red-400">DEA</span>
-              <span className="text-zinc-600">|</span>
-              <span className="text-orange-400">CMS</span>
+              <span className="text-[var(--color-text-muted)]">|</span>
+              <span className="text-[var(--color-brand-red)]">DEA</span>
+              <span className="text-[var(--color-text-muted)]">|</span>
+              <span className="text-[var(--q-orange)]">CMS</span>
             </div>
           </div>
 
           {/* Compliance Gauges */}
           {!complianceGauges || complianceGauges.length === 0 ? (
-             <div className="text-xs text-zinc-500">Compliance telemetry stream has not published values yet.</div>
+             <div className="text-xs text-[var(--color-text-muted)]">Compliance telemetry stream has not published values yet.</div>
           ) : complianceGauges.map((item) => (
             <div key={item.label} className="mb-2">
               <div className="flex justify-between text-body mb-0.5">
-                <span className="text-zinc-400">{item.label}</span>
+                <span className="text-[var(--color-text-secondary)]">{item.label}</span>
                 <span className="font-semibold" style={{ color: item.color }}>{item.value}%</span>
               </div>
-              <div className="h-1 bg-zinc-950/[0.06]  overflow-hidden">
+              <div className="h-1 bg-[var(--color-bg-base)]/[0.06]  overflow-hidden">
                 <div className="h-full " style={{ width: `${item.value}%`, background: item.color }} />
               </div>
             </div>
@@ -1342,14 +1420,14 @@ export default function FounderExecutivePage() {
 
           {/* Quick Linked Surfaces */}
           <div className="mt-3 pt-3 border-t border-white/5 grid grid-cols-3 gap-2">
-            <Link href="/portal/dea-cms" className="text-[10px] text-zinc-500 hover:text-red-400 transition-colors flex items-center gap-1">
-              <span className="w-1 h-1 inline-block bg-red-500" />DEA/CMS →
+            <Link href="/portal/dea-cms" className="text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-brand-red)] transition-colors flex items-center gap-1">
+              <span className="w-1 h-1 inline-block bg-[var(--color-brand-red)]" />DEA/CMS →
             </Link>
-            <Link href="/compliance" className="text-[10px] text-zinc-500 hover:text-purple-400 transition-colors flex items-center gap-1">
+            <Link href="/compliance" className="text-[10px] text-[var(--color-text-muted)] hover:text-purple-400 transition-colors flex items-center gap-1">
               <span className="w-1 h-1 inline-block bg-purple-500" />All Domains →
             </Link>
-            <Link href="/founder/compliance/dea-cms" className="text-[10px] text-zinc-500 hover:text-orange-400 transition-colors flex items-center gap-1">
-              <span className="w-1 h-1 inline-block bg-orange-500" />Evidence Bundles →
+            <Link href="/founder/compliance/dea-cms" className="text-[10px] text-[var(--color-text-muted)] hover:text-[var(--q-orange)] transition-colors flex items-center gap-1">
+              <span className="w-1 h-1 inline-block bg-[var(--q-orange)]" />Evidence Bundles →
             </Link>
           </div>
         </div>
@@ -1361,9 +1439,9 @@ export default function FounderExecutivePage() {
         {actionBriefs.length === 0 ? (
           <QuantumEmptyState title="No active AI briefs" description="All monitored alert classes are currently below action thresholds." icon="activity" />
         ) : (
-            <div className="bg-[#0A0A0B] border border-brand-orange/[0.15] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
+            <div className="bg-[var(--color-bg-panel)] border border-brand-orange/[0.15] p-4" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5  bg-[#FF4D00] animate-pulse" />
+                <span className="w-1.5 h-1.5  bg-[var(--q-orange)] animate-pulse" />
                 <span className="text-micro font-bold uppercase tracking-widest text-brand-orange">Quantum Intelligence Brief — Today</span>
               </div>
               {actionBriefs.map((b, rank: number) => (
@@ -1378,27 +1456,27 @@ export default function FounderExecutivePage() {
         <SectionHeader number="14" title="System Incident Status" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div
-            className={`${systemIncidents.length === 0 ? 'bg-green-500/[0.08] border-green-500/[0.2]' : 'bg-red-500/[0.08] border-red-500/[0.2]'} border p-3 flex items-center gap-3`}
+            className={`${systemIncidents.length === 0 ? 'bg-[var(--color-status-active)]/[0.08] border-[var(--color-status-active)]/[0.2]' : 'bg-[var(--color-brand-red)]/[0.08] border-[var(--color-brand-red)]/[0.2]'} border p-3 flex items-center gap-3`}
             style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
           >
-            <span className={`text-xl font-black ${systemIncidents.length === 0 ? 'text-status-active' : 'text-red-bright'}`}>
+            <span className={`text-xl font-black ${systemIncidents.length === 0 ? 'text-[var(--color-status-active)]' : 'text-[var(--color-brand-red)]'}`}>
               {systemIncidents.length === 0 ? '✓' : '!'}
             </span>
             <div>
-              <div className={`text-xs font-semibold ${systemIncidents.length === 0 ? 'text-status-active' : 'text-red-bright'}`}>
+              <div className={`text-xs font-semibold ${systemIncidents.length === 0 ? 'text-[var(--color-status-active)]' : 'text-[var(--color-brand-red)]'}`}>
                 {systemIncidents.length === 0 ? 'All Systems Operational' : 'Active Operational Incidents'}
               </div>
-              <div className="text-body text-zinc-500">
+              <div className="text-body text-[var(--color-text-muted)]">
                 {systemIncidents.length === 0 ? 'No active incidents in current founder telemetry.' : `${systemIncidents.length} incident signal(s) require attention.`}
               </div>
             </div>
           </div>
-          <div className="bg-[#0A0A0B] border border-border-DEFAULT p-3" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
-            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-2">Recent Incidents</div>
+          <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-3" style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+            <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-2">Recent Incidents</div>
             {systemIncidents.length === 0 ? (
-                <div className="text-xs text-zinc-500">No incident signals are currently active in operations telemetry.</div>
+                <div className="text-xs text-[var(--color-text-muted)]">No incident signals are currently active in operations telemetry.</div>
             ) : (
-              systemIncidents.map((inc, idx: number) => <div key={idx} className="text-xs text-zinc-100">{inc.text}</div>)
+              systemIncidents.map((inc, idx: number) => <div key={idx} className="text-xs text-[var(--color-text-primary)]">{inc.text}</div>)
             )}
           </div>
         </div>
@@ -1407,11 +1485,11 @@ export default function FounderExecutivePage() {
       {/* MODULE 15 · Growth Velocity Graph */}
       <div>
         <SectionHeader number="15" title="Growth Velocity" sub="30 / 90 / 365 day view" />
-        <div className="bg-[#0A0A0B] border border-border-DEFAULT p-5 grid grid-cols-1 md:grid-cols-2 gap-6" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
+        <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-5 grid grid-cols-1 md:grid-cols-2 gap-6" style={{ clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)' }}>
           <div>
-            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-3">Tenant Growth</div>
+            <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-3">Tenant Growth</div>
             {growthMetrics.tenants.length === 0 ? (
-                <div className="text-xs text-zinc-500">Tenant growth telemetry has not emitted a datapoint yet.</div>
+                <div className="text-xs text-[var(--color-text-muted)]">Tenant growth telemetry has not emitted a datapoint yet.</div>
             ) : (
                 <div className="space-y-2">
               {growthMetrics.tenants.map((t) => (
@@ -1421,9 +1499,9 @@ export default function FounderExecutivePage() {
             )}
           </div>
           <div>
-            <div className="text-micro uppercase tracking-wider text-zinc-500 mb-3">Revenue Growth ($)</div>
+            <div className="text-micro uppercase tracking-wider text-[var(--color-text-muted)] mb-3">Revenue Growth ($)</div>
             {growthMetrics.revenue.length === 0 ? (
-                <div className="text-xs text-zinc-500">Revenue trend telemetry has not emitted a datapoint yet.</div>
+                <div className="text-xs text-[var(--color-text-muted)]">Revenue trend telemetry has not emitted a datapoint yet.</div>
             ) : (
                 <div className="space-y-2">
               {growthMetrics.revenue.map((r) => (
@@ -1447,20 +1525,20 @@ export default function FounderExecutivePage() {
             icon="activity"
           />
         ) : releaseReadiness ? (
-          <div className="bg-[#0A0A0B] border p-4" style={{
+          <div className="bg-[var(--color-bg-panel)] border p-4" style={{
             borderColor: releaseReadiness.ready ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)',
             clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)',
           }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <span className={`text-xl font-black ${releaseReadiness.ready ? 'text-status-active' : 'text-red-bright'}`}>
+                <span className={`text-xl font-black ${releaseReadiness.ready ? 'text-[var(--color-status-active)]' : 'text-[var(--color-brand-red)]'}`}>
                   {releaseReadiness.ready ? '✓' : '✗'}
                 </span>
                 <div>
-                  <div className={`text-sm font-bold ${releaseReadiness.ready ? 'text-status-active' : 'text-red-bright'}`}>
+                  <div className={`text-sm font-bold ${releaseReadiness.ready ? 'text-[var(--color-status-active)]' : 'text-[var(--color-brand-red)]'}`}>
                     {releaseReadiness.verdict}
                   </div>
-                  <div className="text-body text-zinc-500">Gates passed: {releaseReadiness.score}</div>
+                  <div className="text-body text-[var(--color-text-muted)]">Gates passed: {releaseReadiness.score}</div>
                 </div>
               </div>
             </div>
@@ -1474,12 +1552,12 @@ export default function FounderExecutivePage() {
                     background: gate.passed ? 'rgba(34,197,94,0.05)' : 'rgba(239,68,68,0.05)',
                   }}
                 >
-                  <span className={`w-2 h-2 flex-shrink-0 ${gate.passed ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className={`w-2 h-2 flex-shrink-0 ${gate.passed ? 'bg-[var(--color-status-active)]' : 'bg-[var(--color-brand-red)]'}`} />
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-300">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
                       {gate.name.replaceAll('_', ' ')}
                     </div>
-                    <div className="text-[9px] text-zinc-500">{gate.detail}</div>
+                    <div className="text-[9px] text-[var(--color-text-muted)]">{gate.detail}</div>
                   </div>
                 </div>
               ))}
@@ -1502,34 +1580,34 @@ export default function FounderExecutivePage() {
             icon="activity"
           />
         ) : marginRisk && marginRisk.tenants.length > 0 ? (
-          <div className="bg-[#0A0A0B] border border-border-DEFAULT p-4 overflow-x-auto" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
+          <div className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 overflow-x-auto" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)' }}>
             <div className="flex items-center justify-between mb-3">
-              <div className="text-micro font-bold uppercase tracking-widest text-zinc-500">
+              <div className="text-micro font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
                 {marginRisk.total_tenants} tenants · {marginRisk.high_risk_count} at risk
               </div>
-              <span className="text-body text-zinc-500">as of {marginRisk.as_of?.slice(0, 10)}</span>
+              <span className="text-body text-[var(--color-text-muted)]">as of {marginRisk.as_of?.slice(0, 10)}</span>
             </div>
             <table className="w-full min-w-[700px] text-xs">
               <thead>
                 <tr>
-                  <th className="text-left text-micro uppercase tracking-wider text-zinc-500 pb-2 pr-2 font-semibold">Tenant</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Claims</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Revenue</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Denial %</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Net Margin</th>
-                  <th className="text-right text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Margin %</th>
-                  <th className="text-center text-micro uppercase tracking-wider text-zinc-500 pb-2 px-1 font-semibold">Risk</th>
+                  <th className="text-left text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 pr-2 font-semibold">Tenant</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Claims</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Revenue</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Denial %</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Net Margin</th>
+                  <th className="text-right text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Margin %</th>
+                  <th className="text-center text-micro uppercase tracking-wider text-[var(--color-text-muted)] pb-2 px-1 font-semibold">Risk</th>
                 </tr>
               </thead>
               <tbody>
                 {marginRisk.tenants.map((t) => {
-                  const riskColor = t.risk_level === 'critical' ? 'var(--color-brand-red)' : t.risk_level === 'high' ? '#FF4D00' : t.risk_level === 'medium' ? 'var(--color-status-warning)' : 'var(--color-status-active)';
+                  const riskColor = t.risk_level === 'critical' ? 'var(--color-brand-red)' : t.risk_level === 'high' ? 'var(--q-orange)' : t.risk_level === 'medium' ? 'var(--color-status-warning)' : 'var(--color-status-active)';
                   return (
                     <tr key={t.tenant_id} className="border-b border-white/5 last:border-0">
-                      <td className="text-zinc-300 pr-2 py-1.5 whitespace-nowrap">{t.name}</td>
-                      <td className="text-zinc-100 text-right px-1 py-1.5">{t.total_claims}</td>
-                      <td className="text-zinc-100 text-right px-1 py-1.5">${(t.revenue_cents / 100).toLocaleString()}</td>
-                      <td className="text-zinc-100 text-right px-1 py-1.5">{t.denial_rate_pct}%</td>
+                      <td className="text-[var(--color-text-secondary)] pr-2 py-1.5 whitespace-nowrap">{t.name}</td>
+                      <td className="text-[var(--color-text-primary)] text-right px-1 py-1.5">{t.total_claims}</td>
+                      <td className="text-[var(--color-text-primary)] text-right px-1 py-1.5">${(t.revenue_cents / 100).toLocaleString()}</td>
+                      <td className="text-[var(--color-text-primary)] text-right px-1 py-1.5">{t.denial_rate_pct}%</td>
                       <td className="text-right px-1 py-1.5" style={{ color: t.net_margin_cents >= 0 ? 'var(--color-status-active)' : 'var(--color-brand-red)' }}>
                         ${(t.net_margin_cents / 100).toLocaleString()}
                       </td>
@@ -1558,7 +1636,7 @@ export default function FounderExecutivePage() {
         <SectionHeader number="—" title="Domain Control Grid" sub="Navigate all 12 command domains" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {[
-            { href: '/founder', label: 'Executive', color: '#FF4D00', mod: '1' },
+            { href: '/founder', label: 'Executive', color: 'var(--q-orange)', mod: '1' },
             { href: '/founder/revenue/billing-intelligence', label: 'Revenue & Billing', color: 'var(--color-system-billing)', mod: '2' },
             { href: '/billing-command', label: 'Billing Command', color: 'var(--color-system-billing)', mod: '2B' },
             { href: '/founder/patient-billing', label: 'Patient Billing', color: 'var(--color-status-info)', mod: '2C' },
@@ -1572,8 +1650,8 @@ export default function FounderExecutivePage() {
             { href: '/founder/roi', label: 'ROI & Sales', color: 'var(--q-yellow)', mod: '8' },
             { href: '/founder/pwa/crewlink', label: 'PWA & Mobile', color: 'var(--color-system-fleet)', mod: '9' },
             { href: '/founder/infra/ecs', label: 'Infrastructure', color: 'var(--color-text-muted)', mod: '10' },
-            { href: '/founder/tools/calendar', label: 'Founder Tools', color: '#FF4D00', mod: '11' },
-            { href: '/founder/tools/invoice-creator', label: 'Invoice Creator', color: '#FF4D00', mod: '11A' },
+            { href: '/founder/tools/calendar', label: 'Founder Tools', color: 'var(--q-orange)', mod: '11' },
+            { href: '/founder/tools/invoice-creator', label: 'Invoice Creator', color: 'var(--q-orange)', mod: '11A' },
             { href: '/founder/tools/expense-ledger', label: 'Expense Ledger', color: 'var(--q-yellow)', mod: '11B' },
             { href: '/founder/success-command', label: 'Customer Success', color: 'var(--q-green)', mod: '12' },
             { href: '/founder/ops/command', label: 'Ops Intelligence', color: 'var(--color-brand-red)', mod: '6B' },
@@ -1581,11 +1659,11 @@ export default function FounderExecutivePage() {
             <Link
               key={d.href}
               href={d.href}
-              className="flex flex-col gap-1 p-3 bg-[#0A0A0B] border border-border-subtle hover:border-border-strong transition-colors group"
+              className="flex flex-col gap-1 p-3 bg-[var(--color-bg-panel)] border border-border-subtle hover:border-border-strong transition-colors group"
               style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
             >
               <span className="text-[9px] font-bold font-mono" style={{ color: d.color }}>DOMAIN {d.mod}</span>
-              <span className="text-xs font-semibold text-zinc-100 group-hover:text-zinc-100 transition-colors">{d.label}</span>
+              <span className="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-text-primary)] transition-colors">{d.label}</span>
             </Link>
           ))}
         </div>

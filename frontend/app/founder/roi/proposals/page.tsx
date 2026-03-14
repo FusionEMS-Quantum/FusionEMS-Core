@@ -40,9 +40,9 @@ function SectionHeader({ number, title, sub }: { number: string; title: string; 
   return (
     <div className="border-b border-border-subtle pb-2 mb-4">
       <div className="flex items-baseline gap-3">
-        <span className="text-micro font-bold text-[#FF4D00]/70 font-mono">MODULE {number}</span>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-100">{title}</h2>
-        {sub && <span className="text-xs text-zinc-500">{sub}</span>}
+        <span className="text-micro font-bold text-[var(--q-orange)]/70 font-mono">MODULE {number}</span>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]">{title}</h2>
+        {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
       </div>
     </div>
   );
@@ -70,7 +70,7 @@ function Badge({ label, status }: { label: string; status: 'ok' | 'warn' | 'erro
 function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[#0A0A0B] border border-border-DEFAULT p-4 ${className ?? ''}`}
+      className={`bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4 ${className ?? ''}`}
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
       {children}
@@ -81,20 +81,20 @@ function Panel({ children, className }: { children: ReactNode; className?: strin
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div
-      className="bg-[#0A0A0B] border border-border-DEFAULT p-4"
+      className="bg-[var(--color-bg-panel)] border border-border-DEFAULT p-4"
       style={{ clipPath: 'polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)' }}
     >
-      <div className="text-micro font-semibold uppercase tracking-widest text-zinc-500 mb-1">{label}</div>
+      <div className="text-micro font-semibold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{label}</div>
       <div className="text-xl font-bold" style={{ color: color ?? 'var(--color-text-primary)' }}>{value}</div>
-      {sub && <div className="text-body text-zinc-500 mt-0.5">{sub}</div>}
+      {sub && <div className="text-body text-[var(--color-text-muted)] mt-0.5">{sub}</div>}
     </div>
   );
 }
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  const pct = value != null && max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-zinc-950/[0.06] overflow-hidden">
+    <div className="h-1.5 bg-[var(--color-bg-base)]/[0.06] overflow-hidden">
       <motion.div
         className="h-full"
         style={{ background: color }}
@@ -139,6 +139,10 @@ function daysSince(value: string | undefined): number {
   if (Number.isNaN(d.getTime())) return 0;
   const diffMs = Date.now() - d.getTime();
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+}
+
+function asFiniteNumberOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 export default function ProposalTrackerPage() {
@@ -210,6 +214,12 @@ export default function ProposalTrackerPage() {
   const acceptedRows = useMemo(() => proposalRows.filter((proposal) => ['accepted', 'converted'].includes(proposal.status)), [proposalRows]);
   const followUpRows = useMemo(() => proposalRows.filter((proposal) => proposal.daysOpen >= 7 && ['pending', 'viewed', 'in_negotiation', 'unknown'].includes(proposal.status)), [proposalRows]);
 
+  const proposalToPaidConversionPct = asFiniteNumberOrNull(kpis?.proposal_to_paid_conversion_pct);
+  const totalEvents = asFiniteNumberOrNull(kpis?.total_events);
+  const activeSubscriptions = asFiniteNumberOrNull(kpis?.active_subscriptions);
+  const pendingPipelineCents = asFiniteNumberOrNull(pipeline?.pending_pipeline_cents);
+  const pipelineToMrrRatio = asFiniteNumberOrNull(pipeline?.pipeline_to_mrr_ratio);
+
   const proposalSeverity: SeverityLevel = status === 'error'
     ? 'BLOCKING'
     : followUpRows.length > 3
@@ -241,7 +251,7 @@ export default function ProposalTrackerPage() {
       });
     }
 
-    if ((kpis?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) < 25) {
+    if (proposalToPaidConversionPct != null && proposalToPaidConversionPct < 25) {
       actions.push({
         id: 'proposal-conversion-boost',
         title: 'Conversion is below target; align pricing assumptions and outreach sequence.',
@@ -262,7 +272,7 @@ export default function ProposalTrackerPage() {
     }
 
     return actions;
-  }, [followUpRows.length, kpis?.proposal_to_paid_conversion_pct, status]);
+  }, [followUpRows.length, proposalToPaidConversionPct, status]);
 
   const handleCreateProposal = async (): Promise<void> => {
     if (!newAgency || !newEmail || !newScenarioId) {
@@ -296,7 +306,7 @@ export default function ProposalTrackerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 p-6 space-y-6">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-6 space-y-6">
       <FounderStatusBar isLive={status !== 'error'} activeIncidents={status === 'error' ? 1 : 0} />
 
       <div className="border-b border-border-subtle pb-4">
@@ -306,7 +316,7 @@ export default function ProposalTrackerPage() {
               MODULE 8 · ROI &amp; SALES
             </p>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--q-yellow)' }}>Proposal Tracker</h1>
-            <p className="text-xs text-zinc-500 mt-1">Track sent proposals · follow-up cadence · conversion posture</p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">Track sent proposals · follow-up cadence · conversion posture</p>
             <div className="mt-2">
               <SeverityBadge severity={proposalSeverity} size="sm" />
             </div>
@@ -318,7 +328,7 @@ export default function ProposalTrackerPage() {
             >
               Refresh Proposals
             </button>
-            <Link href="/founder/roi" className="text-body text-zinc-500 hover:text-status-warning transition-colors font-mono">
+            <Link href="/founder/roi" className="text-body text-[var(--color-text-muted)] hover:text-status-warning transition-colors font-mono">
               ← Back to ROI Command
             </Link>
           </div>
@@ -383,18 +393,18 @@ export default function ProposalTrackerPage() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {['Agency', 'Sent Date', 'Value/yr', 'Status', 'Days Open', 'Action'].map((header) => (
-                    <th key={header} className="text-left py-2 pr-4 text-zinc-500 font-semibold uppercase tracking-wider text-micro">{header}</th>
+                    <th key={header} className="text-left py-2 pr-4 text-[var(--color-text-muted)] font-semibold uppercase tracking-wider text-micro">{header}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {filteredRows.map((proposal) => (
-                  <tr key={proposal.id} className="border-b border-border-subtle hover:bg-zinc-950/[0.02]">
-                    <td className="py-2 pr-4 font-semibold text-zinc-100">{proposal.agency}</td>
-                    <td className="py-2 pr-4 text-zinc-400">{proposal.sentDateLabel}</td>
+                  <tr key={proposal.id} className="border-b border-border-subtle hover:bg-[var(--color-bg-base)]/[0.02]">
+                    <td className="py-2 pr-4 font-semibold text-[var(--color-text-primary)]">{proposal.agency}</td>
+                    <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{proposal.sentDateLabel}</td>
                     <td className="py-2 pr-4 font-mono text-status-warning">{proposal.valueLabel}</td>
                     <td className="py-2 pr-4"><Badge label={proposal.statusLabel} status={proposal.statusKey} /></td>
-                    <td className="py-2 pr-4 text-zinc-400">{proposal.daysOpen} days</td>
+                    <td className="py-2 pr-4 text-[var(--color-text-secondary)]">{proposal.daysOpen} days</td>
                     <td className="py-2 pr-4">
                       <button
                         className="text-micro font-semibold px-2 py-0.5 chamfer-4"
@@ -418,25 +428,25 @@ export default function ProposalTrackerPage() {
       <Panel>
         <SectionHeader number="3" title="Proposal Analytics" sub="Conversion and pipeline posture" />
         <div className="grid grid-cols-4 gap-3">
-          <StatCard label="Total Events" value={kpis?.total_events ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color="var(--color-status-info)" />
-          <StatCard label="Active Subs" value={kpis?.active_subscriptions ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} color="var(--color-status-active)" />
-          <StatCard label="Accept Rate" value={kpis ? `${kpis.proposal_to_paid_conversion_pct.toFixed(2)}%` : '—'} color="var(--color-status-active)" />
-          <StatCard label="Pipeline Value" value={`$${((pipeline?.pending_pipeline_cents ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) / 100).toLocaleString()}`} color="var(--color-status-warning)" />
+          <StatCard label="Total Events" value={totalEvents ?? '—'} color="var(--color-status-info)" />
+          <StatCard label="Active Subs" value={activeSubscriptions ?? '—'} color="var(--color-status-active)" />
+          <StatCard label="Accept Rate" value={proposalToPaidConversionPct != null ? `${proposalToPaidConversionPct.toFixed(2)}%` : '—'} color="var(--color-status-active)" />
+          <StatCard label="Pipeline Value" value={pendingPipelineCents != null ? `$${(pendingPipelineCents / 100).toLocaleString()}` : '—'} color="var(--color-status-warning)" />
         </div>
         <div className="mt-4 space-y-3">
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-body text-zinc-400">Accept Rate</span>
-              <span className="text-body font-bold text-status-active">{kpis ? `${kpis.proposal_to_paid_conversion_pct.toFixed(2)}%` : '—'}</span>
+              <span className="text-body text-[var(--color-text-secondary)]">Accept Rate</span>
+              <span className="text-body font-bold text-[var(--color-status-active)]">{proposalToPaidConversionPct != null ? `${proposalToPaidConversionPct.toFixed(2)}%` : '—'}</span>
             </div>
-            <ProgressBar value={kpis?.proposal_to_paid_conversion_pct ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()} max={100} color="var(--color-status-active)" />
+            <ProgressBar value={proposalToPaidConversionPct} max={100} color="var(--color-status-active)" />
           </div>
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-body text-zinc-400">Pipeline / MRR Ratio</span>
-              <span className="text-body font-bold text-status-warning">{(pipeline?.pipeline_to_mrr_ratio ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()).toFixed(2)}x</span>
+              <span className="text-body text-[var(--color-text-secondary)]">Pipeline / MRR Ratio</span>
+              <span className="text-body font-bold text-status-warning">{pipelineToMrrRatio != null ? `${pipelineToMrrRatio.toFixed(2)}x` : '—'}</span>
             </div>
-            <ProgressBar value={Math.min((pipeline?.pipeline_to_mrr_ratio ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()) * 20, 100)} max={100} color="var(--color-status-warning)" />
+            <ProgressBar value={pipelineToMrrRatio != null ? Math.min(pipelineToMrrRatio * 20, 100) : null} max={100} color="var(--color-status-warning)" />
           </div>
         </div>
       </Panel>
@@ -451,13 +461,13 @@ export default function ProposalTrackerPage() {
               <div key={`followup-${proposal.id}`} className="flex items-center justify-between p-3 bg-bg-input border border-amber-500/[0.1] chamfer-4">
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[12px] font-semibold text-zinc-100">{proposal.agency}</span>
+                    <span className="text-[12px] font-semibold text-[var(--color-text-primary)]">{proposal.agency}</span>
                     <Badge label={proposal.statusLabel} status={proposal.statusKey} />
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-micro text-zinc-500">Sent {proposal.sentDateLabel}</span>
-                    <span className="text-micro text-zinc-500">·</span>
-                    <span className="text-micro text-zinc-500">Open: {proposal.daysOpen} day(s)</span>
+                    <span className="text-micro text-[var(--color-text-muted)]">Sent {proposal.sentDateLabel}</span>
+                    <span className="text-micro text-[var(--color-text-muted)]">·</span>
+                    <span className="text-micro text-[var(--color-text-muted)]">Open: {proposal.daysOpen} day(s)</span>
                     <span className="text-micro font-mono text-status-warning">{proposal.valueLabel}/yr</span>
                   </div>
                 </div>
@@ -477,36 +487,36 @@ export default function ProposalTrackerPage() {
         <SectionHeader number="5" title="Create Proposal" sub="Create a tracked proposal from an ROI scenario" />
         <div className="grid grid-cols-3 gap-3 mb-3">
           <div>
-            <label className="text-micro text-zinc-500 block mb-1">Agency Name</label>
+            <label className="text-micro text-[var(--color-text-muted)] block mb-1">Agency Name</label>
             <input
               value={newAgency}
               onChange={(event) => setNewAgency(event.target.value)}
               placeholder="Agency H"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <div>
-            <label className="text-micro text-zinc-500 block mb-1">Contact Email</label>
+            <label className="text-micro text-[var(--color-text-muted)] block mb-1">Contact Email</label>
             <input
               type="email"
               value={newEmail}
               onChange={(event) => setNewEmail(event.target.value)}
               placeholder="contact@agencyh.com"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
           <div>
-            <label className="text-micro text-zinc-500 block mb-1">ROI Scenario ID</label>
+            <label className="text-micro text-[var(--color-text-muted)] block mb-1">ROI Scenario ID</label>
             <input
               value={newScenarioId}
               onChange={(event) => setNewScenarioId(event.target.value)}
               placeholder="scenario-uuid"
-              className="w-full bg-bg-input border border-border-DEFAULT text-body text-zinc-100 px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
+              className="w-full bg-bg-input border border-border-DEFAULT text-body text-[var(--color-text-primary)] px-3 py-2 chamfer-4 outline-none focus:border-status-warning"
             />
           </div>
         </div>
 
-        {createError && <div className="text-xs text-red-400 mb-3">{createError}</div>}
+        {createError && <div className="text-xs text-[var(--color-brand-red)] mb-3">{createError}</div>}
 
         <button
           disabled={creating || !newAgency || !newEmail || !newScenarioId}

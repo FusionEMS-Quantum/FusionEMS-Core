@@ -18,6 +18,7 @@ const NAV_DOMAINS = [
       { href: '/founder/executive/daily-brief', label: 'Daily AI Brief' },
       { href: '/founder/executive/risk-monitor', label: 'Risk Monitor' },
       { href: '/founder/executive/events-feed', label: 'Events Feed' },
+      { href: '/founder/documents', label: 'Document Vault' },
     ],
   },
   {
@@ -51,6 +52,7 @@ const NAV_DOMAINS = [
     icon: '◈',
     color: 'var(--q-green)',
     links: [
+      { href: '/founder/comms/command-center', label: 'Command Center' },
       { href: '/founder/comms/inbox', label: 'Support Inbox' },
       { href: '/founder/comms/phone-system', label: 'Phone System' },
       { href: '/founder/comms/script-builder', label: 'Script Builder' },

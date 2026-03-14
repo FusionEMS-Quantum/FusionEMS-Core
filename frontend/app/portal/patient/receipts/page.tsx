@@ -43,12 +43,16 @@ function fmtDate(s?: string): string {
   return new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+function asNumberOrZero(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
 function StatusChip({ status }: { status?: string }) {
   const map: Record<string, { label: string; bg: string; border: string; color: string }> = {
-    posted:   { label: 'POSTED',   bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)',  color: '#10B981' },
-    cleared:  { label: 'CLEARED',  bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)',  color: '#10B981' },
-    pending:  { label: 'PENDING',  bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', color: '#F59E0B' },
-    voided:   { label: 'VOIDED',   bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.25)',  color: '#EF4444' },
+    posted:   { label: 'POSTED',   bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)',  color: 'var(--color-status-active)' },
+    cleared:  { label: 'CLEARED',  bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)',  color: 'var(--color-status-active)' },
+    pending:  { label: 'PENDING',  bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', color: 'var(--q-yellow)' },
+    voided:   { label: 'VOIDED',   bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.25)',  color: 'var(--color-brand-red)' },
     reversed: { label: 'REVERSED', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.25)', color: '#818CF8' },
   };
   const s = map[status ?? ''] ?? { label: (status ?? 'UNKNOWN').toUpperCase(), bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', color: '#A1A1AA' };
@@ -77,21 +81,21 @@ export default function ReceiptsPage() {
     return (r.data?.status ?? '') === filter;
   });
 
-  const totalPaid = filtered.reduce((sum, r) => sum + (r.data?.amount ?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()), 0);
+  const totalPaid = filtered.reduce((sum, r) => sum + asNumberOrZero(r.data?.amount), 0);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-[3px] h-6 bg-[#FF4D00] shadow-[0_0_8px_rgba(255,77,0,0.6)]" />
+          <div className="w-[3px] h-6 bg-[var(--q-orange)] shadow-[0_0_8px_rgba(255,106,0,0.6)]" />
           <h1 className="text-xl font-black tracking-[0.12em] text-white uppercase">Receipts Center</h1>
         </div>
-        <p className="text-sm text-zinc-500 ml-5">Complete record of all payments processed on your account.</p>
+        <p className="text-sm text-[var(--color-text-muted)] ml-5">Complete record of all payments processed on your account.</p>
       </div>
 
       {fetchError && (
-        <div className="mb-6 px-4 py-3 bg-red-500/8 border border-red-500/20 text-sm text-red-400" style={{ clipPath: clip6 }}>
+        <div className="mb-6 px-4 py-3 bg-[var(--color-brand-red)]/8 border border-[var(--color-brand-red)]/20 text-sm text-[var(--color-brand-red)]" style={{ clipPath: clip6 }}>
           Unable to load receipts. Please refresh the page or contact billing support.
         </div>
       )}
@@ -100,11 +104,11 @@ export default function ReceiptsPage() {
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
           { label: 'Total Receipts', value: filtered.length.toString(), color: 'text-white' },
-          { label: 'Total Paid', value: fmt(totalPaid), color: 'text-emerald-400' },
-          { label: 'This Year', value: filtered.filter(r => (r.data?.posted_at ?? r.data?.payment_date ?? '').startsWith('2026')).length.toString() + ' payments', color: 'text-zinc-300' },
+          { label: 'Total Paid', value: fmt(totalPaid), color: 'text-[var(--color-status-active)]' },
+          { label: 'This Year', value: filtered.filter(r => (r.data?.posted_at ?? r.data?.payment_date ?? '').startsWith('2026')).length.toString() + ' payments', color: 'text-[var(--color-text-secondary)]' },
         ].map(card => (
-          <div key={card.label} className="bg-[#0A0A0B] border border-zinc-800 p-4" style={{ clipPath: clip10 }}>
-            <div className="text-[9px] font-bold tracking-[0.2em] text-zinc-600 uppercase mb-2">{card.label}</div>
+          <div key={card.label} className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] p-4" style={{ clipPath: clip10 }}>
+            <div className="text-[9px] font-bold tracking-[0.2em] text-[var(--color-text-muted)] uppercase mb-2">{card.label}</div>
             <div className={`text-lg font-black ${card.color}`}>{card.value}</div>
           </div>
         ))}
@@ -119,8 +123,8 @@ export default function ReceiptsPage() {
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase border transition-colors ${
                 filter === f
-                  ? 'bg-[#FF4D00]/10 border-[#FF4D00]/40 text-[#FF4D00]'
-                  : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300 bg-transparent'
+                  ? 'bg-[var(--q-orange)]/10 border-[var(--q-orange)]/40 text-[var(--q-orange)]'
+                  : 'border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-secondary)] bg-transparent'
               }`}
               style={{ clipPath: clip6 }}
             >
@@ -129,7 +133,7 @@ export default function ReceiptsPage() {
           ))}
         </div>
         <button
-          className="flex items-center gap-2 h-8 px-4 border border-zinc-800 text-[10px] font-bold tracking-widest uppercase text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
+          className="flex items-center gap-2 h-8 px-4 border border-[var(--color-border-default)] text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
           style={{ clipPath: clip6 }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -138,29 +142,29 @@ export default function ReceiptsPage() {
       </div>
 
       {/* Receipts table */}
-      <div className="bg-[#0A0A0B] border border-zinc-800 overflow-hidden" style={{ clipPath: clip10 }}>
-        <div className="border-b border-zinc-900 px-5 py-3 flex items-center justify-between">
-          <span className="text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase">Payment Receipts</span>
-          <span className="text-[10px] text-zinc-600">{filtered.length} records</span>
+      <div className="bg-[var(--color-bg-panel)] border border-[var(--color-border-default)] overflow-hidden" style={{ clipPath: clip10 }}>
+        <div className="border-b border-[var(--color-border-subtle)] px-5 py-3 flex items-center justify-between">
+          <span className="text-[10px] font-bold tracking-[0.15em] text-[var(--color-text-secondary)] uppercase">Payment Receipts</span>
+          <span className="text-[10px] text-[var(--color-text-muted)]">{filtered.length} records</span>
         </div>
 
         {loading ? (
           <div className="py-16 text-center">
-            <div className="inline-block w-5 h-5 border-2 border-[#FF4D00] border-t-transparent rounded-full animate-spin mb-3" />
-            <p className="text-xs text-zinc-600">Loading receipts...</p>
+            <div className="inline-block w-5 h-5 border-2 border-[var(--q-orange)] border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="text-xs text-[var(--color-text-muted)]">Loading receipts...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <div className="text-2xl mb-3 opacity-20">🧾</div>
-            <p className="text-sm text-zinc-500">No receipts found.</p>
-            <Link href="/portal/patient/pay" className="mt-4 inline-block text-[10px] font-bold tracking-widest uppercase text-[#FF4D00] hover:underline">
+            <p className="text-sm text-[var(--color-text-muted)]">No receipts found.</p>
+            <Link href="/portal/patient/pay" className="mt-4 inline-block text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)] hover:underline">
               Make a Payment →
             </Link>
           </div>
         ) : (
           <div>
             {/* Header row */}
-            <div className="hidden md:grid grid-cols-6 gap-4 px-5 py-2.5 border-b border-zinc-900 text-[9px] font-bold tracking-[0.2em] text-zinc-600 uppercase">
+            <div className="hidden md:grid grid-cols-6 gap-4 px-5 py-2.5 border-b border-[var(--color-border-subtle)] text-[9px] font-bold tracking-[0.2em] text-[var(--color-text-muted)] uppercase">
               <div className="col-span-2">Payment Date</div>
               <div>Method</div>
               <div>Amount</div>
@@ -175,27 +179,27 @@ export default function ReceiptsPage() {
               return (
                 <div
                   key={r.id}
-                  className={`grid grid-cols-1 md:grid-cols-6 gap-4 px-5 py-4 items-center transition-colors hover:bg-zinc-900/30 ${i < filtered.length - 1 ? 'border-b border-zinc-900/50' : ''}`}
+                  className={`grid grid-cols-1 md:grid-cols-6 gap-4 px-5 py-4 items-center transition-colors hover:bg-[var(--color-bg-panel)]/30 ${i < filtered.length - 1 ? 'border-b border-[var(--color-border-subtle)]/50' : ''}`}
                 >
                   <div className="col-span-2">
-                    <div className="text-sm font-semibold text-zinc-200">{date}</div>
-                    <div className="text-[10px] text-zinc-600 mt-0.5 font-mono">
+                    <div className="text-sm font-semibold text-[var(--color-text-primary)]">{date}</div>
+                    <div className="text-[10px] text-[var(--color-text-muted)] mt-0.5 font-mono">
                       REF: {d.confirmation ?? d.reference ?? r.id.slice(-8).toUpperCase()}
                     </div>
                   </div>
-                  <div className="text-xs text-zinc-400">{method}</div>
-                  <div className="text-sm font-bold text-emerald-400">{fmt(d.amount)}</div>
+                  <div className="text-xs text-[var(--color-text-secondary)]">{method}</div>
+                  <div className="text-sm font-bold text-[var(--color-status-active)]">{fmt(d.amount)}</div>
                   <div><StatusChip status={d.status} /></div>
                   <div className="flex items-center gap-2 md:justify-end">
                     <button
-                      className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-zinc-200 transition-colors px-2 py-1 border border-zinc-800 hover:border-zinc-600"
+                      className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
                       style={{ clipPath: clip6 }}
                       title="Download receipt"
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     </button>
                     <button
-                      className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-zinc-200 transition-colors px-2 py-1 border border-zinc-800 hover:border-zinc-600"
+                      className="text-[10px] font-bold tracking-widest uppercase text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors px-2 py-1 border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
                       style={{ clipPath: clip6 }}
                       title="Resend receipt by email"
                     >
@@ -204,7 +208,7 @@ export default function ReceiptsPage() {
                     {d.invoice_id && (
                       <Link
                         href={`/portal/patient/invoices/${d.invoice_id}`}
-                        className="text-[10px] font-bold tracking-widest uppercase text-[#FF4D00]/70 hover:text-[#FF4D00] transition-colors"
+                        className="text-[10px] font-bold tracking-widest uppercase text-[var(--q-orange)]/70 hover:text-[var(--q-orange)] transition-colors"
                       >
                         VIEW INV
                       </Link>
@@ -218,13 +222,13 @@ export default function ReceiptsPage() {
       </div>
 
       {/* Annual summary CTA */}
-      <div className="mt-6 bg-[#FF4D00]/5 border border-[#FF4D00]/15 p-4 flex items-center justify-between" style={{ clipPath: clip10 }}>
+      <div className="mt-6 bg-[var(--q-orange)]/5 border border-[var(--q-orange)]/15 p-4 flex items-center justify-between" style={{ clipPath: clip10 }}>
         <div>
-          <div className="text-[10px] font-bold tracking-widest text-[#FF4D00] uppercase mb-1">Annual Payment Summary</div>
-          <p className="text-xs text-zinc-500">Download a complete summary of all payments for tax or insurance purposes.</p>
+          <div className="text-[10px] font-bold tracking-widest text-[var(--q-orange)] uppercase mb-1">Annual Payment Summary</div>
+          <p className="text-xs text-[var(--color-text-muted)]">Download a complete summary of all payments for tax or insurance purposes.</p>
         </div>
         <button
-          className="flex-shrink-0 flex items-center gap-2 h-8 px-4 bg-[#FF4D00]/10 border border-[#FF4D00]/30 text-[#FF4D00] text-[10px] font-bold tracking-widest uppercase hover:bg-[#FF4D00]/20 transition-colors"
+          className="flex-shrink-0 flex items-center gap-2 h-8 px-4 bg-[var(--q-orange)]/10 border border-[var(--q-orange)]/30 text-[var(--q-orange)] text-[10px] font-bold tracking-widest uppercase hover:bg-[var(--q-orange)]/20 transition-colors"
           style={{ clipPath: clip6 }}
         >
           Download (2026)
