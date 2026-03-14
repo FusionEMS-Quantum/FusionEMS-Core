@@ -271,6 +271,7 @@ async def transmit_free_file_1040(
     return result.to_dict()
 
 
+class WisconsinEfileRequest(BaseModel):
     tax_year: int
     filer_ssn: str  # Never logged; transmitted encrypted via TLS
     first_name: str
