@@ -1,5 +1,4 @@
 import os
-import re
 
 TARGET = "?? (() => { throw new Error('Unsafe silent fallback. Dependency missing.'); })()"
 
@@ -15,9 +14,9 @@ for root, _, files in os.walk(directory):
     for file in files:
         if file.endswith(".tsx"):
             filepath = os.path.join(root, file)
-            with open(filepath, "r") as f:
+            with open(filepath) as f:
                 content = f.read()
-            
+
             if TARGET in content:
                 # Do a smart replace line by line
                 lines = content.split('\n')
@@ -27,7 +26,7 @@ for root, _, files in os.walk(directory):
                         fb = get_fallback(line)
                         line = line.replace(TARGET, fb)
                     new_lines.append(line)
-                
+
                 with open(filepath, "w") as f:
                     f.write('\n'.join(new_lines))
                 print(f"Fixed {filepath}")

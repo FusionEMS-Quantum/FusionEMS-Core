@@ -1,7 +1,5 @@
-import re
-
 fp = '/workspaces/FusionEMS-Core/.github/workflows/security_compliance_enforcer.yml'
-with open(fp, 'r') as f:
+with open(fp) as f:
     text = f.read()
 
 text = text.replace('tflint --chdir=infra/terraform/ --recursive --minimum-failure-severity=warning', 'cd infra/terraform/ && tflint --recursive --minimum-failure-severity=warning')

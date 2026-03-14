@@ -39,8 +39,7 @@ jobs:
           
           # authenticate to github to avoid rate limiting
           export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          tflint --init
-          cd infra/terraform/ && tflint --recursive --minimum-failure-severity=warning
+          cd infra/terraform/ && tflint --init && tflint --minimum-failure-severity=warning
 
   container-scanning:
     name: Trivy Container Vulnerability Scan

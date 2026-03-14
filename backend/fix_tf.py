@@ -1,11 +1,9 @@
-import re
-
 network_path = "/workspaces/FusionEMS-Core/infra/terraform/modules/network/main.tf"
-with open(network_path, "r") as f:
+with open(network_path) as f:
     text = f.read()
 
 # Add checkov skips to aws_wafv2_web_acl
-text = text.replace('resource "aws_wafv2_web_acl" "main" {', 
+text = text.replace('resource "aws_wafv2_web_acl" "main" {',
 '''resource "aws_wafv2_web_acl" "main" {
   # checkov:skip=CKV_AWS_192: "Log4j managed rule handled in different group"
   # checkov:skip=CKV2_AWS_31: "WAF logging configured at account level"''')
@@ -26,9 +24,9 @@ with open(network_path, "w") as f:
     f.write(text)
 
 edge_path = "/workspaces/FusionEMS-Core/infra/terraform/modules/edge/main.tf"
-with open(edge_path, "r") as f:
+with open(edge_path) as f:
     text2 = f.read()
-    
+
 text2 = text2.replace('resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {',
 '''resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
   # checkov:skip=CKV2_AWS_65: "ACL required for legacy CloudFront log delivery"''')
