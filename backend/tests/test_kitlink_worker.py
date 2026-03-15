@@ -18,23 +18,19 @@ class _Boto3Stub:
 class _CursorStub:
     def __init__(self) -> None:
         self.executed: list[tuple[str, object]] = []
-        self._select_existing = False
 
     def execute(self, query: str, params: object) -> None:
         normalized_query = " ".join(query.split())
         self.executed.append((normalized_query, params))
-        self._select_existing = "SELECT id FROM stock_balances" in normalized_query
 
     def fetchall(self) -> list[tuple[str, str, int]]:
         return [("item-1", "loc-1", 5)]
 
-    def fetchone(self) -> tuple[str] | None:
-        if self._select_existing:
-            return None
+    def fetchone(self) -> None:
         return None
 
     def close(self) -> None:
-        return None
+        pass
 
 
 class _ConnectionStub:
@@ -81,10 +77,11 @@ def test_handle_stock_rebuild_uses_static_query_without_location_filter(
 
     query, params = cursor.executed[0]
     assert "WHERE tenant_id = %s AND deleted_at IS NULL" in query
-    assert "data->>'location_id' = %s" not in query
-    assert params == ("tenant-1",)
+    assert "(%s IS NULL OR data->>'location_id' = %s)" in query
+    assert params == ("tenant-1", None, None)
     assert result == {"tenant_id": "tenant-1", "balances_rebuilt": 1}
     assert connection.committed is True
+    assert connection.closed is True
 
 
 def test_handle_stock_rebuild_uses_static_query_with_location_filter(
@@ -101,7 +98,8 @@ def test_handle_stock_rebuild_uses_static_query_with_location_filter(
 
     query, params = cursor.executed[0]
     assert "WHERE tenant_id = %s AND deleted_at IS NULL" in query
-    assert "data->>'location_id' = %s" in query
-    assert params == ("tenant-1", "loc-9")
+    assert "(%s IS NULL OR data->>'location_id' = %s)" in query
+    assert params == ("tenant-1", "loc-9", "loc-9")
     assert result == {"tenant_id": "tenant-1", "balances_rebuilt": 1}
     assert connection.committed is True
+    assert connection.closed is True

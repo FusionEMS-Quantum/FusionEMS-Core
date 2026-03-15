@@ -119,35 +119,20 @@ def handle_stock_rebuild(record: dict) -> dict:
     conn = _db_conn()
     cur = conn.cursor()
 
-    if location_id:
-        cur.execute(
-            """
-            SELECT data->>'item_id' AS item_id,
-                   data->>'location_id' AS loc_id,
-                   SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -
-                   SUM(CASE WHEN data->>'direction' = 'out' THEN (data->>'qty')::int ELSE 0 END) AS balance
-            FROM inventory_transaction_lines
-            WHERE tenant_id = %s
-              AND deleted_at IS NULL
-              AND data->>'location_id' = %s
-            GROUP BY data->>'item_id', data->>'location_id'
-            """,
-            (tenant_id, location_id),
-        )
-    else:
-        cur.execute(
-            """
-            SELECT data->>'item_id' AS item_id,
-                   data->>'location_id' AS loc_id,
-                   SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -
-                   SUM(CASE WHEN data->>'direction' = 'out' THEN (data->>'qty')::int ELSE 0 END) AS balance
-            FROM inventory_transaction_lines
-            WHERE tenant_id = %s
-              AND deleted_at IS NULL
-            GROUP BY data->>'item_id', data->>'location_id'
-            """,
-            (tenant_id,),
-        )
+    cur.execute(
+        """
+        SELECT data->>'item_id' AS item_id,
+               data->>'location_id' AS loc_id,
+               SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -
+               SUM(CASE WHEN data->>'direction' = 'out' THEN (data->>'qty')::int ELSE 0 END) AS balance
+        FROM inventory_transaction_lines
+        WHERE tenant_id = %s
+          AND deleted_at IS NULL
+          AND (%s IS NULL OR data->>'location_id' = %s)
+        GROUP BY data->>'item_id', data->>'location_id'
+        """,
+        (tenant_id, location_id, location_id),
+    )
     rows = cur.fetchall()
 
     rebuilt = 0
