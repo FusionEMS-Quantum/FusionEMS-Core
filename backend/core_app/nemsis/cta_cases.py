@@ -9,6 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
+import defusedxml.ElementTree as _defused_et
+
 NEMSIS_NS = "http://www.nemsis.org"
 XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
 CTA_SCHEMA_VERSION = "3.5.1"
@@ -196,7 +198,7 @@ def _parse_case_metadata(text: str) -> dict[str, str]:
 
 
 def _parse_vendor_rows(html_path: Path) -> list[_VendorRow]:
-    document = ET.fromstring(html_path.read_text(encoding="utf-8"))
+    document = _defused_et.fromstring(html_path.read_text(encoding="utf-8"))
     tbody = document.find(".//tbody")
     if tbody is None:
         raise ValueError(f"Unable to find vendor scenario table in {html_path.name}")
@@ -358,7 +360,7 @@ def _build_lookup_map(xml_bytes: bytes | None) -> dict[str, list[str]]:
     if not xml_bytes:
         return {}
     try:
-        root = ET.fromstring(xml_bytes)
+        root = _defused_et.fromstring(xml_bytes)
     except ET.ParseError:
         return {}
 

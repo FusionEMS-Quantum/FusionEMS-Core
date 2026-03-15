@@ -86,7 +86,7 @@ def process_pack_import(body: dict, correlation_id: str) -> dict:
 
     try:
         req = urllib.request.Request(zip_url, headers={"User-Agent": "FusionEMS-NERIS/1.0"})
-        with urllib.request.urlopen(req, timeout=60) as resp:  # nosec B310 — scheme is validated to https above
+        with urllib.request.urlopen(req, timeout=60) as resp:  # nosec B310 — URL is a well-formed https://github.com archive URL constructed from validated repo/ref config values; no user-controlled scheme injection is possible
             zip_bytes = resp.read()
     except Exception as exc:
         logger.error(

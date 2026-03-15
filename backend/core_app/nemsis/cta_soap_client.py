@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import Any
 
+import defusedxml.ElementTree as _defused_et
 import httpx
 
 from core_app.core.config import get_settings
@@ -184,7 +185,7 @@ class NEMSISCTASoapClient:
         _add_text(request_element, "requestType", "SubmitData")
         submit_payload = ET.SubElement(request_element, ET.QName(CTA_NS, "submitPayload"))
         payload_element = ET.SubElement(submit_payload, ET.QName(CTA_NS, "payloadOfXmlElement"))
-        parsed_payload = ET.fromstring(xml_bytes)
+        parsed_payload = _defused_et.fromstring(xml_bytes)
         payload_element.append(parsed_payload)
         _add_text(request_element, "requestDataSchema", str(request_data_schema))
         _add_text(request_element, "schemaVersion", schema_version)
@@ -275,7 +276,7 @@ def _xml_to_string(element: ET.Element) -> str:
 
 def _read_text(xml_text: str, tag_name: str) -> str | None:
     try:
-        root = ET.fromstring(xml_text.encode("utf-8"))
+        root = _defused_et.fromstring(xml_text.encode("utf-8"))
     except ET.ParseError:
         return None
     for element in root.iter():
@@ -311,7 +312,7 @@ def _read_optional_int(xml_text: str, *tag_names: str) -> int | None:
 
 def _extract_reports(xml_text: str) -> dict[str, Any]:
     try:
-        root = ET.fromstring(xml_text.encode("utf-8"))
+        root = _defused_et.fromstring(xml_text.encode("utf-8"))
     except ET.ParseError:
         return {}
     report_tags = [

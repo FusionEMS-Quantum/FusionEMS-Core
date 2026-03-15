@@ -101,9 +101,11 @@ class NEMSISXSDValidator:
 
         import defusedxml.ElementTree as ET
 
+        import defusedxml.ElementTree as _defused_et
+
         try:
-            root = ET.fromstring(xml_content)
-        except _stdlib_et.ParseError as e:
+            root = _defused_et.fromstring(xml_content)
+        except ET.ParseError as e:
             result.valid = False
             result.errors.append(f"XML parse error: {e}")
             return result

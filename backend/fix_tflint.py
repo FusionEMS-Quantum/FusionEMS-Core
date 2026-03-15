@@ -17,4 +17,3 @@ text2 = text2.replace('tflint --init\n        env:\n          GITHUB_TOKEN: ${{ 
 
 with open(fp2, 'w') as f:
     f.write(text2)
-

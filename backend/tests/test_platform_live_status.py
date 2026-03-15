@@ -65,7 +65,7 @@ def _settings(**overrides: object) -> Settings:
         "graph_client_secret": "graph_live_secret_value",
         "graph_founder_email": "founder@example.com",
         "microsoft_redirect_uri": "https://api.example.com/api/v1/auth/microsoft/callback",
-        "stripe_secret_key": "placeholder_rotate_stripe_secret",
+        "stripe_secret_key": "stripe_ci_test_key_not_real",
         "stripe_webhook_secret": "whsec_live_secret_value",
         "telnyx_api_key": "telnyx_live_secret_value",
         "telnyx_from_number": "+18883650144",

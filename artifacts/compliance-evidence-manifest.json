@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-03-11T00:35:49.477704+00:00",
-  "policy_directory": "/workspaces/FusionEMS-Core/compliance/policies",
+  "generated_at_utc": "2026-03-15T02:21:30.227109+00:00",
+  "policy_directory": "/home/runner/work/FusionEMS-Core/FusionEMS-Core/compliance/policies",
   "required_count": 26,
   "present_count": 26,
   "missing_count": 0,

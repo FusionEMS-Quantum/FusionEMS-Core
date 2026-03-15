@@ -353,9 +353,8 @@ def _load_domination_record(
             psycopg.connect(database_url) as conn,
             conn.cursor(row_factory=psycopg.rows.dict_row) as cur,
         ):
-            # table is validated against _ALLOWED_DOMINATION_TABLES above
-            cur.execute(  # nosec B608
-                f"SELECT id, tenant_id, version, data FROM {table} "
+            cur.execute(
+                f"SELECT id, tenant_id, version, data FROM {table} "  # nosec B608 — table is a caller-controlled literal ("documents"), never from user input
                 "WHERE tenant_id = %s AND id = %s AND deleted_at IS NULL LIMIT 1",
                 (tenant_id, record_id),
             )
