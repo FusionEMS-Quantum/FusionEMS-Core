@@ -261,3 +261,21 @@ Before declaring deploy readiness, verify:
 - frontend builds
 - `docker compose ps` is healthy
 - health endpoints respond
+
+## ENOPRO workspace recovery
+
+If VS Code or Codespaces reports:
+
+`ENOPRO: No file system provider found for resource 'file:///workspaces/FusionEMS-Core'`
+
+that is a workspace-provider failure, not a trustworthy application health signal.
+
+Use the repo recovery path:
+
+```bash
+bash scripts/enopro-workspace-doctor.sh
+bash scripts/codespace-up.sh
+bash scripts/codespace-health.sh
+```
+
+If the ENOPRO error appears before those commands can even start, reload the editor window, reopen the folder, or rebuild the dev container / Codespace first. Full recovery notes are in `docs/ENOPRO_WORKSPACE_RECOVERY.md`.
