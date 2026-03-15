@@ -106,7 +106,7 @@ The founder must:
 
 1. `validate_plan` runs again
 2. `apply_prod` runs on `main` pushes behind the GitHub `prod` environment approval gate
-3. Manual `workflow_dispatch` can also run `apply_prod` when `allow_apply=true`
+3. Manual `workflow_dispatch` can also run `apply_prod` when the boolean `allow_apply` input is set to `true`
 4. Terraform apply executes with lock timeout
 
 ### Drift Detection

@@ -256,7 +256,9 @@ jobs:
               return "Review the linked job logs for the exact command output and stack trace, then correct the configuration before retrying.";
             };
             const jobs = [];
-            for (let page = 1; ; page += 1) {
+            let page = 1;
+            let hasMore = true;
+            while (hasMore) {
               const response = await github.rest.actions.listJobsForWorkflowRun({
                 owner,
                 repo,
@@ -265,9 +267,8 @@ jobs:
                 page,
               });
               jobs.push(...response.data.jobs);
-              if (response.data.jobs.length < 100) {
-                break;
-              }
+              hasMore = response.data.jobs.length === 100;
+              page += 1;
             }
 
             const relevantJobs = jobs.filter((job) => job.name !== "Deployment Summary");
@@ -320,7 +321,7 @@ jobs:
               summary += `\n`;
             }
 
-            if (!failed && failedJobs.length === 0 && cancelledJobs.length === 0) {
+            if (!failed) {
               summary += `All required Terraform deployment jobs completed without failure. Zero-error gate passed for this run.\n`;
             }
 

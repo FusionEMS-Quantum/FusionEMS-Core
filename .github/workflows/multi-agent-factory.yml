@@ -141,7 +141,9 @@ jobs:
               return "Review the linked job logs and uploaded artifacts to correct the failing deploy lane before retrying.";
             };
             const jobs = [];
-            for (let page = 1; ; page += 1) {
+            let page = 1;
+            let hasMore = true;
+            while (hasMore) {
               const response = await github.rest.actions.listJobsForWorkflowRun({
                 owner,
                 repo,
@@ -150,9 +152,8 @@ jobs:
                 page,
               });
               jobs.push(...response.data.jobs);
-              if (response.data.jobs.length < 100) {
-                break;
-              }
+              hasMore = response.data.jobs.length === 100;
+              page += 1;
             }
 
             const relevantJobs = jobs.filter((job) => job.name !== "Deployment Summary");
@@ -182,12 +183,16 @@ jobs:
               summary += `\n`;
             }
 
-            if (skippedJobs.some((job) => job.name === "Deploy Lane (Manual)")) {
+            const deployLaneSkipped = skippedJobs.some(
+              (job) => job.name === "Deploy Lane (Manual)" || job.name === "deploy-lane",
+            );
+
+            if (deployLaneSkipped) {
               summary += `### Skipped jobs\n`;
               summary += `- **Deploy Lane (Manual)** skipped because this run was not started in manual deploy mode.\n\n`;
             }
 
-            if (!failed && !skippedJobs.some((job) => job.name === "Deploy Lane (Manual)")) {
+            if (!failed && !deployLaneSkipped) {
               summary += `Validation and deploy lanes completed without failure. Zero-error gate passed for this run.\n`;
             }
 
