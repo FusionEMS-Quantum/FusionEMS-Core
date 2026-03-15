@@ -22,6 +22,7 @@ name: Multi-Agent Factory
     branches: [main]
 
 permissions:
+  actions: read
   contents: read
   id-token: write
 
@@ -109,3 +110,87 @@ jobs:
             artifacts/multi_agent_execution_report.json
             artifacts/multi-agent-logs/
           if-no-files-found: error
+
+  deployment_summary:
+    name: Deployment Summary
+    needs: [validate-lanes, deploy-lane]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish deployment result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runId = context.runId;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+            const remediationForJob = (job) => {
+              const failedSteps = (job.steps || [])
+                .filter((step) => step.conclusion === "failure")
+                .map((step) => step.name);
+              if (failedSteps.some((name) => name.includes("Configure AWS credentials"))) {
+                return "OIDC role assumption failed. Verify AWS_OIDC_ROLE_ARN, IAM trust policy subjects, and repository/environment restrictions.";
+              }
+              if (failedSteps.some((name) => name.includes("Execute orchestrator"))) {
+                return "Deployment orchestration failed. Review the uploaded multi-agent logs and report artifact, then correct the failing lane before retrying.";
+              }
+              if (failedSteps.some((name) => name.includes("Install backend + security dependencies"))) {
+                return "Dependency bootstrap failed. Correct package installation or resolver errors before rerunning deploy mode.";
+              }
+              return "Review the linked job logs and uploaded artifacts to correct the failing deploy lane before retrying.";
+            };
+            const jobs = [];
+            for (let page = 1; ; page += 1) {
+              const response = await github.rest.actions.listJobsForWorkflowRun({
+                owner,
+                repo,
+                run_id: runId,
+                per_page: 100,
+                page,
+              });
+              jobs.push(...response.data.jobs);
+              if (response.data.jobs.length < 100) {
+                break;
+              }
+            }
+
+            const relevantJobs = jobs.filter((job) => job.name !== "Deployment Summary");
+            const failedJobs = relevantJobs.filter((job) => job.conclusion === "failure");
+            const cancelledJobs = relevantJobs.filter((job) => job.conclusion === "cancelled");
+            const skippedJobs = relevantJobs.filter((job) => job.conclusion === "skipped");
+            const failed = failedJobs.length > 0 || cancelledJobs.length > 0;
+
+            let summary = `## Multi-Agent Deploy Result\n\n`;
+            summary += failed
+              ? `❌ **Not successful**\n\n`
+              : `✅ **Successful**\n\n`;
+            summary += `Run: ${runUrl}\n\n`;
+
+            if (failedJobs.length > 0) {
+              summary += `### Failure reasons\n`;
+              for (const job of failedJobs) {
+                const failedSteps = (job.steps || []).filter((step) => step.conclusion === "failure");
+                const stepNames = failedSteps.map((step) => `\`${step.name}\``).join(", ");
+                summary += `- **${job.name}** failed`;
+                if (stepNames) {
+                  summary += ` at ${stepNames}`;
+                }
+                summary += `. [Job logs](${job.html_url})\n`;
+                summary += `  - Auto-remediation guidance: ${remediationForJob(job)}\n`;
+              }
+              summary += `\n`;
+            }
+
+            if (skippedJobs.some((job) => job.name === "Deploy Lane (Manual)")) {
+              summary += `### Skipped jobs\n`;
+              summary += `- **Deploy Lane (Manual)** skipped because this run was not started in manual deploy mode.\n\n`;
+            }
+
+            if (!failed && !skippedJobs.some((job) => job.name === "Deploy Lane (Manual)")) {
+              summary += `Validation and deploy lanes completed without failure. Zero-error gate passed for this run.\n`;
+            }
+
+            core.summary.addRaw(summary);
+            await core.summary.write();
+            console.log(summary);

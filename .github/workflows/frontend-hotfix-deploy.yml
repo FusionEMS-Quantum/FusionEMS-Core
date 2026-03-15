@@ -13,10 +13,11 @@ on:
 
 permissions:
   id-token: write
+  actions: read
   contents: read
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: "us-east-1"
   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID || '793439286972' }}
   AWS_OIDC_ROLE_ARN: ${{ vars.AWS_OIDC_ROLE_ARN || 'arn:aws:iam::793439286972:role/FusionEMS-GHA-TerraformProd' }}
 
@@ -123,3 +124,98 @@ jobs:
             --services "${ECS_SERVICE}" \
             --query 'services[0].{taskDefinition:taskDefinition,runningCount:runningCount,pendingCount:pendingCount,status:status,deployments:deployments[*].{status:status,rolloutState:rolloutState,taskDefinition:taskDefinition}}' \
             --output json
+
+  deployment_summary:
+    name: Deployment Summary
+    needs: [deploy-frontend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish deployment result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runId = context.runId;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+            const remediationForJob = (job) => {
+              const failedSteps = (job.steps || [])
+                .filter((step) => step.conclusion === "failure")
+                .map((step) => step.name);
+              if (failedSteps.some((name) => name.includes("Configure AWS credentials"))) {
+                return "OIDC role assumption failed. Verify AWS_OIDC_ROLE_ARN, IAM trust policy subjects, and GitHub environment restrictions.";
+              }
+              if (failedSteps.some((name) => name.includes("Build frontend image"))) {
+                return "Frontend container build failed. Correct Docker or Next.js build errors before retrying.";
+              }
+              if (failedSteps.some((name) => name.includes("Push frontend image"))) {
+                return "ECR push failed. Verify repository existence, ECR login, and image push permissions.";
+              }
+              if (failedSteps.some((name) => name.includes("Prepare new task definition"))) {
+                return "Task definition registration failed. Verify the ECS task family exists and the rendered task definition is valid.";
+              }
+              if (
+                failedSteps.some((name) => name.includes("Update ECS service")) ||
+                failedSteps.some((name) => name.includes("Wait for service stability"))
+              ) {
+                return "ECS rollout failed. Review ECS service events, task health, and target group health checks before retrying.";
+              }
+              return "Review the linked job logs for the exact command output and correct the deployment configuration before retrying.";
+            };
+            const jobs = [];
+            for (let page = 1; ; page += 1) {
+              const response = await github.rest.actions.listJobsForWorkflowRun({
+                owner,
+                repo,
+                run_id: runId,
+                per_page: 100,
+                page,
+              });
+              jobs.push(...response.data.jobs);
+              if (response.data.jobs.length < 100) {
+                break;
+              }
+            }
+
+            const relevantJobs = jobs.filter((job) => job.name !== "Deployment Summary");
+            const failedJobs = relevantJobs.filter((job) => job.conclusion === "failure");
+            const cancelledJobs = relevantJobs.filter((job) => job.conclusion === "cancelled");
+            const failed = failedJobs.length > 0 || cancelledJobs.length > 0;
+
+            let summary = `## Frontend Hotfix Deployment Result\n\n`;
+            summary += failed
+              ? `❌ **Not successful**\n\n`
+              : `✅ **Successful**\n\n`;
+            summary += `Run: ${runUrl}\n\n`;
+
+            if (failedJobs.length > 0) {
+              summary += `### Failure reasons\n`;
+              for (const job of failedJobs) {
+                const failedSteps = (job.steps || []).filter((step) => step.conclusion === "failure");
+                const stepNames = failedSteps.map((step) => `\`${step.name}\``).join(", ");
+                summary += `- **${job.name}** failed`;
+                if (stepNames) {
+                  summary += ` at ${stepNames}`;
+                }
+                summary += `. [Job logs](${job.html_url})\n`;
+                summary += `  - Auto-remediation guidance: ${remediationForJob(job)}\n`;
+              }
+              summary += `\n`;
+            }
+
+            if (cancelledJobs.length > 0) {
+              summary += `### Cancelled jobs\n`;
+              for (const job of cancelledJobs) {
+                summary += `- **${job.name}** was cancelled. [Job logs](${job.html_url})\n`;
+              }
+              summary += `\n`;
+            }
+
+            if (!failed) {
+              summary += `Frontend image build, push, task registration, and ECS rollout completed successfully. Zero-error gate passed for this run.\n`;
+            }
+
+            core.summary.addRaw(summary);
+            await core.summary.write();
+            console.log(summary);

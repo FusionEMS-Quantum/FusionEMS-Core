@@ -18,10 +18,12 @@ on:
       allow_apply:
         description: "Allow terraform apply (manual go-live safety gate)"
         required: true
-        default: "false"
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
+  actions: read
   contents: read
   pull-requests: write
 
@@ -179,7 +181,7 @@ jobs:
 
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && inputs.allow_apply == 'true')
+      (github.event_name == 'workflow_dispatch' && inputs.allow_apply == true)
 
     defaults:
       run:
@@ -217,3 +219,111 @@ jobs:
 
       - name: Terraform apply
         run: terraform apply -auto-approve
+
+  deployment_summary:
+    name: Deployment Summary
+    needs: [fmt_lint_scan, validate_envs, plan_prod, apply_prod]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish deployment result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runId = context.runId;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+            const remediationForJob = (job) => {
+              const failedSteps = (job.steps || [])
+                .filter((step) => step.conclusion === "failure")
+                .map((step) => step.name);
+              if (failedSteps.some((name) => name.includes("Configure AWS credentials"))) {
+                return "OIDC role assumption failed. Verify AWS_OIDC_ROLE_ARN, IAM trust policy subjects, and that the GitHub run is permitted to assume the production role.";
+              }
+              if (failedSteps.some((name) => name.includes("Terraform init"))) {
+                return "Terraform backend or provider initialization failed. Verify remote state resources, AWS access, and provider configuration.";
+              }
+              if (failedSteps.some((name) => name.includes("Terraform validate"))) {
+                return "Terraform validation failed. Correct invalid configuration or provider schema usage before retrying.";
+              }
+              if (failedSteps.some((name) => name.includes("Terraform plan"))) {
+                return "Terraform plan failed. Review provider/API errors and infrastructure policy denials in the linked logs before rerunning.";
+              }
+              if (failedSteps.some((name) => name.includes("Terraform apply"))) {
+                return "Terraform apply failed. Correct the infrastructure mutation error in AWS or Terraform configuration before rerunning.";
+              }
+              return "Review the linked job logs for the exact command output and stack trace, then correct the configuration before retrying.";
+            };
+            const jobs = [];
+            for (let page = 1; ; page += 1) {
+              const response = await github.rest.actions.listJobsForWorkflowRun({
+                owner,
+                repo,
+                run_id: runId,
+                per_page: 100,
+                page,
+              });
+              jobs.push(...response.data.jobs);
+              if (response.data.jobs.length < 100) {
+                break;
+              }
+            }
+
+            const relevantJobs = jobs.filter((job) => job.name !== "Deployment Summary");
+            const failedJobs = relevantJobs.filter((job) => job.conclusion === "failure");
+            const cancelledJobs = relevantJobs.filter((job) => job.conclusion === "cancelled");
+            const skippedJobs = relevantJobs.filter((job) => job.conclusion === "skipped");
+
+            const failed = failedJobs.length > 0 || cancelledJobs.length > 0;
+            let summary = `## Terraform Deployment Result\n\n`;
+            summary += failed
+              ? `❌ **Not successful**\n\n`
+              : `✅ **Successful**\n\n`;
+            summary += `Run: ${runUrl}\n\n`;
+
+            if (failedJobs.length > 0) {
+              summary += `### Failure reasons\n`;
+              for (const job of failedJobs) {
+                const failedSteps = (job.steps || []).filter((step) => step.conclusion === "failure");
+                const stepNames = failedSteps.map((step) => `\`${step.name}\``).join(", ");
+                summary += `- **${job.name}** failed`;
+                if (stepNames) {
+                  summary += ` at ${stepNames}`;
+                }
+                summary += `. [Job logs](${job.html_url})\n`;
+                summary += `  - Auto-remediation guidance: ${remediationForJob(job)}\n`;
+              }
+              summary += `\n`;
+            }
+
+            if (cancelledJobs.length > 0) {
+              summary += `### Cancelled jobs\n`;
+              for (const job of cancelledJobs) {
+                summary += `- **${job.name}** was cancelled. [Job logs](${job.html_url})\n`;
+              }
+              summary += `\n`;
+            }
+
+            if (skippedJobs.length > 0) {
+              summary += `### Skipped jobs\n`;
+              for (const job of skippedJobs) {
+                let reason = "workflow conditions were not met";
+                if (job.name === "Apply (Protected)") {
+                  reason =
+                    context.eventName === "pull_request"
+                      ? "apply is disabled for pull request runs"
+                      : "manual apply was not enabled or environment approval was not reached";
+                }
+                summary += `- **${job.name}** skipped because ${reason}.\n`;
+              }
+              summary += `\n`;
+            }
+
+            if (!failed && failedJobs.length === 0 && cancelledJobs.length === 0) {
+              summary += `All required Terraform deployment jobs completed without failure. Zero-error gate passed for this run.\n`;
+            }
+
+            core.summary.addRaw(summary);
+            await core.summary.write();
+            console.log(summary);
