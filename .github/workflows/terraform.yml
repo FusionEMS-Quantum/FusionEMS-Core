@@ -33,6 +33,8 @@ env:
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
   AWS_REGION: "us-east-1"
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID || '793439286972' }}
+  AWS_OIDC_ROLE_ARN: ${{ vars.AWS_OIDC_ROLE_ARN || 'arn:aws:iam::793439286972:role/FusionEMS-GHA-TerraformProd' }}
   TF_ROOT_DIR: "infra/terraform"
   TF_WORKING_DIR: "infra/terraform/environments/prod"
   EXPECTED_AWS_ACCOUNT_ID: "793439286972"
@@ -135,8 +137,8 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::793439286972:role/GitHubTerraformRole
-          aws-region: us-east-1
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Verify AWS account
         run: |
@@ -173,10 +175,11 @@ jobs:
     name: Apply (Protected)
     needs: plan_prod
     runs-on: ubuntu-latest
+    environment: prod
 
-    # First production launches should be manual from a trusted operator environment.
-    # Enable apply only via explicit manual dispatch.
-    if: github.event_name == 'workflow_dispatch' && inputs.allow_apply == 'true'
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.allow_apply == 'true')
 
     defaults:
       run:
@@ -196,8 +199,8 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::793439286972:role/GitHubTerraformRole
-          aws-region: us-east-1
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Verify AWS account
         run: |

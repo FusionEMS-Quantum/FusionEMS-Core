@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# Bootstrap the GitHubTerraformRole IAM role and OIDC provider in AWS
+# Bootstrap the FusionEMS-GHA-TerraformProd IAM role and OIDC provider in AWS
 # account 793439286972 for GitHub Actions OIDC authentication.
 #
 # Prerequisites:
