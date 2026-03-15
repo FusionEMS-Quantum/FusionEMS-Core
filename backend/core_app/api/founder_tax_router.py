@@ -4,7 +4,7 @@ import uuid as _uuid
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,7 @@ from core_app.models.founder_tax import (
     TaxEntityBucket,
 )
 from core_app.schemas.auth import CurrentUser
+from core_app.accounting.efile_service import EfileOrchestrator, IRSMeFClient, WisconsinDORClient
 from core_app.services.ai_platform.tax_advisor_service import (
     AIReceiptTaxAdvisor,
     S3DocumentVaultService,
@@ -137,7 +138,6 @@ async def realtime_efile_tracking(
     current: CurrentUser = Depends(require_founder_only_audited()),
 ) -> dict:
     """Return live configuration + reachability status for IRS MeF and WI DOR."""
-    from core_app.accounting.efile_service import EfileOrchestrator
     return await EfileOrchestrator().realtime_status()
 
 
@@ -211,6 +211,42 @@ class WisconsinEfileRequest(BaseModel):
     correlation_id: str = ""
 
 
+class FederalEstimatedTaxRequest(BaseModel):
+    tax_year: int
+    quarter: int = Field(ge=1, le=4)
+    filer_ssn: str  # Never logged; transmitted encrypted via TLS
+    first_name: str
+    last_name: str
+    payment_amount: float = Field(gt=0.0)
+    correlation_id: str = ""
+
+
+@tax_advisor_router.post("/efile/transmit/federal-estimated")
+async def transmit_federal_estimated_payment(
+    request: FederalEstimatedTaxRequest,
+    current: CurrentUser = Depends(require_founder_only_audited()),
+) -> dict:
+    """Transmit a founder federal estimated tax payment via IRS MeF.
+
+    This targets the IRS ATS environment by default until production MeF
+    approval is complete. Credentials must be injected via environment.
+    """
+    del current
+
+    correlation_id = request.correlation_id or str(_uuid.uuid4())
+    client = IRSMeFClient()
+    result = await client.submit_1040es(
+        tax_year=request.tax_year,
+        quarter=request.quarter,
+        ssn=request.filer_ssn,
+        first_name=request.first_name,
+        last_name=request.last_name,
+        payment_amount=request.payment_amount,
+        correlation_id=correlation_id,
+    )
+    return result.to_dict()
+
+
 
 @tax_advisor_router.post("/efile/transmit/wisconsin")
 async def transmit_wisconsin_form1(
@@ -223,8 +259,6 @@ async def transmit_wisconsin_form1(
     Set WI_DOR_API_KEY environment variable to activate live submission.
     Without the key the response will explain the registration steps.
     """
-    from core_app.accounting.efile_service import WisconsinDORClient
-
     if not request.correlation_id:
         request.correlation_id = str(_uuid.uuid4())
 

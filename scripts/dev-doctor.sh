@@ -92,6 +92,26 @@ else
     warn "docker compose not available"
 fi
 
+# ── 4b. VS Code sandbox prerequisites ─────────────────────────────────
+echo "─── VS Code Sandbox Prerequisites ───"
+if command -v rg &>/dev/null; then
+    pass "ripgrep available"
+else
+    fail "ripgrep missing (required by Copilot terminal sandbox)"
+fi
+
+if command -v bwrap &>/dev/null; then
+    pass "bubblewrap available"
+else
+    fail "bubblewrap missing (required by Copilot terminal sandbox)"
+fi
+
+if command -v socat &>/dev/null; then
+    pass "socat available"
+else
+    fail "socat missing (required by Copilot terminal sandbox)"
+fi
+
 # ── 5. Backend Dependencies ───────────────────────────────────────────
 echo "─── Backend Dependencies ───"
 if [ -f ".venv/bin/python" ]; then
@@ -99,6 +119,16 @@ if [ -f ".venv/bin/python" ]; then
         pass "FastAPI importable"
     else
         fail "FastAPI not installed (run: make setup)"
+    fi
+    if PYTHONPATH="$(pwd)/backend" .venv/bin/python -c "import core_app.main" 2>/dev/null; then
+        pass "core_app importable from repo root with backend PYTHONPATH"
+    else
+        warn "core_app not importable from repo root unless backend PYTHONPATH is set"
+    fi
+    if (cd backend && ../.venv/bin/python -c "import core_app.main" 2>/dev/null); then
+        pass "core_app importable from backend working directory"
+    else
+        fail "core_app not importable from backend working directory"
     fi
     if .venv/bin/python -c "import sqlalchemy" 2>/dev/null; then
         pass "SQLAlchemy importable"

@@ -16,7 +16,7 @@ const NAV_LINKS = [
   { href: '/communications', label: 'Communications' },
   { href: '/compliance', label: 'Compliance' },
   { href: '/roi', label: 'ROI' },
-  { href: '/founder-command', label: 'Founder' },
+  { href: '/live-status', label: 'Live Status' },
 ];
 
 const FOOTER_LINKS = [
@@ -53,11 +53,11 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
 
       <div className="relative z-50 border-b border-[rgba(255,255,255,0.06)] bg-[rgba(255,77,0,0.08)]">
         <div className="max-w-[1600px] mx-auto px-6 py-2 flex items-center justify-between gap-4 text-[10px] uppercase tracking-[0.18em] text-zinc-400">
-          <span>Public Safety Infrastructure</span>
+          <span>Mission-critical public safety infrastructure</span>
           <div className="hidden md:flex items-center gap-5">
-            <span>Billing-first activation</span>
+            <span>Canvas-grade command UI</span>
             <span>OIDC-first access</span>
-            <span>Deterministic platform operations</span>
+            <span>Live status truth sourced in command</span>
           </div>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
                 <Link href="/patient-billing-login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Patient Bill Pay</Link>
                 <Link href="/facility-transport-login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Facility Login</Link>
-                <Link href="/login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Staff Login</Link>
+                <Link href="/billing/login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Billing Login</Link>
                 <Link href="/login" className="quantum-btn-primary" onClick={() => setMobileNavOpen(false)}>Platform Login</Link>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
             <div className="grid gap-2 text-body text-zinc-400">
               <span>Patient billing support and secure payment access</span>
               <span>Facility transport intake and scheduling coordination</span>
-              <span>Staff operations, billing, and founder command surfaces</span>
+              <span>Staff operations, billing, and command surfaces</span>
             </div>
           </div>
         </div>

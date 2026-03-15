@@ -1210,6 +1210,42 @@ export async function getEfileStatus() {
   return res.data;
 }
 
+export interface FederalEstimatedTaxSubmissionPayload {
+  tax_year: number;
+  quarter: 1 | 2 | 3 | 4;
+  filer_ssn: string;
+  first_name: string;
+  last_name: string;
+  payment_amount: number;
+  correlation_id?: string;
+}
+
+export interface WisconsinForm1SubmissionPayload {
+  tax_year: number;
+  filer_ssn: string;
+  first_name: string;
+  last_name: string;
+  street: string;
+  city: string;
+  zip_code: string;
+  wi_adjusted_gross_income: number;
+  wi_exemptions?: number;
+  wi_credits?: number;
+  wi_withholding?: number;
+  net_taxable_income: number;
+  correlation_id?: string;
+}
+
+export async function submitFederalEstimatedTax(payload: FederalEstimatedTaxSubmissionPayload) {
+  const res = await API.post('/api/quantum-founder/efile/transmit/federal-estimated', payload);
+  return res.data;
+}
+
+export async function submitWisconsinForm1(payload: WisconsinForm1SubmissionPayload) {
+  const res = await API.post('/api/quantum-founder/efile/transmit/wisconsin', payload);
+  return res.data;
+}
+
 export async function scanReceipt(imageFile: File) {
   const formData = new FormData();
   formData.append('receipt_image', imageFile);

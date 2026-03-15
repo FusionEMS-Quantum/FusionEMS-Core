@@ -480,13 +480,30 @@ class Settings(BaseSettings):
         """
 
         def _entry(*, required: bool, env_names: tuple[str, ...], values: tuple[str, ...]) -> dict[str, object]:
-            missing = [env_name for env_name, value in zip(env_names, values, strict=False) if not value]
-            configured = len(missing) == 0
+            missing: list[str] = []
+            placeholder_fields: list[str] = []
+            for env_name, value in zip(env_names, values, strict=False):
+                normalized = str(value or "").strip()
+                if not normalized:
+                    missing.append(env_name)
+                    continue
+                if is_placeholder_config_value(normalized):
+                    placeholder_fields.append(env_name)
+
+            configured = len(missing) == 0 and len(placeholder_fields) == 0
+            status = "active"
+            if placeholder_fields:
+                status = "placeholder_configured"
+            elif missing:
+                status = "credentials_missing"
+
             return {
                 "required": required,
                 "configured": configured,
-                "status": "active" if configured else "credentials_missing",
+                "status": status,
                 "missing": missing,
+                "placeholder_fields": placeholder_fields,
+                "ready": configured,
             }
 
         env = str(self.environment).lower()

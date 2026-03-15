@@ -32,22 +32,23 @@ export function QuantumTable<T extends Record<string, unknown>>({
 }: QuantumTableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className={clsx('flex items-center justify-center py-12 text-zinc-500 text-body', className)}>
+      <div className={clsx('quantum-panel-soft flex items-center justify-center py-12 text-zinc-500 text-body', className)}>
         {emptyMessage}
       </div>
     );
   }
 
   return (
-    <div className={clsx('overflow-x-auto', className)}>
+    <div className={clsx('quantum-panel-soft overflow-hidden', className)}>
+      <div className="overflow-x-auto quantum-scroll-region">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="border-b border-border-DEFAULT">
+          <tr className="border-b border-border-DEFAULT bg-[rgba(255,255,255,0.02)]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={clsx(
-                  'label-caps text-left px-[var(--density-cell-pad-x)] py-2',
+                  'label-caps text-left px-[var(--density-cell-pad-x)] py-3',
                   col.align === 'center' && 'text-center',
                   col.align === 'right' && 'text-right',
                 )}
@@ -64,7 +65,7 @@ export function QuantumTable<T extends Record<string, unknown>>({
               key={String(row[keyField] ?? i)}
               className={clsx(
                 'border-b border-border-subtle transition-colors duration-fast',
-                onRowClick && 'cursor-pointer hover:bg-bg-overlay',
+                onRowClick && 'cursor-pointer hover:bg-[rgba(255,122,47,0.06)]',
               )}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
@@ -86,6 +87,7 @@ export function QuantumTable<T extends Record<string, unknown>>({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

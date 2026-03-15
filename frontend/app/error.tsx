@@ -16,7 +16,8 @@ export default function GlobalError({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-6 py-12">
-      <div className="w-full max-w-md chamfer-12 border border-[var(--color-brand-red-dim)] bg-[var(--color-bg-panel)] p-8 text-center shadow-[var(--elevation-critical)] space-y-4">
+      <div className="w-full max-w-md quantum-panel-strong border-[var(--color-brand-red-dim)] p-8 text-center shadow-[var(--elevation-critical)] space-y-4">
+        <div className="quantum-kicker justify-center text-[var(--color-brand-red)] before:bg-[linear-gradient(90deg,var(--color-brand-red),transparent)]">Unhandled platform exception</div>
         <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Unhandled Platform Error</h2>
         <p className="text-sm text-[var(--color-text-muted)]">
           An unexpected error occurred. Our team has been notified.

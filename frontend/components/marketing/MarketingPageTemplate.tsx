@@ -76,16 +76,16 @@ export default function MarketingPageTemplate({
   const style = ACCENT_STYLES[accent];
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-16 md:py-20 space-y-8 md:space-y-10">
+    <section className="max-w-6xl mx-auto px-6 py-16 md:py-20 space-y-8 md:space-y-10 quantum-grid-shell">
       <div className="grid xl:grid-cols-[1.3fr_0.7fr] gap-4">
-        <div className={`relative overflow-hidden border border-border-default chamfer-12 p-6 md:p-8 bg-[rgba(10,10,11,0.7)]`}>
+        <div className="quantum-panel-strong p-6 md:p-8">
           <div className={`absolute inset-0 bg-gradient-to-br ${style.glow} pointer-events-none`} />
           <div className="relative">
             <div className={`inline-flex items-center gap-2 px-3 py-1 chamfer-8 border ${style.border} ${style.chip}`}>
               <span className={`text-micro uppercase tracking-[0.16em] font-semibold ${style.text}`}>{eyebrow}</span>
             </div>
 
-            <h1 className="text-display font-black mt-4 text-zinc-100 leading-tight">{title}</h1>
+            <h1 className="text-display font-black mt-4 text-zinc-100 leading-tight max-w-4xl">{title}</h1>
             <p className="text-body-lg text-zinc-400 mt-3 max-w-4xl">{description}</p>
 
             {signalLine && (
@@ -107,10 +107,10 @@ export default function MarketingPageTemplate({
           </div>
         </div>
 
-        <div className="bg-[#0A0A0B] border border-border-default chamfer-12 p-6 flex flex-col justify-between">
+        <div className="quantum-panel-soft p-6 flex flex-col justify-between">
           <div>
             <div className="text-micro uppercase tracking-[0.16em] text-zinc-500">Operational Signal</div>
-            <div className={`text-h3 font-bold mt-2 ${style.text}`}>Deployment-ready public surface</div>
+            <div className={`text-h3 font-bold mt-2 ${style.text}`}>Deployment-ready command surface</div>
             <p className="text-body text-zinc-400 mt-3">
               Shared navigation, explicit conversion lanes, and role-separated access patterns are applied consistently across the public site.
             </p>
@@ -130,7 +130,7 @@ export default function MarketingPageTemplate({
 
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-3">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-[#0A0A0B] border border-border-default chamfer-8 p-4">
+          <div key={stat.label} className="quantum-panel-soft p-4">
             <div className="text-micro uppercase tracking-[0.14em] text-zinc-500">{stat.label}</div>
             <div className="text-h2 font-bold mt-1.5 text-zinc-100">{stat.value}</div>
             {stat.detail && <div className="text-body text-zinc-500 mt-1">{stat.detail}</div>}
@@ -155,11 +155,11 @@ export default function MarketingPageTemplate({
           );
 
           return feature.href ? (
-            <Link key={feature.title} href={feature.href} className="bg-[#0A0A0B] border border-border-default hover:border-brand-orange/60 transition-colors chamfer-8 p-5">
+            <Link key={feature.title} href={feature.href} className="quantum-panel-soft p-5 hover:border-brand-orange/60 transition-colors">
               {content}
             </Link>
           ) : (
-            <div key={feature.title} className="bg-[#0A0A0B] border border-border-default chamfer-8 p-5">
+            <div key={feature.title} className="quantum-panel-soft p-5">
               {content}
             </div>
           );

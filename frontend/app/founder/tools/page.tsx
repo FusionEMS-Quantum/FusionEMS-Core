@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Wrench, RefreshCw, Calendar, FileText, ListTodo, MessageSquare, Shield, Radio } from 'lucide-react';
+import { ArrowLeft, Wrench, RefreshCw, Calendar, FileText, ListTodo, MessageSquare, Shield, Radio, FolderOpen, Mail, Receipt, Landmark } from 'lucide-react';
 import { getSystemHealthDashboard } from '@/services/api';
 
 interface ToolModule {
@@ -30,7 +30,13 @@ export default function FounderToolsPage() {
   const tools: ToolModule[] = [
     { name: 'Calendar', description: 'Organization calendar, shift coverage, and compliance deadlines', href: '/founder/tools/calendar', icon: <Calendar className="w-6 h-6 text-[var(--color-status-info)]" />, status: 'active' },
     { name: 'Documents', description: 'Document management, SOP library, and policy distribution', href: '/founder/tools/documents', icon: <FileText className="w-6 h-6 text-[var(--color-status-active)]" />, status: 'active' },
+    { name: 'Files', description: 'Founder file browser, document access, and linked workspace files', href: '/founder/tools/files', icon: <FolderOpen className="w-6 h-6 text-[var(--color-status-info)]" />, status: 'active' },
+    { name: 'Email', description: 'Founder email operations and outbound communications', href: '/founder/tools/email', icon: <Mail className="w-6 h-6 text-[var(--q-yellow)]" />, status: 'active' },
+    { name: 'Onboarding Control', description: 'Provisioning queue, legal resend, and self-serve launch controls', href: '/founder/tools/onboarding-control', icon: <Shield className="w-6 h-6 text-[var(--color-system-compliance)]" />, status: 'active' },
+    { name: 'Invoice Creator', description: 'Founder invoice drafting and export workflows', href: '/founder/tools/invoice-creator', icon: <Receipt className="w-6 h-6 text-[var(--color-brand-orange)]" />, status: 'active' },
+    { name: 'Expense Ledger', description: 'Founder-native expense tracking and export for accounting', href: '/founder/tools/expense-ledger', icon: <Receipt className="w-6 h-6 text-[var(--color-status-warning)]" />, status: 'active' },
     { name: 'Task Center', description: 'Compliance actions, training requirements, and operational follow-ups', href: '/founder/tools/task-center', icon: <ListTodo className="w-6 h-6 text-[var(--color-system-compliance)]" />, status: 'active' },
+    { name: 'Tax & E-File', description: 'IRS MeF status, Wisconsin filing, and open-source bank connection workflows', href: '/founder/tools/tax-efile', icon: <Landmark className="w-6 h-6 text-[var(--color-brand-orange)]" />, status: 'active' },
     { name: 'Script Builder', description: 'AI-powered communication script generation', href: '/founder/comms/script-builder', icon: <MessageSquare className="w-6 h-6 text-[var(--color-status-info)]" />, status: 'active' },
     { name: 'Broadcast Center', description: 'Mass notification and broadcast messaging', href: '/founder/comms/broadcast', icon: <Radio className="w-6 h-6 text-[var(--q-yellow)]" />, status: 'active' },
     { name: 'Field Masking', description: 'PHI field masking and data governance policies', href: '/founder/security/field-masking', icon: <Shield className="w-6 h-6 text-[var(--color-brand-red)]" />, status: 'active' },

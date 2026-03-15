@@ -16,102 +16,123 @@ import logging
 import os
 from typing import Any
 
+from core_app.pricing.catalog import ADDONS, BILLING_TIERS, PLANS, SCHEDULING_TIERS
+
 logger = logging.getLogger(__name__)
 
-_STAGE_PRODUCTS: list[dict[str, Any]] = [
-    {"key": "SCHEDULING_ONLY_V1", "name": "FusionEMS Scheduling Only"},
-    {"key": "CCT_TRANSPORT_OPS_V1", "name": "FusionEMS CCT / Transport Ops"},
-    {"key": "HEMS_OPS_V1", "name": "FusionEMS HEMS Ops"},
-    {"key": "BILLING_AUTOMATION_V1", "name": "FusionEMS Billing Automation"},
-    {"key": "TRIP_PACK_V1", "name": "FusionEMS Wisconsin TRIP Pack"},
-]
 
-_STAGE_PRICES: list[dict[str, Any]] = [
-    {
-        "lookup_key": "SCHEDULING_ONLY_S1_V1_MONTHLY",
-        "product_key": "SCHEDULING_ONLY_V1",
-        "unit_amount": 19900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "SCHEDULING_ONLY_S2_V1_MONTHLY",
-        "product_key": "SCHEDULING_ONLY_V1",
-        "unit_amount": 39900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "SCHEDULING_ONLY_S3_V1_MONTHLY",
-        "product_key": "SCHEDULING_ONLY_V1",
-        "unit_amount": 69900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "CCT_TRANSPORT_OPS_V1_MONTHLY",
-        "product_key": "CCT_TRANSPORT_OPS_V1",
-        "unit_amount": 39900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "HEMS_OPS_V1_MONTHLY",
-        "product_key": "HEMS_OPS_V1",
-        "unit_amount": 75000,
-        "metered": False,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B1_BASE_V1_MONTHLY",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 39900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B2_BASE_V1_MONTHLY",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 59900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B3_BASE_V1_MONTHLY",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 99900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B4_BASE_V1_MONTHLY",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 149900,
-        "metered": False,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B1_PER_CLAIM_V1",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 600,
-        "metered": True,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B2_PER_CLAIM_V1",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 500,
-        "metered": True,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B3_PER_CLAIM_V1",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 400,
-        "metered": True,
-    },
-    {
-        "lookup_key": "BILLING_AUTOMATION_B4_PER_CLAIM_V1",
-        "product_key": "BILLING_AUTOMATION_V1",
-        "unit_amount": 325,
-        "metered": True,
-    },
-    {
-        "lookup_key": "TRIP_PACK_V1_MONTHLY",
-        "product_key": "TRIP_PACK_V1",
-        "unit_amount": 19900,
-        "metered": False,
-    },
-]
+def _product_key_for_plan(plan_code: str) -> str:
+    return f"{plan_code}_V1"
+
+
+def _product_key_for_addon(addon_code: str) -> str:
+    if addon_code == "BILLING_AUTOMATION":
+        return "BILLING_AUTOMATION_V1"
+    return f"{addon_code}_V1"
+
+
+def _catalog_products() -> list[dict[str, Any]]:
+    products: list[dict[str, Any]] = []
+
+    products.append({"key": _product_key_for_plan("SCHEDULING_ONLY"), "name": "FusionEMS Scheduling Only"})
+
+    for plan in PLANS.values():
+        if plan.code == "SCHEDULING_ONLY":
+            continue
+        products.append(
+            {
+                "key": _product_key_for_plan(plan.code),
+                "name": f"FusionEMS {plan.label}",
+            }
+        )
+
+    for addon in ADDONS.values():
+        products.append(
+            {
+                "key": _product_key_for_addon(addon.code),
+                "name": f"FusionEMS {addon.label}",
+            }
+        )
+
+    if any(tier.mode == "THIRD_PARTY_EXPORT" for tier in BILLING_TIERS.values()):
+        products.append(
+            {
+                "key": "THIRD_PARTY_EXPORT_V1",
+                "name": "FusionEMS Internal / Third-Party Billing",
+            }
+        )
+
+    deduped: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for product in products:
+        if product["key"] in seen:
+            continue
+        seen.add(product["key"])
+        deduped.append(product)
+    return deduped
+
+
+def _catalog_prices() -> list[dict[str, Any]]:
+    prices: list[dict[str, Any]] = []
+
+    for tier in SCHEDULING_TIERS.values():
+        prices.append(
+            {
+                "lookup_key": tier.lookup_key,
+                "product_key": _product_key_for_plan("SCHEDULING_ONLY"),
+                "unit_amount": tier.monthly_cents,
+                "metered": False,
+            }
+        )
+
+    for plan in PLANS.values():
+        if not plan.lookup_key or plan.monthly_cents is None:
+            continue
+        prices.append(
+            {
+                "lookup_key": plan.lookup_key,
+                "product_key": _product_key_for_plan(plan.code),
+                "unit_amount": plan.monthly_cents,
+                "metered": False,
+            }
+        )
+
+    for addon in ADDONS.values():
+        if addon.uses_billing_tier or not addon.lookup_key:
+            continue
+        prices.append(
+            {
+                "lookup_key": addon.lookup_key,
+                "product_key": _product_key_for_addon(addon.code),
+                "unit_amount": addon.monthly_cents,
+                "metered": False,
+            }
+        )
+
+    for billing_tier in BILLING_TIERS.values():
+        product_key = (
+            "THIRD_PARTY_EXPORT_V1"
+            if billing_tier.mode == "THIRD_PARTY_EXPORT"
+            else _product_key_for_addon("BILLING_AUTOMATION")
+        )
+        prices.extend(
+            [
+                {
+                    "lookup_key": billing_tier.base_lookup_key,
+                    "product_key": product_key,
+                    "unit_amount": billing_tier.base_monthly_cents,
+                    "metered": False,
+                },
+                {
+                    "lookup_key": billing_tier.per_claim_lookup_key,
+                    "product_key": product_key,
+                    "unit_amount": billing_tier.per_claim_cents,
+                    "metered": True,
+                },
+            ]
+        )
+
+    return prices
 
 
 def sync_catalog(
@@ -142,7 +163,7 @@ def sync_catalog(
 
 def _ensure_products(stripe_lib: Any, stage: str) -> dict[str, str]:
     product_ids: dict[str, str] = {}
-    for p in _STAGE_PRODUCTS:
+    for p in _catalog_products():
         result = stripe_lib.Product.search(
             query=f"metadata['product_key']:'{p['key']}' AND metadata['stage']:'{stage}'"
         )
@@ -167,7 +188,7 @@ def _ensure_prices(
     product_ids: dict[str, str],
 ) -> dict[str, str]:
     price_ids: dict[str, str] = {}
-    for pr in _STAGE_PRICES:
+    for pr in _catalog_prices():
         existing = stripe_lib.Price.list(lookup_keys=[pr["lookup_key"]], limit=1)
         if existing.data:
             price = existing.data[0]

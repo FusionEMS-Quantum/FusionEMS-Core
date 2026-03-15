@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { motion, AnimatePresence } from "framer-motion";
+import { getEfileStatus } from "@/services/api";
 import {
   TerminalSquare, CircleDollarSign, Fingerprint, ActivitySquare,
   Bot, GitPullRequest, SearchCheck, Cpu, Code,
@@ -10,35 +12,55 @@ import {
 } from "lucide-react";
 
 type TabState = "overview" | "finance" | "comms" | "tax" | "ai_agent";
+type EfileProviderState = {
+  provider?: string;
+  status?: string;
+  mode?: string;
+  live_check?: {
+    http_status?: number;
+    message?: string;
+    irs_mef_available?: boolean;
+    wi_dor_available?: boolean;
+  } | null;
+};
 
-export default function SoloFounderOS() {
+type EfileDashboardState = {
+  irs_mef?: EfileProviderState;
+  wi_dor?: EfileProviderState;
+};
+
+export default function ExecutiveCommandOS() {
   const [activeTab, setActiveTab] = useState<TabState>("overview");
-  const [isTransmitting, setIsTransmitting] = useState(false);
-  const [transmitLog, setTransmitLog] = useState<string[]>([]);
-  const [efileStatus, setEfileStatus] = useState<"DRAFT" | "TRANSMITTING" | "ACCEPTED">("DRAFT");
-
-  const startEfileTransmission = () => {
-    setIsTransmitting(true);
-    setEfileStatus("TRANSMITTING");
-    setTransmitLog(["[SYS] Initiating IRS MeF (Modernized e-File) payload matrix..."]);
-    
-    setTimeout(() => setTransmitLog(prev => [...prev, "[STRIPE] Aggregating 12-month net transaction volume... $1,450,200.00"]), 800);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[EXPENSE] Deducting Telnyx/Lob/OfficeAlly API costs... -$43,810.22"]), 1600);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[CRYPTO] Signing JSON payload with platform RSA key... OK"]), 2400);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[NETWORK] Establishing TLS 1.3 pipe to IRS FIRE endpoint..."]), 3200);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[IRS-FIRE] 1099-K & Form 1120-S Schema Validated. (Federal)"]), 4000);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[STATE-WIDOR] Forking payload via WI MyTax Account API..."]), 4800);
-    setTimeout(() => setTransmitLog(prev => [...prev, "[STATE-WIDOR] Wisconsin Pass-Through Entity & Sales Tax XML Validated."]), 5600);
-    setTimeout(() => {
-        setTransmitLog(prev => [...prev, "[SUCCESS] Federal & Wisconsin Transmission Accepted. Ack ID: WI-994-FEMS-01"]);
-        setIsTransmitting(false);
-        setEfileStatus("ACCEPTED");
-    }, 6600);
-  };
+  const [efileDashboard, setEfileDashboard] = useState<EfileDashboardState | null>(null);
+  const [efileLoading, setEfileLoading] = useState(false);
+  const [efileError, setEfileError] = useState<string | null>(null);
   const [agentInput, setAgentInput] = useState("");
   const [chatLog, setChatLog] = useState<{ role: "user" | "agent"; text: string }[]>([
     { role: "agent", text: "Quantum AI initialized. Codebase indexed. Stripe, Lob, and Telnyx APIs mapped. How can I deploy or enhance the platform today, commander?" }
   ]);
+
+  useEffect(() => {
+    if (activeTab !== "tax") return;
+    let cancelled = false;
+    setEfileLoading(true);
+    setEfileError(null);
+    getEfileStatus()
+      .then((data) => {
+        if (!cancelled) setEfileDashboard(data as EfileDashboardState);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setEfileError(error instanceof Error ? error.message : "Unable to load founder tax status");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setEfileLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   const handleAgentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +96,7 @@ export default function SoloFounderOS() {
             <div>
               <h1 className="text-3xl font-black uppercase tracking-tight text-white flex items-center gap-3">
                 <Cpu className="h-8 w-8 text-[#FF5500]" />
-                Solo Founder OS
+                Executive Command OS
               </h1>
               <p className="mt-2 text-sm text-[var(--color-text-secondary)]">Master Control: Stripe, Lob, Telnyx, Office Ally, Built-in Ledger, and Architecture.</p>
             </div>
@@ -165,29 +187,46 @@ export default function SoloFounderOS() {
                      <div className="p-4 border border-zinc-800 bg-black/50 flex flex-col justify-between">
                        <div>
                          <h4 className="flex items-center text-[#00D1FF] font-black uppercase tracking-widest text-xs mb-3"><FileDigit className="mr-2 h-4 w-4" /> E-File Matrix</h4>
-                         <p className="text-sm text-zinc-400 font-mono mb-4">Direct IRS (Federal) & Wisconsin Dept. of Revenue (MyTax) native connection. Encrypted XML/JSON payloads.</p>
-                         <div className="space-y-2 mb-6">
-                           <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
-                             <span className="text-zinc-500">2026 1099-K Volume</span>
-                             <span className="text-white font-mono">$1,450,200.00</span>
+                         <p className="text-sm text-zinc-400 font-mono mb-4">Live founder filing status from the IRS MeF and Wisconsin DOR integrations — no fake transmission theater.</p>
+                         {efileError ? (
+                           <div className="mb-4 border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">{efileError}</div>
+                         ) : (
+                           <div className="space-y-2 mb-6 text-xs">
+                             <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                               <span className="text-zinc-500">IRS MeF</span>
+                               <span className="text-[#00D1FF] font-mono uppercase">{efileDashboard?.irs_mef?.status ?? (efileLoading ? "loading" : "unknown")}</span>
+                             </div>
+                             <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                               <span className="text-zinc-500">Wisconsin DOR</span>
+                               <span className="text-white font-mono uppercase">{efileDashboard?.wi_dor?.status ?? (efileLoading ? "loading" : "unknown")}</span>
+                             </div>
+                             <div className="flex justify-between items-center pb-2">
+                               <span className="text-zinc-500">Live check</span>
+                               <span className="text-emerald-400 font-mono uppercase">
+                                 {efileDashboard?.irs_mef?.live_check?.irs_mef_available === false || efileDashboard?.wi_dor?.live_check?.wi_dor_available === false ? "attention" : "ready"}
+                               </span>
+                             </div>
                            </div>
-                           <div className="flex justify-between items-center text-xs pb-2">
-                             <span className="text-zinc-500">Transmission Status</span>
-                             <span className="text-amber-500 font-mono flex items-center gap-2">{efileStatus === "DRAFT" ? <><span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> DRAFT</> : efileStatus === "TRANSMITTING" ? <><span className="w-1.5 h-1.5 rounded-full bg-[#00D1FF] animate-pulse" /> TRANSMITTING</> : <><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> ACCEPTED</>}</span>
-                           </div>
-                         </div>
+                         )}
                        </div>
-                       
-                       {!isTransmitting && efileStatus === "DRAFT" ? (
-                           <button onClick={startEfileTransmission} className="w-full bg-[#00D1FF] hover:bg-[#00D1FF]/80 text-black text-[10px] font-bold py-3 uppercase tracking-widest transition-colors">Sign & Transmit Federal + Wisconsin</button>
-                       ) : (
-                           <div className="w-full bg-black border border-[#00D1FF]/50 p-3 h-32 overflow-y-auto font-mono text-[10px] text-[#00D1FF] space-y-1">
-                               {transmitLog.map((log, i) => (
-                                   <div key={i}>{log}</div>
-                               ))}
-                               {isTransmitting && <div className="animate-pulse">_</div>}
-                           </div>
-                       )}
+                       <div className="flex flex-col gap-3">
+                         <button
+                           onClick={() => {
+                             setEfileLoading(true);
+                             setEfileError(null);
+                             getEfileStatus()
+                               .then((data) => setEfileDashboard(data as EfileDashboardState))
+                               .catch((error: unknown) => setEfileError(error instanceof Error ? error.message : "Unable to refresh founder tax status"))
+                               .finally(() => setEfileLoading(false));
+                           }}
+                           className="w-full bg-[#00D1FF] hover:bg-[#00D1FF]/80 text-black text-[10px] font-bold py-3 uppercase tracking-widest transition-colors"
+                         >
+                           {efileLoading ? "Refreshing Status" : "Refresh IRS + Wisconsin Status"}
+                         </button>
+                         <Link href="/founder/tools/tax-efile" className="w-full border border-white/10 hover:border-[#FF5500]/50 text-white text-center text-[10px] font-bold py-3 uppercase tracking-widest transition-colors">
+                           Open Founder Tax Console
+                         </Link>
+                       </div>
                      </div>
                      <div className="p-4 border border-zinc-800 bg-black/50 flex flex-col justify-between">
                        <div>
@@ -200,7 +239,7 @@ export default function SoloFounderOS() {
                            <div className="border border-zinc-800 bg-white/5 p-3 text-[var(--color-brand-orange)] text-[10px] font-bold tracking-widest hover:border-[#FF5500]/50 hover:bg-[#FF5500]/10 cursor-pointer transition-all">TAX ESTIMATOR</div>
                          </div>
                        </div>
-                       <button className="w-full bg-[#FF5500] hover:bg-[#FF5500]/80 text-black text-[10px] font-bold py-3 uppercase tracking-widest transition-colors">Compile Quarterly Native Tax Returns</button>
+                       <Link href="/founder/tools/expense-ledger" className="block w-full bg-[#FF5500] hover:bg-[#FF5500]/80 text-black text-center text-[10px] font-bold py-3 uppercase tracking-widest transition-colors">Open Expense Ledger</Link>
                      </div>
                    </div>
 
@@ -225,9 +264,9 @@ export default function SoloFounderOS() {
                              <span className="text-zinc-300 flex items-center gap-2"><FileText className="h-3 w-3 text-emerald-500"/> Property_Tax_Assessment.pdf</span>
                              <span className="text-emerald-500 text-[9px] uppercase tracking-widest">Secured</span>
                            </div>
-                           <button className="w-full border border-dashed border-zinc-700 bg-black text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/50 p-2 text-[10px] uppercase tracking-widest transition-all">
-                             + Upload Tax Document
-                           </button>
+                           <Link href="/founder/tools/documents" className="block w-full border border-dashed border-zinc-700 bg-black text-center text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/50 p-2 text-[10px] uppercase tracking-widest transition-all">
+                             Open Document Vault
+                           </Link>
                          </div>
                        </div>
                        <div className="space-y-4 lg:col-span-3">
@@ -249,9 +288,9 @@ export default function SoloFounderOS() {
                              <div className="text-[9px] text-zinc-400 mt-1">Pass-through maxed</div>
                            </div>
                          </div>
-                         <button className="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-bold py-3 uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                           Run Deep AI Credit Sweep (100% Legal Max)
-                         </button>
+                         <Link href="/founder/tools/tax-efile" className="block w-full bg-emerald-500 hover:bg-emerald-400 text-black text-center text-[10px] font-bold py-3 uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                           Open Tax & E-File Workflow
+                         </Link>
                        </div>
                      </div>
                    </div>
@@ -297,7 +336,7 @@ export default function SoloFounderOS() {
                     {chatLog.map((log, i) => (
                       <div key={i} className={`p-4 rounded-sm border ${log.role === "user" ? "bg-white/5 border-white/10 ml-12 text-right" : "bg-[#FF5500]/5 border-[#FF5500]/20 mr-12 text-left"}`}>
                         <span className={`text-[10px] uppercase tracking-widest mb-2 block ${log.role === "user" ? "text-zinc-500" : "text-[#FF5500]"}`}>
-                          {log.role === "user" ? "Founder" : "Quantum AI"}
+                          {log.role === "user" ? "Executive" : "Quantum AI"}
                         </span>
                         <div className="text-zinc-300 leading-relaxed font-sans whitespace-pre-wrap">{log.text}</div>
                       </div>

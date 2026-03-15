@@ -8,9 +8,9 @@ html,
 body {
   height: 100%;
   background:
-    radial-gradient(circle at top, rgba(255, 120, 40, 0.10) 0%, transparent 28%),
-    radial-gradient(circle at bottom right, rgba(255, 140, 0, 0.08) 0%, transparent 25%),
-    linear-gradient(180deg, #070707 0%, #0a0a0b 45%, #050505 100%);
+    radial-gradient(circle at top, rgba(255, 120, 40, 0.10) 0%, transparent 26%),
+    radial-gradient(circle at bottom right, rgba(255, 140, 0, 0.06) 0%, transparent 24%),
+    linear-gradient(180deg, #050608 0%, #0a0c0e 45%, #040507 100%);
   background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
@@ -22,6 +22,31 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  letter-spacing: -0.01em;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+main {
+  position: relative;
 }
 
 :focus-visible {
@@ -56,6 +81,21 @@ body {
 button.bg-orange:hover {
   background-color: #E64500 !important;
   box-shadow: 0 0 20px rgba(255, 77, 0, 0.3) !important;
+}
+
+.quantum-noise {
+  position: relative;
+}
+
+.quantum-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,0.08) 0.5px, transparent 0.5px);
+  background-size: 6px 6px;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
