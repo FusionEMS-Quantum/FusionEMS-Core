@@ -47,4 +47,5 @@ module "prod_waf" {
   environment = var.environment
   vpc_id      = module.networking.vpc_id            # Assumes a networking module output
   subnet_ids  = module.networking.public_subnet_ids # Assumes networking module public subnets
+  kms_key_arn = module.prod_kms.key_arn
 }
