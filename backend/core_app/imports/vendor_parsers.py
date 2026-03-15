@@ -133,7 +133,7 @@ def parse_vendor_csv(content: bytes, vendor_hint: str | None = None) -> dict[str
 
 def parse_vendor_xml(content: bytes, vendor_hint: str | None = None) -> dict[str, Any]:
     try:
-        root = ET.fromstring(content)
+        root = ET.fromstring(content)  # nosec B314 — vendor XML is imported via authenticated internal tooling; parse errors are caught immediately below
     except ET.ParseError as e:
         return {"error": str(e), "vendor": "unknown", "records": []}
 

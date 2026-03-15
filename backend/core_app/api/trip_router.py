@@ -263,7 +263,7 @@ def _build_trip_xml(debts: list[dict], tenant_id: str) -> bytes:
         ET.SubElement(debt_el, "AgencyDebtID").text = str(debt["id"])
         ET.SubElement(debt_el, "ARAccountID").text = d.get("ar_account_id", "")
     raw = ET.tostring(root, encoding="unicode")
-    return minidom.parseString(raw).toprettyxml(indent="  ").encode("utf-8")
+    return minidom.parseString(raw).toprettyxml(indent="  ").encode("utf-8")  # nosec B318 — raw is self-generated XML from ET.tostring, not external input
 
 
 @router.post("/exports/generate")

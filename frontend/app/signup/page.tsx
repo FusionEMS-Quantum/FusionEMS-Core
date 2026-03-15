@@ -341,7 +341,7 @@ export default function SignupPage() {
                     className={`text-left p-4 chamfer-4 border transition-all ${billingMode === mode.code ? 'border-[var(--q-orange)] bg-[rgba(255,106,0,0.12)]' : 'border-border-DEFAULT hover:border-[rgba(255,255,255,0.2)]'}`}
                   >
                     <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--q-orange)] mb-2">{mode.label}</div>
-                    <div className="text-sm text-[var(--color-text-muted)] leading-relaxed">{'summary' in mode ? mode.summary : ''}</div>
+                    <div className="text-sm text-[var(--color-text-muted)] leading-relaxed">{'summary' in mode ? (mode as BillingModeDef).summary : ''}</div>
                   </button>
                 ))}
               </div>

@@ -242,7 +242,7 @@ class Settings(BaseSettings):
     )
     # Open-source-first voice stack (XTTS primary, Piper fallback, faster-whisper STT)
     oss_tts_prompt_dir: str = Field(
-        default="/tmp/fusionems_voice_prompts",
+        default="/tmp/fusionems_voice_prompts",  # nosec B108 — path is operator-configurable; not used for temp file creation directly
         description="Local directory for generated billing prompt WAV files",
     )
     oss_tts_engine_primary: str = Field(default="xtts", description="xtts|piper")

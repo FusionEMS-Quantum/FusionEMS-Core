@@ -78,7 +78,7 @@ def _acquire_token(tenant_id: str, client_id: str, client_secret: str) -> str:
     req = urllib.request.Request(url, data=body, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310 — URL is the Microsoft Graph token endpoint (_GRAPH_TOKEN_URL constant), not user input
             data = _json.loads(resp.read().decode())
     except urllib.error.HTTPError as exc:
         body_text = exc.read().decode("utf-8", errors="replace")
@@ -121,7 +121,7 @@ def _graph_request(
     if data:
         req.add_header("Content-Type", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:  # nosec B310 — URL is composed from _GRAPH_BASE constant + validated API path, not user input
             raw = resp.read()
             return _json.loads(raw) if raw else {}
     except urllib.error.HTTPError as exc:
@@ -135,7 +135,7 @@ def _graph_request_bytes(method: str, path: str, token: str) -> bytes:
     req = urllib.request.Request(url, method=method)
     req.add_header("Authorization", f"Bearer {token}")
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:  # nosec B310 — URL is composed from _GRAPH_BASE constant + validated API path, not user input
             return resp.read()
     except urllib.error.HTTPError as exc:
         body_text = exc.read().decode("utf-8", errors="replace")
