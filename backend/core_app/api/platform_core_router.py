@@ -93,7 +93,10 @@ def _repo_root() -> Path:
 
 
 def _load_artifact_json(relative_path: str) -> dict[str, object] | None:
-    artifact_path = _repo_root() / relative_path
+    repo_root = _repo_root().resolve()
+    artifact_path = (repo_root / relative_path).resolve()
+    if not artifact_path.is_relative_to(repo_root):
+        return None
     if not artifact_path.exists() or not artifact_path.is_file():
         return None
     try:

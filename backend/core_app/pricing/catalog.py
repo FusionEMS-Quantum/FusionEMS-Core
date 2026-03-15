@@ -296,10 +296,10 @@ ADDONS: dict[str, Addon] = {
 
 
 def _fmt_cents(cents: int) -> str:
-    dollars = cents / 100
-    if dollars == int(dollars):
-        return f"${int(dollars)}"
-    return f"${dollars:.2f}"
+    dollars, remainder = divmod(cents, 100)
+    if remainder == 0:
+        return f"${dollars}"
+    return f"${dollars}.{remainder:02d}"
 
 
 def _billing_mode_for_tier(
@@ -332,33 +332,30 @@ def resolve_selected_modules(
     if plan_code not in PLANS:
         raise ValueError(f"Unknown plan_code: {plan_code!r}")
 
-    selected: dict[str, None] = {module: None for module in PLANS[plan_code].included_modules}
+    selected: set[str] = set(PLANS[plan_code].included_modules)
     addon_codes = list(addon_codes or [])
 
     for addon_code in addon_codes:
         addon = ADDONS.get(addon_code)
         if addon is None:
             raise ValueError(f"Unknown addon_code: {addon_code!r}")
-        for module in addon.included_modules:
-            selected[module] = None
+        selected.update(addon.included_modules)
 
     normalized_mode = _billing_mode_for_tier(billing_mode, billing_tier_code, addon_codes)
     if normalized_mode:
-        for module in BILLING_MODES[normalized_mode].included_modules:
-            selected[module] = None
+        selected.update(BILLING_MODES[normalized_mode].included_modules)
 
     normalized_operational_mode = (operational_mode or "").strip().upper()
     if normalized_operational_mode == "HEMS_TRANSPORT":
-        selected["hems"] = None
-        selected["aviation_missions"] = None
+        selected.update({"hems", "aviation_missions"})
 
     normalized_agency_type = (agency_type or "").strip().lower()
     if "fire" in normalized_agency_type:
-        selected["fire_module"] = None
+        selected.add("fire_module")
         if "NERIS_FIRE" in addon_codes:
-            selected["neris"] = None
+            selected.add("neris")
 
-    return list(selected.keys())
+    return sorted(selected)
 
 
 def calculate_quote(
