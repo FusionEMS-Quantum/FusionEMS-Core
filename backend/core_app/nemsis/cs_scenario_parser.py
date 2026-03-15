@@ -8,6 +8,8 @@ import zipfile
 from dataclasses import dataclass
 from typing import Any
 
+import defusedxml.ElementTree as _defused_et
+
 
 @dataclass
 class ScenarioSection:
@@ -123,7 +125,7 @@ class CandSParser:
 
     def parse_xml_scenario(self, content: bytes) -> CandSScenario | None:
         try:
-            root = ET.fromstring(content)
+            root = _defused_et.fromstring(content)
         except ET.ParseError:
             return None
 

@@ -346,7 +346,7 @@ def _load_domination_record(
             conn.cursor(row_factory=psycopg.rows.dict_row) as cur,
         ):
             cur.execute(
-                f"SELECT id, tenant_id, version, data FROM {table} "
+                f"SELECT id, tenant_id, version, data FROM {table} "  # nosec B608 — table is a caller-controlled literal ("documents"), never from user input
                 "WHERE tenant_id = %s AND id = %s AND deleted_at IS NULL LIMIT 1",
                 (tenant_id, record_id),
             )

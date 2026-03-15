@@ -33,7 +33,7 @@ _AUDIO_ID_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 def _prompt_dir() -> Path:
     settings = get_settings()
     configured = (settings.oss_tts_prompt_dir or "").strip()
-    directory = Path(configured or "/tmp/fusionems_voice_prompts")
+    directory = Path(configured or "/tmp/fusionems_voice_prompts")  # nosec B108 — configurable via settings.oss_tts_prompt_dir; /tmp fallback is intentional for ephemeral container environments
     directory.mkdir(parents=True, exist_ok=True)
     return directory
 

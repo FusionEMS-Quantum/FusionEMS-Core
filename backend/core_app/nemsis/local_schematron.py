@@ -9,6 +9,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
+import defusedxml.ElementTree as _defused_et
+
 from core_app.core.config import get_settings
 from core_app.nemsis.validator import ValidationIssue, _ui_info
 
@@ -98,7 +100,7 @@ class NEMSISLocalSchematronRunner:
 
     def _detect_dataset_type(self, xml_bytes: bytes) -> str:
         try:
-            root = ET.fromstring(xml_bytes)
+            root = _defused_et.fromstring(xml_bytes)
         except ET.ParseError as exc:
             raise LocalSchematronRunnerError(f"XML parsing failed before Schematron validation: {exc}") from exc
         local_name = self._local_name(root.tag)
@@ -246,7 +248,7 @@ class NEMSISLocalSchematronRunner:
 
     def _parse_svrl(self, svrl_xml: str) -> list[ValidationIssue]:
         try:
-            root = ET.fromstring(svrl_xml.encode("utf-8"))
+            root = _defused_et.fromstring(svrl_xml.encode("utf-8"))
         except ET.ParseError as exc:
             raise LocalSchematronRunnerError(f"SVRL parsing failed: {exc}") from exc
         issues: list[ValidationIssue] = []
