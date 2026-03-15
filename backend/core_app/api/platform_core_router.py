@@ -9,8 +9,10 @@ All endpoints use RBAC (require_role), tenant scoping, structured error response
 
 from __future__ import annotations
 
+import json
 import os
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -84,6 +86,20 @@ router = APIRouter(prefix="/api/v1/platform", tags=["Platform Core"])
 
 def _svc(db: Session) -> PlatformCoreService:
     return PlatformCoreService(db)
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _load_artifact_json(relative_path: str) -> dict[str, object] | None:
+    artifact_path = _repo_root() / relative_path
+    if not artifact_path.exists() or not artifact_path.is_file():
+        return None
+    try:
+        return json.loads(artifact_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1070,6 +1086,8 @@ def live_status(
     settings = get_settings()
     auth_snapshot, auth_blockers = _auth_health_snapshot()
     release = _release_metadata()
+    nemsis_report = _load_artifact_json("artifacts/nemsis-ci-report.json") or {}
+    neris_report = _load_artifact_json("artifacts/neris-ci-report.json") or {}
 
     db_ok = True
     try:
@@ -1107,10 +1125,13 @@ def live_status(
     for key, state in integration_state.items():
         if bool(state.get("required")) and not bool(state.get("configured")):
             missing = state.get("missing")
+            placeholder_fields = state.get("placeholder_fields")
             if isinstance(missing, list):
                 required_missing.extend([f"{key}:{item}" for item in missing])
-            else:
+            elif missing:
                 required_missing.append(key)
+            if isinstance(placeholder_fields, list):
+                required_missing.extend([f"{key}:{item}" for item in placeholder_fields])
 
     telnyx_central_number = "+1-888-365-0144"
     configured_number = str(settings.central_billing_phone_e164 or "").strip()
@@ -1186,9 +1207,16 @@ def live_status(
         "auth": auth_snapshot,
 
         "nemsis": {
-            "active_version": getattr(settings, "NEMSIS_ACTIVE_VERSION", "3.5.0"),
-            "schematron_reachable": bool(getattr(settings, "NEMSIS_SCHEMATRON_VALIDATOR_URL", "")),
-            "national_endpoint_ready": bool(getattr(settings, "NEMSIS_NATIONAL_ENDPOINT", "")),
+            "active_version": "3.5.0",
+            "local_schematron_configured": bool(str(settings.nemsis_local_schematron_dir or "").strip()),
+            "cta_endpoint_ready": bool(str(settings.nemsis_cta_endpoint or "").strip()),
+            "national_endpoint_ready": bool(str(settings.nemsis_national_endpoint or "").strip()),
+            "validation_status": nemsis_report.get("status", "not_available"),
+            "certification_status": nemsis_report.get("certification_status"),
+        },
+        "neris": {
+            "validation_status": neris_report.get("status", "not_available"),
+            "certification_status": neris_report.get("certification_status"),
         },
         "telnyx": {
             "number": telnyx_central_number,
@@ -1274,11 +1302,18 @@ def release_readiness_gate(
     ).to_dict())
 
     # Gate 5: Stripe configured
-    stripe_key = str(settings.stripe_secret_key or "")
+    stripe_state = settings.integration_state_table().get("stripe", {})
+    stripe_placeholder_fields = stripe_state.get("placeholder_fields", [])
     gates.append(_GateCheck(
         "stripe_configured",
-        bool(stripe_key),
-        "key_present" if stripe_key else "key_missing",
+        bool(stripe_state.get("configured")),
+        (
+            f"placeholder_fields={','.join(stripe_placeholder_fields)}"
+            if isinstance(stripe_placeholder_fields, list) and stripe_placeholder_fields
+            else "key_present"
+            if str(settings.stripe_secret_key or "")
+            else "key_missing"
+        ),
     ).to_dict())
 
     # Gate 6: Telnyx configured

@@ -119,24 +119,38 @@ def handle_stock_rebuild(record: dict) -> dict:
     conn = _db_conn()
     cur = conn.cursor()
 
-    filter_clause = "AND tenant_id = %s AND deleted_at IS NULL"
     params: list = [tenant_id]
     if location_id:
-        filter_clause += " AND data->>'location_id' = %s"
         params.append(location_id)
-
-    cur.execute(
-        f"""  # nosec B608 — filter_clause is constructed exclusively from parameterised placeholders (%s); no user-controlled literal SQL is interpolated
-        SELECT data->>'item_id' AS item_id,
-               data->>'location_id' AS loc_id,
-               SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -
-               SUM(CASE WHEN data->>'direction' = 'out' THEN (data->>'qty')::int ELSE 0 END) AS balance
-        FROM inventory_transaction_lines
-        WHERE {filter_clause.lstrip("AND ")}
-        GROUP BY data->>'item_id', data->>'location_id'
-        """,
-        params,
-    )
+    if location_id:
+        cur.execute(
+            """
+            SELECT data->>'item_id' AS item_id,
+                   data->>'location_id' AS loc_id,
+                   SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -
+                   SUM(CASE WHEN data->>'direction' = 'out' THEN (data->>'qty')::int ELSE 0 END) AS balance
+            FROM inventory_transaction_lines
+            WHERE tenant_id = %s
+              AND deleted_at IS NULL
+              AND data->>'location_id' = %s
+            GROUP BY data->>'item_id', data->>'location_id'
+            """,
+            params,
+        )
+    else:
+        cur.execute(
+            """
+            SELECT data->>'item_id' AS item_id,
+                   data->>'location_id' AS loc_id,
+                   SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -
+                   SUM(CASE WHEN data->>'direction' = 'out' THEN (data->>'qty')::int ELSE 0 END) AS balance
+            FROM inventory_transaction_lines
+            WHERE tenant_id = %s
+              AND deleted_at IS NULL
+            GROUP BY data->>'item_id', data->>'location_id'
+            """,
+            params,
+        )
     rows = cur.fetchall()
 
     rebuilt = 0

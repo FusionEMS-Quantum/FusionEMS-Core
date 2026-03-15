@@ -1,4 +1,5 @@
 import re
+import tempfile
 import uuid
 from functools import lru_cache
 
@@ -242,7 +243,7 @@ class Settings(BaseSettings):
     )
     # Open-source-first voice stack (XTTS primary, Piper fallback, faster-whisper STT)
     oss_tts_prompt_dir: str = Field(
-        default="/tmp/fusionems_voice_prompts",
+        default=f"{tempfile.gettempdir()}/fusionems_voice_prompts",
         description="Local directory for generated billing prompt WAV files",
     )
     oss_tts_engine_primary: str = Field(default="xtts", description="xtts|piper")
@@ -481,12 +482,24 @@ class Settings(BaseSettings):
 
         def _entry(*, required: bool, env_names: tuple[str, ...], values: tuple[str, ...]) -> dict[str, object]:
             missing = [env_name for env_name, value in zip(env_names, values, strict=False) if not value]
-            configured = len(missing) == 0
+            placeholder_fields = [
+                env_name
+                for env_name, value in zip(env_names, values, strict=False)
+                if value and self._is_credential_placeholder(str(value))
+            ]
+            configured = len(missing) == 0 and len(placeholder_fields) == 0
             return {
                 "required": required,
                 "configured": configured,
-                "status": "active" if configured else "credentials_missing",
+                "status": (
+                    "active"
+                    if configured
+                    else "placeholder_configured"
+                    if placeholder_fields
+                    else "credentials_missing"
+                ),
                 "missing": missing,
+                "placeholder_fields": placeholder_fields,
             }
 
         env = str(self.environment).lower()
@@ -659,15 +672,16 @@ class Settings(BaseSettings):
                 ("telnyx_api_key", "TELNYX_API_KEY"),
                 ("lob_api_key", "LOB_API_KEY"),
             ]
-            for attr, env_name in _CREDENTIAL_FIELDS:
-                value = getattr(self, attr, "")
-                if value and self._is_credential_placeholder(value):
-                    raise ValueError(
-                        f"SECURITY VIOLATION — {env_name} contains a placeholder/incomplete credential "
-                        f"in {env} environment. This will cause authentication failures (e.g., AADSTS900023 from Microsoft). "
-                        f"You must update this value in AWS Secrets Manager with the actual credential. "
-                        f"Pattern detected: {str(value)[:60]}"
-                    )
+            if env in ("production", "prod"):
+                for attr, env_name in _CREDENTIAL_FIELDS:
+                    value = getattr(self, attr, "")
+                    if value and self._is_credential_placeholder(value):
+                        raise ValueError(
+                            f"SECURITY VIOLATION — {env_name} contains a placeholder/incomplete credential "
+                            f"in {env} environment. This will cause authentication failures (e.g., AADSTS900023 from Microsoft). "
+                            f"You must update this value in AWS Secrets Manager with the actual credential. "
+                            f"Pattern detected: {str(value)[:60]}"
+                        )
 
             if self.jwt_secret_key in ("change-me", "changeme", "secret"):
                 raise ValueError(

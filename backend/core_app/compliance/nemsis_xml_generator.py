@@ -7,6 +7,8 @@ from typing import Any
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element, SubElement, tostring
 
+from defusedxml import ElementTree as DefusedET
+
 logger = logging.getLogger(__name__)
 
 NEMSIS_NS = "http://www.nemsis.org"
@@ -156,8 +158,7 @@ def _format_nemsis_time(val: Any) -> str:
 
 def validate_nemsis_xml(xml_bytes: bytes) -> dict[str, Any]:
     try:
-        ET.fromstring(xml_bytes)
-        root = ET.fromstring(xml_bytes)
+        root = DefusedET.fromstring(xml_bytes)
 
         def check_element(elem, path=""):
             if elem.text == NV_NOT_RECORDED and not elem.get("xsi:nil"):
@@ -167,5 +168,5 @@ def validate_nemsis_xml(xml_bytes: bytes) -> dict[str, Any]:
 
         check_element(root)
         return {"valid": True, "errors": [], "warnings": []}
-    except ET.ParseError as e:
+    except DefusedET.ParseError as e:
         return {"valid": False, "errors": [str(e)], "warnings": []}

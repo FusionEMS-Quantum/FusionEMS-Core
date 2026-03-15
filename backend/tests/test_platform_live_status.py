@@ -58,6 +58,7 @@ def _settings(**overrides: object) -> Settings:
     base: dict[str, object] = {
         "environment": "staging",
         "auth_mode": "fusion_jwt",
+        "session_cookie_secure": True,
         "database_url": "postgresql://user:pass@localhost:5432/fusionems",
         "redis_url": "redis://unit-test:6379/0",
         "graph_tenant_id": "00000000-0000-0000-0000-000000000010",
@@ -86,6 +87,14 @@ def _settings(**overrides: object) -> Settings:
         "nemsis_api_key": "nemsis_state_api_key",
         "nemsis_org_id": "WI-12345",
         "nemsis_export_queue_url": "https://sqs.us-east-1.amazonaws.com/123456789012/nemsis-export",
+        "lob_events_queue_url": "https://sqs.us-east-1.amazonaws.com/123456789012/lob-events",
+        "stripe_events_queue_url": "https://sqs.us-east-1.amazonaws.com/123456789012/stripe-events",
+        "neris_pack_import_queue_url": "https://sqs.us-east-1.amazonaws.com/123456789012/neris-pack-import",
+        "neris_pack_compile_queue_url": "https://sqs.us-east-1.amazonaws.com/123456789012/neris-pack-compile",
+        "statements_table": "statements",
+        "lob_events_table": "lob_events",
+        "stripe_events_table": "stripe_events",
+        "tenants_table": "tenants",
         "neris_api_key": "neris_api_key_value",
         "neris_export_queue_url": "https://sqs.us-east-1.amazonaws.com/123456789012/neris-export",
     }

@@ -10,15 +10,13 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import json
 import logging
 import secrets
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from typing import Any
 
+import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
@@ -152,20 +150,24 @@ def _oidc_cache_ttl() -> int:
 
 
 def _fetch_json(url: str) -> dict[str, Any]:
-    req = urllib.request.Request(url, method="GET")
-    req.add_header("Accept", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=_DEFAULT_OIDC_TIMEOUT_SECONDS) as resp:
-            return json.loads(resp.read().decode())  # type: ignore[no-any-return]
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")
-        logger.error("entra_oidc_http_error status=%d body=%.300s", exc.code, body)
+        response = requests.get(
+            url,
+            headers={"Accept": "application/json"},
+            timeout=_DEFAULT_OIDC_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        return response.json()  # type: ignore[no-any-return]
+    except requests.HTTPError as exc:
+        status_code = exc.response.status_code if exc.response is not None else 502
+        body = exc.response.text if exc.response is not None else ""
+        logger.error("entra_oidc_http_error status=%d body=%.300s", status_code, body)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Unable to retrieve Entra OpenID metadata",
         ) from exc
-    except urllib.error.URLError as exc:
-        logger.error("entra_oidc_network_error reason=%s", exc.reason)
+    except requests.RequestException as exc:
+        logger.error("entra_oidc_network_error reason=%s", str(exc))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Network error retrieving Entra OpenID metadata",
@@ -376,36 +378,33 @@ def microsoft_login(intent: str = Query(default="default")) -> RedirectResponse:
 
 def _exchange_code(code: str) -> dict[str, Any]:
     s = get_settings()
-    body = urllib.parse.urlencode(
-        {
-            "client_id": s.graph_client_id,
-            "client_secret": s.graph_client_secret,
-            "code": code,
-            "redirect_uri": s.microsoft_redirect_uri,
-            "grant_type": "authorization_code",
-            "scope": _SCOPES,
-        }
-    ).encode("utf-8")
-    req = urllib.request.Request(
-        _TOKEN_URL.format(tenant_id=s.graph_tenant_id),
-        data=body,
-        method="POST",
-    )
-    req.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read().decode())  # type: ignore[no-any-return]
-    except urllib.error.HTTPError as exc:
-        error_body = exc.read().decode("utf-8", errors="replace")
+        response = requests.post(
+            _TOKEN_URL.format(tenant_id=s.graph_tenant_id),
+            data={
+                "client_id": s.graph_client_id,
+                "client_secret": s.graph_client_secret,
+                "code": code,
+                "redirect_uri": s.microsoft_redirect_uri,
+                "grant_type": "authorization_code",
+                "scope": _SCOPES,
+            },
+            timeout=15,
+        )
+        response.raise_for_status()
+        return response.json()  # type: ignore[no-any-return]
+    except requests.HTTPError as exc:
+        error_body = exc.response.text if exc.response is not None else ""
+        status_code = exc.response.status_code if exc.response is not None else 502
         logger.error(
-            "entra_token_exchange_failed status=%d body=%.300s", exc.code, error_body
+            "entra_token_exchange_failed status=%d body=%.300s", status_code, error_body
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to exchange authorization code with Entra",
         ) from exc
-    except urllib.error.URLError as exc:
-        logger.error("entra_token_exchange_network_error reason=%s", exc.reason)
+    except requests.RequestException as exc:
+        logger.error("entra_token_exchange_network_error reason=%s", str(exc))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Network error contacting Entra token endpoint",
@@ -413,23 +412,26 @@ def _exchange_code(code: str) -> dict[str, Any]:
 
 
 def _fetch_userinfo(access_token: str) -> dict[str, Any]:
-    req = urllib.request.Request(_USERINFO_URL, method="GET")
-    req.add_header("Authorization", f"Bearer {access_token}")
-    req.add_header("Accept", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read().decode())  # type: ignore[no-any-return]
-    except urllib.error.HTTPError as exc:
-        error_body = exc.read().decode("utf-8", errors="replace")
+        response = requests.get(
+            _USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}", "Accept": "application/json"},
+            timeout=15,
+        )
+        response.raise_for_status()
+        return response.json()  # type: ignore[no-any-return]
+    except requests.HTTPError as exc:
+        error_body = exc.response.text if exc.response is not None else ""
+        status_code = exc.response.status_code if exc.response is not None else 502
         logger.error(
-            "entra_userinfo_failed status=%d body=%.300s", exc.code, error_body
+            "entra_userinfo_failed status=%d body=%.300s", status_code, error_body
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to fetch user profile from Microsoft Graph",
         ) from exc
-    except urllib.error.URLError as exc:
-        logger.error("entra_userinfo_network_error reason=%s", exc.reason)
+    except requests.RequestException as exc:
+        logger.error("entra_userinfo_network_error reason=%s", str(exc))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Network error contacting Microsoft Graph",

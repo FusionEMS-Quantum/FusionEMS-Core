@@ -13,10 +13,10 @@ import json as _json
 import logging
 import threading
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from typing import Any
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -67,24 +67,25 @@ _cache = _TokenCache()
 
 def _acquire_token(tenant_id: str, client_id: str, client_secret: str) -> str:
     url = _TOKEN_URL_TEMPLATE.format(tenant_id=tenant_id)
-    body = urllib.parse.urlencode(
-        {
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "scope": _SCOPE,
-        }
-    ).encode("utf-8")
-    req = urllib.request.Request(url, data=body, method="POST")
-    req.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = _json.loads(resp.read().decode())
-    except urllib.error.HTTPError as exc:
-        body_text = exc.read().decode("utf-8", errors="replace")
-        logger.error("graph_token_acquisition_failed status=%d body=%.200s", exc.code, body_text)
+        response = requests.post(
+            url,
+            data={
+                "grant_type": "client_credentials",
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "scope": _SCOPE,
+            },
+            timeout=15,
+        )
+        response.raise_for_status()
+        data = response.json()
+    except requests.HTTPError as exc:
+        body_text = exc.response.text if exc.response is not None else ""
+        status_code = exc.response.status_code if exc.response is not None else 502
+        logger.error("graph_token_acquisition_failed status=%d body=%.200s", status_code, body_text)
         raise GraphApiError(
-            exc.code if 400 <= exc.code <= 599 else 502, "graph_token_acquisition_failed"
+            status_code if 400 <= status_code <= 599 else 502, "graph_token_acquisition_failed"
         ) from exc
 
     access_token: str = data.get("access_token", "")
@@ -115,32 +116,47 @@ def _graph_request(
     data: bytes | None = None
     if body is not None:
         data = _json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(url, data=data, method=method)
-    req.add_header("Authorization", f"Bearer {token}")
-    req.add_header("Accept", "application/json")
-    if data:
-        req.add_header("Content-Type", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            raw = resp.read()
-            return _json.loads(raw) if raw else {}
-    except urllib.error.HTTPError as exc:
-        body_text = exc.read().decode("utf-8", errors="replace")
-        logger.warning("graph_api_error status=%d body=%.200s", exc.code, body_text)
-        raise GraphApiError(exc.code if 400 <= exc.code <= 599 else 502, "graph_api_error") from exc
+        response = requests.request(
+            method,
+            url,
+            data=data,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+                **({"Content-Type": "application/json"} if data else {}),
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json() if response.content else {}
+    except requests.HTTPError as exc:
+        body_text = exc.response.text if exc.response is not None else ""
+        status_code = exc.response.status_code if exc.response is not None else 502
+        logger.warning("graph_api_error status=%d body=%.200s", status_code, body_text)
+        raise GraphApiError(
+            status_code if 400 <= status_code <= 599 else 502, "graph_api_error"
+        ) from exc
 
 
 def _graph_request_bytes(method: str, path: str, token: str) -> bytes:
     url = f"{_GRAPH_BASE}{path}"
-    req = urllib.request.Request(url, method=method)
-    req.add_header("Authorization", f"Bearer {token}")
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return resp.read()
-    except urllib.error.HTTPError as exc:
-        body_text = exc.read().decode("utf-8", errors="replace")
-        logger.warning("graph_bytes_api_error status=%d body=%.200s", exc.code, body_text)
-        raise GraphApiError(exc.code if 400 <= exc.code <= 599 else 502, "graph_api_error") from exc
+        response = requests.request(
+            method,
+            url,
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=60,
+        )
+        response.raise_for_status()
+        return response.content
+    except requests.HTTPError as exc:
+        body_text = exc.response.text if exc.response is not None else ""
+        status_code = exc.response.status_code if exc.response is not None else 502
+        logger.warning("graph_bytes_api_error status=%d body=%.200s", status_code, body_text)
+        raise GraphApiError(
+            status_code if 400 <= status_code <= 599 else 502, "graph_api_error"
+        ) from exc
 
 
 class GraphClient:

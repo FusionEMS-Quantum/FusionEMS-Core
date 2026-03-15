@@ -7,8 +7,8 @@ import uuid
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from typing import Any
-from xml.dom import minidom
 
+from defusedxml import minidom
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 

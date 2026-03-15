@@ -3,7 +3,8 @@ from __future__ import annotations
 import csv
 import io
 from typing import Any
-from xml.etree import ElementTree as ET
+
+from defusedxml import ElementTree as ET
 
 VENDOR_SIGNATURES = {
     "imagetrend": [
