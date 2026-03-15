@@ -25,17 +25,17 @@ export function QuantumEmptyState({
   return (
     <div
       className={clsx(
-        'flex flex-col items-center justify-center py-16 px-6 text-center',
+        'quantum-panel-soft flex flex-col items-center justify-center px-6 py-14 text-center quantum-noise',
         className,
       )}
     >
       {icon && (
-        <div className="mb-4 text-zinc-500 opacity-60" aria-hidden="true">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center border border-[var(--color-border-default)] bg-[rgba(255,255,255,0.03)] text-[var(--color-brand-orange-bright)] chamfer-8" aria-hidden="true">
           {icon}
         </div>
       )}
       <h3
-        className="font-label text-h3 font-semibold text-zinc-100 mb-2"
+        className="font-label text-h3 font-semibold uppercase tracking-[0.08em] text-zinc-100 mb-2"
       >
         {title}
       </h3>
@@ -48,7 +48,7 @@ export function QuantumEmptyState({
       {!action && actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="px-4 py-2 bg-brand-orange text-white text-label  chamfer-4 hover:opacity-90 transition-opacity"
+          className="quantum-btn-primary px-4"
         >
           {actionLabel}
         </button>

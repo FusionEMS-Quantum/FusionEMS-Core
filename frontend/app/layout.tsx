@@ -3,22 +3,28 @@ import { ReactNode } from 'react';
 import { AuthProvider } from '@/components/AuthProvider';
 import { WSBootstrap } from '@/components/WSBootstrap';
 import { Providers } from './providers';
+import QuantumCanvasBackdrop from '@/components/ambient/QuantumCanvasBackdrop';
 
 export const metadata = {
   title: 'FusionEMS Quantum',
   description: 'Enterprise EMS Revenue + Operations OS',
+  icons: {
+    icon: '/brand/favicon.svg',
+    shortcut: '/brand/favicon.svg',
+    apple: '/brand/favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className="antialiased">
         {/* Global ambient background — fixed, sits behind all page content */}
-        <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
-          <div className="absolute left-[-12%] top-[-10%] h-[500px] w-[500px] rounded-full bg-orange-500/[0.06] blur-3xl" />
-          <div className="absolute right-[-10%] top-[10%] h-[450px] w-[450px] rounded-full bg-amber-400/[0.06] blur-3xl" />
-          <div className="absolute bottom-[-12%] left-[30%] h-[520px] w-[520px] rounded-full bg-orange-600/[0.06] blur-3xl" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(circle_at_center,black,transparent_80%)]" />
+        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden bg-[linear-gradient(180deg,#040507_0%,#0a0c0e_38%,#050608_100%)]" aria-hidden="true">
+          <QuantumCanvasBackdrop mode="global" intensity={1} />
+          <div className="absolute inset-x-0 top-0 h-[42vh] bg-[radial-gradient(circle_at_top,rgba(255,124,37,0.16),transparent_62%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-[28vh] bg-[radial-gradient(circle_at_bottom_left,rgba(255,96,32,0.12),transparent_58%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,11,0.05),rgba(5,7,11,0.3))]" />
         </div>
         <AuthProvider>
           <Providers>

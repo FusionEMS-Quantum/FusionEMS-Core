@@ -6,14 +6,14 @@ export default function ContactPage() {
   return (
     <MarketingShell>
       <MarketingPageTemplate
-        eyebrow="Founder-Led Briefing"
+        eyebrow="Executive Platform Briefing"
         title="Request an Executive Platform Session"
         description="For agencies, regional systems, and implementation partners evaluating FusionEMS Quantum with strict reliability, security, and deployment requirements."
         stats={[
           { label: 'Audience', value: 'Executive + Ops', detail: 'Finance, clinical, and command stakeholders' },
           { label: 'Focus', value: 'Deployment-grade', detail: 'No demo-grade assumptions' },
           { label: 'Primary Outcome', value: 'Action plan', detail: 'Route architecture + rollout sequence' },
-          { label: 'Coordination', value: 'Founder direct', detail: 'Technical and strategic alignment' },
+          { label: 'Coordination', value: 'Architecture team', detail: 'Technical and strategic alignment' },
         ]}
         features={[
           { title: 'Architecture and Risk Review', description: 'Walk through current-state tool fragmentation, risk points, and proposed target platform state.' },

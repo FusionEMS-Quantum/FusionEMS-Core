@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import os
+import urllib.parse
 import urllib.request
 import uuid
 import zipfile
@@ -70,6 +71,18 @@ def process_pack_import(body: dict, correlation_id: str) -> dict:
 
     bucket = os.environ.get("S3_BUCKET_DOCS", "")
     zip_url = f"https://github.com/{repo}/archive/{ref}.zip"
+
+    # Validate the URL resolves to an https scheme before opening to guard
+    # against file:// or custom-scheme injection via environment variables.
+    _parsed_url = urllib.parse.urlparse(zip_url)
+    if _parsed_url.scheme.lower() != "https":
+        logger.error(
+            "neris_pack_import_rejected_non_https_url pack_id=%s correlation_id=%s",
+            pack_id,
+            correlation_id,
+        )
+        _update_pack_status(pack_id, tenant_id, "import_failed", correlation_id)
+        return {"error": "non_https_url_rejected", "pack_id": pack_id}
 
     try:
         req = urllib.request.Request(zip_url, headers={"User-Agent": "FusionEMS-NERIS/1.0"})

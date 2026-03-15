@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import re
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as _stdlib_et
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -50,7 +50,7 @@ def _ui_info(element_id: str) -> tuple[str, str]:
     return entry.get("section", "Unknown"), entry.get("label", element_id)
 
 
-def _find_text(root: ET.Element, local_name: str) -> str | None:
+def _find_text(root: _ET_Element, local_name: str) -> str | None:
     for elem in root.iter():
         tag = elem.tag
         if "}" in tag:
@@ -60,7 +60,7 @@ def _find_text(root: ET.Element, local_name: str) -> str | None:
     return None
 
 
-def _find_all(root: ET.Element, local_name: str) -> list[ET.Element]:
+def _find_all(root: _ET_Element, local_name: str) -> list[_ET_Element]:
     result = []
     for elem in root.iter():
         tag = elem.tag
@@ -152,7 +152,7 @@ class NEMSISValidator:
     def validate_xml_bytes(self, xml_bytes: bytes, state_code: str = "WI") -> ValidationResult:
         all_issues: list[ValidationIssue] = []
         stage_results: dict[str, Any] = {}
-        root: ET.Element | None = None
+        root: _ET_Element | None = None
 
         xsd_issues = self._stage_xsd(xml_bytes)
         all_issues.extend(xsd_issues)
@@ -277,7 +277,7 @@ class NEMSISValidator:
 
         return issues
 
-    def _stage_national_schematron(self, root: ET.Element) -> list[ValidationIssue]:
+    def _stage_national_schematron(self, root: _ET_Element) -> list[ValidationIssue]:
         issues: list[ValidationIssue] = []
 
         checks = [
@@ -381,7 +381,7 @@ class NEMSISValidator:
 
         return issues
 
-    def _stage_wi_schematron(self, root: ET.Element) -> list[ValidationIssue]:
+    def _stage_wi_schematron(self, root: _ET_Element) -> list[ValidationIssue]:
         issues: list[ValidationIssue] = []
 
         wi_checks = [
@@ -455,7 +455,7 @@ class NEMSISValidator:
 
         return issues
 
-    def _stage_wi_state(self, root: ET.Element) -> list[ValidationIssue]:
+    def _stage_wi_state(self, root: _ET_Element) -> list[ValidationIssue]:
         issues: list[ValidationIssue] = []
 
         gender_val = _find_text(root, "ePatient.13")

@@ -43,7 +43,7 @@ export default function PublicRoiPage() {
         actions={[
           { label: 'Open ROI Calculator', href: '/roi-funnel', primary: true },
           { label: 'Request Early Access', href: '/early-access' },
-          { label: 'Talk to Founder', href: '/contact' },
+          { label: 'Request Executive Briefing', href: '/contact' },
         ]}
       >
         <div className="border border-border-default bg-[var(--color-bg-panel)] chamfer-8 p-5">

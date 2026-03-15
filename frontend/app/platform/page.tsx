@@ -9,7 +9,7 @@ const modules = [
   ['Scheduling Command', '/scheduling'],
   ['Communications Command', '/communications'],
   ['Compliance Command', '/compliance'],
-  ['Founder Command', '/founder-command'],
+  ['Executive Command', '/founder-command'],
 ];
 
 export default function PlatformPage() {

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowUpRight, Shield, Wallet } from "lucide-react";
+import QuantumLogo from '@/components/branding/QuantumLogo';
 
 export type SystemStatus =
   | "ACTIVE"
@@ -64,7 +65,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: "/billing", label: "Billing" },
     { href: "/compliance", label: "Compliance" },
     { href: "/systems", label: "Systems" },
-    { href: "/founder-command", label: "Founder" },
+    { href: "/founder-command", label: "Executive" },
     { href: "/nemsis-manager", label: "NEMSIS" },
   ];
 
@@ -74,11 +75,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: "/compliance", label: "Compliance Command" },
     { href: "/system-health", label: "System Health" },
     { href: "/transportlink/dashboard", label: "TransportLink" },
-    { href: "/founder", label: "Founder Workspace" },
+    { href: "/founder", label: "Executive Workspace" },
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] quantum-page-frame">
       <div
         className="fixed inset-0 pointer-events-none opacity-50"
         style={{
@@ -91,13 +92,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="relative z-40 border-b border-white/[0.06] bg-[var(--color-bg-base)]">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 bg-[var(--color-success)] shadow-[0_0_5px_#4E9F6E]" />
-            <span>Platform Operational</span>
+            <span className="h-1.5 w-1.5 bg-[var(--color-brand-orange)] shadow-[0_0_7px_rgba(255,122,47,0.45)]" />
+            <span>Telemetry Routed To Command</span>
           </div>
           <div className="hidden md:flex items-center gap-5">
-            <span>Stripe Enabled</span>
-            <span>NEMSIS Workflow Ready</span>
-            <span>Observability Active</span>
+            <span>OIDC Access</span>
+            <span>Live Status Truth-Sourced</span>
+            <span>Observability First</span>
           </div>
         </div>
       </div>
@@ -105,15 +106,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[var(--color-surface-primary)]/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 border border-white/[0.10] bg-[var(--color-surface-secondary)] flex items-center justify-center font-black tracking-wide shadow-[0_0_16px_rgba(243,106,33,0.22)]">
-              FQ
-            </div>
+            <QuantumLogo size="sm" />
             <div>
               <div className="text-sm font-black leading-4 uppercase tracking-[0.16em]">FusionEMS Quantum</div>
-              <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-[0.18em]">Production Command Surface</div>
+              <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-[0.18em]">Platform Command Surface</div>
             </div>
             <span className="hidden lg:inline-flex items-center border border-white/[0.10] px-2 py-1 text-[10px] font-bold tracking-[0.14em] uppercase text-[var(--color-brand-orange)]">
-              PRODUCTION
+              COMMAND
             </span>
           </div>
 
@@ -136,7 +135,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               href="/founder-command"
               className="inline-flex items-center gap-2 bg-[var(--color-brand-orange)] px-4 py-2 text-xs font-black tracking-[0.14em] uppercase text-black hover:bg-[var(--color-orange-hover)] transition-colors"
             >
-              Founder Command
+              Executive Command
             </Link>
           </div>
         </div>
@@ -144,7 +143,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <main className="relative z-10 mx-auto max-w-[1600px] px-5 py-8 md:py-10 lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
         <aside className="hidden lg:block">
-          <div className="sticky top-[96px] border border-white/[0.06] bg-[var(--color-surface-primary)] p-3">
+          <div className="sticky top-[96px] quantum-panel-soft p-3">
             <div className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Command Rail</div>
             <div className="flex flex-col gap-1">
               {railNav.map((item) => (
@@ -170,7 +169,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div>Deterministic workflows • auditable actions • integrated agency operations</div>
           </div>
           <Link href="/founder-command" className="inline-flex items-center gap-2 text-[rgba(255,255,255,0.78)] hover:text-white transition-colors uppercase tracking-[0.14em]">
-            Founder Command
+            Executive Command
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>

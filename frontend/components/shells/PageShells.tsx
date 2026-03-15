@@ -49,14 +49,16 @@ export function ModuleDashboardShell({
   className,
 }: ModuleDashboardShellProps) {
   return (
-    <div className={cn('flex flex-col h-full min-h-0', className)}>
+    <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       {/* Banner slot */}
       {banner && <div className="flex-shrink-0 px-4 pt-3 xl:px-6">{banner}</div>}
 
       {/* Header */}
       <header className="flex-shrink-0 px-4 pt-4 pb-2 xl:px-6">
+        <div className="quantum-panel-strong px-5 py-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
+            <div className="quantum-command-band mb-3">Command Surface</div>
             <div className="flex items-center gap-3">
               {accentColor && (
                 <div
@@ -68,7 +70,7 @@ export function ModuleDashboardShell({
               <h1 className="text-h1 font-sans font-bold text-zinc-100 truncate">{title}</h1>
             </div>
             {subtitle && (
-              <p className="text-body text-zinc-500 mt-1 ml-4">{subtitle}</p>
+              <p className="text-body text-zinc-500 mt-2 ml-4 max-w-3xl">{subtitle}</p>
             )}
           </div>
           {headerActions && (
@@ -76,6 +78,7 @@ export function ModuleDashboardShell({
               {headerActions}
             </div>
           )}
+        </div>
         </div>
       </header>
 
@@ -96,13 +99,13 @@ export function ModuleDashboardShell({
       {/* Main content area */}
       <div className="flex-1 min-h-0 flex gap-4 px-4 py-3 xl:px-6 overflow-hidden">
         {/* Primary content */}
-        <main className={cn('flex-1 min-w-0 overflow-y-auto', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
+        <main className={cn('flex-1 min-w-0 overflow-y-auto quantum-scroll-region', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
           {children}
         </main>
 
         {/* Side panel */}
         {sidePanel && (
-          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto space-y-3">
+          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto quantum-scroll-region space-y-4">
             {sidePanel}
           </aside>
         )}
@@ -135,7 +138,7 @@ export function RecordDetailShell({
   className,
 }: RecordDetailShellProps) {
   return (
-    <div className={cn('flex flex-col h-full min-h-0', className)}>
+    <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       {banner && <div className="flex-shrink-0 px-4 pt-3 xl:px-6">{banner}</div>}
 
       <div className="flex-shrink-0 px-4 pt-4 xl:px-6">
@@ -143,12 +146,12 @@ export function RecordDetailShell({
       </div>
 
       <div className="flex-1 min-h-0 flex gap-4 px-4 py-3 xl:px-6 overflow-hidden">
-        <main className={cn('flex-1 min-w-0 overflow-y-auto', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
+        <main className={cn('flex-1 min-w-0 overflow-y-auto quantum-scroll-region', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
           {children}
         </main>
 
         {sidePanel && (
-          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto space-y-3">
+          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto quantum-scroll-region space-y-4">
             {sidePanel}
           </aside>
         )}
@@ -184,7 +187,7 @@ export function ReviewQueueShell({
   className,
 }: ReviewQueueShellProps) {
   return (
-    <div className={cn('flex flex-col h-full min-h-0', className)}>
+    <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       {banner && <div className="flex-shrink-0 px-4 pt-3 xl:px-6">{banner}</div>}
 
       <header className="flex-shrink-0 px-4 pt-4 pb-3 xl:px-6 border-b border-[var(--color-border-default)]">
@@ -244,7 +247,7 @@ export function SettingsShell({
   className,
 }: SettingsShellProps) {
   return (
-    <div className={cn('flex flex-col h-full min-h-0', className)}>
+    <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       <header className="flex-shrink-0 px-4 pt-4 pb-3 xl:px-6 border-b border-[var(--color-border-default)]">
         <h1 className="text-h1 font-sans font-bold text-zinc-100">{title}</h1>
       </header>

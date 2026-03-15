@@ -19,7 +19,12 @@ from sqlalchemy.orm import Session
 from core_app.api.dependencies import db_session_dependency
 from core_app.core.config import get_settings
 from core_app.onboarding.legal_service import LegalService
-from core_app.pricing.catalog import PLANS, calculate_quote
+from core_app.pricing.catalog import (
+    PLANS,
+    calculate_quote,
+    lookup_key_to_cents,
+    resolve_selected_modules,
+)
 from core_app.roi.engine import compute_roi, hash_outputs
 from core_app.services.event_publisher import get_event_publisher
 
@@ -307,6 +312,19 @@ async def onboarding_apply(
             tier_code=tier_code,
             billing_tier_code=billing_tier_code,
             addon_codes=addon_codes,
+            billing_mode=billing_mode,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    try:
+        selected_modules = resolve_selected_modules(
+            plan_code=plan_code,
+            addon_codes=addon_codes,
+            billing_mode=billing_mode,
+            billing_tier_code=billing_tier_code,
+            operational_mode=operational_mode,
+            agency_type=agency_type,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -353,7 +371,7 @@ async def onboarding_apply(
                 "tier_code": tier_code,
                 "billing_tier_code": billing_tier_code,
                 "addon_codes": json.dumps(addon_codes),
-                "mods": json.dumps(addon_codes),
+                "mods": json.dumps(selected_modules),
                 "first_name": first_name,
                 "last_name": last_name,
                 "phone": phone,
@@ -543,7 +561,7 @@ async def checkout_start(
             text(
                 "SELECT id, agency_name, annual_call_volume, selected_modules, "
                 "plan_code, tier_code, billing_tier_code, addon_codes, "
-                "legal_status, status "
+                "billing_mode, legal_status, status "
                 "FROM onboarding_applications WHERE id = :app_id"
             ),
             {"app_id": application_id},
@@ -579,7 +597,8 @@ async def checkout_start(
         plan_code = app_row["plan_code"] or ""
         tier_code = app_row["tier_code"] or None
         billing_tier_code = app_row["billing_tier_code"] or None
-        addon_codes = list(app_row["addon_codes"] or app_row["selected_modules"] or [])
+        billing_mode = _normalize_billing_mode(str(app_row.get("billing_mode") or "FUSION_RCM"))
+        addon_codes = list(app_row["addon_codes"] or [])
 
         if not plan_code or plan_code not in PLANS:
             raise HTTPException(
@@ -593,6 +612,7 @@ async def checkout_start(
                 tier_code=tier_code,
                 billing_tier_code=billing_tier_code,
                 addon_codes=addon_codes,
+                billing_mode=billing_mode,
             )
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -623,15 +643,7 @@ async def checkout_start(
                     entry["quantity"] = item.get("quantity", 1)
                 line_items.append(entry)
             else:
-                from core_app.pricing.catalog import (
-                    ADDONS,
-                    BILLING_TIERS,
-                    SCHEDULING_TIERS,
-                )
-
-                unit_amount = _lookup_key_to_cents(
-                    lk, SCHEDULING_TIERS, BILLING_TIERS, ADDONS
-                )
+                unit_amount = lookup_key_to_cents(lk)
                 entry = {
                     "price_data": {
                         "currency": "usd",
@@ -683,26 +695,6 @@ async def checkout_start(
             exc,
         )
         raise HTTPException(status_code=500, detail=f"Stripe error: {str(exc)}") from exc
-
-
-def _lookup_key_to_cents(
-    lookup_key: str,
-    scheduling_tiers: Any,
-    billing_tiers: Any,
-    addons: Any,
-) -> int:
-    for t in scheduling_tiers.values():
-        if t.lookup_key == lookup_key:
-            return t.monthly_cents
-    for bt in billing_tiers.values():
-        if bt.base_lookup_key == lookup_key:
-            return bt.base_monthly_cents
-        if bt.per_claim_lookup_key == lookup_key:
-            return bt.per_claim_cents
-    for a in addons.values():
-        if a.lookup_key == lookup_key:
-            return a.monthly_cents
-    return 0
 
 
 @router.get("/status/{application_id}")

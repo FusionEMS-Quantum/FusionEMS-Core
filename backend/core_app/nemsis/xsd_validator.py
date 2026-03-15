@@ -97,7 +97,9 @@ class NEMSISXSDValidator:
     def _structural_validate(
         self, xml_content: bytes, dataset_type: str, result: XSDValidationResult
     ) -> XSDValidationResult:
-        import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as _stdlib_et
+
+        import defusedxml.ElementTree as ET
 
         import defusedxml.ElementTree as _defused_et
 

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   getPublicPricingCatalog,
   lookupPublicOnboardingNpi,
@@ -18,10 +18,12 @@ interface SchedulingTier {
 interface BillingTier {
   code: string;
   label: string;
+  mode: string;
   base_monthly_cents: number;
   per_claim_cents: number;
   base_display: string;
   per_claim_display: string;
+  compare_display?: string;
 }
 
 interface PlanDef {
@@ -36,10 +38,17 @@ interface PlanDef {
 interface AddonDef {
   code: string;
   label: string;
+  desc: string;
   monthly_cents: number;
   gov_only: boolean;
   uses_billing_tier: boolean;
   price_display: string;
+}
+
+interface BillingModeDef {
+  code: string;
+  label: string;
+  summary: string;
 }
 
 interface Catalog {
@@ -47,6 +56,7 @@ interface Catalog {
   scheduling_tiers: SchedulingTier[];
   billing_tiers: BillingTier[];
   addons: AddonDef[];
+  billing_modes: BillingModeDef[];
 }
 
 const COLLECTIONS_MODES = [
@@ -76,6 +86,8 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prefillApplied = useRef(false);
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -93,6 +105,10 @@ export default function SignupPage() {
   const [statementChannels, setStatementChannels] = useState<string[]>(['mail']);
   const [collectorVendor, setCollectorVendor] = useState('');
   const [placementMethod, setPlacementMethod] = useState('portal_upload');
+  const [statementVendor, setStatementVendor] = useState('LOB');
+  const [clearinghouseVendor, setClearinghouseVendor] = useState('OFFICE_ALLY');
+  const [activationTarget, setActivationTarget] = useState('IMMEDIATE_IMPORT');
+  const [offboardingMode, setOffboardingMode] = useState('SELF_SERVICE_EXPORT');
 
   const [agencyName, setAgencyName] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -129,6 +145,68 @@ export default function SignupPage() {
 
   useEffect(() => { fetchCatalog(); }, [fetchCatalog]);
 
+  useEffect(() => {
+    if (!catalog || prefillApplied.current) {
+      return;
+    }
+
+    const planParam = searchParams.get('plan');
+    const tierParam = searchParams.get('tier');
+    const billingTierParam = searchParams.get('billing_tier') ?? searchParams.get('billingTier');
+    const billingModeParam = searchParams.get('billing_mode') ?? searchParams.get('billingMode');
+    const stepParam = searchParams.get('step');
+    const collectionsModeParam = searchParams.get('collections_mode');
+    const addonsParam = [
+      ...searchParams.getAll('addon'),
+      ...(searchParams.get('addons')?.split(',') ?? []),
+    ]
+      .map(value => value.trim())
+      .filter(Boolean);
+
+    if (planParam && catalog.plans.some(item => item.code === planParam)) {
+      setPlan(planParam);
+    }
+    if (tierParam && catalog.scheduling_tiers.some(item => item.code === tierParam)) {
+      setTier(tierParam);
+    }
+    if (billingModeParam && BILLING_MODES.some(item => item.code === billingModeParam)) {
+      setBillingMode(billingModeParam);
+    }
+    if (billingTierParam && catalog.billing_tiers.some(item => item.code === billingTierParam)) {
+      setBillingTier(billingTierParam);
+    }
+    if (collectionsModeParam && COLLECTIONS_MODES.some(item => item.code === collectionsModeParam)) {
+      setCollectionsMode(collectionsModeParam);
+    }
+    if (addonsParam.length > 0) {
+      const validAddonCodes = new Set(catalog.addons.map(item => item.code));
+      setAddons(Array.from(new Set(addonsParam.filter(code => validAddonCodes.has(code)))));
+    }
+    if (stepParam) {
+      const parsedStep = Number(stepParam);
+      if (parsedStep >= 1 && parsedStep <= 5) {
+        setStep(parsedStep as Step);
+      }
+    }
+
+    prefillApplied.current = true;
+  }, [catalog, searchParams]);
+
+  const billingModeCatalog = catalog?.billing_modes ?? [];
+  const availableBillingTiers = useMemo(
+    () => (catalog?.billing_tiers ?? []).filter(item => item.mode === billingMode),
+    [catalog?.billing_tiers, billingMode],
+  );
+
+  useEffect(() => {
+    if (!billingTier) {
+      return;
+    }
+    if (!availableBillingTiers.some(item => item.code === billingTier)) {
+      setBillingTier('');
+    }
+  }, [availableBillingTiers, billingTier]);
+
   const toggleAddon = (code: string) => {
     setAddons(prev => prev.includes(code) ? prev.filter(a => a !== code) : [...prev, code]);
   };
@@ -139,6 +217,7 @@ export default function SignupPage() {
 
   const selectedPlan = catalog?.plans.find(p => p.code === plan);
   const canProceed1 = !!plan && (plan !== 'SCHEDULING_ONLY' || !!tier);
+  const canProceed2 = !addons.includes('BILLING_AUTOMATION') || !!billingTier;
   const hemsMode = operationalMode === 'HEMS_TRANSPORT';
   const canProceed4 =
     agencyName && firstName && lastName && email && agencyType && state &&
@@ -179,6 +258,12 @@ export default function SignupPage() {
         policy_flags: {
           collections_mode: collectionsMode,
           statement_channels: statementChannels,
+          statement_vendor: statementVendor,
+          clearinghouse_vendor: clearinghouseVendor,
+          office_ally_enrollment_requested: clearinghouseVendor === 'OFFICE_ALLY',
+          activation_target: activationTarget,
+          data_portability_mode: offboardingMode,
+          agency_choice_enabled: true,
         },
         plan_code: plan,
         tier_code: tier || null,
@@ -193,6 +278,8 @@ export default function SignupPage() {
       const data = await submitPublicOnboardingApplication<{ application_id?: string; id?: string }>(payload);
       localStorage.setItem('qs_app_id', data.application_id || data.id || '');
       localStorage.setItem('qs_agency_name', agencyName);
+      localStorage.setItem('qs_signer_name', `${firstName} ${lastName}`.trim());
+      localStorage.setItem('qs_signer_email', email);
       router.push('/signup/legal');
     } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Failed to submit onboarding application'); }
     finally { setLoading(false); }
@@ -243,7 +330,22 @@ export default function SignupPage() {
         {step === 1 && (
           <div>
             <h2 className="text-xl font-bold mb-1">Choose your plan</h2>
-            <p className="text-sm text-[var(--color-text-muted)] mb-6">One plan. Add what you need.</p>
+            <p className="text-sm text-[var(--color-text-muted)] mb-6">Start with your billing lane, then layer in the modules your agency wants to run.</p>
+            <div className="mb-6">
+              <div className={labelCls}>Billing operating model</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(billingModeCatalog.length ? billingModeCatalog : BILLING_MODES).map(mode => (
+                  <button
+                    key={mode.code}
+                    onClick={() => setBillingMode(mode.code)}
+                    className={`text-left p-4 chamfer-4 border transition-all ${billingMode === mode.code ? 'border-[var(--q-orange)] bg-[rgba(255,106,0,0.12)]' : 'border-border-DEFAULT hover:border-[rgba(255,255,255,0.2)]'}`}
+                  >
+                    <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--q-orange)] mb-2">{mode.label}</div>
+                    <div className="text-sm text-[var(--color-text-muted)] leading-relaxed">{'summary' in mode ? mode.summary : ''}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               {catalog.plans.map(p => (
                 <button key={p.code} onClick={() => { setPlan(p.code); setTier(''); }}
@@ -277,6 +379,12 @@ export default function SignupPage() {
                 <span className="text-sm">We are a government agency (municipal/county/tribal)</span>
               </label>
             </div>
+            <div className="mb-6 p-4 border border-border-DEFAULT chamfer-4 bg-[rgba(255,255,255,0.02)]">
+              <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--q-orange)] mb-2">Agency choice stays intact</div>
+              <div className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+                Choose FusionEMS AI billing or keep your current billing team/vendor. We support Office Ally onboarding, Lob-driven patient statements, real-time analytics, and self-service data export if you ever leave.
+              </div>
+            </div>
             <button disabled={!canProceed1} onClick={() => setStep(2)}
               className="w-full py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 disabled:opacity-40 hover:bg-[#FF6A1A] transition-colors">
               Continue to Add-ons
@@ -305,12 +413,20 @@ export default function SignupPage() {
             {addons.includes('BILLING_AUTOMATION') && (
               <div className="mb-6 p-4 border border-border-DEFAULT chamfer-4">
                 <div className={labelCls}>Billing Automation tier</div>
+                <div className="text-xs text-[var(--color-text-muted)] mb-3">
+                  {billingMode === 'FUSION_RCM'
+                    ? 'Fixed-fee AI billing with statements, payment orchestration, and revenue analytics.'
+                    : 'Lower-cost export mode for agencies keeping their internal or third-party biller.'}
+                </div>
                 <div className="space-y-2">
-                  {catalog.billing_tiers.map(t => (
+                  {availableBillingTiers.map(t => (
                     <label key={t.code} className={`flex items-center justify-between p-3 chamfer-4 border cursor-pointer ${billingTier === t.code ? 'border-[var(--q-orange)]' : 'border-border-subtle'}`}>
                       <div className="flex items-center gap-2">
                         <input type="radio" checked={billingTier === t.code} onChange={() => setBillingTier(t.code)} className="accent-orange" />
-                        <span className="text-xs">{t.label}</span>
+                        <div>
+                          <div className="text-xs">{t.label}</div>
+                          {t.compare_display && <div className="text-[10px] text-[var(--color-text-muted)] mt-1">{t.compare_display}</div>}
+                        </div>
                       </div>
                       <span className="text-xs text-[var(--q-orange)] font-bold">{t.base_display} {t.per_claim_display}</span>
                     </label>
@@ -320,7 +436,7 @@ export default function SignupPage() {
             )}
             <div className="flex gap-3">
               <button onClick={() => setStep(1)} className="flex-1 py-3 border border-border-strong text-sm font-bold chamfer-4 hover:bg-[rgba(255,255,255,0.05)]">Back</button>
-              <button onClick={() => setStep(3)} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A]">Continue</button>
+              <button disabled={!canProceed2} onClick={() => setStep(3)} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A] disabled:opacity-40">Continue</button>
             </div>
           </div>
         )}
@@ -368,6 +484,47 @@ export default function SignupPage() {
                 )}
               </div>
             )}
+            <div className="mb-6 p-4 border border-border-DEFAULT chamfer-4 space-y-4 bg-[rgba(255,255,255,0.02)]">
+              <div>
+                <div className={labelCls}>Revenue activation</div>
+                <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                  Configure patient statements, clearinghouse access, billing start timing, and portable exit controls up front.
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Statement program</label>
+                  <select value={statementVendor} onChange={e => setStatementVendor(e.target.value)} className={selectCls}>
+                    <option value="LOB">FusionEMS + Lob print/mail</option>
+                    <option value="INTERNAL_VENDOR">Keep existing print/mail vendor</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Clearinghouse / enrollment</label>
+                  <select value={clearinghouseVendor} onChange={e => setClearinghouseVendor(e.target.value)} className={selectCls}>
+                    <option value="OFFICE_ALLY">Office Ally + NPI verification</option>
+                    <option value="AGENCY_VENDOR">Keep existing clearinghouse</option>
+                    <option value="NOT_NEEDED">Not needed yet</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Activation target</label>
+                  <select value={activationTarget} onChange={e => setActivationTarget(e.target.value)} className={selectCls}>
+                    <option value="IMMEDIATE_IMPORT">Start billing on imported claims immediately</option>
+                    <option value="POST_VALIDATION">Wait for validation signoff</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Offboarding / portability</label>
+                  <select value={offboardingMode} onChange={e => setOffboardingMode(e.target.value)} className={selectCls}>
+                    <option value="SELF_SERVICE_EXPORT">Self-service export + handoff package</option>
+                    <option value="ASSISTED_EXPORT">Assisted export review</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <div className="flex gap-3">
               <button onClick={() => setStep(2)} className="flex-1 py-3 border border-border-strong text-sm font-bold chamfer-4 hover:bg-[rgba(255,255,255,0.05)]">Back</button>
               <button onClick={() => setStep(4)} className="flex-1 py-3 bg-[var(--q-orange)] text-black text-sm font-bold chamfer-4 hover:bg-[#FF6A1A]">Continue</button>
@@ -499,6 +656,18 @@ export default function SignupPage() {
                   <span className="font-semibold">{row.value}</span>
                 </div>
               ))}
+              <div className="flex justify-between py-2 border-b border-border-subtle text-sm">
+                <span className="text-[var(--color-text-secondary)]">Statement Program</span>
+                <span className="font-semibold">{statementVendor === 'LOB' ? 'FusionEMS + Lob' : 'Existing vendor'}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border-subtle text-sm">
+                <span className="text-[var(--color-text-secondary)]">Clearinghouse</span>
+                <span className="font-semibold">{clearinghouseVendor === 'OFFICE_ALLY' ? 'Office Ally + NPI verification' : clearinghouseVendor === 'AGENCY_VENDOR' ? 'Existing vendor' : 'Not needed yet'}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border-subtle text-sm">
+                <span className="text-[var(--color-text-secondary)]">Portability</span>
+                <span className="font-semibold">{offboardingMode === 'SELF_SERVICE_EXPORT' ? 'Self-service export' : 'Assisted export review'}</span>
+              </div>
             </div>
             {error && <div className="mb-4 p-3 bg-[rgba(229,57,53,0.12)] border border-red/25 text-red text-sm chamfer-4">{error}</div>}
             <div className="flex gap-3">

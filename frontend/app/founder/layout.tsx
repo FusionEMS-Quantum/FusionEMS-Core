@@ -157,9 +157,12 @@ const NAV_DOMAINS = [
     links: [
       { href: '/founder/tools/calendar', label: 'Calendar' },
       { href: '/founder/tools/documents', label: 'Documents' },
+      { href: '/founder/tools/files', label: 'Files' },
+      { href: '/founder/tools/email', label: 'Email' },
       { href: '/founder/tools/onboarding-control', label: 'Onboarding Control' },
       { href: '/founder/tools/invoice-creator', label: 'Invoice Creator' },
       { href: '/founder/tools/expense-ledger', label: 'Expense Ledger' },
+      { href: '/founder/tools/tax-efile', label: 'Tax & E-File' },
       { href: '/founder/tools/task-center', label: 'Task Center' },
       { href: '/founder/copilot', label: 'Copilot Chat' },
     ],

@@ -22,6 +22,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import QuantumLogo from "@/components/branding/QuantumLogo";
+import QuantumCanvasBackdrop from '@/components/ambient/QuantumCanvasBackdrop';
 
 function Logo() {
   return (
@@ -63,16 +64,10 @@ export default function LandingPage() {
 
       {/* GLOBAL BACKGROUND SYSTEM — FQ Quantum Command Surface */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Canvas Black base */}
-        <div className="absolute inset-0 bg-[#0A0C0E]" />
-        {/* Horizontal scanlines — ultra-subtle tension texture */}
-        <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.007) 3px, rgba(255,255,255,0.007) 4px)' }} />
-        {/* Precision tactical grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.016)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.016)_1px,transparent_1px)] bg-[size:80px_80px]" />
-        {/* Hard orange chamfer accent — top right */}
+        <QuantumCanvasBackdrop mode="landing" intensity={1.15} className="opacity-[0.92]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,122,47,0.12),transparent_30%)]" />
         <div className="absolute top-0 right-0 w-[400px] h-[1px] bg-gradient-to-l from-[#F36A21]/25 to-transparent" />
         <div className="absolute top-0 right-0 w-[1px] h-[260px] bg-gradient-to-b from-[#F36A21]/25 to-transparent" />
-        {/* Bottom left accent line */}
         <div className="absolute bottom-0 left-0 w-[300px] h-[1px] bg-gradient-to-r from-[#F36A21]/15 to-transparent" />
         <div className="absolute bottom-0 left-0 w-[1px] h-[120px] bg-gradient-to-t from-[#F36A21]/15 to-transparent" />
       </div>
@@ -82,8 +77,8 @@ export default function LandingPage() {
         <div className="max-w-[1600px] mx-auto px-6 py-1.5 flex items-center justify-between">
           <div className="flex items-center gap-4 text-[0.55rem] font-bold tracking-[0.2em] uppercase">
             <div className="flex items-center gap-1.5">
-              <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]"></div>
-              <span className="text-[#4E9F6E]">Platform Operational</span>
+              <div className="w-1 h-1 bg-[#F36A21] shadow-[0_0_4px_#F36A21]"></div>
+              <span className="text-[#F36A21]">Live Telemetry Routed</span>
             </div>
             <span className="text-[#66707A]">|</span>
             <span className="text-[#66707A]">Billing</span>
@@ -99,7 +94,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-2 text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
             <span>FusionEMS Quantum</span>
             <span className="text-white/10">|</span>
-            <span>Mission-Critical Public Safety SaaS</span>
+            <span>Mission-Critical Public Safety Platform</span>
           </div>
         </div>
       </div>
@@ -123,7 +118,7 @@ export default function LandingPage() {
               href="/patient-billing-login"
               className="group hidden sm:flex items-center gap-3 px-4 py-2.5 bg-[var(--color-bg-base)]/[0.02] border border-white/10 hover:border-orange/40 hover:bg-[var(--q-orange)]/5 transition-all shadow-inner"
             >
-              <div className="w-2 h-2  bg-[var(--color-status-active)] animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+              <div className="w-2 h-2 bg-[var(--q-orange)] animate-pulse shadow-[0_0_8px_rgba(243,106,33,0.5)]"></div>
               <div className="flex flex-col text-left">
                 <span className="text-[0.5rem] text-[var(--color-text-muted)] font-bold uppercase tracking-[0.2em] leading-none mb-0.5">Secure Gateway</span>
                 <span className="text-[0.7rem] font-bold tracking-[0.1em] text-gray-300 uppercase leading-none group-hover:text-white">Patient Bill Pay Login</span>
@@ -165,9 +160,9 @@ export default function LandingPage() {
 
             {/* Status badge */}
             <div className="inline-flex items-center gap-3 px-5 py-2 border border-white/10 bg-white/[0.02] mb-10">
-              <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
-              <span className="text-[0.6rem] font-bold tracking-[0.25em] text-[#8D98A3] uppercase">MISSION-CRITICAL PUBLIC SAFETY SAAS — EMS / HEMS / FIRE / BILLING</span>
-              <div className="w-1.5 h-1.5 bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]"></div>
+              <div className="w-1.5 h-1.5 bg-[#F36A21] shadow-[0_0_6px_#F36A21]"></div>
+              <span className="text-[0.6rem] font-bold tracking-[0.25em] text-[#8D98A3] uppercase">MISSION-CRITICAL PUBLIC SAFETY PLATFORM — EMS / HEMS / FIRE / BILLING</span>
+              <div className="w-1.5 h-1.5 bg-[#F36A21] shadow-[0_0_6px_#F36A21]"></div>
             </div>
 
             {/* Headline — hard command authority, no animation */}
@@ -189,11 +184,18 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/roi-funnel"
+                href="/signup?plan=OPS_CORE&addon=BILLING_AUTOMATION&addon=PATIENT_STATEMENTS_AI&addon=OFFICE_ALLY_CONNECT&billing_mode=FUSION_RCM&billing_tier=B1&collections_mode=soft_only"
                 className="group px-10 py-5 bg-[#F36A21] text-black font-black text-xs tracking-[0.18em] uppercase hover:bg-[#FF7A2F] transition-colors flex items-center gap-3"
                 style={{ clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)', boxShadow: '0 0 28px rgba(243,106,33,0.22)' }}
               >
-                Calculate Unrecovered Yield <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                Start Self-Serve Billing Launch <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </Link>
+
+              <Link
+                href="/roi-funnel"
+                className="px-8 py-5 bg-transparent border border-white/15 text-[#C7CDD3] font-bold text-xs tracking-[0.18em] uppercase hover:border-[#F36A21]/40 hover:text-white transition-all flex items-center gap-2"
+              >
+                Calculate Unrecovered Yield
               </Link>
 
               <Link
@@ -201,6 +203,35 @@ export default function LandingPage() {
                 className="px-8 py-5 bg-transparent border border-white/15 text-[#C7CDD3] font-bold text-xs tracking-[0.18em] uppercase hover:border-[#F36A21]/40 hover:text-white transition-all flex items-center gap-2"
               >
                 View Platform Architecture
+              </Link>
+            </div>
+
+            <div className="mt-10 grid gap-4 md:grid-cols-3 text-left">
+              <Link
+                href="/signup?plan=OPS_CORE&addon=BILLING_AUTOMATION&addon=PATIENT_STATEMENTS_AI&addon=OFFICE_ALLY_CONNECT&billing_mode=FUSION_RCM&billing_tier=B1&collections_mode=soft_only"
+                className="border border-[#F36A21]/25 bg-white/[0.02] p-5 hover:border-[#F36A21]/50 hover:bg-[#F36A21]/[0.06] transition-all"
+              >
+                <div className="text-[0.55rem] font-bold tracking-[0.22em] uppercase text-[#F36A21] mb-2">Launch Lane 01</div>
+                <div className="text-sm font-bold text-white uppercase tracking-[0.12em] mb-2">FusionEMS AI Billing</div>
+                <p className="text-sm text-[#8D98A3] leading-relaxed">Office Ally setup, Lob-powered patient statements, AI billing automation, and revenue analytics in one launch path.</p>
+              </Link>
+
+              <Link
+                href="/signup?plan=OPS_CORE&addon=BILLING_AUTOMATION&addon=OFFICE_ALLY_CONNECT&billing_mode=THIRD_PARTY_EXPORT&billing_tier=TPB1&collections_mode=soft_and_handoff"
+                className="border border-white/10 bg-white/[0.02] p-5 hover:border-[#F36A21]/40 hover:bg-white/[0.04] transition-all"
+              >
+                <div className="text-[0.55rem] font-bold tracking-[0.22em] uppercase text-[#F36A21] mb-2">Launch Lane 02</div>
+                <div className="text-sm font-bold text-white uppercase tracking-[0.12em] mb-2">Keep Your Biller</div>
+                <p className="text-sm text-[#8D98A3] leading-relaxed">Agencies can keep their internal team or vendor, start with Office Ally connectivity, and use export-first workflows with live analytics.</p>
+              </Link>
+
+              <Link
+                href="/signup?plan=FULL_STACK&addon=BILLING_AUTOMATION&addon=PATIENT_STATEMENTS_AI&addon=OFFICE_ALLY_CONNECT&addon=NERIS_FIRE&billing_mode=FUSION_RCM&billing_tier=B2&collections_mode=soft_only"
+                className="border border-white/10 bg-white/[0.02] p-5 hover:border-[#F36A21]/40 hover:bg-white/[0.04] transition-all"
+              >
+                <div className="text-[0.55rem] font-bold tracking-[0.22em] uppercase text-[#F36A21] mb-2">Launch Lane 03</div>
+                <div className="text-sm font-bold text-white uppercase tracking-[0.12em] mb-2">Full Platform Activation</div>
+                <p className="text-sm text-[#8D98A3] leading-relaxed">Deploy ops, clinical, billing, fire reporting, statements, and portability controls together with one self-service launch flow.</p>
               </Link>
             </div>
 
@@ -268,15 +299,15 @@ export default function LandingPage() {
                   </p>
                   <ul className="space-y-4 pt-4 border-t border-white/10">
                     <li className="flex gap-4">
-                      <Crosshair className="w-6 h-6 text-[var(--color-brand-red)] shrink-0" />
+                      <Crosshair className="w-6 h-6 text-[var(--q-orange)] shrink-0" />
                       <span className="text-base"><strong className="text-white">AI-Driven Capture.</strong> We automate patient billing touches with aggressive, intelligent follow-ups.</span>
                     </li>
                     <li className="flex gap-4">
-                      <Workflow className="w-6 h-6 text-[var(--color-brand-red)] shrink-0" />
+                      <Workflow className="w-6 h-6 text-[var(--q-orange)] shrink-0" />
                       <span className="text-base"><strong className="text-white">Unified Extranet.</strong> TransportLink™ removes payer friction, dramatically increasing payment completion rates.</span>
                     </li>
                     <li className="flex gap-4">
-                      <LockKeyhole className="w-6 h-6 text-[var(--color-brand-red)] shrink-0" />
+                      <LockKeyhole className="w-6 h-6 text-[var(--q-orange)] shrink-0" />
                       <span className="text-base"><strong className="text-white">Complete Authority.</strong> Never wonder where a claim stalled. Every interaction is mapped, transcribed, and actionable.</span>
                     </li>
                   </ul>
@@ -328,11 +359,11 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-6 bg-[var(--color-bg-base)] border border-white/5 flex flex-col items-center justify-center text-center relative pointer-events-none">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 px-2 py-1 bg-[var(--color-bg-base)]/5 border border-white/10 text-[0.55rem] tracking-[0.2em] uppercase text-[var(--color-status-active)] font-bold -mt-3">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 px-2 py-1 bg-[var(--color-bg-base)]/5 border border-white/10 text-[0.55rem] tracking-[0.2em] uppercase text-[var(--q-orange)] font-bold -mt-3">
                     Projected Added Lift
                   </div>
                   <div className="text-5xl md:text-6xl font-black tracking-tighter text-white mt-4 drop-shadow-[0_0_15px_rgba(0,0,0,0.6)]">
-                    <span className="text-[var(--color-status-active)] mr-2">+</span>
+                    <span className="text-[var(--q-orange)] mr-2">+</span>
                     ${lift.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </div>
                   <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest mt-4">Unrecovered revenue captured unconditionally</p>
@@ -343,29 +374,29 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FOUNDER STATEMENT SECTION */}
+        {/* PLATFORM DIRECTIVE SECTION */}
         <section className="py-24 relative z-20 border-b border-white/[0.04] bg-[#111417]">
           <div className="max-w-[1200px] mx-auto px-6 grid md:grid-cols-[1fr_2fr] gap-12">
             <div>
-              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[var(--q-orange)] uppercase mb-4">Platform Vision</div>
-              <h2 className="text-3xl font-black tracking-tight text-white mb-6">Built from the field, not from assumptions</h2>
+              <div className="text-[0.65rem] font-bold tracking-[0.2em] text-[var(--q-orange)] uppercase mb-4">Platform Directive</div>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-6">Built for incident reality, not brochure fiction</h2>
             </div>
             <div className="space-y-6 text-[var(--color-text-muted)] text-lg leading-relaxed border-l border-white/10 pl-8">
               <p>
-                As a paramedic, I saw firsthand how often public safety agencies are forced to operate on systems that are slow, fragmented, unreliable, and overly dependent on ideal conditions. In the environments where this work actually happens, connectivity is not always stable, time is limited, and every layer of friction carries operational consequences.
+                Public safety teams operate through degraded connectivity, time compression, staffing pressure, and regulatory drag. A platform built for these environments must favor determinism, clear failure handling, and operator confidence over demo theatrics.
               </p>
               <p>
-                That experience led me to build FusionEMS Quantum.
+                FusionEMS Quantum is designed as command software first: black/graphite surfaces, explicit signal hierarchy, auditable actions, and role-separated access paths that remain readable under pressure.
               </p>
               <p>
-                I designed, engineered, and built FusionEMS Quantum to deliver a modern platform that is faster, more intuitive, and more resilient than the legacy systems agencies have historically been forced to tolerate. The goal is straightforward: unify billing, operations, compliance, communication, scheduling, fleet, and clinical workflows into a single platform that performs reliably in real-world conditions and scales with the demands of modern public safety organizations.
+                The goal is straightforward: unify billing, operations, compliance, communications, scheduling, fleet, and clinical workflows into one platform that behaves like mission-critical infrastructure instead of a generic admin dashboard.
               </p>
               <p className="font-bold text-gray-300">
-                FusionEMS Quantum represents my belief that mission-critical agencies deserve mission-critical infrastructure.
+                Agencies deserve command systems that feel intentional, resilient, and proprietary from the first screen to the last escalation path.
               </p>
               <div className="pt-6">
-                <p className="text-white font-black tracking-wide">— Joshua Wendorf</p>
-                <p className="text-sm text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Architecture Team</p>
+                <p className="text-white font-black tracking-wide">FusionEMS Quantum Architecture</p>
+                <p className="text-sm text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Operator-first design doctrine</p>
               </div>
             </div>
           </div>
@@ -381,7 +412,7 @@ export default function LandingPage() {
                   Platform Modules
                 </div>
                 <div className="hidden md:flex items-center gap-3 text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
-                  <div className="w-1 h-1 bg-[#4E9F6E] shadow-[0_0_4px_#4E9F6E]"></div>
+                  <div className="w-1 h-1 bg-[#F36A21] shadow-[0_0_4px_#F36A21]"></div>
                   <span>8 Modules Active</span>
                   <span className="text-white/10">|</span>
                   <span>Quantum Build 2.0</span>
@@ -487,19 +518,19 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
               {/* TransportLink Patient Access */}
-              <div className="border border-[var(--color-status-active)]/30 bg-[var(--color-bg-base)] p-8 flex flex-col relative overflow-hidden group shadow-[0_0_20px_rgba(34,197,94,0.05)]">
-                <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent pointer-events-none"></div>
+              <div className="border border-[var(--q-orange)]/30 bg-[var(--color-bg-base)] p-8 flex flex-col relative overflow-hidden group shadow-[0_0_20px_rgba(243,106,33,0.08)]">
+                <div className="absolute inset-0 bg-gradient-to-b from-[var(--q-orange)]/5 to-transparent pointer-events-none"></div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4 flex items-center justify-between border-b border-white/10 pb-4 relative z-10">
                   <span className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5  bg-[var(--color-status-active)] shadow-[0_0_5px_#22c55e]"></div>
+                    <div className="w-1.5 h-1.5 bg-[var(--q-orange)] shadow-[0_0_5px_rgba(243,106,33,0.6)]"></div>
                     TransportLink™ Extranet
                   </span>
-                  <LockKeyhole className="w-4 h-4 text-[var(--color-status-active)]" />
+                  <LockKeyhole className="w-4 h-4 text-[var(--q-orange)]" />
                 </h3>
                 <p className="text-sm text-[var(--color-text-muted)] mb-8 flex-1 relative z-10">
                   Bank-grade secure access for statement review, payment support, and guided billing communication. Built to convert, not to frustrate.
                 </p>
-                <Link href="/patient-billing-login" className="text-xs font-bold uppercase tracking-widest text-[var(--color-status-active)] hover:text-[var(--color-status-active)] transition-colors flex items-center gap-2 relative z-10">
+                <Link href="/patient-billing-login" className="text-xs font-bold uppercase tracking-widest text-[var(--q-orange)] hover:text-[#ff9a5c] transition-colors flex items-center gap-2 relative z-10">
                   Patient Bill Pay Login <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -600,15 +631,15 @@ export default function LandingPage() {
                   FQ FUSIONEMS QUANTUM
                 </div>
                 <div className="text-[0.55rem] font-bold tracking-[0.2em] text-[#66707A] uppercase">
-                  Mission-Critical Public Safety SaaS
+                  Mission-Critical Public Safety Platform
                 </div>
               </div>
 
               {/* Operational status */}
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#4E9F6E] shadow-[0_0_6px_#4E9F6E]" />
-                <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#4E9F6E] uppercase">
-                  Enterprise Ready
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F36A21] shadow-[0_0_6px_#F36A21]" />
+                <span className="text-[0.55rem] font-bold tracking-[0.2em] text-[#F36A21] uppercase">
+                  Operator-grade access lanes
                 </span>
               </div>
 

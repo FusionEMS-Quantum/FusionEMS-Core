@@ -459,3 +459,183 @@
   height: var(--density-icon-size);
   stroke-width: 1.8;
 }
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.62;
+    transform: scale(1.28);
+  }
+}
+
+.animate-status-pulse {
+  animation: status-pulse 1.8s var(--ease-in-out) infinite;
+}
+
+.quantum-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-label);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-brand-orange-bright);
+}
+
+.quantum-kicker::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-brand-orange), transparent);
+}
+
+.quantum-panel,
+.quantum-panel-strong,
+.quantum-panel-soft {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  clip-path: var(--chamfer-12);
+}
+
+.quantum-panel {
+  background: linear-gradient(180deg, rgba(21, 24, 29, 0.9), rgba(10, 12, 15, 0.96));
+  box-shadow: var(--elevation-2);
+}
+
+.quantum-panel-strong {
+  background: linear-gradient(180deg, rgba(24, 28, 33, 0.98), rgba(9, 12, 16, 0.98));
+  box-shadow: var(--elevation-3);
+}
+
+.quantum-panel-soft {
+  background: linear-gradient(180deg, rgba(14, 17, 21, 0.82), rgba(10, 12, 15, 0.88));
+  box-shadow: var(--elevation-1);
+}
+
+.quantum-panel::before,
+.quantum-panel-strong::before,
+.quantum-panel-soft::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255,122,47,0.18), transparent 16%),
+    linear-gradient(180deg, rgba(255,255,255,0.05), transparent 22%);
+  opacity: 0.75;
+}
+
+.quantum-panel::after,
+.quantum-panel-strong::after,
+.quantum-panel-soft::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  clip-path: var(--chamfer-12);
+  border: 1px solid rgba(255,255,255,0.02);
+  pointer-events: none;
+}
+
+.quantum-command-band {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid rgba(255, 122, 47, 0.18);
+  background: linear-gradient(90deg, rgba(255,122,47,0.1), rgba(255,122,47,0.03));
+  padding: 6px 10px;
+  clip-path: var(--chamfer-8);
+  font-family: var(--font-label);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-brand-orange-bright);
+}
+
+.quantum-command-band::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--color-brand-orange);
+  box-shadow: 0 0 10px rgba(255, 122, 47, 0.35);
+}
+
+.quantum-page-frame {
+  position: relative;
+}
+
+.quantum-page-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255,122,47,0.06), transparent 14%, transparent 86%, rgba(255,122,47,0.04)),
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 18%);
+  opacity: 0.9;
+}
+
+.quantum-grid-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.quantum-grid-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.18;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.85), transparent 100%);
+}
+
+.quantum-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255,122,47,0.24), rgba(255,255,255,0.08), transparent);
+}
+
+.quantum-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-default);
+  background: rgba(255,255,255,0.03);
+  clip-path: var(--chamfer-8);
+  font-family: var(--font-label);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.quantum-scan-text {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.quantum-data-value {
+  font-family: var(--font-label);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.quantum-scroll-region {
+  scrollbar-gutter: stable both-edges;
+}

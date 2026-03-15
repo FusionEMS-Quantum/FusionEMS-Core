@@ -9,8 +9,11 @@ All endpoints use RBAC (require_role), tenant scoping, structured error response
 
 from __future__ import annotations
 
+import json
 import os
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -951,6 +954,19 @@ def _env_bool(name: str, *, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _load_artifact_json(relative_path: str) -> dict[str, Any] | None:
+    artifact_path = _repo_root() / relative_path
+    try:
+        payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
 def _release_metadata() -> dict[str, object]:
     version = (
         os.getenv("RELEASE_VERSION")
@@ -978,6 +994,29 @@ def _release_metadata() -> dict[str, object]:
         "last_successful_release": last_successful_release,
         "rollback_ready": rollback_ready,
     }
+
+
+def _integration_gate_details(
+    integration_key: str,
+    integration_state: dict[str, dict[str, object]],
+) -> tuple[bool, str]:
+    state = integration_state.get(integration_key, {})
+    configured = bool(state.get("configured"))
+    missing = [str(item) for item in state.get("missing", []) if str(item)]
+    placeholder_fields = [
+        str(item) for item in state.get("placeholder_fields", []) if str(item)
+    ]
+
+    detail_parts: list[str] = []
+    if missing:
+        detail_parts.append(f"missing={','.join(missing)}")
+    if placeholder_fields:
+        detail_parts.append(f"placeholder_fields={','.join(placeholder_fields)}")
+
+    if not detail_parts:
+        detail_parts.append("configured")
+
+    return configured, "; ".join(detail_parts)
 
 
 def _auth_health_snapshot() -> tuple[dict[str, object], list[str]]:
@@ -1106,9 +1145,15 @@ def live_status(
     required_missing: list[str] = []
     for key, state in integration_state.items():
         if bool(state.get("required")) and not bool(state.get("configured")):
-            missing = state.get("missing")
-            if isinstance(missing, list):
-                required_missing.extend([f"{key}:{item}" for item in missing])
+            missing = [str(item) for item in state.get("missing", []) if str(item)]
+            placeholders = [
+                str(item)
+                for item in state.get("placeholder_fields", [])
+                if str(item)
+            ]
+            details = missing + placeholders
+            if details:
+                required_missing.extend([f"{key}:{item}" for item in details])
             else:
                 required_missing.append(key)
 
@@ -1137,6 +1182,20 @@ def live_status(
             "Required integration wiring missing: " + ", ".join(sorted(required_missing))
         )
 
+    nemsis_report = _load_artifact_json("artifacts/nemsis-ci-report.json") or {}
+    neris_report = _load_artifact_json("artifacts/neris-ci-report.json") or {}
+
+    nemsis_cta_credentials_ready = all(
+        [
+            str(settings.nemsis_cta_endpoint or "").strip(),
+            str(settings.nemsis_cta_username or "").strip(),
+            str(settings.nemsis_cta_password or "").strip(),
+            str(settings.nemsis_cta_organization or "").strip(),
+        ]
+    )
+    nemsis_submission_state = integration_state.get("nemsis_submission", {})
+    neris_submission_state = integration_state.get("neris_submission", {})
+
     frontend_signal = str(os.getenv("FRONTEND_HEALTH", "unknown")).strip().lower()
     frontend_status = (
         "healthy"
@@ -1160,6 +1219,46 @@ def live_status(
         {
             "service": "telnyx_readiness",
             "status": "healthy" if telnyx_ready else "degraded",
+        },
+        {
+            "service": "stripe",
+            "status": (
+                "healthy"
+                if bool(integration_state.get("stripe", {}).get("configured"))
+                else "degraded"
+            ),
+        },
+        {
+            "service": "officeally",
+            "status": (
+                "healthy"
+                if bool(integration_state.get("officeally", {}).get("configured"))
+                else "warning"
+            ),
+        },
+        {
+            "service": "lob",
+            "status": (
+                "healthy"
+                if bool(integration_state.get("lob", {}).get("configured"))
+                else "warning"
+            ),
+        },
+        {
+            "service": "nemsis_submission",
+            "status": (
+                "healthy"
+                if bool(nemsis_submission_state.get("configured"))
+                else "warning"
+            ),
+        },
+        {
+            "service": "neris_submission",
+            "status": (
+                "healthy"
+                if bool(neris_submission_state.get("configured"))
+                else "warning"
+            ),
         },
         {"service": "database", "status": "healthy" if db_ok else "degraded"},
         {"service": "redis", "status": redis_state},
@@ -1186,9 +1285,28 @@ def live_status(
         "auth": auth_snapshot,
 
         "nemsis": {
-            "active_version": getattr(settings, "NEMSIS_ACTIVE_VERSION", "3.5.0"),
-            "schematron_reachable": bool(getattr(settings, "NEMSIS_SCHEMATRON_VALIDATOR_URL", "")),
-            "national_endpoint_ready": bool(getattr(settings, "NEMSIS_NATIONAL_ENDPOINT", "")),
+            "active_version": os.getenv("NEMSIS_ACTIVE_VERSION", "3.5.0"),
+            "local_schematron_configured": bool(
+                str(settings.nemsis_local_schematron_dir or "").strip()
+            ),
+            "cta_endpoint_ready": nemsis_cta_credentials_ready,
+            "national_endpoint_ready": bool(
+                str(settings.nemsis_national_endpoint or "").strip()
+            ),
+            "submission_api_ready": bool(nemsis_submission_state.get("configured")),
+            "validation_status": nemsis_report.get("status", "not_available"),
+            "certification_status": nemsis_report.get(
+                "certification_status", "not_available"
+            ),
+            "evidence": nemsis_report.get("evidence"),
+        },
+        "neris": {
+            "submission_api_ready": bool(neris_submission_state.get("configured")),
+            "validation_status": neris_report.get("status", "not_available"),
+            "certification_status": neris_report.get(
+                "certification_status", "not_available"
+            ),
+            "evidence": neris_report.get("evidence"),
         },
         "telnyx": {
             "number": telnyx_central_number,
@@ -1261,32 +1379,35 @@ def release_readiness_gate(
         f"missing={missing_tables}" if missing_tables else "all_present",
     ).to_dict())
 
+    settings = get_settings()
     auth_snapshot, auth_blockers = _auth_health_snapshot()
     release = _release_metadata()
+    integration_state = settings.integration_state_table()
 
     # Gate 4: Office Ally SFTP configured
-    settings = get_settings()
-    oa_host = str(settings.officeally_sftp_host or "")
+    officeally_ready, officeally_detail = _integration_gate_details(
+        "officeally", integration_state
+    )
     gates.append(_GateCheck(
         "officeally_sftp_configured",
-        bool(oa_host),
-        f"host={'set' if oa_host else 'missing'}",
+        officeally_ready,
+        officeally_detail,
     ).to_dict())
 
     # Gate 5: Stripe configured
-    stripe_key = str(settings.stripe_secret_key or "")
+    stripe_ready, stripe_detail = _integration_gate_details("stripe", integration_state)
     gates.append(_GateCheck(
         "stripe_configured",
-        bool(stripe_key),
-        "key_present" if stripe_key else "key_missing",
+        stripe_ready,
+        stripe_detail,
     ).to_dict())
 
     # Gate 6: Telnyx configured
-    telnyx_key = str(settings.telnyx_api_key or "")
+    telnyx_ready, telnyx_detail = _integration_gate_details("telnyx", integration_state)
     gates.append(_GateCheck(
         "telnyx_configured",
-        bool(telnyx_key),
-        "key_present" if telnyx_key else "key_missing",
+        telnyx_ready,
+        telnyx_detail,
     ).to_dict())
 
     # Gate 7: AWS region set

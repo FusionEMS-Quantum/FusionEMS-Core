@@ -119,6 +119,8 @@ def handle_stock_rebuild(record: dict) -> dict:
     conn = _db_conn()
     cur = conn.cursor()
 
+    # filter_clause is constructed entirely from hardcoded SQL fragments; all
+    # runtime values (tenant_id, location_id) are passed as parameterized args.
     filter_clause = "AND tenant_id = %s AND deleted_at IS NULL"
     params: list = [tenant_id]
     if location_id:
