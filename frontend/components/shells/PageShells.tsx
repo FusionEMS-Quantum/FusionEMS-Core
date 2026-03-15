@@ -51,14 +51,12 @@ export function ModuleDashboardShell({
   return (
     <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       {/* Banner slot */}
-      {banner && <div className="flex-shrink-0 px-4 pt-3 xl:px-6">{banner}</div>}
+      {banner && <div className="flex-shrink-0 px-4 pt-4 xl:px-6">{banner}</div>}
 
       {/* Header */}
-      <header className="flex-shrink-0 px-4 pt-4 pb-2 xl:px-6">
-        <div className="quantum-panel-strong px-5 py-5">
+      <header className="flex-shrink-0 px-4 pt-5 pb-3 xl:px-6 border-b border-[var(--color-border-subtle)]">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="quantum-command-band mb-3">Command Surface</div>
             <div className="flex items-center gap-3">
               {accentColor && (
                 <div
@@ -67,10 +65,10 @@ export function ModuleDashboardShell({
                   aria-hidden
                 />
               )}
-              <h1 className="text-h1 font-sans font-bold text-zinc-100 truncate">{title}</h1>
+              <h1 className="text-2xl font-black tracking-[0.02em] text-zinc-100 truncate">{title}</h1>
             </div>
             {subtitle && (
-              <p className="text-body text-zinc-500 mt-2 ml-4 max-w-3xl">{subtitle}</p>
+              <p className="text-sm text-zinc-500 mt-1 ml-4 uppercase tracking-[0.08em]">{subtitle}</p>
             )}
           </div>
           {headerActions && (
@@ -79,12 +77,11 @@ export function ModuleDashboardShell({
             </div>
           )}
         </div>
-        </div>
       </header>
 
       {/* KPI Strip */}
       {kpiStrip && (
-        <div className="flex-shrink-0 px-4 py-3 xl:px-6">
+        <div className="flex-shrink-0 px-4 py-4 xl:px-6 border-b border-[var(--color-border-subtle)]">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
             {kpiStrip}
           </div>
@@ -93,19 +90,19 @@ export function ModuleDashboardShell({
 
       {/* Toolbar (tabs/filters) */}
       {toolbar && (
-        <div className="flex-shrink-0 px-4 xl:px-6">{toolbar}</div>
+        <div className="flex-shrink-0 px-4 py-3 xl:px-6 border-b border-[var(--color-border-subtle)]">{toolbar}</div>
       )}
 
       {/* Main content area */}
       <div className="flex-1 min-h-0 flex gap-4 px-4 py-3 xl:px-6 overflow-hidden">
         {/* Primary content */}
-        <main className={cn('flex-1 min-w-0 overflow-y-auto quantum-scroll-region', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
+        <main className={cn('flex-1 min-w-0 overflow-y-auto quantum-grid-shell content-start', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
           {children}
         </main>
 
         {/* Side panel */}
         {sidePanel && (
-          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto quantum-scroll-region space-y-4">
+          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto space-y-3">
             {sidePanel}
           </aside>
         )}
@@ -141,17 +138,17 @@ export function RecordDetailShell({
     <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       {banner && <div className="flex-shrink-0 px-4 pt-3 xl:px-6">{banner}</div>}
 
-      <div className="flex-shrink-0 px-4 pt-4 xl:px-6">
+      <div className="flex-shrink-0 px-4 pt-5 pb-3 xl:px-6 border-b border-[var(--color-border-subtle)]">
         {header}
       </div>
 
       <div className="flex-1 min-h-0 flex gap-4 px-4 py-3 xl:px-6 overflow-hidden">
-        <main className={cn('flex-1 min-w-0 overflow-y-auto quantum-scroll-region', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
+        <main className={cn('flex-1 min-w-0 overflow-y-auto', sidePanel ? '3xl:max-w-[calc(100%-380px)]' : '')}>
           {children}
         </main>
 
         {sidePanel && (
-          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto quantum-scroll-region space-y-4">
+          <aside className="hidden xl:block w-[340px] 3xl:w-[380px] flex-shrink-0 overflow-y-auto space-y-3">
             {sidePanel}
           </aside>
         )}
@@ -193,8 +190,8 @@ export function ReviewQueueShell({
       <header className="flex-shrink-0 px-4 pt-4 pb-3 xl:px-6 border-b border-[var(--color-border-default)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-h2 font-sans font-bold text-zinc-100">{title}</h1>
-            <span className="text-label font-label text-zinc-500 bg-bg-overlay px-2 py-0.5 chamfer-4">
+            <h1 className="text-xl font-black tracking-[0.02em] text-zinc-100">{title}</h1>
+            <span className="quantum-badge">
               {count} item{count !== 1 ? 's' : ''}
             </span>
           </div>
@@ -249,7 +246,7 @@ export function SettingsShell({
   return (
     <div className={cn('quantum-page-frame flex flex-col h-full min-h-0', className)}>
       <header className="flex-shrink-0 px-4 pt-4 pb-3 xl:px-6 border-b border-[var(--color-border-default)]">
-        <h1 className="text-h1 font-sans font-bold text-zinc-100">{title}</h1>
+        <h1 className="text-2xl font-black tracking-[0.02em] text-zinc-100">{title}</h1>
       </header>
 
       <div className="flex-1 min-h-0 flex overflow-hidden">
@@ -262,8 +259,8 @@ export function SettingsShell({
               className={cn(
                 'w-full flex items-center gap-2 px-4 py-2.5 text-left text-body transition-colors duration-fast',
                 section.id === activeSection
-                  ? 'text-[#FF4D00] bg-[rgba(255,77,0,0.12)] border-r-2 border-orange'
-                  : 'text-zinc-500 hover:text-zinc-100 hover:bg-bg-overlay'
+                  ? 'text-[#FF4D00] bg-[rgba(255,77,0,0.12)] border-r-2 border-[#FF4D00]'
+                  : 'text-zinc-500 hover:text-zinc-100 hover:bg-[rgba(255,255,255,0.03)]'
               )}
               type="button"
             >

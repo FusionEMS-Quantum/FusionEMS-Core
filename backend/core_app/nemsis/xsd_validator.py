@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import xml.etree.ElementTree as xml_etree
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
+
+import defusedxml.ElementTree as _defused_et
 
 XSD_BASE = Path(__file__).resolve().parent.parent.parent / "compliance" / "nemsis" / "v3.5.1"
 
@@ -13,7 +17,7 @@ class XSDValidationResult:
     warnings: list[str] = field(default_factory=list)
     xsd_version: str = "3.5.1"
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         return {
             "valid": self.valid,
             "errors": self.errors,
@@ -28,11 +32,11 @@ class NEMSISXSDValidator:
         self._ems_schema = None
         self._dem_schema = None
 
-    def _load_schema(self, schema_path: Path):
+    def _load_schema(self, schema_path: Path) -> Any | None:
         try:
             from lxml import etree
 
-            with open(schema_path, "rb") as f:
+            with schema_path.open("rb") as f:
                 schema_doc = etree.parse(f)
             return etree.XMLSchema(schema_doc)
         except ImportError:
@@ -97,15 +101,9 @@ class NEMSISXSDValidator:
     def _structural_validate(
         self, xml_content: bytes, dataset_type: str, result: XSDValidationResult
     ) -> XSDValidationResult:
-        import xml.etree.ElementTree as _stdlib_et
-
-        import defusedxml.ElementTree as ET
-
-        import defusedxml.ElementTree as _defused_et
-
         try:
             root = _defused_et.fromstring(xml_content)
-        except ET.ParseError as e:
+        except xml_etree.ParseError as e:
             result.valid = False
             result.errors.append(f"XML parse error: {e}")
             return result

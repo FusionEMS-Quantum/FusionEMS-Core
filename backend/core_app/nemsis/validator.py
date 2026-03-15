@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import re
-import xml.etree.ElementTree as _stdlib_et
+import xml.etree.ElementTree as xml_etree
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -14,6 +14,7 @@ try:
 
     _LXML_AVAILABLE = True
 except ImportError:
+    lxml_etree = None  # type: ignore[assignment]
     _LXML_AVAILABLE = False
 
 ELEMENT_UI_MAP: dict[str, dict[str, str]] = {
@@ -44,13 +45,15 @@ _ISO8601_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{
 
 NEMSIS_NS = "http://www.nemsis.org"
 
+_ETElement = xml_etree.Element
+
 
 def _ui_info(element_id: str) -> tuple[str, str]:
     entry = ELEMENT_UI_MAP.get(element_id, {})
     return entry.get("section", "Unknown"), entry.get("label", element_id)
 
 
-def _find_text(root: _ET_Element, local_name: str) -> str | None:
+def _find_text(root: _ETElement, local_name: str) -> str | None:
     for elem in root.iter():
         tag = elem.tag
         if "}" in tag:
@@ -60,8 +63,8 @@ def _find_text(root: _ET_Element, local_name: str) -> str | None:
     return None
 
 
-def _find_all(root: _ET_Element, local_name: str) -> list[_ET_Element]:
-    result = []
+def _find_all(root: _ETElement, local_name: str) -> list[_ETElement]:
+    result: list[_ETElement] = []
     for elem in root.iter():
         tag = elem.tag
         if "}" in tag:
@@ -152,7 +155,7 @@ class NEMSISValidator:
     def validate_xml_bytes(self, xml_bytes: bytes, state_code: str = "WI") -> ValidationResult:
         all_issues: list[ValidationIssue] = []
         stage_results: dict[str, Any] = {}
-        root: _ET_Element | None = None
+        root: _ETElement | None = None
 
         xsd_issues = self._stage_xsd(xml_bytes)
         all_issues.extend(xsd_issues)
@@ -161,7 +164,7 @@ class NEMSISValidator:
             "issue_count": len(xsd_issues),
         }
 
-        with contextlib.suppress(ET.ParseError):
+        with contextlib.suppress(xml_etree.ParseError):
             root = _defused_et.fromstring(xml_bytes)
 
         if root is not None:
@@ -210,7 +213,12 @@ class NEMSISValidator:
                     }
         else:
             for stage in ("national_schematron", "wi_schematron", "wi_state"):
-                stage_results[stage] = {"passed": False, "issue_count": 0, "skipped": True}
+                stage_results[stage] = {
+                    "passed": False,
+                    "issue_count": 0,
+                    "skipped": True,
+                    "reason": "XML parsing failed before downstream validation stages could execute.",
+                }
 
         valid = not any(i.severity == "error" for i in all_issues)
         return ValidationResult(
@@ -225,6 +233,7 @@ class NEMSISValidator:
         issues: list[ValidationIssue] = []
 
         if _LXML_AVAILABLE:
+            assert lxml_etree is not None
             try:
                 lxml_etree.fromstring(xml_bytes)
             except lxml_etree.XMLSyntaxError as exc:
@@ -245,7 +254,7 @@ class NEMSISValidator:
         else:
             try:
                 _defused_et.fromstring(xml_bytes)
-            except ET.ParseError as exc:
+            except xml_etree.ParseError as exc:
                 issues.append(
                     _make_issue(
                         severity="error",
@@ -277,7 +286,7 @@ class NEMSISValidator:
 
         return issues
 
-    def _stage_national_schematron(self, root: _ET_Element) -> list[ValidationIssue]:
+    def _stage_national_schematron(self, root: _ETElement) -> list[ValidationIssue]:
         issues: list[ValidationIssue] = []
 
         checks = [
@@ -332,9 +341,7 @@ class NEMSISValidator:
         ]
 
         for element_id, rule_id, plain_msg, tech_msg, source, hint in checks:
-            element_id.split(".")[-1] if "." in element_id else element_id
-            parent_local = element_id.split(".")[0] if "." in element_id else element_id
-            val = _find_text(root, parent_local + "." + (element_id.split(".")[-1]))
+            val = _find_text(root, element_id)
             if val is None:
                 issues.append(
                     _make_issue(
@@ -381,7 +388,7 @@ class NEMSISValidator:
 
         return issues
 
-    def _stage_wi_schematron(self, root: _ET_Element) -> list[ValidationIssue]:
+    def _stage_wi_schematron(self, root: _ETElement) -> list[ValidationIssue]:
         issues: list[ValidationIssue] = []
 
         wi_checks = [
@@ -455,7 +462,7 @@ class NEMSISValidator:
 
         return issues
 
-    def _stage_wi_state(self, root: _ET_Element) -> list[ValidationIssue]:
+    def _stage_wi_state(self, root: _ETElement) -> list[ValidationIssue]:
         issues: list[ValidationIssue] = []
 
         gender_val = _find_text(root, "ePatient.13")
@@ -492,7 +499,7 @@ class NEMSISValidator:
         for ts_field in timestamp_fields:
             val = _find_text(root, ts_field)
             if val is not None and not _ISO8601_RE.match(val):
-                section, label = _ui_info(ts_field)
+                _, label = _ui_info(ts_field)
                 issues.append(
                     _make_issue(
                         severity="error",
