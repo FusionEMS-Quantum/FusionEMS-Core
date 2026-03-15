@@ -16,7 +16,7 @@ const NAV_LINKS = [
   { href: '/communications', label: 'Communications' },
   { href: '/compliance', label: 'Compliance' },
   { href: '/roi', label: 'ROI' },
-  { href: '/live-status', label: 'Live Status' },
+  { href: '/founder-command', label: 'Executive' },
 ];
 
 const FOOTER_LINKS = [
@@ -42,22 +42,14 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100">
-      <div className="fixed inset-0 pointer-events-none opacity-60"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 20% 20%, rgba(255,106,0,0.06), transparent 40%), radial-gradient(circle at 80% 10%, rgba(255,45,45,0.06), transparent 35%), linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px)',
-          backgroundSize: 'auto, auto, 48px 48px, 48px 48px',
-        }}
-      />
-
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
       <div className="relative z-50 border-b border-[rgba(255,255,255,0.06)] bg-[rgba(255,77,0,0.08)]">
         <div className="max-w-[1600px] mx-auto px-6 py-2 flex items-center justify-between gap-4 text-[10px] uppercase tracking-[0.18em] text-zinc-400">
-          <span>Mission-critical public safety infrastructure</span>
+          <span>Mission-Critical Public Safety Infrastructure</span>
           <div className="hidden md:flex items-center gap-5">
-            <span>Canvas-grade command UI</span>
+            <span>Billing-first activation</span>
             <span>OIDC-first access</span>
-            <span>Live status truth sourced in command</span>
+            <span>Deterministic platform operations</span>
           </div>
         </div>
       </div>
@@ -74,7 +66,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
 
           <nav className="hidden xl:flex items-center gap-1">
             {NAV_LINKS.map((item) => (
-              <Link key={item.href} href={item.href} className="px-3 py-2 text-label uppercase tracking-widest text-zinc-500 hover:text-zinc-100 hover:bg-[#0A0A0B] chamfer-4 transition-colors">
+              <Link key={item.href} href={item.href} className="quantum-shell-link">
                 {item.label}
               </Link>
             ))}
@@ -113,7 +105,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
                 <Link href="/patient-billing-login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Patient Bill Pay</Link>
                 <Link href="/facility-transport-login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Facility Login</Link>
-                <Link href="/billing/login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Billing Login</Link>
+                <Link href="/login" className="quantum-btn-sm" onClick={() => setMobileNavOpen(false)}>Secure Access</Link>
                 <Link href="/login" className="quantum-btn-primary" onClick={() => setMobileNavOpen(false)}>Platform Login</Link>
               </div>
             </div>
@@ -154,7 +146,7 @@ export default function MarketingShell({ children }: { children: ReactNode }) {
             <div className="grid gap-2 text-body text-zinc-400">
               <span>Patient billing support and secure payment access</span>
               <span>Facility transport intake and scheduling coordination</span>
-              <span>Staff operations, billing, and command surfaces</span>
+              <span>Staff operations, billing, and executive command surfaces</span>
             </div>
           </div>
         </div>
