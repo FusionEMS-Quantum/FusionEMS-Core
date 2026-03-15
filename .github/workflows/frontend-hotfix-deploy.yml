@@ -164,7 +164,9 @@ jobs:
               return "Review the linked job logs for the exact command output and correct the deployment configuration before retrying.";
             };
             const jobs = [];
-            for (let page = 1; ; page += 1) {
+            let page = 1;
+            let hasMore = true;
+            while (hasMore) {
               const response = await github.rest.actions.listJobsForWorkflowRun({
                 owner,
                 repo,
@@ -173,9 +175,8 @@ jobs:
                 page,
               });
               jobs.push(...response.data.jobs);
-              if (response.data.jobs.length < 100) {
-                break;
-              }
+              hasMore = response.data.jobs.length === 100;
+              page += 1;
             }
 
             const relevantJobs = jobs.filter((job) => job.name !== "Deployment Summary");
