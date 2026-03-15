@@ -4,7 +4,7 @@
    Never use raw hex values in component files — always reference a token.
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── Color Tokens ─────────────────────────────────────────────── */
+/* ─── Color Tokens ──────────────────────────────────────────────────────── */
 :root {
   /* Spec Aliases (canonical names from the Quantum style guide) */
   --q-bg:           #0A0C0E;   /* Canvas Black */
@@ -90,8 +90,9 @@
   --color-system-fleet:      #3b82f6;
   --color-system-compliance: #a855f7;
   --color-system-cad:        #94a3b8;
+  --color-system-system:     var(--q-orange);
 
-  /* ─── Typography ─────────────────────────────────────────────── */
+  /* ─── Typography ────────────────────────────────────────────────── */
   --font-sans:   'Barlow', 'Barlow Condensed', system-ui, -apple-system, sans-serif;
   --font-mono:   'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   --font-label:  'Barlow Condensed', 'Barlow', sans-serif;
@@ -114,7 +115,7 @@
   --tracking-micro:  0.12em;
   --tracking-normal: 0em;
 
-  /* ─── Spacing Scale ──────────────────────────────────────────── */
+  /* ─── Spacing Scale ──────────────────────────────────────────────── */
   --space-0:   0px;
   --space-1:   4px;
   --space-2:   8px;
@@ -129,7 +130,7 @@
   --space-11:  80px;
   --space-12:  96px;
 
-  /* ─── Density — Default (ADMIN mode) ────────────────────────── */
+  /* ─── Density — Default (ADMIN mode) ──────────────────────────────────────────── */
   --density-row-height:     40px;
   --density-cell-pad-x:     12px;
   --density-cell-pad-y:     10px;
@@ -137,7 +138,7 @@
   --density-input-height:   40px;
   --density-button-height:  36px;
 
-  /* ─── Chamfer / Clip-Path System ─────────────────────────────── */
+  /* ─── Chamfer / Clip-Path System ─────────────────────────────────────────────── */
   --chamfer-4:  polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
   --chamfer-8:  polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
   --chamfer-12: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
@@ -147,7 +148,7 @@
   --chamfer-asym-12: polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   --chamfer-drawer:  polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
 
-  /* ─── Elevation ──────────────────────────────────────────────── */
+  /* ─── Elevation ───────────────────────────────────────────────────────────────── */
   --elevation-0: none;
   --elevation-1: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px var(--color-border-default);
   --elevation-2: 0 4px 12px rgba(0,0,0,0.5), 0 0 0 1px var(--color-border-default);
@@ -155,10 +156,10 @@
   --elevation-4: 0 16px 40px rgba(0,0,0,0.7), 0 0 0 1px var(--color-border-strong);
   --elevation-critical: 0 0 0 2px var(--color-brand-red), 0 8px 24px rgba(255,45,45,0.25);
 
-  /* ─── Focus Ring ─────────────────────────────────────────────── */
+  /* ─── Focus Ring ─────────────────────────────────────────────────────────────── */
   --focus-ring: 0 0 0 2px var(--color-bg-base), 0 0 0 4px var(--color-brand-orange);
 
-  /* ─── Motion ─────────────────────────────────────────────────── */
+  /* ─── Motion ──────────────────────────────────────────────────────────────────── */
   --duration-instant:  80ms;
   --duration-fast:     150ms;
   --duration-base:     220ms;
@@ -167,12 +168,12 @@
   --ease-in-out:       cubic-bezier(0.45, 0, 0.55, 1);
   --ease-spring:       cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ─── HUD Tick Rail ──────────────────────────────────────────── */
+  /* ─── HUD Tick Rail ──────────────────────────────────────────────────────────── */
   --hud-rail-color:  rgba(243, 106, 33, 0.25);
   --hud-rail-height: 2px;
 }
 
-/* ─── Density Override — DISPATCH mode ──────────────────────────── */
+/* ─── Density Override — DISPATCH mode ──────────────────────────────────── */
 [data-density="dispatch"] {
   --density-row-height:    32px;
   --density-cell-pad-x:    8px;
@@ -460,182 +461,108 @@
   stroke-width: 1.8;
 }
 
-@keyframes status-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.62;
-    transform: scale(1.28);
-  }
-}
-
-.animate-status-pulse {
-  animation: status-pulse 1.8s var(--ease-in-out) infinite;
-}
-
-.quantum-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-label);
-  font-size: var(--text-micro);
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-brand-orange-bright);
-}
-
-.quantum-kicker::before {
-  content: '';
-  width: 18px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--color-brand-orange), transparent);
-}
-
-.quantum-panel,
-.quantum-panel-strong,
-.quantum-panel-soft {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--color-border-default);
-  clip-path: var(--chamfer-12);
-}
-
-.quantum-panel {
-  background: linear-gradient(180deg, rgba(21, 24, 29, 0.9), rgba(10, 12, 15, 0.96));
-  box-shadow: var(--elevation-2);
-}
-
-.quantum-panel-strong {
-  background: linear-gradient(180deg, rgba(24, 28, 33, 0.98), rgba(9, 12, 16, 0.98));
-  box-shadow: var(--elevation-3);
-}
-
-.quantum-panel-soft {
-  background: linear-gradient(180deg, rgba(14, 17, 21, 0.82), rgba(10, 12, 15, 0.88));
-  box-shadow: var(--elevation-1);
-}
-
-.quantum-panel::before,
-.quantum-panel-strong::before,
-.quantum-panel-soft::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(255,122,47,0.18), transparent 16%),
-    linear-gradient(180deg, rgba(255,255,255,0.05), transparent 22%);
-  opacity: 0.75;
-}
-
-.quantum-panel::after,
-.quantum-panel-strong::after,
-.quantum-panel-soft::after {
-  content: '';
-  position: absolute;
-  inset: 1px;
-  clip-path: var(--chamfer-12);
-  border: 1px solid rgba(255,255,255,0.02);
-  pointer-events: none;
-}
-
 .quantum-command-band {
-  display: inline-flex;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: var(--space-2);
-  border: 1px solid rgba(255, 122, 47, 0.18);
-  background: linear-gradient(90deg, rgba(255,122,47,0.1), rgba(255,122,47,0.03));
-  padding: 6px 10px;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(9, 13, 20, 0.96));
   clip-path: var(--chamfer-8);
-  font-family: var(--font-label);
-  font-size: var(--text-micro);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-brand-orange-bright);
+  box-shadow: var(--elevation-1);
+  overflow: hidden;
 }
 
 .quantum-command-band::before {
   content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--color-brand-orange);
-  box-shadow: 0 0 10px rgba(255, 122, 47, 0.35);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(243, 106, 33, 0.12), transparent 45%, rgba(92, 141, 184, 0.08));
+  pointer-events: none;
+}
+
+.quantum-page-frame,
+.quantum-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  background: linear-gradient(180deg, rgba(17, 20, 23, 0.94), rgba(10, 12, 14, 0.98));
+  box-shadow: var(--elevation-2);
 }
 
 .quantum-page-frame {
-  position: relative;
+  clip-path: var(--chamfer-16);
 }
 
-.quantum-page-frame::before {
+.quantum-panel {
+  clip-path: var(--chamfer-12);
+}
+
+.quantum-page-frame::before,
+.quantum-panel::before {
   content: '';
   position: absolute;
-  inset: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(243, 106, 33, 0.5), transparent 40%, rgba(92, 141, 184, 0.2));
   pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(255,122,47,0.06), transparent 14%, transparent 86%, rgba(255,122,47,0.04)),
-    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 18%);
-  opacity: 0.9;
+}
+
+.quantum-panel--accent::before {
+  background: linear-gradient(90deg, rgba(243, 106, 33, 0.9), rgba(243, 106, 33, 0.25), transparent 78%);
+}
+
+.quantum-panel--info::before {
+  background: linear-gradient(90deg, rgba(92, 141, 184, 0.88), rgba(92, 141, 184, 0.24), transparent 78%);
+}
+
+.quantum-panel--success::before {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.88), rgba(34, 197, 94, 0.24), transparent 78%);
 }
 
 .quantum-grid-shell {
-  position: relative;
-  isolation: isolate;
-}
-
-.quantum-grid-shell::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.18;
-  mask-image: linear-gradient(180deg, rgba(0,0,0,0.85), transparent 100%);
-}
-
-.quantum-divider {
-  height: 1px;
-  width: 100%;
-  background: linear-gradient(90deg, rgba(255,122,47,0.24), rgba(255,255,255,0.08), transparent);
+  display: grid;
+  gap: var(--space-5);
 }
 
 .quantum-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 24px;
-  padding: 0 10px;
+  gap: 0.5rem;
   border: 1px solid var(--color-border-default);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  padding: 0.45rem 0.75rem;
   clip-path: var(--chamfer-8);
   font-family: var(--font-label);
   font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.quantum-shell-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  padding: 0.7rem 0.9rem;
+  color: var(--color-text-secondary);
+  clip-path: var(--chamfer-8);
+  text-decoration: none;
+  font-family: var(--font-label);
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.quantum-scan-text {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-
-.quantum-data-value {
-  font-family: var(--font-label);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.quantum-shell-link:hover,
+.quantum-shell-link[data-active='true'] {
+  border-color: rgba(243, 106, 33, 0.24);
+  background: rgba(243, 106, 33, 0.08);
   color: var(--color-text-primary);
-}
-
-.quantum-scroll-region {
-  scrollbar-gutter: stable both-edges;
 }
