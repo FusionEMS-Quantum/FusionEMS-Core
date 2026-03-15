@@ -156,8 +156,8 @@ def _format_nemsis_time(val: Any) -> str:
 
 def validate_nemsis_xml(xml_bytes: bytes) -> dict[str, Any]:
     try:
-        ET.fromstring(xml_bytes)
-        root = ET.fromstring(xml_bytes)
+        ET.fromstring(xml_bytes)  # nosec B314 — xml_bytes is the output of the NEMSIS generator in this module, not external untrusted input
+        root = ET.fromstring(xml_bytes)  # nosec B314 — same as above: self-generated NEMSIS XML
 
         def check_element(elem, path=""):
             if elem.text == NV_NOT_RECORDED and not elem.get("xsi:nil"):

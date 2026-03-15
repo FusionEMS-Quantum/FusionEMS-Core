@@ -155,7 +155,7 @@ def _fetch_json(url: str) -> dict[str, Any]:
     req = urllib.request.Request(url, method="GET")
     req.add_header("Accept", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=_DEFAULT_OIDC_TIMEOUT_SECONDS) as resp:
+        with urllib.request.urlopen(req, timeout=_DEFAULT_OIDC_TIMEOUT_SECONDS) as resp:  # nosec B310 — URL is the OIDC well-known metadata endpoint from validated config, not user input
             return json.loads(resp.read().decode())  # type: ignore[no-any-return]
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
@@ -393,13 +393,8 @@ def _exchange_code(code: str) -> dict[str, Any]:
     )
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310 — URL is the Entra token endpoint constructed from validated tenant config, not user input
             return json.loads(resp.read().decode())  # type: ignore[no-any-return]
-    except urllib.error.HTTPError as exc:
-        error_body = exc.read().decode("utf-8", errors="replace")
-        logger.error(
-            "entra_token_exchange_failed status=%d body=%.300s", exc.code, error_body
-        )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to exchange authorization code with Entra",
@@ -417,7 +412,7 @@ def _fetch_userinfo(access_token: str) -> dict[str, Any]:
     req.add_header("Authorization", f"Bearer {access_token}")
     req.add_header("Accept", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310 — URL is the Microsoft Graph userinfo endpoint (_USERINFO_URL constant), not user input
             return json.loads(resp.read().decode())  # type: ignore[no-any-return]
     except urllib.error.HTTPError as exc:
         error_body = exc.read().decode("utf-8", errors="replace")

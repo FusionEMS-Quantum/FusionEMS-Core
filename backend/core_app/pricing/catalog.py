@@ -422,7 +422,7 @@ def resolve_selected_modules(
             raise ValueError(f"Unknown addon_code: {addon_code!r}")
         resolved.extend(addon.included_modules)
 
-    if billing_tier_code and "BILLING_AUTOMATION" in addon_codes:
+    if billing_tier_code:
         if billing_tier_code not in BILLING_TIERS:
             raise ValueError(f"Unknown billing_tier_code: {billing_tier_code!r}")
         tier = BILLING_TIERS[billing_tier_code]
