@@ -97,11 +97,13 @@ class NEMSISXSDValidator:
     def _structural_validate(
         self, xml_content: bytes, dataset_type: str, result: XSDValidationResult
     ) -> XSDValidationResult:
-        import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as _stdlib_et
+
+        import defusedxml.ElementTree as ET
 
         try:
             root = ET.fromstring(xml_content)
-        except ET.ParseError as e:
+        except _stdlib_et.ParseError as e:
             result.valid = False
             result.errors.append(f"XML parse error: {e}")
             return result

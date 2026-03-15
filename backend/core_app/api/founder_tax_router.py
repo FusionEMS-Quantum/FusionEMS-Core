@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core_app.accounting.efile_service import EfileOrchestrator, IRSMeFClient, WisconsinDORClient
 from core_app.api.dependencies import (
     db_session_dependency,
     require_founder_only_audited,
@@ -19,7 +20,6 @@ from core_app.models.founder_tax import (
     TaxEntityBucket,
 )
 from core_app.schemas.auth import CurrentUser
-from core_app.accounting.efile_service import EfileOrchestrator, IRSMeFClient, WisconsinDORClient
 from core_app.services.ai_platform.tax_advisor_service import (
     AIReceiptTaxAdvisor,
     S3DocumentVaultService,

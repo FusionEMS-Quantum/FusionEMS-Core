@@ -119,13 +119,15 @@ def handle_stock_rebuild(record: dict) -> dict:
     conn = _db_conn()
     cur = conn.cursor()
 
+    # filter_clause is constructed entirely from hardcoded SQL fragments; all
+    # runtime values (tenant_id, location_id) are passed as parameterized args.
     filter_clause = "AND tenant_id = %s AND deleted_at IS NULL"
     params: list = [tenant_id]
     if location_id:
         filter_clause += " AND data->>'location_id' = %s"
         params.append(location_id)
 
-    cur.execute(
+    cur.execute(  # nosec B608 — filter_clause contains only static SQL fragments; user data is fully parameterized
         f"""
         SELECT data->>'item_id' AS item_id,
                data->>'location_id' AS loc_id,

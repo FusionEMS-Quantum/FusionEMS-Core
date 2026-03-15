@@ -337,15 +337,24 @@ def _resolve_media_url(*, database_url: str, tenant_id: str, data: dict[str, Any
         return ""
 
 
+_ALLOWED_DOMINATION_TABLES: frozenset[str] = frozenset({"documents"})
+
+
 def _load_domination_record(
     *, database_url: str, table: str, tenant_id: str, record_id: str
 ) -> dict[str, Any] | None:
+    if table not in _ALLOWED_DOMINATION_TABLES:
+        logger.error(
+            "fax_send_load_domination_record_rejected_table table=%s", table
+        )
+        return None
     try:
         with (
             psycopg.connect(database_url) as conn,
             conn.cursor(row_factory=psycopg.rows.dict_row) as cur,
         ):
-            cur.execute(
+            # table is validated against _ALLOWED_DOMINATION_TABLES above
+            cur.execute(  # nosec B608
                 f"SELECT id, tenant_id, version, data FROM {table} "
                 "WHERE tenant_id = %s AND id = %s AND deleted_at IS NULL LIMIT 1",
                 (tenant_id, record_id),
