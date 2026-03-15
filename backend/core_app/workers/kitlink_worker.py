@@ -126,7 +126,7 @@ def handle_stock_rebuild(record: dict) -> dict:
         params.append(location_id)
 
     cur.execute(
-        f"""
+        f"""  # nosec B608 — filter_clause is constructed exclusively from parameterised placeholders (%s); no user-controlled literal SQL is interpolated
         SELECT data->>'item_id' AS item_id,
                data->>'location_id' AS loc_id,
                SUM(CASE WHEN data->>'direction' = 'in' THEN (data->>'qty')::int ELSE 0 END) -

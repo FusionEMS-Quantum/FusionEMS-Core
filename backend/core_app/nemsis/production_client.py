@@ -21,6 +21,7 @@ import xml.etree.ElementTree as ET
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import defusedxml.ElementTree as _defused_et
 import httpx
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
@@ -457,7 +458,7 @@ class NEMSISProductionClient:
             ET.QName(NEMSIS_NS, "payloadOfXmlElement")
         )
 
-        parsed_xml = ET.fromstring(xml_bytes)
+        parsed_xml = _defused_et.fromstring(xml_bytes)
         payload_wrapper.append(parsed_xml)
 
         # Add metadata
@@ -655,7 +656,7 @@ class NEMSISProductionClient:
 def _read_text(xml_text: str, tag_name: str) -> str | None:
     """Extract text content of first element matching tag name."""
     try:
-        root = ET.fromstring(xml_text.encode("utf-8"))
+        root = _defused_et.fromstring(xml_text.encode("utf-8"))
     except ET.ParseError:
         return None
 

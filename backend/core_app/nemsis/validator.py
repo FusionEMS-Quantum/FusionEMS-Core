@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+import defusedxml.ElementTree as _defused_et
+
 try:
     from lxml import etree as lxml_etree
 
@@ -160,7 +162,7 @@ class NEMSISValidator:
         }
 
         with contextlib.suppress(ET.ParseError):
-            root = ET.fromstring(xml_bytes)
+            root = _defused_et.fromstring(xml_bytes)
 
         if root is not None:
             dataset_name = _local_name(root.tag)
@@ -242,7 +244,7 @@ class NEMSISValidator:
                 return issues
         else:
             try:
-                ET.fromstring(xml_bytes)
+                _defused_et.fromstring(xml_bytes)
             except ET.ParseError as exc:
                 issues.append(
                     _make_issue(

@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import Any
 
+import defusedxml.ElementTree as _defused_et
 import httpx
 
 from core_app.core.config import get_settings
@@ -356,7 +357,7 @@ def _local_name(tag: str) -> str:
 
 def _response_element(xml_text: str, tag_name: str) -> ET.Element | None:
     try:
-        root = ET.fromstring(xml_text.encode("utf-8"))
+        root = _defused_et.fromstring(xml_text.encode("utf-8"))
     except ET.ParseError:
         return None
     for element in root.iter():
