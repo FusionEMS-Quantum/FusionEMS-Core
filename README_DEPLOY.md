@@ -42,7 +42,7 @@ This creates:
 
 Set these GitHub Variables (Settings > Variables):
 - `AWS_ACCOUNT_ID`: Your AWS account ID
-- `AWS_OIDC_ROLE_ARN`: `arn:aws:iam::<ACCOUNT>:role/fusionems-github-actions-deploy`
+- `AWS_OIDC_ROLE_ARN`: `arn:aws:iam::<ACCOUNT>:role/FusionEMS-GHA-TerraformProd`
 
 Create a `prod` Environment (Settings > Environments):
 - Add required reviewers (founder/admin)
@@ -105,8 +105,9 @@ The founder must:
 ### Merge to Main
 
 1. `validate_plan` runs again
-2. `apply_prod` requires `prod` environment approval
-3. Terraform apply executes with lock timeout
+2. `apply_prod` runs on `main` pushes behind the GitHub `prod` environment approval gate
+3. Manual `workflow_dispatch` can also run `apply_prod` when `allow_apply=true`
+4. Terraform apply executes with lock timeout
 
 ### Drift Detection
 

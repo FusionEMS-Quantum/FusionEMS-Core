@@ -15,12 +15,15 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID || '793439286972' }}
+  AWS_OIDC_ROLE_ARN: ${{ vars.AWS_OIDC_ROLE_ARN || 'arn:aws:iam::793439286972:role/FusionEMS-GHA-TerraformProd' }}
+
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
     env:
-      AWS_REGION: us-east-1
-      AWS_ACCOUNT_ID: "793439286972"
       ECR_REPO: fusionems-prod-frontend
       ECS_CLUSTER: fusionems-prod-cluster
       ECS_SERVICE: fusionems-prod-frontend
@@ -33,8 +36,8 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::793439286972:role/GitHubTerraformRole
-          aws-region: us-east-1
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Verify caller identity
         run: aws sts get-caller-identity
