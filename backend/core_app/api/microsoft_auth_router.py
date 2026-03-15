@@ -395,6 +395,11 @@ def _exchange_code(code: str) -> dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310 — URL is the Entra token endpoint constructed from validated tenant config, not user input
             return json.loads(resp.read().decode())  # type: ignore[no-any-return]
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode("utf-8", errors="replace")
+        logger.error(
+            "entra_token_exchange_failed status=%d body=%.300s", exc.code, error_body
+        )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to exchange authorization code with Entra",
