@@ -1,4 +1,4 @@
-# FusionEMS Quantum — Core Platform
+# Adaptix — Core Platform
 
 **Enterprise-grade EMS operations platform** built on FastAPI, Next.js, and Terraform-managed AWS infrastructure.
 
@@ -42,7 +42,6 @@ scripts/       Utility and deployment scripts
 ## Deployment
 
 See [`README_DEPLOY.md`](README_DEPLOY.md) for the full deployment runbook.
-
 
 ## Codespaces / local runtime
 
